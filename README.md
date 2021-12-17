@@ -59,3 +59,6 @@ Data Source=ip地址;Initial Catalog=数据库名字;Persist Security Info=True;
 ### 报表设计器登录验证管理
 
 
+## 本软件使用到的的第三方软件，在此一并致谢
+前端： (luckysheet)(https://github.com/mengshukeji/Luckysheet) ，vue ，element-ui, (avue)[http://avuejs.com]
+后端: antlr3
