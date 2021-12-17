@@ -30,7 +30,7 @@ module.exports = {
         //,
         proxy: { 
             "/aps/report5": {
-                target: "http://127.0.0.1:7000/",
+                target: "http://127.0.0.1:5000/",
                 changeOrigin: true,//是否允许跨域
                 ws: true,
                 pathRewrite: {
@@ -38,7 +38,7 @@ module.exports = {
                 }
             },
             "/report5": {
-                target: "http://127.0.0.1:7000/",//http://report.hn.clic:5000/  http://10.32.28.66:5000/
+                target: "http://127.0.0.1:5000/",
                 changeOrigin: true,//是否允许跨域
                 ws: true,
                 pathRewrite: {

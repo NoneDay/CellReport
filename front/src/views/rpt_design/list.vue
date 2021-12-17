@@ -231,7 +231,7 @@ export default {
             {
                 confirmButtonText: '确定',
                 cancelButtonText: '取消',
-                inputPattern:['目录','统计报表'].includes(command)?  /^[a-zA-Z\u4e00-\u9fa5][a-zA-Z_0-9\u4e00-\u9fa5]*$/ : /.*/,
+                inputPattern:['目录','统计报表'].includes(command)?  /^[a-zA-Z_0-9\u4e00-\u9fa5]*$/ : /.*/,
                 inputValue:"ds"
             })
             .then( async ({ value }) => {

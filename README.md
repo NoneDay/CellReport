@@ -33,10 +33,8 @@ CellReport 诞生的初衷是为了解决日常快速制作统计报表的需要
 
 ## 需要安装的软件
 1. 下载安装NETCORE6 SDK 或 RUNTIME.[Download .NET (Linux, macOS, and Windows)](https://dotnet.microsoft.com/download)
-2. 下载安装redis（可选）。最好安装 
-[https://github.com/MicrosoftArchive/redis/releases](https://github.com/MicrosoftArchive/redis/releases)
-3. 下载解压[本软件](https://github.com/NoneDay/CellReport/raw/master/publish_release/CellReport.zip)到本地
-4. 下载[例子演示报表](https://github.com/NoneDay/CellReport/raw/master/publish_release/example.rar)
+2. 下载安装redis（可选）。最好安装 [https://github.com/MicrosoftArchive/redis/releases](https://github.com/MicrosoftArchive/redis/releases)
+3. 下载解压传输链接：https://cowtransfer.com/s/a21509df346642 或 打开【奶牛快传】cowtransfer.com 使用传输口令：00qhci 提取；
 
 ## 运行和配置
 假设解压安装到了d:\cellReport。(单独更新前端时，将前端文件解压到d:\cellReport\wwwroot下)。如果使用nginx反向代理，可以单独存放前端文件。

@@ -352,7 +352,11 @@ export default {
                     }
                 }
                 else{
-                    expr= `=${cur_field.ds}["${cur_field.field}"]`
+                    
+                    if(cur_field.op)
+                        expr= `=${cur_field.ds}.sum(${cur_field.ds}["${cur_field.field}"])`
+                    else
+                        expr= `=${cur_field.ds}["${cur_field.field}"]`
                     data[row_focus+row+1][column_focus+col]={
                         v:expr,m:expr,cr:{"_displayValueExpr":"=@value","_valueExpr":expr}
                     }

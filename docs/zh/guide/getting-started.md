@@ -22,9 +22,9 @@
 ```bash
 cd cellReport
 //启动
-reportWeb.exe  --urls "http://*:8090" --webroot "D:\cellReport\wwwroot"
+reportWeb.exe  --urls "http://*:5000" --webroot "D:\cellReport\wwwroot"
 //或 linux 下以这种方式启动
-dotnet reportWeb.dll  --urls "http://*:8090" --webroot "D:\cellReport\wwwroot"
+dotnet reportWeb.dll  --urls "http://*:5000" --webroot "D:\cellReport\wwwroot"
 // 指定启动端口为8090 和 静态文件存放路径
 ```
 如果不指定urls参数，将运行在端口5000 ，如果不指定webroot ，缺省就是当前目录的wwwroot
@@ -32,16 +32,12 @@ dotnet reportWeb.dll  --urls "http://*:8090" --webroot "D:\cellReport\wwwroot"
 - **步骤2**: 首次运行和测试
 使用chrome （版本81 以后的才可以）或最新的 edge 浏览器,登陆网址：
 ```
-http://127.0.0.1:8090
+http://127.0.0.1:5000
 ```
 缺省的管理员用户名口令在appsetting.json中，查找admin_user 和 admin_password
 
-选中《报表组管理》，添加测试组，设置测试报表存放目录、添加测试数据源,名称testsqliite 。测试期间，可将管理员设置为admin。
-如果需要新的数据源，请在这里添加。
+选中《报表组管理》，如果需要新的数据源，请在这里添加。
 ```
-测试数据源的连接串
-Data Source=E:\my_app\test.db
-
 sql server 连接串
 Data Source=ip地址;Initial Catalog=数据库名字;Persist Security Info=True;User ID=用户;Password=口令;Min Pool Size=1;Max Pool Size=50;Connect Timeout=15000;Application Name=报表连接
 ```
