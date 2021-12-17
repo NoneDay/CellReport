@@ -1,0 +1,82 @@
+{
+  "_from": "jsplumb",
+  "_id": "jsplumb@2.15.5",
+  "_inBundle": false,
+  "_integrity": "sha1-UL4MWP5ehAqna9My/aN5tvTpt7c=",
+  "_location": "/jsplumb",
+  "_phantomChildren": {},
+  "_requested": {
+    "type": "tag",
+    "registry": true,
+    "raw": "jsplumb",
+    "name": "jsplumb",
+    "escapedName": "jsplumb",
+    "rawSpec": "",
+    "saveSpec": null,
+    "fetchSpec": "latest"
+  },
+  "_requiredBy": [
+    "#USER",
+    "/"
+  ],
+  "_resolved": "https://registry.npm.taobao.org/jsplumb/download/jsplumb-2.15.5.tgz",
+  "_shasum": "50be0c58fe5e840aa76bd332fda379b6f4e9b7b7",
+  "_spec": "jsplumb",
+  "_where": "E:\\智能播报\\front",
+  "author": {
+    "name": "jsPlumb"
+  },
+  "bugs": {
+    "url": "https://github.com/jsplumb/jsplumb/issues"
+  },
+  "bundleDependencies": false,
+  "deprecated": false,
+  "description": "Visual connectivity for webapps",
+  "devDependencies": {
+    "@jsplumb/katavorio": "^1.5.1",
+    "biltong": "^0.4.0",
+    "grunt": "~0.4.1",
+    "grunt-contrib-clean": "~0.5.0",
+    "grunt-contrib-concat": "~0.3.0",
+    "grunt-contrib-connect": "^0.11.2",
+    "grunt-contrib-copy": "~0.5.0",
+    "grunt-contrib-jshint": "~0.6.2",
+    "grunt-contrib-uglify": "~0.2.2",
+    "grunt-contrib-watch": "~0.5.3",
+    "grunt-exec": "^1.0.1",
+    "grunt-jekyll": "~0.4.2",
+    "jsbezier": "0.9.4",
+    "morgan": "1.8.0",
+    "mottle": "1.0.1"
+  },
+  "directories": {
+    "doc": "doc",
+    "test": "tests"
+  },
+  "files": [
+    "index.d.ts",
+    "dist/js/jsplumb.js",
+    "dist/js/jsplumb.min.js",
+    "css/jsplumbtoolkit-defaults.css"
+  ],
+  "homepage": "https://github.com/jsplumb/jsplumb#readme",
+  "keywords": [
+    "javascript",
+    "svg",
+    "visual",
+    "connectivity"
+  ],
+  "license": "(MIT OR GPL-2.0)",
+  "main": "dist/js/jsplumb.js",
+  "name": "jsplumb",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/jsplumb/jsplumb.git"
+  },
+  "scripts": {
+    "init": "node ./install.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "types": "index",
+  "version": "2.15.5"
+}

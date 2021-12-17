@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=0">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="format-detection" content="telephone=no">
+  <meta http-equiv="X-UA-Compatible" content="chrome=1" />
+  <link rel="stylesheet" href="<%= BASE_URL %>cdn/element-ui/theme-chalk/index.css">
+  <link rel="stylesheet" href="<%= BASE_URL %>cdn/avue/2.8.1/index.css">
+  <link rel="stylesheet" href="<%= BASE_URL %>cdn/animate/3.5.2/animate.css">
+  <link rel="stylesheet" href="<%= BASE_URL %>cdn/iconfont/1.0.0/index.css">
+  <link rel="icon" href="<%= BASE_URL %>favicon.ico">
+  <script src="<%= BASE_URL %>cdn/html2canvas.min.js" charset="utf-8"></script>
+  <script src="<%= BASE_URL %>cdn/jsplumb/dist/js/jsplumb.js" charset="utf-8"></script>
+  <script src="<%= BASE_URL %>cdn/xlsx/dist/xlsx.full.min.js"></script>  
+  <script src="<%= BASE_URL %>cdn/FileSaver.min.js"></script>  
+ 
+  <link rel="stylesheet" href="<%= BASE_URL %>cdn/font-awesome-4.7.0/css/font-awesome.min.css">
+
+  <!--
+  <script src="https://cdn.bootcss.com/html2canvas/0.5.0-beta4/html2canvas.min.js"></script> -->
+  <title>CellReport 报表快速开发</title>
+  <style>
+    html,
+    body,
+    #app {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+    }
+
+    .avue-home {
+      background-color: #303133;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .avue-home__main {
+      user-select: none;
+      width: 100%;
+      flex-grow: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+    }
+
+    .avue-home__footer {
+      width: 100%;
+      flex-grow: 0;
+      text-align: center;
+      padding: 1em 0;
+    }
+
+    .avue-home__footer>a {
+      font-size: 12px;
+      color: #ABABAB;
+      text-decoration: none;
+    }
+
+    .avue-home__loading {
+      height: 32px;
+      width: 32px;
+      margin-bottom: 20px;
+    }
+
+    .avue-home__title {
+      color: #FFF;
+      font-size: 14px;
+      margin-bottom: 10px;
+    }
+
+    .avue-home__sub-title {
+      color: #ABABAB;
+      font-size: 12px;
+    }
+  </style>
+</head>
+
+<body>
+  <noscript>
+    <strong>
+      很抱歉，如果没有 JavaScript 支持，Avue-cli 将不能正常工作。请启用浏览器的 JavaScript 然后继续。
+    </strong>
+  </noscript>
+  <div id="app">
+    <div class="avue-home">
+      <div class="avue-home__main">
+        <img class="avue-home__loading" src="./svg/loading-spin.svg" alt="loading">
+        <div class="avue-home__title">
+          正在加载资源
+        </div>
+        <div class="avue-home__sub-title">
+          初次加载资源可能需要较多时间 请耐心等待
+        </div>
+      </div>
+      <div class="avue-home__footer">
+        更多精彩
+      </div>
+    </div>
+  </div>
+  <!-- built files will be auto injected -->
+  <script src="<%= BASE_URL %>cdn/vue/2.6.12/vue.min.js" charset="utf-8"></script>
+  <script src="<%= BASE_URL %>cdn/vuex/3.6.0/vuex.min.js" charset="utf-8"></script>
+  <script src="<%= BASE_URL %>cdn/vue-router/3.4.9/vue-router.min.js" charset="utf-8"></script>
+  <script src="<%= BASE_URL %>cdn/axios/0.21.1/axios.min.js" charset="utf-8"></script>
+  <script src="<%= BASE_URL %>cdn/element-ui/index.js" charset="utf-8"></script>
+  <script src="<%= BASE_URL %>cdn/avue/2.8.1/avue.min.js" charset="utf-8"></script>
+  <script src="<%= BASE_URL %>cdn/Sortable/1.10.0-rc2/Sortable.min.js" charset="utf-8"></script>
+
+  <script src="<%= BASE_URL %>cdn/jquery/3.4.1/jquery.min.js" charset="utf-8"></script>
+
+  <link rel="stylesheet" type="text/css" href="<%= BASE_URL %>cdn/jquery-easyui-1.4.5/themes/default/easyui.css">  
+  <link rel="stylesheet" type="text/css" href="<%= BASE_URL %>cdn/jquery-easyui-1.4.5/themes/icon.css">  
+
+  <script type="text/javascript" src="<%= BASE_URL %>cdn/jquery-easyui-1.4.5/jquery.easyui.min.js"></script>  
+  <script type="text/javascript" src="<%= BASE_URL %>cdn/jquery-easyui-1.4.5/locale/easyui-lang-zh_CN.js"></script>
+  <script type="text/javascript" src="<%= BASE_URL %>js/jquery-easyui-extend/datagrid-filter.js"></script>    
+  <script type="text/javascript" src="<%= BASE_URL %>js/jquery-easyui-extend/json.js"></script>  
+  <script type="text/javascript" src="<%= BASE_URL %>js/toExcel.js?updateTime=-12352" ></script>
+ 
+
+
+  <script src="<%= BASE_URL %>cdn/echarts.min.js" charset="utf-8"></script>
+  <script src="<%= BASE_URL %>cdn/crypto-js.min.js" charset="utf-8"></script>
+
+  <script type="text/javascript" src="<%= BASE_URL %>js/toExcel.js?updateTime=-12352" ></script>
+  <script src="<%= BASE_URL %>cdn/vue-grid-layout-legacy/dist/vue-grid-layout.umd.min.js" ></script>  
+
+  <script src="<%= BASE_URL %>js/signalr/dist/browser/signalr.js"></script>
+<!---->
+  <link rel="stylesheet" href="<%= BASE_URL %>cdn/codemirror-5.58.3/lib/codemirror.css">
+  <link rel="stylesheet" href="<%= BASE_URL %>cdn/codemirror-5.58.3/addon/fold/foldgutter.css" />
+  <script src="<%= BASE_URL %>cdn/codemirror-5.58.3/lib/codemirror.js"></script>
+
+  <script src="<%= BASE_URL %>cdn/codemirror-5.58.3/mode/javascript/javascript.js"></script>
+  <script src="<%= BASE_URL %>cdn/codemirror-5.58.3/mode/sql/sql.js"></script>  
+  <script src="<%= BASE_URL %>cdn/codemirror-5.58.3/mode/xml/xml.js"></script>  
+
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@nutui/nutui@2.2.15/dist/nutui.min.css">
+<!-- 引入组件库 -->
+<script src="https://cdn.jsdelivr.net/npm/@nutui/nutui@2.2.15/dist/nutui.min.js"></script>
+</body>
+
+</html>

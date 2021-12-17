@@ -1,0 +1,22 @@
+﻿@page
+@model DefaultModel
+@using Microsoft.Extensions.Configuration;
+@using Microsoft.Extensions.Logging;
+@using System.Data.SqlClient;
+@using Microsoft.AspNetCore.Http;
+@using Microsoft.Extensions.Primitives;
+
+@functions{
+    [IgnoreAntiforgeryToken(Order = 2000)]
+    public class DefaultModel : ReportModel
+    {
+
+        public DefaultModel(IConfiguration configuration, ILogger<ReportModel> logger, ScopedObj scopedObj) : base(configuration, logger, scopedObj)
+        {
+        }
+    }
+}
+@{
+    Layout = null;
+    await Model.Page_Load();
+}

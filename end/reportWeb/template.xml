@@ -1,0 +1,128 @@
+﻿<?xml version="1.0"?>
+
+<template>
+  <FIXTOP_BACKCOLOR></FIXTOP_BACKCOLOR>
+  <FIXTOP_COLOR></FIXTOP_COLOR>
+  <BACKGROUND-COLOR></BACKGROUND-COLOR>
+  <COLOR>black</COLOR>
+  <FONT>微软雅黑</FONT>
+  <FONT-SIZE>11</FONT-SIZE>
+  <BORDER_STYLE><![CDATA[gray 1px dotted]]></BORDER_STYLE>
+  <TABLE_APPEND><![CDATA[ x:str cellSpacing=0 cellPadding=0  style="TABLE-LAYOUT: fixed; MARGIN: 0px; FONT-SIZE: 11px; Z-INDEX: -5;  BORDER-COLLAPSE: collapse;"]]></TABLE_APPEND>
+  <footer2>
+    <![CDATA[
+<script>
+window.luckysheet_conditionformat=[
+		{column_match:".*(占比|率)\$" ,val:'{"type":"colorGradation","cellrange":[{ "row":[0,1],"column":[1,1] }],"format":["rgb(248, 105, 107)", "rgb(255, 235, 132)", "rgb(99, 190, 123)"] }' },
+  		//{column_match:".*(累计)" ,val:'{"type":"dataBar","cellrange":[{"left":283,"width":88,"top":117,"height":25,"left_move":283,"width_move":88,"top_move":117,"height_move":25,"row":[4,4],"column":[3,3],"row_focus":4,"column_focus":3}],"format":["red","#ffffff"]}' },
+  
+	]
+if (localStorage.luckysheet_conditionformat==undefined || localStorage.luckysheet_conditionformat=="[object Object]")
+  localStorage.luckysheet_conditionformat=JSON.stringify(window.luckysheet_conditionformat)
+
+
+//luckysheet_alternateformat_save='{"cellrange":{"row":[0,8],"column":[0,19]},"format":{"head":{"fc":"#ffffff","bc":"#f2711c"},"one":{"fc":"#000","bc":"#ffffff"},"two":{"fc":"#000","bc":"#fef0d7"},"foot":{"fc":"#000","bc":"#fbb335"}},"hasRowHeader":true,"hasRowFooter":false}'
+window.luckysheet_alternateformat_save='{"cellrange":{"row":[0,8],"column":[-1,-1]},"format":{"head":{"fc":"#000","bc":"#dff0d8"},"one":{"fc":"#000","bc":"#ffffff"},"two":{"fc":"#000","bc":"#dff0d8"},"foot":{"fc":"#000","bc":"#cef3bf"}},"hasRowHeader":true,"hasRowFooter":false}'
+
+if (localStorage.luckysheet_alternateformat_save==undefined)
+  localStorage.luckysheet_alternateformat_save=window.luckysheet_alternateformat_save
+</script>
+    ]]>
+  </footer2>
+
+  <sqlRule>
+    <![CDATA[(('|<|>|%|\""\""|,|>=|=<|<>|;|\|\||\[|\]|&|/|@)|(\b)+(select|update|insert|delete|declare|exec|dbcc|alter|drop|create|backup|if|else|end|and|or|add|set|open|close|use|begin|retun|as|go|exists)(\b)+)]]>
+  </sqlRule>
+
+  <footer>
+
+  </footer>
+
+  <text_width><![CDATA[0.5,0.7,1.2 ]]></text_width>
+  <large_data_grid><![CDATA[  fit:true,pagination:true,rownumbers:true,singleSelect:true,  autoRowHeight:false,remoteSort:false   ]]></large_data_grid>
+
+  <insertStatement>
+    <![CDATA[={
+var db=openDb("$dataSource$");
+row.$primaryKey_cell$=db.select("insert into $tableName$ ($fieldNames$) values($valueNames$);select @@identity sn",row).sn;
+db.close();
+}
+  ]]>
+  </insertStatement>
+  <updateStatement>
+    <![CDATA[={
+var db=openDb("$dataSource$");
+db.insert("update $tableName$ set $updateFieldNames$ where $whereNames$",row);
+db.close();
+}
+  ]]>
+  </updateStatement>
+  <deleteStatement>
+    <![CDATA[={
+var db=openDb("$dataSource$");
+db.insert("delete from $tableName$ where $whereNames$",row);
+db.close();
+}
+  ]]>
+  </deleteStatement>
+ 
+  <treeGrid>
+    <![CDATA[
+  <table id='reportDiv$grid.Name$thetable' class="easyui-treegrid" data-options="" > 
+   	<thead data-options="frozen:true">$gridHeaderTable_frozen$</thead>
+  	<thead>$gridHeaderTable$</thead>
+</table>
+	<script  type='text/javascript' > 
+    	var reportDiv$grid.Name$_data=__exportjson__;
+        allTableArr.push({tableType:'datagrid',table:'reportDiv$grid.Name$'});
+        jQuery(function(){
+    			var a_dataGrid=jQuery('#reportDiv$grid.Name$thetable').treegrid({remoteFilter: false,rownumbers: true,autoRowHeight:false,nowrap: true,
+    				fit:true,singleSelect:true, showFooter: true, showFilterBar:true,
+    				//pagination: true,pageSize: 10,pageList: [10,20,50,100],
+    				idField:'$grid.idField$',treeField:'$grid.treeField$',
+					  onLoadSuccess:function(data){
+							treeGrid_onLoadSuccess(a_dataGrid,'$grid.Name$',reportDiv$grid.Name$_data);
+					  }
+				} );
+			//a_dataGrid.treegrid('enableFilter');
+	        a_dataGrid.treegrid('loadData', reportDiv$grid.Name$_data);
+
+        }); </script> 
+]]>
+  </treeGrid>
+  <dataGrid>
+    <![CDATA[
+$ if( env.global['datagrid-filter']==null){ env.global['datagrid-filter']="asdasdadasdadasda";$
+	<!--<script type="text/javascript" src="js/jquery-easyui-extend/datagrid-filter.js"></script>  -->
+$}$
+  <table id='reportDiv$grid.Name$thetable' data-options=""  > 
+  	<thead data-options="frozen:true">$gridHeaderTable_frozen$</thead>  	
+  	<thead>$gridHeaderTable$</thead>
+</table>
+	<script  type='text/javascript' > 
+    	var reportDiv$grid.Name$_data=__exportjson__;
+        allTableArr.push({tableType:'datagrid',table:'reportDiv$grid.Name$'});
+        jQuery(function(){
+    			var a_dataGrid=jQuery('#reportDiv$grid.Name$thetable').datagrid({fit:true,showFooter:true,remoteFilter: false,autoRowHeight:false,
+    				remoteSort:false,showFilterBar:true,singleSelect:true, showFooter: true, rownumbers:true,
+    				pageSize: 20,pageList: [10,20,50,100],pagination: true,loadFilter:pagerFilter,
+					onLoadSuccess:function(data){
+						if(reportDiv$grid.Name$_data.footer)
+						a_dataGrid.datagrid("reloadFooter",reportDiv$grid.Name$_data.footer);
+		                var footer_merger_cell=reportDiv$grid.Name$_data.footer_merger_cell;
+						if(footer_merger_cell)
+		                for(var i=0; i<footer_merger_cell.length; i++){
+		                	a_dataGrid.datagrid('mergeCells',footer_merger_cell[i]) ;
+		                }
+					}
+    			});
+    			//if(reportDiv$grid.Name$_data.length>50)//.datagrid({loadFilter:pagerFilter})
+            	 //a_dataGrid.datagrid('enableFilter'/*,[{field:'r4',type:'text',op:['contains','equal','notequal','less','greater']}]*/);//,defaultFilterOperator:['contains','equal','notequal','beginwith','endwith','less','lessorequal','greater','greaterorequal']
+            	
+	            a_dataGrid.datagrid('loadData', reportDiv$grid.Name$_data);
+
+        }); </script>
+]]>
+  </dataGrid>
+ 
+</template>

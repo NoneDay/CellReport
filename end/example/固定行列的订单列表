@@ -1,0 +1,96 @@
+<?xml version="1.0"?>
+<report>
+  <includeFiles />
+  <params />
+  <datasources>
+    <dataSource name="ds">Dsn=testDb</dataSource>
+  </datasources>
+  <macros />
+  <dataSets>
+    <dataSet name="ds" type="sql" dataSource="testsqlserver">SELECT top 100 订单.订单ID, 订单.客户ID, 订单.雇员ID, 订单.订购日期, 订单.到货日期, 订单.发货日期, 订单.运货商, 订单.运货费, 订单.货主名称, 订单.货主地址, 订单.货主城市, 订单.货主地区, 订单.货主邮政编码, 订单.货主国家, 客户.公司名称, 客户.地址, 客户.城市, 客户.地区, 客户.邮政编码, 客户.国家
+FROM 客户 INNER JOIN 订单 ON 客户.客户ID = 订单.客户ID;</dataSet>
+  </dataSets>
+  <pageProperty Orientation="True" />
+  <grid append="cellSpacing=0 cellPadding=0  style=&quot;TABLE-LAYOUT: fixed; MARGIN-TOP: 0px; FONT-SIZE: 11px; Z-INDEX: -5; MARGIN-LEFT: 0px;   BORDER-COLLAPSE: collapse;&quot;" optimize="True">
+    <columns>
+      <column name="a" width="75" append="" fixed="True" />
+      <column name="b" width="75" append="" fixed="False" />
+      <column name="c" width="75" append="" fixed="False" />
+      <column name="d" width="75" append="" fixed="False" />
+      <column name="e" width="75" append="" fixed="False" />
+      <column name="f" width="75" append="" fixed="False" />
+      <column name="g" width="75" append="" fixed="False" />
+      <column name="h" width="75" append="" fixed="False" />
+      <column name="i" width="75" append="" fixed="False" />
+      <column name="j" width="75" append="" fixed="False" />
+      <column name="k" width="75" append="" fixed="False" />
+      <column name="l" width="75" append="" fixed="False" />
+      <column name="m" width="75" append="" fixed="False" />
+      <column name="n" width="75" append="" fixed="False" />
+      <column name="o" width="75" append="" fixed="False" />
+      <column name="p" width="75" append="" fixed="False" />
+      <column name="q" width="75" append="" fixed="False" />
+      <column name="r" width="75" append="" fixed="False" />
+      <column name="s" width="75" append="" fixed="False" />
+      <column name="t" width="75" append="" fixed="False" />
+      <column name="u" width="75" append="" fixed="False" />
+    </columns>
+    <rows>
+      <row name="1" height="44" append="" fixed="True" pageBreak="False" lineType="数据区" />
+      <row name="2" height="25" append="" fixed="True" pageBreak="False" lineType="数据区" />
+      <row name="3" height="25" append="" fixed="False" pageBreak="False" lineType="数据区" />
+      <row name="4" height="25" append="" fixed="False" pageBreak="False" lineType="数据区" />
+      <row name="5" height="25" append="" fixed="False" pageBreak="False" lineType="数据区" />
+      <row name="6" height="25" append="" fixed="False" pageBreak="False" lineType="数据区" />
+      <row name="7" height="25" append="" fixed="False" pageBreak="False" lineType="数据区" />
+      <row name="8" height="25" append="" fixed="False" pageBreak="False" lineType="数据区" />
+      <row name="9" height="25" append="" fixed="False" pageBreak="False" lineType="数据区" />
+      <row name="10" height="25" append="" fixed="False" pageBreak="False" lineType="数据区" />
+      <row name="11" height="25" append="" fixed="False" pageBreak="False" lineType="数据区" />
+      <row name="12" height="25" append="" fixed="False" pageBreak="False" lineType="数据区" />
+    </rows>
+    <cells>
+      <cell name="b1:f1" valueExpr="固定行列的订单列表" rowsOfPage="0" leftHead="" calcLevel="0" BORDER-RIGHT="" BORDER-LEFT="" ITALIC="False" UNDERLINE="False" BOLD="True" FONT-SIZE="15.75" text-align="center" BORDER-TOP="" BORDER-BOTTOM="" />
+      <cell name="a2" valueExpr="订单id" rowsOfPage="0" leftHead="" calcLevel="0" />
+      <cell name="b2" valueExpr="客户id" rowsOfPage="0" leftHead="" calcLevel="0" />
+      <cell name="c2" valueExpr="雇员id" rowsOfPage="0" leftHead="" calcLevel="0" />
+      <cell name="d2" valueExpr="订购日期" rowsOfPage="0" leftHead="" calcLevel="0" />
+      <cell name="e2" valueExpr="到货日期" rowsOfPage="0" leftHead="" calcLevel="0" />
+      <cell name="f2" valueExpr="发货日期" rowsOfPage="0" leftHead="" calcLevel="0" />
+      <cell name="g2" valueExpr="运货商" rowsOfPage="0" leftHead="" calcLevel="0" />
+      <cell name="h2" valueExpr="运货费" rowsOfPage="0" leftHead="" calcLevel="0" />
+      <cell name="i2" valueExpr="货主名称" rowsOfPage="0" leftHead="" calcLevel="0" />
+      <cell name="j2" valueExpr="货主地址" rowsOfPage="0" leftHead="" calcLevel="0" />
+      <cell name="k2" valueExpr="货主城市" rowsOfPage="0" leftHead="" calcLevel="0" />
+      <cell name="l2" valueExpr="货主地区" rowsOfPage="0" leftHead="" calcLevel="0" />
+      <cell name="m2" valueExpr="货主邮政编码" rowsOfPage="0" leftHead="" calcLevel="0" />
+      <cell name="n2" valueExpr="货主国家" rowsOfPage="0" leftHead="" calcLevel="0" />
+      <cell name="o2" valueExpr="公司名称" rowsOfPage="0" leftHead="" calcLevel="0" />
+      <cell name="p2" valueExpr="地址" rowsOfPage="0" leftHead="" calcLevel="0" />
+      <cell name="q2" valueExpr="城市" rowsOfPage="0" leftHead="" calcLevel="0" />
+      <cell name="r2" valueExpr="地区" rowsOfPage="0" leftHead="" calcLevel="0" />
+      <cell name="s2" valueExpr="邮政编码" rowsOfPage="0" leftHead="" calcLevel="0" />
+      <cell name="t2" valueExpr="国家" rowsOfPage="0" leftHead="" calcLevel="0" />
+      <cell extendDirection="row" name="a3" valueExpr="=ds.select(ds.订单id)" rowsOfPage="0" leftHead="" calcLevel="0" />
+      <cell name="b3" valueExpr="=ds.客户id" rowsOfPage="0" leftHead="" calcLevel="1" />
+      <cell name="c3" valueExpr="=ds.雇员id" rowsOfPage="0" leftHead="" calcLevel="1" />
+      <cell name="d3" valueExpr="=ds.订购日期" rowsOfPage="0" leftHead="" calcLevel="1" />
+      <cell name="e3" valueExpr="=ds.到货日期" rowsOfPage="0" leftHead="" calcLevel="1" />
+      <cell name="f3" valueExpr="=ds.发货日期" rowsOfPage="0" leftHead="" calcLevel="1" />
+      <cell name="g3" valueExpr="=ds.运货商" rowsOfPage="0" leftHead="" calcLevel="1" />
+      <cell name="h3" valueExpr="=ds.运货费" rowsOfPage="0" leftHead="" calcLevel="1" />
+      <cell name="i3" valueExpr="=ds.货主名称" rowsOfPage="0" leftHead="" calcLevel="1" />
+      <cell name="j3" valueExpr="=ds.货主地址" rowsOfPage="0" leftHead="" calcLevel="1" />
+      <cell name="k3" valueExpr="=ds.货主城市" rowsOfPage="0" leftHead="" calcLevel="1" />
+      <cell name="l3" valueExpr="=ds.货主地区" rowsOfPage="0" leftHead="" calcLevel="1" />
+      <cell name="m3" valueExpr="=ds.货主邮政编码" rowsOfPage="0" leftHead="" calcLevel="1" />
+      <cell name="n3" valueExpr="=ds.货主国家" rowsOfPage="0" leftHead="" calcLevel="1" />
+      <cell name="o3" valueExpr="=ds.公司名称" rowsOfPage="0" leftHead="" calcLevel="1" />
+      <cell name="p3" valueExpr="=ds.地址" rowsOfPage="0" leftHead="" calcLevel="1" />
+      <cell name="q3" valueExpr="=ds.城市" rowsOfPage="0" leftHead="" calcLevel="1" />
+      <cell name="r3" valueExpr="=ds.地区" rowsOfPage="0" leftHead="" calcLevel="1" />
+      <cell name="s3" valueExpr="=ds.邮政编码" rowsOfPage="0" leftHead="" calcLevel="1" />
+      <cell name="t3" valueExpr="=ds.国家" rowsOfPage="0" leftHead="" calcLevel="1" />
+    </cells>
+  </grid>
+</report>
