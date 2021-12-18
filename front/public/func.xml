@@ -2,39 +2,22 @@
 <functions>
   <catalogy name="数据集">
     <function  name="group()" >
-      函数说明：
-      根据分组表达式，从数据集中选出符合过滤条件的一组组集。
-
-      语法：
-      datasetName.group( select_exp
-      [filter_exp] )
-
-      功能说明：
-      在不需要排序或数据集中已经按需要排好序时，为提高效率请如下使用此函数
-      datasetName.group( select_exp, filter_exp)
-
       参数说明：
-      select_exp：	选出的分组表达式，可以是字段列名，也可以是以“#列序号”的形
-      式，#0表示记录行号，#1表示数据源中的第一个字段列......以此类推。
+      select_exp：	选出的分组表达式，可以是字段列名。
       当然也可以是表达式
       filter_exp: 	数据过滤表达式。
 
       函数示例：
-      ds1.group( name )
+      ds1.group( ds1.name )
       从数据源ds1中选取name字段，并按照name列进行分组，取出每一组第一条记
       录的name字段的值, 不排序
 
-      ds1.group( name,sex=='1').asc()
+      ds1.group( ds1.name,ds1.sex=='1').asc()
       从数据源ds1中选取性别为男性的name字段列的值并升序排列，然后按照name
       字段进行分组，取出每一组第一条记录的name字段的值
 
-      ds1.group( name, sex=='1').desc(id)
-      从数据源ds1中选取性别为男性的name字段列的值并按id字段降序排列，然后按
-      照name字段进行分组，取出每一组第一条记录的name字段的值
-
-      图例：
-      从图中可以看出，group函数选取了一组组集，把每个组集中第一条记录取出来，获得该记录的selectExp字段值，该字段值保留了一个指针，指向每一组的第一条记录，而该记录保留了一个指针指向相应的组集。因此在当前格的子格里，如果采取get, group函数，则缺省从当前格指向的组集里取数；如果采取dsn.colname的表达式，则缺省从当前格指向的组集的第一条记录里取数。
-      因此，在当前格的子格里如果采取get/group函数，不需要再加上和顶格相关的过滤条件。
+      ds1.group( ds1.name, ds1.sex=='1').desc(ds1.id)
+      从数据源ds1中选取性别为男性的name字段列的值并按id字段降序排列
 
       返回值：
       一组数据的集合
