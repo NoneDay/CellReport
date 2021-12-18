@@ -56,9 +56,8 @@ Data Source=ip地址;Initial Catalog=数据库名字;Persist Security Info=True;
 
 配置完毕后，按F5 刷新页面，点报表目录，正常的话，这是应该能看到所有的测试报表了
 
-### 报表设计器登录验证管理
-
+## 报表交流qq群 860056080
 
 ## 本软件使用到的的第三方软件，在此一并致谢
-前端： (luckysheet)(https://github.com/mengshukeji/Luckysheet) ，vue ，element-ui, (avue)[http://avuejs.com]
+前端： [luckysheet](https://github.com/mengshukeji/Luckysheet) ，vue ，element-ui, [avuejs](http://avuejs.com)
 后端: antlr3

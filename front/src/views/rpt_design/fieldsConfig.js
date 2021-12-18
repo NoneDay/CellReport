@@ -922,7 +922,7 @@ export default [
           `) ,
           
           default_chart('仪表盘', '{"type": "gauge"}',`
-          option = {
+          {
             backgroundColor: '#fff',
             legend: {selectedMode:'single'},//单选模式
             tooltip: {},
