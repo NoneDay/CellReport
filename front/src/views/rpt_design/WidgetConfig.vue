@@ -1,13 +1,10 @@
 <template>
-  <div class="widget-config">
+  <div class="widget-config" style="height:100%;overflow:auto;font-size:11px">
     <el-form label-suffix="："
              v-if="this.data && Object.keys(this.data).length > 0"
              labelPosition="left"
              labelWidth="100px"
              size="mini">
-      <el-collapse v-model="collapse">
-        <el-collapse-item name="1"
-                          title="基本属性">
           <el-form-item label="类型"
                         v-if="data.type && !data.component">
             <el-select v-model="data.type"
@@ -57,14 +54,9 @@
                              placeholder="高度"
                              ></el-input>
           </el-form-item>
-
-          <component :is="getComponent"  
-                     :data="data"></component>
-          
-        </el-collapse-item>
-        
-      </el-collapse>
+          <component :is="getComponent"    :data="data"></component>
     </el-form> 
+    
   </div>
 </template>
 

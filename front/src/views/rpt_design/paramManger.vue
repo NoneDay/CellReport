@@ -47,7 +47,6 @@
                     <el-select v-model="action_target._data_type" placeholder="类型">
                         <el-option label="字符串" value="string"></el-option>
                         <el-option label="日期" value="date"></el-option>
-                        <el-option label="时间" value="datetime"></el-option>
                         <el-option label="时间" value="dateTime"></el-option>
                         <el-option label="数字" value="number"></el-option>
                     </el-select>

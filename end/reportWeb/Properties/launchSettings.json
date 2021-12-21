@@ -16,7 +16,7 @@
     },
     "reportWeb": {
       "commandName": "Project",
-      "commandLineArgs": " --webroot \"E:\\my_app\\cellreport_front\\dist\"",
+      "commandLineArgs": "--urls \"http://*:5000\"  --webroot \"E:\\my_app\\cellreport_front\\dist\"",
       "launchUrl": "http://localhost:7000",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"

@@ -683,8 +683,6 @@ export default class ResultGrid2HtmlTable{
         
         let alter_format_arr=[]
         if(!this.setting.no_use_parent_css){
-            if(this.footer2)
-                sb.append(this.footer2)
             alter_format_arr=alter_format_arr.concat(JSON.parse("["+(localStorage.luckysheet_alternateformat_save ??'') +"]"))
         }
         sb.append(`<style type="text/css">`)

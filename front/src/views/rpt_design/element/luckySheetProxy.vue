@@ -25,7 +25,7 @@
 let arrow_right_img=undefined
 let arrow_down_img=undefined
 
-import {designGrid2LuckySheet,numToString,getRangeByText,resultGrid2LuckySheet,output_largeGrid} from '../utils/util.js'
+import {designGrid2LuckySheet,numToString,getRangeByText,resultGrid2LuckySheet,output_largeGrid,convert_array_to_json} from '../utils/util.js'
 import   ResultGrid2HtmlTable2   from '../utils/resultGrid2HtmlTable.js'
 import mixins from "./mixins"
 export default {
@@ -173,8 +173,9 @@ export default {
                   let ret={"KEY":cur_row[cur_row.length-1]}
                   for(let idx=0;idx<cur_row.length-1;idx++){
                     ret[numToString(idx+1)]=cur_row[idx]
-                  }
-                  console.info(ret)        
+                  }                  
+                  ret=convert_array_to_json([_this.__TABLEOBJ.param_grid.columns,cur_row])[0]
+                  console.info(ret) 
                   _this.$set(_this.context.clickedEle,_this.self.gridName,{data:ret,cell:null,column:null})
                   _this.click_fresh(_this.context.clickedEle[_this.self.gridName])
 

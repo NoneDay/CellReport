@@ -2,6 +2,7 @@ import x2js from 'x2js'
 import loading from "@/util/loading"
 const x2jsone=new x2js(); //实例
 import {request} from 'axios'
+import {load_css_js} from '../utils/util'
 let baseUrl=""
 //import { baseUrl } from '@/config/env'; 
 export { baseUrl}
@@ -186,6 +187,13 @@ export async function preview_one(_this,createFormParam=false,query_data={},para
                         element._fields=JSON.stringify(define_ds[0][0])
                     }
                 });
+                _this.context.report.AllGrids.grid.forEach(element => {
+                    let define_ds= _this.context.report_result.data[element._name]               
+                    if(define_ds)
+                    {
+                        element._fields=JSON.stringify(define_ds.columns)
+                    }
+                });
             }
             if(response_data.errcode && response_data.errcode ==1){
                 _this.$notify({title: '提示',message: response_data.message,duration: 0});
@@ -199,15 +207,16 @@ export async function preview_one(_this,createFormParam=false,query_data={},para
             _this.showLog=false
             if(_this.context.report_result.layout)
             {
-            _this.layout=_this.context.report_result.layout
+                _this.layout=_this.context.report_result.layout
             }
             else
             {
-            _this.layout=build_layout(
-                { HtmlText:Object.values(_this.result.data).filter(ele=>ele.type=="htmlText"),
-                grid:Object.values(_this.result.data).filter(ele=>ele.type=="common")
-                } )
+                _this.layout=build_layout(
+                    { HtmlText:Object.values(_this.result.data).filter(ele=>ele.type=="htmlText"),
+                    grid:Object.values(_this.result.data).filter(ele=>ele.type=="common")
+                    } )
             }
+            load_css_js(_this.context.report_result.footer2)
         }).catch(error=> { 
         _this.$notify({title: '提示',message: error.response_data,type: 'error',duration:0});
         })
@@ -260,7 +269,7 @@ export function run_one(_this,reportFilePath,query,query_data={},_param_name=nul
         }
         else
             Object.assign(_this.result,response_data)
-        
+        load_css_js(_this.result.footer2)
         if(_this.result.layout)
         {
             _this.layout=_this.result.layout

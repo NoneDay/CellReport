@@ -1,5 +1,5 @@
 <template>
-  <div id="app"> 
+  <div id="report_app"> 
     <el-popover v-if="false && !crisMobile && isShow" style='position: fixed;z-index: 5;right: 40px;top: 100px;'
       placement="top-start" title="标题" width="200" trigger="hover" >
       <el-button slot="reference" style="background-color: rgb(229 200 200);width: 40px;height: 40px;
@@ -378,7 +378,7 @@ export default {
 </script>
 
 <style>
-html, body, #app {
+html, body, #report_app {
     height: 100%;
     margin: 0;
     padding: 0;

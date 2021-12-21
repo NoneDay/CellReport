@@ -2,15 +2,15 @@
 
 ## 依赖环境
 
-- [net6 sdk 或 runtime](https://nodejs.org/)
-- [redis](https://classic.yarnpkg.com/zh-Hans/) （可选）
-
+- [下载安装NETCORE6 SDK 或 RUNTIME.](https://dotnet.microsoft.com/download)
+-  [下载安装redis（可选）。最好安装](https://github.com/MicrosoftArchive/redis/releases)
+- 已打包好的压缩文件，[下载解压传输链接](https://cowtransfer.com/s/a21509df346642) 或 打开【奶牛快传】cowtransfer.com 使用传输口令：00qhci 提取；
 ::: tip
 - 使用 [pnpm](https://pnpm.io/zh/) 时，你需要在 [`.npmrc`](https://pnpm.io/zh/npmrc#shamefully-hoist) 文件中设置 `shamefully-hoist=true` 。
 - 使用 [yarn 2](https://yarnpkg.com/) 时，你需要在 [`.yarnrc.yml`](https://yarnpkg.com/configuration/yarnrc#nodeLinker) 文件中设置 `nodeLinker: 'node-modules'` 。
 :::
 
-## 手动安装
+## 安装编译好的版本
 
 这一章节会帮助你从头搭建一个 CellReport 设计和运行网站。
 
@@ -44,4 +44,19 @@ Data Source=ip地址;Initial Catalog=数据库名字;Persist Security Info=True;
 配置完毕后，按F5 刷新页面，点报表目录，正常的话，这是应该能看到所有的测试报表了。
 
 - **步骤3**: 自己的第一张报表
-参考操作视频
+参考操作视频（）
+
+## 全手工构建
+
+- 从github 下载压缩包或git clone
+- 前端构建 node>=14
+~~~bash
+cd front
+npm i
+npm run build   //构建
+mpm run server // 前端启动
+~~~
+
+- 后端构建 使用vs2022
+在end 目录用 vs2022打开sln文件。执行生成或运行测试
+ 

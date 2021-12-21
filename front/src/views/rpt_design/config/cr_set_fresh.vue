@@ -61,6 +61,12 @@ export default {
             this.data.fields?.forEach(x=>{
                 ret.push(x.key)
             })
+            if(this.data.gridName){
+                let grid=this.context.report?.AllGrids.grid.find(a=>a._name==this.data.gridName)
+                if(grid){
+                    JSON.parse(grid._fields??"[]").forEach(x=>{ret.push(x)})
+                }
+            }
             ret.push("点击的值")
             ret.push("点击的列名")
             return ret;

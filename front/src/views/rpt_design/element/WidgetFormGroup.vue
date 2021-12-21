@@ -6,8 +6,8 @@
          v-show="self.icon"
          style="margin-right: 10px;"></i>{{self.label}}</h1>
          -->
-      <el-row :is="MainComponent" v-if="MainComponent=='el-row'" :gutter="self.gutter">
-        <draggable class="widget-form-group__body"
+      <el-row :is="MainComponent" v-if="MainComponent=='el-row'" :gutter="self.gutter" :style="MainComponent=='el-row'?'height: 100%;position: relative;overflow: auto;':''">
+        <draggable class="widget-form-group__body" style="overflow:auto"
                   :list="self.children.column"
                   :group="{ name: 'form' }"
                   ghost-class="ghost" 
@@ -42,7 +42,8 @@
     </template>
     <template v-else>   
       
-       <component :is="MainComponent" v-if="MainComponent=='el-row'" :gutter="self.gutter">
+       <component :is="MainComponent" v-if="MainComponent=='el-row'" :gutter="self.gutter" :style="MainComponent=='el-row'?'height: 100%;position: relative;overflow: auto;':''"
+       >
             <component :is="SubComponent" :key="groupIndex"  v-for="(item, groupIndex) in self.children.column"
                     :md="item.span || 12" :xs="24" :offset="item.offset || 0" 
                     > 

@@ -1,10 +1,9 @@
 //导航栏
 module.exports = [
     { text: '简介', link: '/', icon: 'reco-home' },
-    { text: 'lin-cms-dotnetcore起步', link: '/dotnetcore/lin-cms/' },
-    { text: '.NET Core指南', link: '/dotnetcore/examples/' },
-    { text: 'ColorUI指南', link: '/colorui/docs/' },
+    { text: '指南', link: '/zh/guide/' },
+    { text: '配置', link: '/zh/conf/' },
     {
         text: 'GitHub',
-        link: 'https://github.com/NoneDay/CellReport_front', icon: 'reco-github'
+        link: 'https://github.com/NoneDay/CellReport', icon: 'reco-github'
     }]

@@ -26,7 +26,7 @@
     </el-option>
   </el-select> </el-col>
 </el-row>
-  <el-scrollbar style="height:300px">
+  <div style="height:200px">
           <draggable tag="ul"
                      :list="data.fields"
                      :group="{ name: 'dic' }"
@@ -43,7 +43,7 @@
               {{item.key}}
             </li>
           </draggable>  
-  </el-scrollbar> 
+  </div> 
   <cr_set_fresh :data="data">
 
   </cr_set_fresh>
@@ -76,11 +76,10 @@ export default {
       this.context.report.dataSets.dataSet.forEach(element=>{
         ret.push(`数据集:${element._name}`)
       });
-      if(this.context?.report_result?.data)
-        Object.keys(this.context.report_result.data).forEach(element=>{
-          if(this.context.report_result.data[element].type=="common"){
-            ret.push(`表格明细数据:${element}`)
-            ret.push(`表格汇总数据:${element}`)
+      this.context.report.AllGrids.grid.forEach(element=>{
+          if(element._is_large=="0"){
+            ret.push(`表格明细数据:${element._name}`)
+            ret.push(`表格汇总数据:${element._name}`)
           }
         });
       Object.keys(this.context.clickedEle).filter(x=>x!=this.data.gridName).forEach(element=>{
@@ -113,18 +112,21 @@ export default {
           })
         };
       }else if(ds.startsWith("表格")){
-        if(this.context.report_result){
-          this.context.report_result.data[ds_name].columns.forEach(element => {
-            conf.fields.push({key:element,label:element,selected:true,type:this.default_type})
-          })
-        }
+        JSON.parse(this.context.report.AllGrids.grid.filter(x=>x._name==ds_name)[0]._fields).forEach(element => {
+          conf.fields.push({key:element,label:element,selected:true,type:this.default_type})
+        })
       }else if(ds.startsWith("元素")){
-        if(this.context.clickedEle){
-          let keys=Object.keys(this.context.clickedEle[ds.split(":")[1]].data)
-          //this.context.report_result.data[ds.split(":")[1]].columns
-          keys.forEach(element => {
-            conf.fields.push({key:element,label:element,selected:true,type:this.default_type})
-          })
+        let find_grids=this.context.report.AllGrids.grid.filter(x=>x._name==ds_name)
+        if(find_grids.length>0){
+            JSON.parse(find_grids[0]._fields) .forEach(element => {
+              conf.fields.push({key:element,label:element,selected:true,type:this.default_type})
+            })
+          }
+        else if(this.context.clickedEle){
+            let keys=Object.keys(this.context.clickedEle[ds.split(":")[1]].data)
+            keys.forEach(element => {
+              conf.fields.push({key:element,label:element,selected:true,type:this.default_type})
+            })
         }
       }else{
         conf.data[0].forEach(element => {

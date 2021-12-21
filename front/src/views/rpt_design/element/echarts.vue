@@ -86,7 +86,7 @@ export default {
                             }
                             return true
                         } )
-                        
+                        console.info(cur_data[0])
                         if(cur_data.length){ 
                             _this.$set(_this.context.clickedEle,_this.self.gridName,{data:cur_data[0],cell:cur_data[0][params.seriesName],column:params.seriesName})
                         }

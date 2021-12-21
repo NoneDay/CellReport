@@ -1,3 +1,5 @@
+const sidebar = require('./config/sidebar')
+const nav = require('./config/nav')
 module.exports = {
     title: 'CellReport',
     description: '我的个人网站',
@@ -8,12 +10,66 @@ module.exports = {
     markdown: {
       //lineNumbers: false // 代码块显示行号
     },
+
     themeConfig: {
-      nav:[ // 导航栏配置
-        {text: '前端基础', link: '/accumulate/' },
-        {text: '算法题库', link: '/algorithm/'}  
-      ],
-      sidebar: 'auto', // 侧边栏配置
-      sidebarDepth: 2, // 侧边栏显示2级
-    }
+      huawei: true,
+      lastUpdated: '最后更新时间',
+      search: true,
+      searchMaxSuggestions: 10,
+      activeHeaderLinks: true,
+      displayAllHeaders: true,
+      startYear: '2022',
+      author: 'NoneDay',
+      record: '',
+      recordLink: '',
+      // 文档仓库
+      docsRepo: 'https://github.com/NoneDay/CellReport',
+      // 假如文档不是放在仓库的根目录下：
+      docsDir: 'docs',
+      // 假如文档放在一个特定的分支下：
+      docsBranch: 'master',
+      // 默认是 false, 设置为 true 来启用
+      editLinks: true,
+      // 默认为 "Edit this page"
+      editLinkText: '在 GitHub 上编辑此页',
+      //sidebarDepth: 2,
+      nav: nav,
+      sidebar: sidebar,
+    },
+    plugins: [
+        [
+            '@vuepress/pwa',
+            {
+                serviceWorker: true,
+                updatePopup: {
+                    message: "发现新内容可用",
+                    buttonText: "刷新"
+                }
+            }
+        ],
+        // [
+        //     '@vuepress/google-analytics',
+        //     {
+        //         ga: 'UA-149716079-1'
+        //     }
+        // ],
+        // [
+        //     '@vuepress/plugin-register-components',
+        //     {
+        //         components: [
+        //             {
+        //                 name: 'reco-home-page-one',
+        //                 path: path.resolve(__dirname, './components/HomePageOne.vue')
+        //             }
+        //         ],
+        //         componentsDir: path.resolve(__dirname, './demo')
+        //     }
+        // ],
+        '@vuepress-reco/extract-code',
+        'flowchart',
+        ['sitemap', {
+            hostname: 'https://igeekfan.cn'
+        }],
+        // require('./plugins/notification/index')
+    ]
   };

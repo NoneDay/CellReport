@@ -157,13 +157,17 @@ export const build_chart_data=function (ds_name_source,context,fields) {
         let cur_grid=report_result.data[ds_name]
         real_data=context.clickedEle[ds_name].data
         if(real_data){
-            let keys=Object.keys(real_data)
-            let values=Object.values(real_data)
-            if(keys.length==0){
-                keys=cur_grid.columns
-                values= cur_grid.tableData[cur_grid.extend_lines[0]]
+            if(!Array.isArray(real_data))
+            {
+                let keys=Object.keys(real_data)
+                let values=Object.values(real_data)
+                if(keys.length==0){
+                    keys=cur_grid.columns
+                    values= cur_grid.tableData[cur_grid.extend_lines[0]]
+                }
+                real_data=JSON.parse(JSON.stringify([keys,values]))
             }
-            real_data=JSON.parse(JSON.stringify([keys,values]))
+            
         }
     }
     else if(ds_name_source.startsWith('表格'))
@@ -811,6 +815,37 @@ export const json_by_path=function(root,path="$"){
     })
     return cur
 }
+
+export function load_css_js(txt) {
+    if(txt){
+        let script_pattern=/<style.*?>*?>([\s\S]*?)<\/style>/img
+        let script_result;
+        let css_result=''
+        while ((script_result = script_pattern.exec(txt)) != null)  {
+            let match_result=script_result[1];
+            if(match_result && match_result.length>0){
+                css_result=css_result+match_result
+            }
+        }
+        document.getElementById('report_back_css')?.remove()
+        const css_node = document.createElement('style');
+        css_node.id = 'report_back_css';
+        css_node.type="text/css"
+        css_node.appendChild(document.createTextNode(css_result))
+        document.getElementsByTagName('head')[0].appendChild(css_node);
+        
+
+        script_pattern=/<script.*?>*?>([\s\S]*?)<\/script>/img
+        while ((script_result = script_pattern.exec(txt)) != null)  {
+            let match_result=script_result[1];
+            if(match_result && match_result.length>0){
+                eval(match_result)                    
+            }
+        }
+        
+    } 
+}
+
 export {
     designGrid2LuckySheet,luckySheet2ReportGrid,resultGrid2LuckySheet,
     loadFile

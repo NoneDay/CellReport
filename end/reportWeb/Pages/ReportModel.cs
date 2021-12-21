@@ -185,10 +185,10 @@ namespace reportWeb.Pages
                         this.tips = before_exec_result["tips"]?.ToString()? .Replace("\\n", "\n");
                     }
                 }
-                //Console.WriteLine("before_exec:" + (DateTime.Now - start_time) / 10000 + "秒");
+                
                 if (false == pre_page_load(before_exec_result))
                     return;
-                //Console.WriteLine("pre_page_load:" + (DateTime.Now - start_time) / 10000 + "秒");
+                
                 mc_report_id = reportDefineForWeb.getParamSortedString();
                 if (Request.Query["reportName"] == "")
                 {
@@ -198,8 +198,7 @@ namespace reportWeb.Pages
                 {
                    await output();
                 }
-                //report_env.logger.Info(mc_report_id);
-               // Console.WriteLine("output:" + (DateTime.Now - start_time) / 10000 + "秒");
+                //report_env.logger.Info(mc_report_id);               
                 Response.Body.Flush();
                 this.HttpContext.Response.RegisterForDispose(reportDefineForWeb);
             }

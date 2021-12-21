@@ -37,7 +37,8 @@
     </el-pagination>    
   </div>
   <template v-else>
-    <div> 
+    <div id="report_app" >
+    <div > 
       <el-form :inline="true" v-if="previewFormParam.form">
         <input hidden v-for="one in previewFormParam.form.filter(x=>x.hide=='True')" :key="one.name" v-model="queryForm[one.name]"/>
         
@@ -92,6 +93,7 @@
         </grid-layout-form>          
         <widget-form v-else   :data="layout"   
         ></widget-form>
+    </div>
     </div>
     </template>
     
