@@ -163,7 +163,7 @@ export async function preview_one(_this,createFormParam=false,query_data={},para
             response_data.form.forEach(ele=>{
                 let val=ele.value
                 if(ele.data_type=='date')
-                    val=new Date(ele.value).Format("yyyy-MM-dd")
+                    val=new Date(ele.value).format("yyyy-MM-dd")
                 _this.$set(_this.queryForm,ele.name,val)
                 _this.$set(_this.queryForm_show,ele.name,false)
             })
@@ -256,7 +256,7 @@ export function run_one(_this,reportFilePath,query,query_data={},_param_name=nul
         response_data.form.forEach(ele=>{
             let val=ele.value
             if(ele.data_type=='date')
-                val=new Date(ele.value).Format("yyyy-MM-dd")
+                val=new Date(ele.value).format("yyyy-MM-dd")
             _this.$set(_this.queryForm,ele.name,val)
             _this.$set(_this.queryForm_show,ele.name,false)
         })

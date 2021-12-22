@@ -1,5 +1,5 @@
 <template>
-  <div style="width:100%;height:100%"  >
+  <div style="width:100%;height:100%;overflow: hidden; "  >
     
   
     <div style="position: absolute;right:40px;top:10px;">
@@ -38,7 +38,7 @@
   </div>
   <template v-else>
     <div id="report_app" >
-    <div > 
+    <div> 
       <el-form :inline="true" v-if="previewFormParam.form">
         <input hidden v-for="one in previewFormParam.form.filter(x=>x.hide=='True')" :key="one.name" v-model="queryForm[one.name]"/>
         
@@ -88,7 +88,7 @@
           </el-form-item>
       </el-form>
     </div>
-    <div style="height:90%">
+    <div style="height:90%;    overflow: auto;">
         <grid-layout-form v-if="layoutType=='gridLayout'" :layout="layout" >
         </grid-layout-form>          
         <widget-form v-else   :data="layout"   
@@ -154,7 +154,11 @@ export default {
         in_exec_url:{stat:false},
     }
   },
-  
+  watch:{
+    executed(){
+
+    }
+  },
   computed: {
     tableData(){
       let ret=this.context.report_result?.dataSet[this.show_type]
@@ -231,6 +235,9 @@ export default {
     bottom: 0;
 }
 .report_define .widget-form-container .el-form {
+    height: 100%;
+}
+#report_app {
     height: 100%;
 }
 </style>

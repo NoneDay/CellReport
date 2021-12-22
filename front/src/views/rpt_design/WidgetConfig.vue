@@ -1,5 +1,5 @@
 <template>
-  <div class="widget-config" style="height:100%;overflow:auto;font-size:11px">
+  <div class="widget-config" style="height:100%;overflow-y:auto;overflow-x:hidden;font-size:11px">
     <el-form label-suffix="："
              v-if="this.data && Object.keys(this.data).length > 0"
              labelPosition="left"

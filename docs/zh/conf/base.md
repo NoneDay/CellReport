@@ -106,3 +106,20 @@ window.luckysheet_conditionformat=[
 window.luckysheet_alternateformat_save='{"cellrange":{"row":[0,8],"column":[-1,-1]},"format":{"head":{"fc":"#000","bc":"#dff0d8"},"one":{"fc":"#000","bc":"#ffffff"},"two":{"fc":"#000","bc":"#dff0d8"},"foot":{"fc":"#000","bc":"#cef3bf"}},"hasRowHeader":true,"hasRowFooter":false}'
 
 ~~~
+
+## 前端的公共数据
+- 前端组件的《编辑内容》中，可以使用以下参数引用后端传过来的数据.可以通过添加《动态模板》，将以下代码片段复制到内容里面做测试，以便找到适合自己使用的代码。
+~~~js
+    context.clickedEle['test'] //点击test 元素后选中的数据，这里的元素指的是页面上的可点击单元。
+    //结构为:{data:deepClone(cur_data[0]),cell:cell.innerText,column}
+    
+    context.report_result.dataSet //sql 结果数据，只有在设计预览状态，或设置变量_need_dataset_=True时才会有这个数据 
+    // 内部为多个array ，每一个代表的都是数据集。如 context.report_result.dataSet['test'][0] 才是真正的数据,第一行是表头，其他是数据
+    
+    context.report_result.data['main'] //页面上名字叫main 的报表数据。
+    // 格式为：{columns:[],tableData:[],colName_lines:[0,2],extend_lines:[4,22]} ,
+    // tableData 存放的所有单元格的数据。colName_lines 列标题起止范围，extend_lines 明细行起止范围
+    
+    self 配置
+    
+~~~

@@ -40,10 +40,4 @@ footer: MIT Licensed | Copyright © 2022-present
  当前预安装的数据库驱动程序有:sqlServer、sqlite、Mysql、Pgsql、odbc。需要其他驱动的自行下载安装。
 ![](https://atts.w3cschool.cn/attachments/image/20211125/1637815124338385.png)
 
-
-```
-sql server 连接串
-Data Source=ip地址;Initial Catalog=数据库名字;Persist Security Info=True;User ID=用户;Password=口令;Min Pool Size=1;Max Pool Size=50;Connect Timeout=15000;Application Name=报表连接
-```
-
-配置完毕后，按F5 刷新页面，点报表目录，正常的话，这是应该能看到所有的测试报表了
+配置完毕后，按F5 刷新页面，点报表目录，正常的话，这是应该能看到所有的测试报表了.

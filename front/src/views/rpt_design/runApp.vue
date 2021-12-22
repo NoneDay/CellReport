@@ -133,12 +133,16 @@
 import widgetForm from './WidgetForm'
 import {dateToString} from './utils/resultGrid2HtmlTable.js'
 import {run_one} from "./api/report_api"
-import {convert_csv_to_json,convert_array_to_json,build_chart_data, deepClone,arrayToTree } from "./utils/util"
+import {convert_csv_to_json,convert_array_to_json,build_chart_data, deepClone,arrayToTree,seriesLoadScripts,load_css_file } from "./utils/util"
 import install_component from './install_component'
 export default {
   name: 'App', //CellReportFormDesign
   components:{widgetForm },
   mounted(){
+    if(this.crisMobile && window.nutui==undefined){
+      load_css_file("cdn/nutui@2.2.15/nutui.min.css")
+      seriesLoadScripts("cdn/nutui@2.2.15/nutui.min.js")      
+    }
     let _this=this
     window.onresize=function(){      
       _this.isShow=false
@@ -218,7 +222,8 @@ export default {
   methods:{
     
     marked(val){
-      return marked(val??"",{breaks:true})
+      //seriesLoadScripts("cdn/editor.md-master/lib/marked.min.js")
+      return val;//marked(val??"",{breaks:true})
     },
     convert_arr_to_json(arr){
       let ret=[]
@@ -341,17 +346,8 @@ export default {
         "这里是下载的文件名" + ".xlsx");
   
       }
-      if(window.XLSX==undefined)
-      {
-          var script=document.createElement('script');
-          script.src='cdn/xlsx/dist/xlsx.full.min.js';
-          script.type='text/javascript';
-          script.defer=false;
-          script.onload=_inner_exec
-          void(document.head.appendChild(script))
-      }else{
-        _inner_exec()
-      }
+      seriesLoadScripts('cdn/xlsx/dist/xlsx.full.min.js',null,_inner_exec)
+      
     }
     
   },

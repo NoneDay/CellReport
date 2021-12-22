@@ -1,11 +1,11 @@
 <template>
   <div>
-      <el-dialog  v-el-drag-dialog style="text-align: left;" :inline="true"
+      <el-dialog   v-draggable  style="text-align: left;" :inline="true"
     :visible.sync="dialogVisible" :title="'编辑内容'" 
         :close-on-click-modal="false"  :modal="false"
           direction="btt" append-to-body
     >  
-    <div >
+    <div>
           <codemirror     v-model="data.content" style="height:100%"
               :options="{tabSize: 4, mode: 'text/javascript', styleActiveLine:
                true,lineWrapping: true,
@@ -13,7 +13,7 @@
          />
     </div>
     </el-dialog>
-   <el-button @click="dialogVisible=true">编辑内容</el-button>
+   <el-button @click="dialogVisible=true" type="primary">编辑内容</el-button>
 <el-row>
 <el-col :span="4">
 数据：</el-col>    <el-col :span="20">

@@ -328,6 +328,9 @@ export default {
     height: calc(100% - 42px);
 }
 .el-dialog__body{
-    height: calc(100% - 180px);
+    height: calc(100% - 180px);    padding: 10px;    
+}
+.el-dialog__header{
+    padding: 10px;
 }
 </style>

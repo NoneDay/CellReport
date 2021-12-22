@@ -5,9 +5,9 @@
 </template>
 
 <script>
-var echarts = require('echarts'); 
+
 import mixins from "./mixins"
-import {convert_csv_to_json,convert_array_to_json,build_chart_data } from "../utils/util"
+import {convert_csv_to_json,convert_array_to_json,build_chart_data,seriesLoadScripts } from "../utils/util"
 import elementResizeDetectorMaker from 'element-resize-detector'
 export default {
     name:"echarts",
@@ -29,19 +29,21 @@ export default {
 
     },
     mounted(){
-        this.myChart = echarts.init(this.$refs.main);
-        try{
-            this.buildDisplayData()
-            const _this = this
-            const erd = elementResizeDetectorMaker()
-            erd.listenTo(this.$refs.main_parent,(element)=>{
-                _this.$nextTick(()=>{
-                _this.myChart.resize();
-                })
-            })            
-        }catch (e) {
-             console.info(e)
-        }
+        seriesLoadScripts("cdn/echarts.min.js",null,function(){
+            this.myChart = echarts.init(this.$refs.main);
+            try{
+                this.buildDisplayData()
+                const _this = this
+                const erd = elementResizeDetectorMaker()
+                erd.listenTo(this.$refs.main_parent,(element)=>{
+                    _this.$nextTick(()=>{
+                    _this.myChart.resize();
+                    })
+                })            
+            }catch (e) {
+                console.info(e)
+            }
+        })
     },
     methods:{
         

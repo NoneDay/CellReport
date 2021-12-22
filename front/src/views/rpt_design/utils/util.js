@@ -1,3 +1,30 @@
+if(Date.prototype.format==undefined){
+    Date.prototype.format = function(fmt){
+      var o = {
+        "M+" : this.getMonth()+1,                 //月份
+        "d+" : this.getDate(),                    //日
+        "h+" : this.getHours(),                   //小时
+        "m+" : this.getMinutes(),                 //分
+        "s+" : this.getSeconds(),                 //秒
+        "q+" : Math.floor((this.getMonth()+3)/3), //季度
+        "S"  : this.getMilliseconds()             //毫秒
+      };
+    
+      if(/(y+)/.test(fmt)){
+        fmt=fmt.replace(RegExp.$1, (this.getFullYear()+"").substr(4 - RegExp.$1.length));
+      }
+            
+      for(var k in o){
+        if(new RegExp("("+ k +")").test(fmt)){
+          fmt = fmt.replace(
+            RegExp.$1, (RegExp.$1.length==1) ? (o[k]) : (("00"+ o[k]).substr((""+ o[k]).length)));  
+        }       
+      }
+    
+      return fmt;
+    }  
+  }
+
 // 使用方法 arrayToTree(data,{pid:'pid',id:'id'})
 export function arrayToTree(array,paramsKey){
 	
@@ -746,20 +773,37 @@ export const get_signalR_connection=function(onReceiveMessage)
 }
 export const output_largeGrid=function(_this,cur_grid,onclickrow){
     if(cur_grid.type=="large"){
-      let gridData=[]
-      //cur_grid.data.splice(10)
-      cur_grid.data.forEach(element => {
-        let one_line={}
-         gridData.push(one_line)
-         for (let index = 0; index < cur_grid.col_list.length; index++) {
-            one_line[cur_grid.col_list[index]]=element[index];
-         }  
-      });
-      gridData={rows:gridData,footer:undefined,footer_merger_cell:undefined,total:gridData.length}
-      cur_grid.content=cur_grid.content.replace('data-options=""', 'data-options="" style="height:250px"').replaceAll("__url__",`${baseUrl}/run`)
-      cur_grid.content=cur_grid.content.replace("__exportjson__",JSON.stringify(gridData))
+        let gridData=[]
+        //cur_grid.data.splice(10)
+        cur_grid.data.forEach(element => {
+          let one_line={}
+           gridData.push(one_line)
+           for (let index = 0; index < cur_grid.col_list.length; index++) {
+              one_line[cur_grid.col_list[index]]=element[index];
+           }  
+        });
+        gridData={rows:gridData,footer:undefined,footer_merger_cell:undefined,total:gridData.length}
+        cur_grid.content=cur_grid.content.replace('data-options=""', 'data-options="" style="height:250px"').replaceAll("__url__",`${baseUrl}/run`)
+        cur_grid.content=cur_grid.content.replace("__exportjson__",JSON.stringify(gridData))
+      }
+      _this.self.content=cur_grid.content//.replace(/needResizeFunc.push\( function \(\) \{myChart.resize\(\);\}\);/,'')
+      
+    if($.easyui==undefined){
+        load_css_file("cdn/jquery-easyui-1.4.5/themes/default/easyui.css")
+        load_css_file("cdn/jquery-easyui-1.4.5/themes/icon.css")
+        seriesLoadScripts(["cdn/jquery-easyui-1.4.5/jquery.easyui.min.js",
+                    "cdn/jquery-easyui-1.4.5/locale/easyui-lang-zh_CN.js",
+                    "js/jquery-easyui-extend/datagrid-filter.js",
+                    "js/jquery-easyui-extend/jquery.edatagrid.js",
+                    "js/toExcel.js?updateTime=-12352"]
+                    ,null,function(){ 
+                    inner_output_largeGrid (_this,cur_grid,onclickrow) 
+        })
+    }else{
+        inner_output_largeGrid (_this,cur_grid,onclickrow)
     }
-    _this.self.content=cur_grid.content//.replace(/needResizeFunc.push\( function \(\) \{myChart.resize\(\);\}\);/,'')
+}
+function inner_output_largeGrid(_this,cur_grid,onclickrow){  
     
       let script_pattern=/<script.*?>*?>([\s\S]*?)<\/script>/img
       let result;
@@ -845,7 +889,133 @@ export function load_css_js(txt) {
         
     } 
 }
+export function load_script_file(script_name,inner_exec){
+    let script=document.createElement('script');
+    script.src=script_name;
+    script.type='text/javascript';
+    script.async=true;
+    script.defer=true;
+    if(inner_exec)
+        script.onload=inner_exec
+    void(document.head.appendChild(script))
+}
 
+
+/**
+ * 并行加载指定的脚本
+ * 并行加载[同步]同时加载，不管上个是否加载完成，直接加载全部
+ * 全部加载完成后执行回调
+ * @param {Array|String}  scripts 指定要加载的脚本
+ * @param {Object} options 属性设置
+ * @param {Function} callback 成功后回调的函数
+ * @return {Array} 所有生成的脚本元素对象数组
+ */
+
+function parallelLoadScripts(scripts, options, callback) {
+    if (typeof (scripts) !== 'object') {
+        var scripts = [scripts];
+    }
+    var HEAD = document.getElementsByTagName('head')[0] || document.documentElement;
+    var s = [];
+    var loaded = 0;
+    for (var i = 0; i < scripts.length; i++) {
+        s[i] = document.createElement('script');
+        s[i].setAttribute('type', 'text/javascript');
+        // Attach handlers for all browsers
+        // 异步
+        s[i].onload = s[i].onreadystatechange = function () {
+            if (!/*@cc_on!@*/0 || this.readyState === 'loaded' || this.readyState === 'complete') {
+                loaded++;
+                this.onload = this.onreadystatechange = null;
+                this.parentNode.removeChild(this);
+                if (loaded === scripts.length && typeof (callback) === 'function') callback();
+            }
+        };
+        // 同步
+        s[i].setAttribute('src', scripts[i]);
+
+        // 设置属性
+        if (typeof options === 'object') {
+            for (var attr in options) {
+                s[i].setAttribute(attr, options[attr]);
+            }
+        }
+
+        HEAD.appendChild(s[i]);
+    }
+}
+const load_script_list=[]
+/** 
+ * 串行加载指定的脚本
+ * 串行加载[异步]逐个加载，每个加载完成后加载下一个
+ * 全部加载完成后执行回调
+ * @param {Array|String}  scripts 指定要加载的脚本
+ * @param {Object} options 属性设置
+ * @param {Function} callback 成功后回调的函数
+ * @return {Array} 所有生成的脚本元素对象数组
+ */
+ export function seriesLoadScripts(scripts, options, callback) {
+    if (typeof (scripts) !== 'object') {
+        var scripts = [scripts];
+    }
+    var HEAD = document.getElementsByTagName('head')[0] || document.documentElement;
+    var s = [];
+    var last = scripts.length - 1;
+    //递归
+    var recursiveLoad = function (i) {
+        if(load_script_list.filter(x=>x==[scripts[i]]).length>0 ){
+            if (i !== last) {
+                recursiveLoad(i + 1);
+            } else if (typeof (callback) === 'function') {
+                callback()
+            };
+            return;
+        }
+        load_script_list.push(scripts[i])
+        s[i] = document.createElement('script');
+        s[i].setAttribute('type', 'text/javascript');
+        // Attach handlers for all browsers
+        // 异步
+        s[i].onload = s[i].onreadystatechange = function () {
+            if (!/*@cc_on!@*/0 || this.readyState === 'loaded' || this.readyState === 'complete') {
+                this.onload = this.onreadystatechange = null;
+                this.parentNode.removeChild(this);
+                if (i !== last) {
+                    recursiveLoad(i + 1);
+                } else if (typeof (callback) === 'function') {
+                    callback()
+                };
+            }
+        }
+        // 同步
+        s[i].setAttribute('src', scripts[i]);
+
+        // 设置属性
+        if (typeof options === 'object') {
+            for (var attr in options) {
+                s[i].setAttribute(attr, options[attr]);
+            }
+        }
+
+        HEAD.appendChild(s[i]);
+    };
+    recursiveLoad(0);
+}
+export function load_css_file(url){
+    var doc = document;
+    var link = doc.createElement("link");
+    link.setAttribute("rel", "stylesheet");
+    link.setAttribute("type", "text/css");
+    link.setAttribute("href", url);
+
+    var heads = doc.getElementsByTagName("head");
+    if (heads.length) {
+        heads[0].appendChild(link);
+    }
+    else {
+        doc.documentElement.appendChild(link);
+    }
+}
 export {
     designGrid2LuckySheet,luckySheet2ReportGrid,resultGrid2LuckySheet,
     loadFile

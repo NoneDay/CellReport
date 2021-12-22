@@ -21,22 +21,22 @@
         
     </el-tab-pane>
     <el-tab-pane label='css缺省值'>
+        <el-form labelPosition="left" label-suffix="："
+             labelWidth="100px">
+            <el-form-item label="字体">
+                <el-input  v-model="tmp_css['FONT']"></el-input>
+            </el-form-item>
+            <el-form-item label="字体大小">
+                <el-input  v-model="tmp_css['FONT-SIZE']"></el-input>
+            </el-form-item>
+            <el-form-item label="文字颜色">
+                <el-color-picker size="medium"  v-model="tmp_css['COLOR']"></el-color-picker>
+            </el-form-item>
+            <el-form-item label="文字背景色">
+                <el-color-picker size="medium"  v-model="tmp_css['BACKGROUND-COLOR']"></el-color-picker>
+            </el-form-item>
         
-        <el-row>
-            <el-col span="12">
-             字体   <el-input type="text" v-model="action_target['FONT']"></el-input>
-            </el-col>
-            <el-col span="12">
-             字体大小   <el-input type="text" v-model="action_target['FONT-SIZE']"></el-input>
-            </el-col>
-            <el-col span="12">
-             文字颜色   <el-input type="text" v-model="action_target['COLOR']"></el-input>
-            </el-col>
-            <el-col span="12">
-              文字背景色  <el-input type="text" v-model="action_target['BACKGROUND-COLOR']"></el-input>
-            </el-col>
-        </el-row>
-        
+        </el-form>
     </el-tab-pane>
 </el-tabs>
         <div slot="footer" class="dialog-footer">
@@ -60,6 +60,10 @@ name: "templateManger",
         this.temp_props.forEach(one => {
             one.val=this.action_target[one.name]??""
         });
+        this.tmp_css['BACKGROUND-COLOR']=this.action_target['BACKGROUND-COLOR']??'#FFF'
+        this.tmp_css['COLOR']=this.action_target['COLOR']??'#000'
+        this.tmp_css['FONT']=this.action_target['FONT']??'微软雅黑'
+        this.tmp_css['FONT-SIZE']=this.action_target['FONT-SIZE']??'11'
         let _this=this
         setTimeout(() => {
         _this.data_ready=true    
@@ -71,6 +75,7 @@ name: "templateManger",
             data_ready:false,
             //['notebook','before_exec_script','footer2','luckysheet_conditionformat',]
             tab_value:"notebook",
+            tmp_css:{'BACKGROUND-COLOR':'','COLOR':'','FONT-SIZE':'','FONT':'',},
             temp_props:[
                 {'name':'notebook','mode':"javascript",'label':'记事本','val':"11"},                
                 {'name':'before_exec_script','mode':"javascript",'label':'后端运行前脚本','val':"11"},            
@@ -103,6 +108,10 @@ name: "templateManger",
             this.temp_props.forEach(one => {
                 this.action_target[one.name]=one.val
             });
+            this.action_target['BACKGROUND-COLOR']=this.tmp_css['BACKGROUND-COLOR']
+            this.action_target['COLOR']=this.tmp_css['COLOR']
+            this.action_target['FONT']=this.tmp_css['FONT']
+            this.action_target['FONT-SIZE']=this.tmp_css['FONT-SIZE']
             this.$emit("submit");
             this.dialogVisible=false
         },
