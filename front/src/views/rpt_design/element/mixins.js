@@ -53,7 +53,7 @@ export default {
         'self.gridName'(newVal,oldVal){
           delete this.context.clickedEle[oldVal]
           if(this.self.gridName && this.self.gridName!="_random_")
-            this.$set(this.context.clickedEle,this.self.gridName,{data:{},cell:null,column:{}})
+            this.$set(this.context.clickedEle,this.self.gridName,{data:{},cell:null,column:{},self:this.self})
         },
         'fresh_ele':{//这里有个问题，会照成重复刷新
           handler:function(newVal,oldVal){
@@ -151,7 +151,7 @@ export default {
         if(this?.self?.gridName=="_random_")
           return
         console.info(this.self.gridName+":created")
-        this.$set(this.context.clickedEle,this.self.gridName,{data:{},cell:null,column:{}})
+        this.$set(this.context.clickedEle,this.self.gridName,{data:{},cell:null,column:{},self:this.self})
       }
     },
     beforeDestroy(){

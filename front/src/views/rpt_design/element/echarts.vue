@@ -29,13 +29,13 @@ export default {
 
     },
     mounted(){
-        seriesLoadScripts("cdn/echarts.min.js",null,function(){
-            this.myChart = echarts.init(this.$refs.main);
+        let _this=this
+        function inner_func(){
+            _this.myChart = echarts.init(_this.$refs.main);
             try{
-                this.buildDisplayData()
-                const _this = this
+                _this.buildDisplayData()
                 const erd = elementResizeDetectorMaker()
-                erd.listenTo(this.$refs.main_parent,(element)=>{
+                erd.listenTo(_this.$refs.main_parent,(element)=>{
                     _this.$nextTick(()=>{
                     _this.myChart.resize();
                     })
@@ -43,7 +43,11 @@ export default {
             }catch (e) {
                 console.info(e)
             }
-        })
+        }
+        if(window.echarts==undefined)
+            seriesLoadScripts("cdn/echarts.min.js",null,inner_func)
+        else
+            inner_func()
     },
     methods:{
         
@@ -56,7 +60,7 @@ export default {
             let {valid_data,valid_fileds,real_data}=build_chart_data(this.self.datasource,this.context,this.self.fields)
             this.real_data=convert_array_to_json(real_data)
             if(this.real_data.length && this.self.gridName!="_random_"){ 
-                this.$set(this.context.clickedEle,this.self.gridName,{data:this.real_data[0],cell:null,column:null})
+                this.$set(this.context.clickedEle,this.self.gridName,{data:this.real_data[0],cell:null,column:null,self:this.self})
             }
 
             let series_type=[]
@@ -90,7 +94,7 @@ export default {
                         } )
                         console.info(cur_data[0])
                         if(cur_data.length){ 
-                            _this.$set(_this.context.clickedEle,_this.self.gridName,{data:cur_data[0],cell:cur_data[0][params.seriesName],column:params.seriesName})
+                            _this.$set(_this.context.clickedEle,_this.self.gridName,{data:cur_data[0],cell:cur_data[0][params.seriesName],column:params.seriesName,self:_this.self})
                         }
                         _this.click_fresh(_this.context.clickedEle[_this.self.gridName])
                         //dimensionNames

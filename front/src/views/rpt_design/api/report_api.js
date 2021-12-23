@@ -217,6 +217,15 @@ export async function preview_one(_this,createFormParam=false,query_data={},para
                     } )
             }
             load_css_js(_this.context.report_result.footer2)
+            Object.entries(_this.context.clickedEle).forEach(kv=>{
+                if(kv[1].self.content){
+                    let old=kv[1].self.content//强制刷新设计页面有content的组件
+                    if(old.endsWith(" "))
+                        _this.$set(kv[1].self,"content",old.trim())
+                    else
+                    _this.$set(kv[1].self,"content",old+" ")                    
+                }
+            })
         }).catch(error=> { 
         _this.$notify({title: '提示',message: error.response_data,type: 'error',duration:0});
         })

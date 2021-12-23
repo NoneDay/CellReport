@@ -84,7 +84,7 @@
   </el-row>
   <el-row>
     <el-col :span="24">
-    <el-input type="textarea" :rows="6" v-model="cur_func"></el-input>    
+    <el-input type="textarea" :rows="5" v-model="cur_func"></el-input>    
   </el-col>  
   </el-row>
   </div>

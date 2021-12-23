@@ -105,7 +105,7 @@ export default [
     },
     { title: '元素',
         list: [ 
-            {"type":"dync-template",'label':'动态模板',icon: 'icon-table','color':'#fff',display: true, 
+            {"type":"dync_template",'label':'动态模板',gridName:"_random_",icon: 'icon-table','color':'#fff',display: true, 
             'content':`
         <div>
         <div>Hello {{ name }}!</div>

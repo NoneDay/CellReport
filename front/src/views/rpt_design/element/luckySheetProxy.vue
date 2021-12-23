@@ -176,7 +176,7 @@ export default {
                   }                  
                   ret=convert_array_to_json([_this.__TABLEOBJ.param_grid.columns,cur_row])[0]
                   console.info(ret) 
-                  _this.$set(_this.context.clickedEle,_this.self.gridName,{data:ret,cell:null,column:null})
+                  _this.$set(_this.context.clickedEle,_this.self.gridName,{data:ret,cell:null,column:null,self:_this.self})
                   _this.click_fresh(_this.context.clickedEle[_this.self.gridName])
 
                 }
@@ -193,7 +193,7 @@ export default {
       })
           console.info(idx,row)
           if(row){
-              this.$set(this.context.clickedEle,this.self.gridName,{data:ret,cell:null,column:null})
+              this.$set(this.context.clickedEle,this.self.gridName,{data:ret,cell:null,column:null,self:this.self})
               this.click_fresh(this.context.clickedEle[this.self.gridName])
           }
     },
@@ -209,7 +209,9 @@ export default {
         else{//large
           output_largeGrid(this,this.context.report_result.data[_this.gridName],this.onclickrow) 
         }
-        this.$set(this.context.clickedEle,this.self.gridName,{data:null,cell:null,column:null})
+        let cur_row=_this.__TABLEOBJ.param_grid.tableData[_this.__TABLEOBJ.param_grid.extend_lines[0]]
+        let ret=convert_array_to_json([_this.__TABLEOBJ.param_grid.columns,cur_row])[0]
+        this.$set(this.context.clickedEle,this.self.gridName,{data:ret,cell:null,column:null,self:_this.self})
         return
       }
 

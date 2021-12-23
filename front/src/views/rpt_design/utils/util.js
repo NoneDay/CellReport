@@ -971,13 +971,14 @@ const load_script_list=[]
             };
             return;
         }
-        load_script_list.push(scripts[i])
+        
         s[i] = document.createElement('script');
         s[i].setAttribute('type', 'text/javascript');
         // Attach handlers for all browsers
         // 异步
         s[i].onload = s[i].onreadystatechange = function () {
             if (!/*@cc_on!@*/0 || this.readyState === 'loaded' || this.readyState === 'complete') {
+                load_script_list.push(scripts[i])
                 this.onload = this.onreadystatechange = null;
                 this.parentNode.removeChild(this);
                 if (i !== last) {

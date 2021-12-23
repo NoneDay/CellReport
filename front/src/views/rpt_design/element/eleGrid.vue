@@ -13,7 +13,7 @@
 	</div>
 </template>
 <script>
-import {convert_csv_to_json,convert_array_to_json,build_chart_data, deepClone } from "../utils/util"
+import {convert_array_to_json,build_chart_data, deepClone } from "../utils/util"
 
 
 import { RuntimeTemplateCompiler } from 'vue-runtime-template-compiler'
@@ -58,7 +58,7 @@ export default {
             this.tableData = convert_array_to_json(valid_data)
             this.real_data=convert_array_to_json(real_data)
             if(this.real_data.length && this.self.gridName!="_random_"){ 
-                this.$set(this.context.clickedEle,this.self.gridName,{data:this.real_data[0],cell:null,column:null})
+                this.$set(this.context.clickedEle,this.self.gridName,{data:this.real_data[0],cell:null,column:null,self:this.self})
             }
         },
         cell_click(row, column,cell, event){
@@ -74,9 +74,9 @@ export default {
             } )
             if(cur_data.length){
                 if(this.context.clickedEle[this.self.gridName])
-                    this.context.clickedEle[this.self.gridName]={data:deepClone(cur_data[0]),cell:cell.innerText,column}
+                    this.context.clickedEle[this.self.gridName]={data:deepClone(cur_data[0]),cell:cell.innerText,column,self:_this.self}
                 else
-                    this.$set(this.context.clickedEle,this.self.gridName,{data:deepClone(cur_data[0]),cell:cell.innerText,column})
+                    this.$set(this.context.clickedEle,this.self.gridName,{data:deepClone(cur_data[0]),cell:cell.innerText,column,self:_this.self})
                 this.click_fresh(this.context.clickedEle[this.self.gridName])
             }
             

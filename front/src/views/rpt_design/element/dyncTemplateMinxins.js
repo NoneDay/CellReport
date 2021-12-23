@@ -1,3 +1,4 @@
+import {seriesLoadScripts,load_css_file } from "../utils/util"
 export default {
     provide(){
         let ret={
@@ -17,7 +18,15 @@ export default {
         old_content:"" 
     }),
     mounted(){
-    this.old_content=this.self.content
+        let _this=this
+        if(this.self.type.startsWith("Data") && window.AVUE==undefined){
+            load_css_file("cdn/avue/2.8.1/index.css")
+            seriesLoadScripts("cdn/avue/2.8.1/avue.min.js",null,function(){
+                _this.old_content=_this.self.content
+            })
+        }
+        else
+            this.old_content=this.self.content
     },
     computed: { 
         _context(){
@@ -51,7 +60,7 @@ export default {
         "self.content"(){
         let _this=this
         setTimeout(function(){
-            _this.old_content=_this.self.content
+            _this.old_content=_this.self.content            
         })
         }
     },

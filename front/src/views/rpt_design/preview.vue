@@ -38,7 +38,7 @@
   </div>
   <template v-else>
     <div id="report_app" >
-    <div> 
+    <div ref="form" > 
       <el-form :inline="true" v-if="previewFormParam.form">
         <input hidden v-for="one in previewFormParam.form.filter(x=>x.hide=='True')" :key="one.name" v-model="queryForm[one.name]"/>
         
@@ -88,7 +88,7 @@
           </el-form-item>
       </el-form>
     </div>
-    <div style="height:90%;    overflow: auto;">
+    <div ref="report_pane" style="height:90%;    overflow: auto;">
         <grid-layout-form v-if="layoutType=='gridLayout'" :layout="layout" >
         </grid-layout-form>          
         <widget-form v-else   :data="layout"   
@@ -155,8 +155,16 @@ export default {
     }
   },
   watch:{
-    executed(){
-
+    showLog(newVal,oldVal){
+      let _this=this
+      if(newVal==false){
+        setTimeout(() => {
+            _this.$nextTick(x=>{
+                let form_h=_this.$refs.form.clientHeight-4
+                _this.$refs.report_pane.style.height=`calc(100% - ${form_h}px)`                
+            })    
+        });
+      }
     }
   },
   computed: {

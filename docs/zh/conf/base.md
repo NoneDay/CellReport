@@ -114,7 +114,7 @@ window.luckysheet_alternateformat_save='{"cellrange":{"row":[0,8],"column":[-1,-
     //结构为:{data:deepClone(cur_data[0]),cell:cell.innerText,column}
     
     context.report_result.dataSet //sql 结果数据，只有在设计预览状态，或设置变量_need_dataset_=True时才会有这个数据 
-    // 内部为多个array ，每一个代表的都是数据集。如 context.report_result.dataSet['test'][0] 才是真正的数据,第一行是表头，其他是数据
+    // 内部为多个array ，每一个代表的都是数据集。如 context.report_result.dataSet['test'][0] 是数组。 里面才是真正的数据,第一行是表头，其他是数据
     
     context.report_result.data['main'] //页面上名字叫main 的报表数据。
     // 格式为：{columns:[],tableData:[],colName_lines:[0,2],extend_lines:[4,22]} ,
