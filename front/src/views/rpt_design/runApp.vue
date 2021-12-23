@@ -138,11 +138,7 @@ import install_component from './install_component'
 export default {
   name: 'App', //CellReportFormDesign
   components:{widgetForm },
-  mounted(){
-    if(this.crisMobile && window.nutui==undefined){
-      load_css_file("cdn/nutui@2.2.15/nutui.min.css")
-      seriesLoadScripts("cdn/nutui@2.2.15/nutui.min.js")      
-    }
+  mounted(){    
     let _this=this
     window.onresize=function(){      
       _this.isShow=false
@@ -176,10 +172,19 @@ export default {
       if (cs.reportName){
         this.reportName=cs.reportName
       }
-      if(this.reportName)
-        run_one(this,this.reportName,this.queryPara)
+      let _this=this
+      function inner_exec(){
+        if(_this.reportName)
+          run_one(_this,_this.reportName,_this.queryPara)
+        else
+          _this.$notify({title: '提示',message: '没有提供参数：reportName',type: 'error'});
+      }
+      if(this.crisMobile && window.nutui==undefined){
+        load_css_file("cdn/nutui@2.2.15/nutui.min.css")
+        seriesLoadScripts("cdn/nutui@2.2.15/nutui.min.js",null,inner_exec)      
+      }
       else
-        this.$notify({title: '提示',message: '没有提供参数：reportName',type: 'error'});
+        inner_exec()
     }
   }, 
   provide() {

@@ -46,7 +46,7 @@ namespace CellReport
         */
         public Redis_Cache(string cacheId, CellReport.running.Logger logger)
         {
-            if (!String.IsNullOrEmpty(Redis_Cache.redis_str))
+            if (String.IsNullOrEmpty(Redis_Cache.redis_str))
             {
                 throw new Exception("没有提供redis连接串，请修改appsetting.json中的redis_str,格式：127.0.0.1:6379,password=");
             }
