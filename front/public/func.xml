@@ -79,26 +79,7 @@ datasetName.cols()
       datasetName.getDataSourceName( )
     </function>
   </catalogy>
-  <catalogy name="常用计算">
-    <catalogy name="数学运算">
-      <function  name="+" ></function>
-      <function  name="-" ></function>
-      <function  name="*" ></function>
-      <function  name="/" ></function>
-      <function  name="&amp;" >取地址</function>
-    </catalogy>
-    <catalogy name="逻辑运算">
-      <function  name=">" ></function>
-      <function  name=">=" ></function>
-      <function  name="&lt;" ></function>
-      <function  name="&lt;=" ></function>
-      <function  name="==" ></function>
-      <function  name="&amp;&amp;" ></function>
-      <function  name="||" ></function>
-
-    </catalogy>
-  </catalogy>
-  <catalogy name="单元格函数">
+   <catalogy name="单元格函数">
     <function  name="ifEmpty(,)" >
       函数说明：
       从前往后，参数如果不为null或空字符串，就返回当前参数值，如果都是为空，就返回""
@@ -293,20 +274,4 @@ formatDatetime('2007-01-01')
 
     </function>
   </catalogy>
-  <catalogy name="其他">
-    
-    <function  name="getCurrentSqlDataSourceName()" >
-      函数说明：
-      取当前运行的sql的数据源连接名称，只能在sql语句引用的内部参数使用，
-      在其他地方使用没有效果
-      语法：
-      getCurrentSqlDataSourceName( )
-    </function>
-    <function  name="getAllDataSourceName()" >
-      函数说明：
-      取当前运行环境下的所有数据源连接名称列表
-      语法：getAllDataSourceName( )
-    </function>
-  </catalogy>
-
 </functions>
