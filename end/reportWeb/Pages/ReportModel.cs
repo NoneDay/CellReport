@@ -258,6 +258,8 @@ namespace reportWeb.Pages
 
             if (!String.IsNullOrEmpty(_fresh_ds))
             {
+                var exprFaced = report_env.getExprFaced();
+                exprFaced.addVariable("_fresh_ds", _fresh_ds);
                 foreach (var item in JsonDocument.Parse(_fresh_ds).RootElement.EnumerateArray())
                 {
                     var one = item.GetString().Split(":");

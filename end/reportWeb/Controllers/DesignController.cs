@@ -120,6 +120,10 @@ namespace reportWeb.Controllers
                 if (reportName!=null && reportName.Contains(":"))
                     reportName = reportName.Split(":")[1];
                 var reportDefine = XmlReport.loadReportFromXmlDoc(xmlDoc, this.rpt_group.report_path, reportName??"temp.cr");
+                if (!String.IsNullOrEmpty(_fresh_ds))
+                {
+                    reportDefine.getEnv().getExprFaced().addVariable("_fresh_ds", _fresh_ds);
+                }
                 reportDefine.getEnv().logger = 
                     new Logger(x => MessageQueueBlock<DemoMessage>
                         .Add(new DemoMessage() 
