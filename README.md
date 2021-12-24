@@ -37,7 +37,7 @@ CellReport 诞生的初衷是为了解决日常快速制作统计报表的需要
 ## 需要安装的软件
 1. 下载安装NETCORE6 SDK 或 RUNTIME.[Download .NET (Linux, macOS, and Windows)](https://dotnet.microsoft.com/download)
 2. 下载安装redis（可选）。最好安装 [https://github.com/MicrosoftArchive/redis/releases](https://github.com/MicrosoftArchive/redis/releases)
-3. 下载release。
+3. [github下载release](https://github.com/NoneDay/CellReport/releases/download/1.0.1/cellreport.zip) 。
 
 ## 运行和配置
 假设解压安装到了d:\cellReport。

@@ -25,7 +25,7 @@ cd cellReport
 start.bat
 //或 linux 下以这种方式启动
 dotnet reportWeb/reportWeb.dll  --urls http://*:5000 --ContentRoot . --WebRoot ../wwwroot 
-// 指定启动端口为8090 和 静态文件存放路径
+// 指定启动端口为5000 和 静态文件存放路径
 ```
 如果不指定urls参数，将运行在端口5000 ，如果不指定webroot ，缺省就是当前目录的wwwroot
 
