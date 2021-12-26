@@ -69,8 +69,7 @@ function before_exec(){
 ::: warning
 **before_exec返回的字典里:**
 - **如果包含continue，并且值为false ，报表将不继续执行，向前台返回错误信息。**
-
-- **包含cache_id,并且不会空，将会对报表结果缓存到redis 中。如果没有启动redis，将会报错**
+- **包含cache_id,并且不为空，将会对报表结果缓存到redis 中。如果没有启动redis，将会报错**
 - **如果报表需要缓存，将根据fresh_flag标记报表的基础数据是否改变，从而决定报表是否重新计算**
 - tips 是可以被前台接收到的额外提示信息。根据喜好设置内容
 :::

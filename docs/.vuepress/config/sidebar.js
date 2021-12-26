@@ -5,9 +5,11 @@ module.exports = {
         collapsable: true,
         children: [
             '',
-            'getting-started.md',
-            'lang.md',
+            'getting-started.md',            
             'dataset-param.md',
+            '报表制作.md',
+            'other-dataset.md',
+            'lang.md',
             'function.md',
             
         ]
@@ -18,6 +20,7 @@ module.exports = {
         children: [
             '',
             'base.md',
+            'how-add-function.md'
         ]
     }]
 }

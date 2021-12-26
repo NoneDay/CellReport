@@ -4,11 +4,7 @@
 
 - [下载安装NETCORE6 SDK 或 RUNTIME.](https://dotnet.microsoft.com/download)
 -  [下载安装redis（可选）。最好安装](https://github.com/MicrosoftArchive/redis/releases)
-- 已打包好的压缩文件，[下载解压传输链接](https://cowtransfer.com/s/a21509df346642) 或 打开【奶牛快传】cowtransfer.com 使用传输口令：00qhci 提取；
-::: tip
-- 使用 [pnpm](https://pnpm.io/zh/) 时，你需要在 [`.npmrc`](https://pnpm.io/zh/npmrc#shamefully-hoist) 文件中设置 `shamefully-hoist=true` 。
-- 使用 [yarn 2](https://yarnpkg.com/) 时，你需要在 [`.yarnrc.yml`](https://yarnpkg.com/configuration/yarnrc#nodeLinker) 文件中设置 `nodeLinker: 'node-modules'` 。
-:::
+- [github下载release](https://github.com/NoneDay/CellReport/releases/download/1.0.1/cellreport.zip) 。
 
 ## 安装编译好的版本
 

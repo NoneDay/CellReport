@@ -1,21 +1,29 @@
 # 介绍
 
-CellReport 是一个为 复杂统计报表 为核心目标的制作、运行工具。你可以使用数据库、excel文件、api服务、已有报表等为数据源，通过内置的集合函数组织数据，以类excel界面设计最终呈现结果。
+CellReport 是一个以 复杂统计报表 为核心目标的制作、运行工具。你可以使用数据库、excel文件、api服务、已有报表等为数据源，通过内置的集合函数组织数据，以类excel界面设计最终呈现结果。
 
 CellReport 诞生的初衷是为了解决日常快速制作统计报表的需要。在总结了市面上各种报表软件的前提下，结合集合运算的思想，使得报表制作人员抛弃使用存储过程加工数据的方式，专注于每一类指标的加工，然后在报表设计界面，通过集合函数组织数据，极大得方便了报表的制作和维护。
 
-[github上的文档](https://noneday.github.io/CellReport/)
+ | 源码   | 文档 | 发行版 |
+ | ------ | -------- | ------ | ------ | ------ |
+ | [Github](https://github.com/noneday/CellReport)| [Github在线文档](https://noneday.github.io/CellReport) | [github下载](https://github.com/NoneDay/CellReport/releases/tag/1.0.1)  |
+ | [Gitee](https://gitee.com/noneday/CellReport)| [Gitee在线文档](https://noneday.gitee.io/CellReport) | [gitee下载](https://gitee.com/NoneDay/CellReport/releases/1.0.1)  |
+ 
+
 
 ## 主要特点：
-1、多数据集的**集合运算**
-2、**单元格扩展、引用**
-3、内置**类js语言引擎**等方式
-4、丰富的函数定义
-5、可自定义扩展函数
-6、页面元素丰富。预定义有报表组件、echart组件、数据展现组件等
-7、灵活的报表元素间的数据引用，局部报表刷新设置方便
-8、组件报表引用、以及对其他报表软件制作的报表引用（专业版提供）
+- 支持所有常规的清单、分组、交叉。
+- 多源、分片
+- **多数据集的集合运算**
+- **单元格扩展、引用**
+- **内置类js语言引擎**
+- 丰富的函数定义
+- 可自定义扩展函数
+- 页面元素丰富。预定义有报表组件、echart组件、数据展现组件等
+- 灵活的报表元素间的数据引用，局部报表刷新设置方便
+- 组件报表引用、以及对其他报表软件制作的报表引用（专业版提供）
 
+ 
 ## 技术实现
 前端设计器采用基于vue、luckysheet、echarts等前端技术实现的网页方式
 后端报表引擎核心基于netcore6 实现
@@ -41,9 +49,9 @@ CellReport 诞生的初衷是为了解决日常快速制作统计报表的需要
 
 ## 运行和配置
 假设解压安装到了d:\cellReport。
-1. 在CellReportWeb目录下，执行 reportWeb.exe
+1. 执行 start.bat
 2. 浏览器输入地址:  http://127.0.0.1:5000
-3. 缺省管理员用户在appsetting.json中存有（最后面可以找到），可以自行修改。
+3. 缺省用户名密码:admin/database!123 。管理员用户在appsetting.json中存有（最后面可以找到），可以自行修改。
 
 ### 报表组管理
  缺省已经有了一个default组和example组。第一次登录，选报表组管理做基本的配置报表存放路径和数据库链接。可以根据不同的应用建立不同的组。报表组可以添加协助管理人员，多个用户中间用英文逗号分割。
