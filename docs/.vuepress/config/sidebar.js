@@ -7,7 +7,7 @@ module.exports = {
             '',
             'getting-started.md',            
             'dataset-param.md',
-            '报表制作.md',
+            'create-report.md',
             'other-dataset.md',
             'lang.md',
             'function.md',

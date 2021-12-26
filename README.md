@@ -4,7 +4,7 @@ CellReport 是一个以 复杂统计报表 为核心目标的制作、运行工�
 
 CellReport 诞生的初衷是为了解决日常快速制作统计报表的需要。在总结了市面上各种报表软件的前提下，结合集合运算的思想，使得报表制作人员抛弃使用存储过程加工数据的方式，专注于每一类指标的加工，然后在报表设计界面，通过集合函数组织数据，极大得方便了报表的制作和维护。
 
- | 源码   | 文档 | 发行版 |
+ | 源码 | 文档 | 发行版 |
  | ------ | -------- | ------ | ------ | ------ |
  | [Github](https://github.com/noneday/CellReport)| [Github在线文档](https://noneday.github.io/CellReport) | [github下载](https://github.com/NoneDay/CellReport/releases/tag/1.0.1)  |
  | [Gitee](https://gitee.com/noneday/CellReport)| [Gitee在线文档](https://noneday.gitee.io/CellReport) | [gitee下载](https://gitee.com/NoneDay/CellReport/releases/1.0.1)  |
