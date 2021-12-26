@@ -24,18 +24,20 @@ footer: MIT Licensed | Copyright © 2022-present
 
 ## Getting Started
 ### 需要安装的软件
-1. 下载安装NETCORE6 SDK 或 RUNTIME.[Download .NET (Linux, macOS, and Windows)](https://dotnet.microsoft.com/download)
-2. 下载安装redis（可选）。最好安装 [https://github.com/MicrosoftArchive/redis/releases](https://github.com/MicrosoftArchive/redis/releases)
-3. 下载解压传输链接：https://cowtransfer.com/s/a21509df346642 或 打开【奶牛快传】cowtransfer.com 使用传输口令：00qhci 提取；
+- 下载安装NETCORE6 SDK 或 RUNTIME.[Download .NET (Linux, macOS, and Windows)](https://dotnet.microsoft.com/download)
+- 下载安装redis（可选）。最好安装 [https://github.com/MicrosoftArchive/redis/releases](https://github.com/MicrosoftArchive/redis/releases)
+- [github下载release](https://github.com/NoneDay/CellReport/releases/download/1.0.1/cellreport.zip) 。
+
 
 ### 运行和配置
-假设解压安装到了d:\cellReport。(单独更新前端时，将前端文件解压到d:\cellReport\wwwroot下)。如果使用nginx反向代理，可以单独存放前端文件。
-1. 在安装目录下，执行 reportWeb.exe -p 5000
-2. 浏览器输入地址:  http://127.0.0.1:5000
-3. 缺省管理员用户在appsetting.json中存有（最后面可以找到），可以自行修改。
+假设解压安装到了d:\cellReport。
+- 1. 执行 start.bat
+- 2. 浏览器输入地址:  http://127.0.0.1:5000
+- 3. 缺省用户名密码:admin/database!123 。管理员用户在appsetting.json中存有（最后面可以找到），可以自行修改。
 
 ### 报表组管理
- 缺省已经有了一个default组和example组。第一次登录，选报表组管理做基本的配置报表存放路径和数据库链接。可以根据不同的应用建立不同的组。报表组可以添加协助管理人员，多个用户中间用英文逗号分割。
+- 点报表目录，,选example，能看到所有的测试报表,可以学习基本使用方法.
+- 缺省已经有了一个default组和example组。第一次登录，选报表组管理做基本的配置报表存放路径和数据库链接。可以根据不同的应用建立不同的组。报表组可以添加协助管理人员，多个用户中间用英文逗号分割。
  
  当前预安装的数据库驱动程序有:sqlServer、sqlite、Mysql、Pgsql、odbc。需要其他驱动的自行下载安装。
 ![](https://atts.w3cschool.cn/attachments/image/20211125/1637815124338385.png)
