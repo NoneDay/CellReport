@@ -1,8 +1,14 @@
 # 介绍
+![Demo](/img/1640587117162.gif)
 
 CellReport 是一个为复杂统计报表为核心目标的制作、运行工具。你可以使用数据库、excel文件、api服务、已有报表等为数据源，通过内置的集合函数组织数据，以类excel界面设计最终呈现结果。
 
 CellReport 诞生的初衷是为了解决日常快速制作统计报表的需要。在总结了市面上各种报表软件的前提下，结合集合运算的思想，使得报表制作人员抛弃使用存储过程加工数据的方式，专注于每一类指标的加工，然后在报表设计界面，通过集合函数组织数据，极大得方便了报表的制作和维护。
+ | 源码 | 文档 | 发行版 |
+ | ------ | -------- | ------ |
+ | [Github](https://github.com/noneday/CellReport)| [Github在线文档](https://noneday.github.io/CellReport) | [github下载](https://github.com/NoneDay/CellReport/releases/tag/1.0.1)  |
+ | [Gitee](https://gitee.com/noneday/CellReport)| [Gitee在线文档](https://noneday.gitee.io/CellReport) | [gitee下载](https://gitee.com/NoneDay/CellReport/releases/1.0.1)  |
+ 
 
 制作统计报表，往往不是一个sql语句能搞定的:
 - 有些报表需要从多个数据库取数；
@@ -13,7 +19,7 @@ CellReport 诞生的初衷是为了解决日常快速制作统计报表的需要
 ::: tip
 在cellReport中，建设性的加入了关于集合的运算功能，可以对各个数据集按照指定的条件分组归并，从而极大的减低开发统计报表的难度。本报表软件的集合的运算包括：并集、交集、以及集合的减法。最常用的就是求集合的并集。
 :::
-![Demo](/docs/.vuepress/public/img/LuckysheetDemo.gif)
+
 
 ## 它是如何工作的？
 

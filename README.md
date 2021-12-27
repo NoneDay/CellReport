@@ -5,7 +5,7 @@ CellReport 是一个以 复杂统计报表 为核心目标的制作、运行工�
 CellReport 诞生的初衷是为了解决日常快速制作统计报表的需要。在总结了市面上各种报表软件的前提下，结合集合运算的思想，使得报表制作人员抛弃使用存储过程加工数据的方式，专注于每一类指标的加工，然后在报表设计界面，通过集合函数组织数据，极大得方便了报表的制作和维护。
 
  | 源码 | 文档 | 发行版 |
- | ------ | -------- | ------ | ------ | ------ |
+ | ------ | -------- | ------ |
  | [Github](https://github.com/noneday/CellReport)| [Github在线文档](https://noneday.github.io/CellReport) | [github下载](https://github.com/NoneDay/CellReport/releases/tag/1.0.1)  |
  | [Gitee](https://gitee.com/noneday/CellReport)| [Gitee在线文档](https://noneday.gitee.io/CellReport) | [gitee下载](https://gitee.com/NoneDay/CellReport/releases/1.0.1)  |
  
@@ -22,7 +22,7 @@ CellReport 诞生的初衷是为了解决日常快速制作统计报表的需要
 - 页面元素丰富。预定义有报表组件、echart组件、数据展现组件等
 - 灵活的报表元素间的数据引用，局部报表刷新设置方便
 - 组件报表引用、以及对其他报表软件制作的报表引用（专业版提供）
-
+![Demo](/img/1640587117162.gif)
  
 ## 技术实现
 前端设计器采用基于vue、luckysheet、echarts等前端技术实现的网页方式
