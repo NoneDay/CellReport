@@ -406,6 +406,56 @@ export function getRangeByText(txt){
     else
       return {r:ret[0].r,c:ret[0].c  , rs:ret[1].r-ret[0].r+1,cs:ret[1].c- ret[0].c+1 }
 }
+function getLuckyStyle(border){
+    if(!border)
+        return;
+    let size="0.5pt"
+    let line_type="solid"
+    let color="black"
+    border.replace(";","").split(" ").forEach(x=>{
+        if(x.includes("px") || x.includes("pt")){
+            if(x=="1.5pt")
+            size="Thick";
+            else if(x=="1pt")
+            size="Medium";
+            else 
+            size="";
+        }
+        else if(x.indexOf("#")>=0 || x.indexOf("rgb")>=0){
+            color=x;
+        }
+        else if(x.indexOf("double")> -1){
+            line_type = "Hair";
+        }
+        else if(x.indexOf("dotted") > -1){
+            line_type = "Dotted";
+        }
+        else if(x.indexOf("Dashed") > -1){
+            line_type = "Dashed";
+        }
+        else{
+            line_type = "";
+        }
+    })
+    
+    let borderType = {
+        "none" : "0",
+        "Thin" : "1",
+        "Hair" : "2",
+        "Dotted" : "3",
+        "Dashed" : "4",
+        "DashDot" : "5",
+        "DashDotDot" : "6",
+        "Double" : "7",
+        "Medium" : "8",
+        "MediumDashed" : "9",
+        "MediumDashDot" : "10",
+        "MediumDashDotDot" : "11",
+        "SlantedDashDot" : "12",
+        "Thick" : "13",
+    };
+    return [borderType[size+line_type]??'0',color??"#000"]    
+}
 function getHtmlBorderStyle(type, color){
     let style = "";
     let borderType = {
@@ -615,13 +665,15 @@ function designGrid2LuckySheet(grid,setting,DefaultCssSetting){
             }
         }  
         function push_border(param) {
-            if(cell[param])
-                borderInfo.push({"rangeType": "range","borderType": param.toLowerCase().substring(1),"style": "1","color": "#000",
+            if(cell[param]){
+                let result=getLuckyStyle(cell[param])
+                borderInfo.push({"rangeType": "range","borderType": param.toLowerCase().substring(1),"style": result[0],"color": result[1],
                             "range": [{"row": [pos.r,pos.r+(pos.rs?(pos.rs-1):0)],"column": [pos.c,pos.c+(pos.cs?(pos.cs-1):0)]}]  });
+            }
         } 
         if(cell['_BORDER-BOTTOM'] &&  cell['_BORDER-TOP'] &&  cell['_BORDER-LEFT'] &&  cell['_BORDER-RIGHT'])    {
-
-            borderInfo.push({"rangeType": "range","borderType": "border-all","style": "1","color": "#000",
+            let result=getLuckyStyle(cell['_BORDER-BOTTOM'])
+            borderInfo.push({"rangeType": "range","borderType": "border-all","style":result[0],"color": result[1],
             "range": [{"row": [pos.r,pos.r+(pos.rs?(pos.rs-1):0)],"column": [pos.c,pos.c+(pos.cs?(pos.cs-1):0)]}]  });
         }else
         {

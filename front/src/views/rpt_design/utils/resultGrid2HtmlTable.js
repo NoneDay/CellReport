@@ -611,20 +611,24 @@ export default class ResultGrid2HtmlTable{
         cr-table--enable-row-transition" style="width: 100%; height: 100%;">`)
         let table_obj
         let height=0
-        // header
-        table_obj=this._inner_table(0,this.param_grid.extend_lines[0],  0,this.total_columns,true)
-        let min_width=Math.min(this.el.clientWidth-this.ScrollBarWidth-2,table_obj.table_width+(this.ratio==1?0:this.ScrollBarWidth))
-        sb.append(`<div id='reportDiv${this.param_grid.name}Top' class='cr-table__header-wrapper'  style='background-color:#ffffff;width:${min_width+this.ScrollBarWidth+2}px'>\n
-        <table class='cr-table__header reportDefaultCss' height=${table_obj.table_height} width=${table_obj.table_width}  `)
-        add_other()
-        sb.append(table_obj.sb.toString(''))
-        height=height+table_obj.table_height
-        let head_height=table_obj.table_height
-        let foot_height=0
-        let footer_obj
-        if (this.param_grid.extend_lines[1]+1<this.total_rows && this.param_grid.need_footer){
-            footer_obj=this._inner_table(this.param_grid.extend_lines[1]+1,this.total_rows,  0,this.total_columns)
-            foot_height=footer_obj.table_height
+        let min_width,head_height,footer_obj,foot_height
+        if(this.param_grid.optimize){
+            // header
+            table_obj=this._inner_table(0,this.param_grid.extend_lines[0],  0,this.total_columns,true)
+            min_width=Math.min(this.el.clientWidth-this.ScrollBarWidth-2,table_obj.table_width+(this.ratio==1?0:this.ScrollBarWidth))
+            sb.append(`<div id='reportDiv${this.param_grid.name}Top' class='cr-table__header-wrapper'  style='background-color:#ffffff;width:${min_width+this.ScrollBarWidth+2}px'>\n
+            <table class='cr-table__header reportDefaultCss' height=${table_obj.table_height} width=${table_obj.table_width}  `)
+            add_other()
+            sb.append(table_obj.sb.toString(''))
+            height=height+table_obj.table_height
+            head_height=table_obj.table_height
+            foot_height=0            
+            if (this.param_grid.extend_lines[1]+1<this.total_rows && this.param_grid.need_footer){
+                footer_obj=this._inner_table(this.param_grid.extend_lines[1]+1,this.total_rows,  0,this.total_columns)
+                foot_height=footer_obj.table_height
+            }
+        }else{
+            this.param_grid.extend_lines[0]=0
         }
         // body 
         table_obj=this._inner_table(this.param_grid.extend_lines[0] +(cur_page-1)*page_size
@@ -647,40 +651,39 @@ export default class ResultGrid2HtmlTable{
             sb.append(footer_obj.sb.toString(''))
             height=height+footer_obj.table_height
         }
-        // 固定列，header
-        table_obj=this._inner_table(0,this.param_grid.extend_lines[0],  0,this.fix_cols)
-        sb.append(`<div class="cr-table__fixed" style="width: ${table_obj.table_width+1}px; height:100%;">`)
-        sb.append(`<div class='cr-table__fixed-header-wrapper'  style='background-color:#ffffff;' >\n
-        <table class='cr-table__header reportDefaultCss' height=${table_obj.table_height} width=${table_obj.table_width}  `)
-        add_other()
-        sb.append(table_obj.sb.toString(''))
-        // 固定列，body
-        table_obj=this._inner_table(this.param_grid.extend_lines[0] +(cur_page-1)*page_size,
-                this.param_grid.need_footer?
-                Math.min(this.param_grid.extend_lines[0] +cur_page*page_size ,this.param_grid.extend_lines[1]+1 )
-                : this.param_grid.extend_lines[0] +cur_page*page_size ,
-              0,this.fix_cols)
-        sb.append(`<div id='reportDiv${this.param_grid.name}Left' class="cr-table__fixed-body-wrapper" 
-        style='background-color:#ffffff;top: ${head_height+1}px;height: calc(100% - ${head_height+foot_height}px)'>\n
-        <table class='cr-table__body  reportDefaultCss' height=${table_obj.table_height} width=${table_obj.table_width}  `)
-        add_other()
-        sb.append(table_obj.sb.toString(''))
-        // 固定列，footer
-        if (this.param_grid.extend_lines[1]+1<this.total_rows && this.param_grid.need_footer){
-            footer_obj=this._inner_table(this.param_grid.extend_lines[1]+1,this.total_rows,  0,this.fix_cols)
-            sb.append(`<div class="cr-table__fixed-footer-wrapper" style='background-color:#ffffff;'>\n
-            <table class='cr-table__footer reportDefaultCss' height=${footer_obj.table_height} width=${footer_obj.table_width}  `)
+        if(this.param_grid.optimize){
+            // 固定列，header
+            table_obj=this._inner_table(0,this.param_grid.extend_lines[0],  0,this.fix_cols)
+            sb.append(`<div class="cr-table__fixed" style="width: ${table_obj.table_width+1}px; height:100%;">`)
+            
+            sb.append(`<div class='cr-table__fixed-header-wrapper'  style='background-color:#ffffff;' >\n
+            <table class='cr-table__header reportDefaultCss' height=${table_obj.table_height} width=${table_obj.table_width}  `)
             add_other()
-            sb.append(footer_obj.sb.toString(''))
-            height=height+footer_obj.table_height
-        }
-        sb.append("</div>") 
-        
-        sb.append("</div>")
-        
+            sb.append(table_obj.sb.toString(''))
+            // 固定列，body
+            table_obj=this._inner_table(this.param_grid.extend_lines[0] +(cur_page-1)*page_size,
+                    this.param_grid.need_footer?
+                    Math.min(this.param_grid.extend_lines[0] +cur_page*page_size ,this.param_grid.extend_lines[1]+1 )
+                    : this.param_grid.extend_lines[0] +cur_page*page_size ,
+                0,this.fix_cols)
+            sb.append(`<div id='reportDiv${this.param_grid.name}Left' class="cr-table__fixed-body-wrapper" 
+            style='background-color:#ffffff;top: ${head_height+1}px;height: calc(100% - ${head_height+foot_height}px)'>\n
+            <table class='cr-table__body  reportDefaultCss' height=${table_obj.table_height} width=${table_obj.table_width}  `)
+            add_other()
+            sb.append(table_obj.sb.toString(''))
 
-        
-        
+            // 固定列，footer
+            if (this.param_grid.extend_lines[1]+1<this.total_rows && this.param_grid.need_footer){
+                footer_obj=this._inner_table(this.param_grid.extend_lines[1]+1,this.total_rows,  0,this.fix_cols)
+                sb.append(`<div class="cr-table__fixed-footer-wrapper" style='background-color:#ffffff;'>\n
+                <table class='cr-table__footer reportDefaultCss' height=${footer_obj.table_height} width=${footer_obj.table_width}  `)
+                add_other()
+                sb.append(footer_obj.sb.toString(''))
+                height=height+footer_obj.table_height
+            }
+            sb.append("</div>")             
+        }
+        sb.append("</div>")
         let alter_format_arr=[]
         if(!this.setting.no_use_parent_css){
             alter_format_arr=alter_format_arr.concat(JSON.parse("["+(localStorage.luckysheet_alternateformat_save ??'') +"]"))

@@ -121,12 +121,15 @@ export default {
       let target=evt.currentTarget
       let div_top=target.parentElement.querySelector(".cr-table__header-wrapper")
       //div_top.style.width=''+target.clientWidth+'px'
-      div_top.scrollLeft=(target.scrollLeft);
+      if(div_top)
+        div_top.scrollLeft=(target.scrollLeft);
 
       let div_Left=target.parentElement.querySelector(".cr-table__fixed-body-wrapper")
-      div_Left.style.height=''+target.clientHeight+'px'
-      div_Left.scrollTop=(target.scrollTop);
-
+      if(div_Left)
+      {
+        div_Left.style.height=''+target.clientHeight+'px'
+        div_Left.scrollTop=(target.scrollTop);
+      }
       this.scrollLeft=target.scrollLeft
       this.scrollTop=target.scrollTop
       
@@ -155,9 +158,11 @@ export default {
           this.$nextTick(x=>{
             let target=_this.$refs.htmTalbe.querySelector(`#reportDiv${_this.gridName}`)
             let div_top=target.parentElement.querySelector(".cr-table__header-wrapper")
-            div_top.style.width=`${target.clientWidth}px`
+            if(div_top) 
+              div_top.style.width=`${target.clientWidth}px`
             let div_Left=target.parentElement.querySelector(".cr-table__fixed-body-wrapper")
-            div_Left.style.height=`${target.clientHeight}px`
+            if(div_Left)
+              div_Left.style.height=`${target.clientHeight}px`
             //="16px"
             $(_this.$refs.htmTalbe.querySelectorAll(`table .cr-sort`)).on('click',_this.sortFunc)
             
