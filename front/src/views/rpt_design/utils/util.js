@@ -613,23 +613,22 @@ function designGrid2LuckySheet(grid,setting,DefaultCssSetting){
                     merge[`${pos.r}_${pos.c}`]=Object.assign({},pos)
                 }    
             }
-        }        
-        if(cell['_BORDER-BOTTOM'] &&  cell['_BORDER-TOP'] &&  cell['_BORDER-LEFT'] &&  cell['_BORDER-RIGHT'])
-        {
-            let already_add=false
-            borderInfo.forEach(one_border_range => {
-                if(pos.r>=one_border_range.range[0].row[0] && pos.r <=one_border_range.range[0].row[1]+1
-                 && pos.c>=one_border_range.range[0].column[0] && pos.c<=one_border_range.range[0].row[1]+1
-                ){
-                    one_border_range.range[0].column[1]=pos.c +(pos.cs||0)
-                    one_border_range.range[0].row[1]=pos.r +(pos.rs||0)
-                    already_add=true
-                    return false
-                }
-            });
-            if(already_add==false)
-                borderInfo.push({"rangeType": "range","borderType": "border-all","style": "1","color": "#000",
+        }  
+        function push_border(param) {
+            if(cell[param])
+                borderInfo.push({"rangeType": "range","borderType": param.toLowerCase().substring(1),"style": "1","color": "#000",
                             "range": [{"row": [pos.r,pos.r+(pos.rs?(pos.rs-1):0)],"column": [pos.c,pos.c+(pos.cs?(pos.cs-1):0)]}]  });
+        } 
+        if(cell['_BORDER-BOTTOM'] &&  cell['_BORDER-TOP'] &&  cell['_BORDER-LEFT'] &&  cell['_BORDER-RIGHT'])    {
+
+            borderInfo.push({"rangeType": "range","borderType": "border-all","style": "1","color": "#000",
+            "range": [{"row": [pos.r,pos.r+(pos.rs?(pos.rs-1):0)],"column": [pos.c,pos.c+(pos.cs?(pos.cs-1):0)]}]  });
+        }else
+        {
+            push_border('_BORDER-LEFT')
+            push_border('_BORDER-TOP')
+            push_border('_BORDER-RIGHT')
+            push_border('_BORDER-BOTTOM')
         }
     });
     return {
