@@ -149,7 +149,7 @@ export default {
               sortArr?.off('click',this.sortFunc)
           }
           if(this.__TABLEOBJ==undefined)
-            this.__TABLEOBJ=new ResultGrid2HtmlTable2(cur_grid,this.$el,this.self,_this.context.report_result.footer2)
+            this.__TABLEOBJ=new ResultGrid2HtmlTable2(cur_grid,this.$el,this.self,_this.context.report_result.footer2,_this.context.report_result.defaultsetting)
           this.pager_height=this.__TABLEOBJ!=undefined && (parseInt(this.self.page_size)<=this.__TABLEOBJ.total() )?32:0
           this.html_table=this.__TABLEOBJ.show(this.cur_page,this.self.page_size)
           
@@ -168,7 +168,8 @@ export default {
             
             target?.addEventListener('scroll',_this.scrollFunc)
              this.$nextTick(xaa=>{
-                div_Left.style.height=`${target.clientHeight}px`
+                if(div_Left)
+                  div_Left.style.height=`${target.clientHeight}px`
                 $(`#reportDiv${_this.gridName}Top .gutter`).width(target.offsetWidth - target.clientWidth)
                 target.scrollLeft=_this.scrollLeft
                 target.scrollTop=_this.scrollTop
@@ -358,7 +359,7 @@ export default {
         }
         let append
         if(_this.context.mode!='design'){
-            append= `rowHeaderWidth:0,columnHeaderHeight:0,showtoolbar:false,`
+            append= `rowHeaderWidth:0,columnHeaderHeight:0,showtoolbar:false,defaultTextColor: 'red',defaultCellColor: '#fff',`
         }
         else{
           append=` cellRightClickConfig:{ copy: true, // 复制
@@ -447,7 +448,7 @@ export default {
                     container: 'report',lang: 'zh',forceCalculation:false,showsheetbar:false,
                     showstatisticBarConfig:{count: false,  view: false,   zoom: false,  },
                     enableAddBackTop:false,enableAddRow:false,sheetFormulaBar:false,
-                    showinfobar:false,defaultFontSize:${_this.context.report.defaultsetting.font_size},
+                    showinfobar:false,
                     data:[${sheet_data}],
                     hook:{rangeSelect:selectChange,                      
                       updated:lucky_updated,
@@ -563,5 +564,6 @@ export default {
     border-right-width: 0;
     border-bottom-width: 0;
     padding: 0;
+    background-color: transparent;
 }
 </style>

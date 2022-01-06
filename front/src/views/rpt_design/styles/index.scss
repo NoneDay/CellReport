@@ -222,14 +222,11 @@ $primary-background-color: #ecf8ff;
           }
 
           &:hover {
-            background: $primary-background-color;
+
             cursor: move;
           }
 
-          &.active {
-            border-left: 1px solid $primary-color;
-            background: $primary-active-color;
-          }
+
 
           .widget-action-delete {
             position: absolute;

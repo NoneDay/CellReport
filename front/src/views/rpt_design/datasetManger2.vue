@@ -375,9 +375,10 @@ export default {
                     });
             let data=new FormData();
             data.append("expr", `return web_request({'url':'${this.action_target._dataSource}','headers':{'needType':'json' } } );`)
+            let grpid=_this.context.report.reportName.split(":")[0]
             request({
                 method: 'post',data,
-                url: `${baseUrl}/design/exec_expr`,
+                url: `${baseUrl}/design/exec_expr:${grpid}`,
             }).then(resp => {
                 loading.close();
                 if(resp.errcode!=0){
@@ -410,9 +411,10 @@ export default {
             let _this=this
             let data=new FormData();
             data.append("expr", this.action_target.__text )
+            let grpid=_this.context.report.reportName.split(":")[0]
             request({
                 method: 'post',data,
-                url: `${baseUrl}/design/exec_expr`,
+                url: `${baseUrl}/design/exec_expr:${grpid}`,
                 withCredentials: true
             }).then(response_data => {
                 console.info('api 成功')

@@ -88,7 +88,7 @@
           </el-form-item>
       </el-form>
     </div>
-    <div ref="report_pane" style="height:90%;    overflow: auto;">
+    <div ref="report_pane" :style="{height:'90%',overflow: 'auto',color:result.defaultsetting['COLOR'],background:result.defaultsetting['BACKGROUND-COLOR']}">
         <grid-layout-form v-if="layoutType=='gridLayout'" :layout="layout" >
         </grid-layout-form>          
         <widget-form v-else   :data="layout"   
@@ -141,6 +141,7 @@ export default {
         queryForm_show:{},
         exec_log:"",
         result:{},
+        last_js_cript:"",
         clickedEle:{},
         executed:false,
         layout:[],

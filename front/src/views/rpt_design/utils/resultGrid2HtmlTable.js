@@ -256,7 +256,7 @@ function cut_icon_image(l,t){
     return icon_arr[l][t]
 }
 export default class ResultGrid2HtmlTable{
-    constructor(param_grid,el,setting,footer2){
+    constructor(param_grid,el,setting,footer2,defaultsetting){
         let {name,tableData,extend_lines,rowlenArr,hyperlink,conditionformat,
             columnlenArr,styles,loc_style,colName_lines,my_sort,columns,
             config_merge,reportDefaultCss,optimize,abs_to_design} ={...param_grid}
@@ -264,6 +264,7 @@ export default class ResultGrid2HtmlTable{
         this.footer2=footer2
         this.sort_col={"col":-1,"isAsc":0}
         this.setting=setting
+        this.defaultsetting=defaultsetting
         this.fit=setting.fit??true
         this.param_grid=param_grid
         this.optimize=optimize
@@ -612,11 +613,12 @@ export default class ResultGrid2HtmlTable{
         let table_obj
         let height=0
         let min_width,head_height,footer_obj,foot_height
+        let background_color=this.defaultsetting['BACKGROUND-COLOR']
         if(this.param_grid.optimize){
             // header
             table_obj=this._inner_table(0,this.param_grid.extend_lines[0],  0,this.total_columns,true)
             min_width=Math.min(this.el.clientWidth-this.ScrollBarWidth-2,table_obj.table_width+(this.ratio==1?0:this.ScrollBarWidth))
-            sb.append(`<div id='reportDiv${this.param_grid.name}Top' class='cr-table__header-wrapper'  style='background-color:#ffffff;width:${min_width+this.ScrollBarWidth+2}px'>\n
+            sb.append(`<div id='reportDiv${this.param_grid.name}Top' class='cr-table__header-wrapper'  style='background-color:${background_color};width:${min_width+this.ScrollBarWidth+2}px'>\n
             <table class='cr-table__header reportDefaultCss' height=${table_obj.table_height} width=${table_obj.table_width}  `)
             add_other()
             sb.append(table_obj.sb.toString(''))
@@ -638,14 +640,14 @@ export default class ResultGrid2HtmlTable{
             ,  0,this.total_columns)
         min_width=Math.min(this.el.clientWidth-this.ScrollBarWidth-2, table_obj.table_width+(this.ratio==1?0:this.ScrollBarWidth))
         sb.append(`<div id='reportDiv${this.param_grid.name}' class="cr-table__body-wrapper is-scrolling-middle" 
-        style='background-color:#ffffff;height: calc(100% - ${head_height+foot_height}px);width:${min_width+this.ScrollBarWidth+2}px'>\n
+        style='background-color:${background_color};height: calc(100% - ${head_height+foot_height}px);width:${min_width+this.ScrollBarWidth+3}px'>\n
         <table class='cr-table__body  reportDefaultCss' height=${table_obj.table_height} width=${table_obj.table_width} `)
         add_other()
         sb.append(table_obj.sb.toString(''))
         height=height+table_obj.table_height
         // footer
         if (footer_obj){
-            sb.append(`<div id='reportDiv${this.param_grid.name}Footer' class="cr-table__footer-wrapper" style='background-color:#ffffff;width:${table_obj.table_width+(this.ratio==1?0:this.ScrollBarWidth)}px'>\n
+            sb.append(`<div id='reportDiv${this.param_grid.name}Footer' class="cr-table__footer-wrapper" style='background-color:${background_color};width:${table_obj.table_width+(this.ratio==1?0:this.ScrollBarWidth)}px'>\n
             <table class='cr-table__footer reportDefaultCss' height=${footer_obj.table_height} width=${footer_obj.table_width}  `)
             add_other()
             sb.append(footer_obj.sb.toString(''))
@@ -656,7 +658,7 @@ export default class ResultGrid2HtmlTable{
             table_obj=this._inner_table(0,this.param_grid.extend_lines[0],  0,this.fix_cols)
             sb.append(`<div class="cr-table__fixed" style="width: ${table_obj.table_width+1}px; height:100%;">`)
             
-            sb.append(`<div class='cr-table__fixed-header-wrapper'  style='background-color:#ffffff;' >\n
+            sb.append(`<div class='cr-table__fixed-header-wrapper'  style='background-color:${background_color};' >\n
             <table class='cr-table__header reportDefaultCss' height=${table_obj.table_height} width=${table_obj.table_width}  `)
             add_other()
             sb.append(table_obj.sb.toString(''))
@@ -667,7 +669,7 @@ export default class ResultGrid2HtmlTable{
                     : this.param_grid.extend_lines[0] +cur_page*page_size ,
                 0,this.fix_cols)
             sb.append(`<div id='reportDiv${this.param_grid.name}Left' class="cr-table__fixed-body-wrapper" 
-            style='background-color:#ffffff;top: ${head_height+1}px;height: calc(100% - ${head_height+foot_height}px)'>\n
+            style='background-color:${background_color};top: ${head_height+1}px;height: calc(100% - ${head_height+foot_height}px)'>\n
             <table class='cr-table__body  reportDefaultCss' height=${table_obj.table_height} width=${table_obj.table_width}  `)
             add_other()
             sb.append(table_obj.sb.toString(''))
@@ -675,7 +677,7 @@ export default class ResultGrid2HtmlTable{
             // 固定列，footer
             if (this.param_grid.extend_lines[1]+1<this.total_rows && this.param_grid.need_footer){
                 footer_obj=this._inner_table(this.param_grid.extend_lines[1]+1,this.total_rows,  0,this.fix_cols)
-                sb.append(`<div class="cr-table__fixed-footer-wrapper" style='background-color:#ffffff;'>\n
+                sb.append(`<div class="cr-table__fixed-footer-wrapper" style='background-color:${background_color};'>\n
                 <table class='cr-table__footer reportDefaultCss' height=${footer_obj.table_height} width=${footer_obj.table_width}  `)
                 add_other()
                 sb.append(footer_obj.sb.toString(''))

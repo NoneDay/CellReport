@@ -120,7 +120,7 @@
           
       </form>
     </div>
-    <div ref="report_pane" class="report_define" v-if="isShow">
+    <div ref="report_pane" class="report_define" v-if="isShow" :style="{color:result.defaultsetting['COLOR'],background:result.defaultsetting['BACKGROUND-COLOR']}">
         <grid-layout-form v-if="layoutType=='gridLayout'" :layout="layout" >
         </grid-layout-form>          
         <widget-form v-else   :data="layout"   
@@ -201,6 +201,7 @@ export default {
           allElementSet:this.allElementSet,
           //不放到这里，会导致动态runtime-template重算，如果是有滚动行的，会每次都重新跑到顶部
           in_exec_url:this.in_exec_url,
+          defaultsetting:this.result.defaultsetting
           
       },   fresh_ele:this.fresh_ele,   
 
@@ -218,6 +219,7 @@ export default {
         result:{form:[]},
         clickedEle:{},
         executed:false,
+        last_js_cript:"",
         layout:[],
         fresh_ele:[],
         allElementSet:new Set(),//所有有ID名称的集合

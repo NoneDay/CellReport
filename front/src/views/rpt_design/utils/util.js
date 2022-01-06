@@ -542,10 +542,10 @@ function luckySheet2ReportGrid(sheet_window,DefaultCssSetting){
                     if(cell_bd)
                         cell.cr['_BORDER-BOTTOM'] = cell_bd?.b?getHtmlBorderStyle(cell_bd.b?.style,cell_bd.b?.color):""
                 }
-                if(cell.cr['_FONT']==DefaultCssSetting.font) delete cell.cr['_FONT']
-                if(cell.cr['_FONT-SIZE']==DefaultCssSetting.font_size) delete cell.cr['_FONT-SIZE']
-                if(cell.cr['_background-color']==DefaultCssSetting.background_color) delete cell.cr['_background-color']
-                if(cell.cr['_color']==DefaultCssSetting.color) delete cell.cr['_color']
+                if(cell.cr['_FONT']==DefaultCssSetting["FONT"]) delete cell.cr['_FONT']
+                if(cell.cr['_FONT-SIZE']==DefaultCssSetting["FONT-SIZE"]) delete cell.cr['_FONT-SIZE']
+                if(cell.cr['_background-color']==DefaultCssSetting["BACKGROUND-COLOR"]) delete cell.cr['_background-color']
+                if(cell.cr['_color']==DefaultCssSetting["COLOR"]) delete cell.cr['_color']
 
                 //if(cell.cr['_BORDER-LEFT']==DefaultCssSetting.border_style) delete cell.cr['_BORDER-LEFT']
                 //if(cell.cr['_BORDER-RIGHT']==DefaultCssSetting.border_style) delete cell.cr['_BORDER-RIGHT']
@@ -627,21 +627,21 @@ function designGrid2LuckySheet(grid,setting,DefaultCssSetting){
         let one={r:pos.r,c:pos.c,v:{},cr:{}}
 
         one.v.v=cell._valueExpr
-        one.v.cr=Object.assign({'_color':DefaultCssSetting.color,'_displayValueExpr':'=@value'},cell)
+        one.v.cr=Object.assign({'_color':DefaultCssSetting["COLOR"],'_displayValueExpr':'=@value'},cell)
         if(cell._color)
             one.v.fc=cell._color
-        one.v.ff=cell['_FONT']??DefaultCssSetting.font
-        one.v.fs=parseInt(cell['_FONT-SIZE']??DefaultCssSetting.font_size)
+        one.v.ff=cell['_FONT']??DefaultCssSetting["FONT"]
+        one.v.fs=parseInt(cell['_FONT-SIZE']??DefaultCssSetting["FONT-SIZE"])
         if(cell['_BOLD'] && cell['_BOLD']=="True")
             one.v.bl=1
         if(cell._color)
-            one.v.fc=color(cell._color) ? cell._color :DefaultCssSetting.color
+            one.v.fc=color(cell._color) ? cell._color :DefaultCssSetting["COLOR"]
         else
-            one.v.fc=DefaultCssSetting.color
+            one.v.fc=DefaultCssSetting["COLOR"]
         if(cell["_background-color"])
-            one.v.bg=color(cell["_background-color"])?cell["_background-color"]:DefaultCssSetting.background_color
+            one.v.bg=color(cell["_background-color"])?cell["_background-color"]:DefaultCssSetting["BACKGROUND-COLOR"]
         else
-            one.v.bg=DefaultCssSetting.background_color
+            one.v.bg=DefaultCssSetting["BACKGROUND-COLOR"]
 
         if(cell['_text-align']){
             if (cell['_text-align']=="center")
@@ -910,8 +910,7 @@ export const json_by_path=function(root,path="$"){
     })
     return cur
 }
-
-export function load_css_js(txt) {
+export function load_css_js(txt,id="report_back_css") {
     if(txt){
         let script_pattern=/<style.*?>*?>([\s\S]*?)<\/style>/img
         let script_result;
@@ -922,22 +921,22 @@ export function load_css_js(txt) {
                 css_result=css_result+match_result
             }
         }
-        document.getElementById('report_back_css')?.remove()
+        document.getElementById(id)?.remove()
         const css_node = document.createElement('style');
-        css_node.id = 'report_back_css';
+        css_node.id = id;
         css_node.type="text/css"
         css_node.appendChild(document.createTextNode(css_result))
         document.getElementsByTagName('head')[0].appendChild(css_node);
         
-
+        let ret=""
         script_pattern=/<script.*?>*?>([\s\S]*?)<\/script>/img
         while ((script_result = script_pattern.exec(txt)) != null)  {
             let match_result=script_result[1];
             if(match_result && match_result.length>0){
-                eval(match_result)                    
+                ret=ret+ "\n"+match_result
             }
         }
-        
+        return ret
     } 
 }
 export function load_script_file(script_name,inner_exec){

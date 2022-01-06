@@ -205,6 +205,8 @@ export async function preview_one(_this,createFormParam=false,query_data={},para
             }
             _this.executed =true
             _this.showLog=false
+            if(createFormParam)
+                return
             if(_this.context.report_result.layout)
             {
                 _this.layout=_this.context.report_result.layout
@@ -216,7 +218,8 @@ export async function preview_one(_this,createFormParam=false,query_data={},para
                     grid:Object.values(_this.result.data).filter(ele=>ele.type=="common")
                     } )
             }
-            load_css_js(_this.context.report_result.footer2)
+            _this.last_js_cript=load_css_js(_this.context.report_result.footer2,"report_back_css")
+            eval("(function(){\n"+_this.last_js_cript+"\n})()")
             Object.entries(_this.context.clickedEle).forEach(kv=>{
                 if(kv[1].self.content){
                     let old=kv[1].self.content//强制刷新设计页面有content的组件
@@ -278,7 +281,8 @@ export function run_one(_this,reportFilePath,query,query_data={},_param_name=nul
         }
         else
             Object.assign(_this.result,response_data)
-        load_css_js(_this.result.footer2)
+        _this.last_js_cript=load_css_js(_this.result.footer2,"report_back_css")
+        eval("(function(run_one1){\n console.info(loading_conf)\n"+_this.last_js_cript+"\n})(run_one)")
         if(_this.result.layout)
         {
             _this.layout=_this.result.layout

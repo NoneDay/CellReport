@@ -18,7 +18,7 @@
     </datasetManger2>  
 
     <templateManger v-if="notebook_dialog_visible" 
-      :visible.sync="notebook_dialog_visible" :action_target.sync="report.template"
+      :visible.sync="notebook_dialog_visible" :action_target.sync="report.template" @submit="refresh_setting"
       > 
     </templateManger>
     <simpleGuide v-if="simpleGuide_dialogVisible"  :visible.sync="simpleGuide_dialogVisible" :sheet_window="sheet_window" > 
@@ -40,13 +40,14 @@
             <el-button type='primary' icon='el-icon-refresh'  round @click="init(report.reportName)" >重载</el-button>
             <el-button type='primary' round @click="paramMangerDrawerVisible=true" >参数</el-button>
             <el-button type='primary' round @click="datamanger_dialogVisible=true" >数据</el-button>
-            <el-button type='primary' round @click="notebook_dialog_visible=true" >记事</el-button>
+            <el-button type='primary' round @click="notebook_dialog_visible=true" >设置</el-button>
             <el-button type='primary' round @click="simpleGuide_dialogVisible=true" >向导</el-button>
             <el-link :href="baseUrl+'/run'+(report.reportName.split(':')[0]=='default'?'':(':'+report.reportName.split(':')[0]))+'?reportName='+report.reportName.split(':')[1]" target="_blank"><i class="el-icon-view el-icon--right"></i></el-link>
             
           </el-header>
           <!-- 中间主布局 -->
-          <el-main  class="widget-container" :style="{background: formIsEmpty ? `url(${widgetEmpty}) no-repeat 50%`: ''}"
+          <el-main  class="widget-container" :style="{color:report.defaultsetting['COLOR'],
+          background: formIsEmpty ? `url(${widgetEmpty}) no-repeat 50%`: report.defaultsetting['BACKGROUND-COLOR']}"
           v-if="widgetForm!=null"
           >
                <grid-layout-form v-if="formType=='gridLayout'" 
@@ -522,8 +523,8 @@ export default {
       this.report.conn_list=response_data.conn_list
           this.report.range_level=response_data.range_level
           this.report.defaultsetting=response_data.defaultsetting
-          if(this.report.defaultsetting?.background_color?.trim()=="")
-            delete this.report.defaultsetting.background_color
+          if(this.report.defaultsetting && this.report.defaultsetting['BACKGROUND-COLOR']=="")
+            delete this.report.defaultsetting['BACKGROUND-COLOR']
           this.report.reportName=reportName
           if(this.report.layout){
             this.widgetForm=JSON.parse(this.report.layout)
@@ -657,11 +658,13 @@ export default {
         delete cell.ct.s
       }
       if(cell && cell.ff==undefined)
-        cell.ff=this.report.defaultsetting.font
+        cell.ff=this.report.defaultsetting["FONT"]
+      if(cell && cell.fs==undefined)
+        cell.fs=this.report.defaultsetting["FONT-SIZE"]
       if(cell && cell.fc==undefined)
-        cell.fc=this.report.defaultsetting.color
+        cell.fc=this.report.defaultsetting["COLOR"]
       if(cell && cell.bg==undefined)
-        cell.bg=this.report.defaultsetting.background_color
+        cell.bg=this.report.defaultsetting["BACKGROUND-COLOR"]
     },
     rangePasteBefore(select_save,txtdata,copy_save){
       
@@ -884,8 +887,18 @@ export default {
       this.report.layout=JSON.stringify( this.widgetForm, null, 4)
       save_one(this.report)
       //console.info(x2jsone.js2xml({report:this.report}))
+    },
+    refresh_setting(){
+      let _this=this
+      let old_widgetForm=_this.widgetForm
+      _this.selectWidget={}
+      _this.widgetForm=""
+      setTimeout(()=>{
+        _this.widgetForm=old_widgetForm
+      })
     }
   },
+  
   watch: { 
     selectWidget (newVal,oldval) {
       if(JSON.stringify(this.selectWidget)=='{"prop":"--"}')
@@ -925,9 +938,9 @@ export default {
               })
               cell.v=cell.m=cell.cr._valueExpr
               if(cell.cr['_color']!=undefined)
-                  cell.fc=color(cell.cr['_color']) ? cell.cr['_color'] :this.report.defaultsetting.color
+                  cell.fc=color(cell.cr['_color']) ? cell.cr['_color'] :this.report.defaultsetting["COLOR"]
               if(cell.cr["_background-color"]!=undefined)
-                  cell.bg=color(cell.cr['_background-color']) ? cell.cr["_background-color"] : this.report.defaultsetting.background_color    
+                  cell.bg=color(cell.cr['_background-color']) ? cell.cr["_background-color"] : this.report.defaultsetting['BACKGROUND-COLOR']
             }
           }
         })

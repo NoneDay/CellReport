@@ -5,20 +5,8 @@
       :class="{active: selectWidget.prop == self.prop, 'required': self.required }"
       @click.stop="handleSelectWidget(index)"> 
 
-    <div v-if="context.mode=='design' ||( self.show_title && self.label)"  class="cr_item_title">
-     <span> {{self.label}}</span>
-    <el-button title="删除" style="    margin-left: 10px;"
-                @click.stop="handleWidgetDelete(index)"
-                v-if="context.canDraggable " 
-                circle
-                plain
-                size="small"
-                type="danger">
-      <i class="el-icon-delete"></i>
-    </el-button>
-
-    </div>
-    <div :style="{width:'100%',height:`calc(100% - ${context.mode=='design' ||( self.show_title && self.label)?25:0}px`}">
+    
+    <div :style="{width:'100%',height:`calc(100% - 0px`}">
     <component draggable=".item" 
                :is="getComponent(self.type, self.component)"
                :self="self" :parent="parent" 
@@ -137,5 +125,9 @@ export default {
     width: 100%;
     height: 25px;
     border: 1px solid;
-    background: bisque;}
+    background: bisque;
+    color:black;
+    font-size: 11px;
+    font-weight: bold;
+    }
 </style>

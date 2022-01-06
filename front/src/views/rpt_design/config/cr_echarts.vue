@@ -17,6 +17,7 @@
 <el-row>
 <el-col :span="4">
 数据：</el-col>    <el-col :span="20">
+
 <el-select v-model="data.datasource" placeholder="请选择" @change="change_ds" >
     <el-option
       v-for="item in all_datasource"
@@ -24,9 +25,11 @@
       :label="item"
       :value="item">
     </el-option>
-  </el-select> </el-col>
+  </el-select>
+  
+   </el-col>
 </el-row>
-  <div style="height:200px">
+  <div style="height:200px;overflow: auto;">
           <draggable tag="ul"
                      :list="data.fields"
                      :group="{ name: 'dic' }"

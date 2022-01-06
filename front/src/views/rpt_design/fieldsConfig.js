@@ -33,7 +33,7 @@ export const widget_div_layout=function(item){
   }
 }
 function default_chart(chart_name,series_type,chart_option=`{
-  backgroundColor: '#fff',
+  //backgroundColor: '#fff',
   legend: {selectedMode:'single'},//单选模式
   tooltip: {},
   dataset: {
@@ -151,6 +151,196 @@ export default [
             {"type":"html-text",'label':'html-text',gridName:"_random_",icon: 'icon-table','color':'#fff',display: true, 'component':'html-text',style:{height:'100px'},
                 'content':"<h1>哈==哈哈</h1>"},              
             ]
+    },
+    {
+      title: 'DATAV',
+      list: [
+        {"type":"装饰1",'label':'装饰1',gridName:"_random_",h:4, span:6,icon: 'icon-table','color':'#fff',
+          display: true, 'component':'dync-template',style:{height:'100%'},'content':`<dv-decoration-1 style="width:100%;height:100%;" />`},
+          {"type":"装饰2",'label':'装饰2',gridName:"_random_",h:4, span:6,icon: 'icon-table','color':'#fff',
+          display: true, 'component':'dync-template',style:{height:'100%'},'content':`<dv-decoration-2 :reverse="false"   style="width:100%;height:100%;" />`},
+          {"type":"装饰3",'label':'装饰3',gridName:"_random_",h:4, span:6,icon: 'icon-table','color':'#fff',
+          display: true, 'component':'dync-template',style:{height:'100%'},'content':`<dv-decoration-3 style="width:100%;height:100%;" />`},
+          {"type":"装饰4",'label':'装饰4',gridName:"_random_",h:4, span:6,icon: 'icon-table','color':'#fff',
+          display: true, 'component':'dync-template',style:{height:'100%'},'content':`<dv-decoration-4 :reverse="false"  style="width:100%;height:100%;" />`},
+          {"type":"装饰5",'label':'装饰5',gridName:"_random_",h:4, span:6,icon: 'icon-table','color':'#fff',
+          display: true, 'component':'dync-template',style:{height:'100%'},'content':`<dv-decoration-5 style="width:100%;height:100%;" />`},
+          {"type":"装饰6",'label':'装饰6',gridName:"_random_",h:4, span:6,icon: 'icon-table','color':'#fff',
+          display: true, 'component':'dync-template',style:{height:'100%'},'content':`<dv-decoration-6 style="width:100%;height:100%;" />`},
+          
+          {"type":"装饰7",'label':'装饰7',gridName:"_random_",h:4, span:6,icon: 'icon-table','color':'#fff',
+          display: true, 'component':'dync-template',style:{height:'100%'},'content':`<dv-decoration-7 style="width:150px;height:30px;">Decoration</dv-decoration-7>`},
+          {"type":"装饰8",'label':'装饰8',gridName:"_random_",h:4, span:6,icon: 'icon-table','color':'#fff',
+          display: true, 'component':'dync-template',style:{height:'100%'},'content':`<dv-decoration-8 :reverse="false" style="width:100%;height:100%;" />`},
+          {"type":"装饰9",'label':'装饰9',gridName:"_random_",h:4, span:6,icon: 'icon-table','color':'#fff',
+          display: true, 'component':'dync-template',style:{height:'100%'},'content':`<dv-decoration-9 style="width:150px;height:150px;">66%</dv-decoration-9>`},
+
+          {"type":"装饰10",'label':'装饰10',gridName:"_random_",h:4, span:6,icon: 'icon-table','color':'#fff',
+          display: true, 'component':'dync-template',style:{height:'100%'},'content':`<dv-decoration-10 style="width:100%;height:100%;" />`},
+          {"type":"装饰11",'label':'装饰11',gridName:"_random_",h:4, span:6,icon: 'icon-table','color':'#fff',
+          display: true, 'component':'dync-template',style:{height:'100%'},'content':`<dv-decoration-11 style="width:200px;height:60px;">dv-decoration-11</dv-decoration-11>`},
+          {"type":"装饰12",'label':'装饰12',gridName:"_random_",h:4, span:6,icon: 'icon-table','color':'#fff',
+          display: true, 'component':'dync-template',style:{height:'100%'},'content':`<dv-decoration-12 style="width:100%;height:100%;" />`},
+ 
+          {"type":"动态环图",'label':'动态环图',gridName:"_random_",h:4, span:6,icon: 'icon-table','color':'#fff',
+          display: true, 'component':'dync-template',style:{height:'100%'},'content':`<dv-active-ring-chart :config="{
+            data: [
+              {
+                name: '周口',
+                value: 55
+              },
+              {
+                name: '南阳',
+                value: 120
+              },
+              {
+                name: '西峡',
+                value: 78
+              },
+              {
+                name: '驻马店',
+                value: 66
+              },
+              {
+                name: '新乡',
+                value: 80
+              }
+            ]
+          }" style="width:100%;height:100%;" />`},
+        
+          {"type":"胶囊柱图",'label':'胶囊柱图',gridName:"_random_",h:4, span:6,icon: 'icon-table','color':'#fff',
+          display: true, 'component':'dync-template',style:{height:'100%'},'content':`<dv-capsule-chart :config=" {
+            data: [
+              {
+                name: '南阳',
+                value: 167
+              },
+              {
+                name: '周口',
+                value: 67
+              },
+              {
+                name: '漯河',
+                value: 123
+              },
+              {
+                name: '郑州',
+                value: 55
+              },
+              {
+                name: '西峡',
+                value: 98
+              }
+            ]
+          }" style="width:100%;height:100%;" />`},
+          {"type":"水位图",'label':'水位图',gridName:"_random_",h:4, span:6,icon: 'icon-table','color':'#fff',
+          display: true, 'component':'dync-template',style:{height:'100%'},'content':`<dv-level-pond :config=" {
+            data: [66]
+          }" style="width:100%;height:100%;" />`},
+          {"type":"进度池",'label':'进度池',gridName:"_random_",h:4, span:6,icon: 'icon-table','color':'#fff',
+          display: true, 'component':'dync-template',style:{height:'100%'},'content':`<dv-percent-pond  :config="{
+            value: 66
+          }" style="width:100%;height:100%;" />`},
+          {"type":"飞线图",'label':'飞线图',gridName:"_random_",h:4, span:6,icon: 'icon-table','color':'#fff',
+          display: true, 'component':'dync-template',style:{height:'100%'},'content':`<dv-flyline-chart :config="config" style="width:100%;height:100%;" />`},
+          {"type":"飞线图增强版",'label':'飞线图增强版',gridName:"_random_",h:4, span:6,icon: 'icon-table','color':'#fff',
+          display: true, 'component':'dync-template',style:{height:'100%'},'content':`<dv-flyline-chart-enhanced :config="config" style="width:100%;height:100%;" />`},
+
+          {"type":"锥形柱图",'label':'锥形柱图',gridName:"_random_",h:4, span:6,icon: 'icon-table','color':'#fff',
+          display: true, 'component':'dync-template',style:{height:'100%'},'content':`<dv-conical-column-chart :config="{
+            data: [
+              {
+                name: '周口',
+                value: 55
+              },
+              {
+                name: '南阳',
+                value: 120
+              },
+              {
+                name: '西峡',
+                value: 71
+              },
+              {
+                name: '驻马店',
+                value: 66
+              },
+              {
+                name: '新乡',
+                value: 80
+              },
+              {
+                name: '信阳',
+                value: 35
+              },
+              {
+                name: '漯河',
+                value: 15
+              }
+            ],
+            img: [
+              '/img/conicalColumnChart/1st.png',
+              '/img/conicalColumnChart/2st.png',
+              '/img/conicalColumnChart/3st.png',
+              '/img/conicalColumnChart/4st.png',
+              '/img/conicalColumnChart/5st.png',
+              '/img/conicalColumnChart/6st.png',
+              '/img/conicalColumnChart/7st.png'
+            ]
+          }" style="width:100%;height:100%;" />`},
+          {"type":"数字翻牌器",'label':'数字翻牌器',gridName:"_random_",h:4, span:6,icon: 'icon-table','color':'#fff',
+          display: true, 'component':'dync-template',style:{height:'100%'},'content':`<dv-digital-flop :config="config" style="width:100px;height:50px;" />`},
+          {"type":"轮播表",'label':'轮播表',gridName:"_random_",h:4, span:6,icon: 'icon-table','color':'#fff',
+          display: true, 'component':'dync-template',style:{height:'100%'},'content':`<dv-scroll-board :config="{
+            header: ['列1', '列2', '列3'],
+            data: [
+              ['行1列1', '行1列2', '行1列3'],
+              ['行2列1', '行2列2', '行2列3'],
+              ['行3列1', '行3列2', '行3列3'],
+              ['行4列1', '行4列2', '行4列3'],
+              ['行5列1', '行5列2', '行5列3'],
+              ['行6列1', '行6列2', '行6列3'],
+              ['行7列1', '行7列2', '行7列3'],
+              ['行8列1', '行8列2', '行8列3'],
+              ['行9列1', '行9列2', '行9列3'],
+              ['行10列1', '行10列2', '行10列3']
+            ]
+          }" style="width:100%;height:100%;" />`},
+          {"type":"排名轮播表",'label':'排名轮播表',gridName:"_random_",h:4, span:6,icon: 'icon-table','color':'#fff',
+          display: true, 'component':'dync-template',style:{height:'100%'},'content':`<dv-scroll-ranking-board :config="{
+            data: [
+              {
+                name: '周口',
+                value: 55
+              },
+              {
+                name: '南阳',
+                value: 120
+              },
+              {
+                name: '西峡',
+                value: 78
+              },
+              {
+                name: '驻马店',
+                value: 66
+              },
+              {
+                name: '新乡',
+                value: 80
+              },
+              {
+                name: '信阳',
+                value: 45
+              },
+              {
+                name: '漯河',
+                value: 29
+              }
+            ]
+          }" style="width:100%;height:100%;" />`},
+
+      ]
     },
     { title: '数据展示',
     list: [
@@ -815,7 +1005,7 @@ export default [
           default_chart('极坐标堆叠图',
             '{"type": "bar", "coordinateSystem": "polar","stack": "a"}'
             ,`{
-              backgroundColor: '#fff',
+              //backgroundColor: '#fff',
               legend: {},
               tooltip: {},
               "polar": {},"angleAxis":{},
@@ -847,7 +1037,7 @@ export default [
         }`) ,
           default_chart('线型图','{"type":"line"}') ,
           default_chart('多饼图','{"type":"pie"}',`{
-            backgroundColor: '#fff',
+            //backgroundColor: '#fff',
             legend: {},
             tooltip: {},
              
@@ -864,7 +1054,7 @@ export default [
           }`) ,
           default_chart('上饼下线','{"type": "line", "smooth": true, "seriesLayoutBy": "row"}',
           `{
-            backgroundColor: '#fff',
+            //backgroundColor: '#fff',
             legend: {},
             tooltip: {
               trigger: 'axis',
@@ -923,7 +1113,7 @@ export default [
           
           default_chart('仪表盘', '{"type": "gauge"}',`
           {
-            backgroundColor: '#fff',
+            //backgroundColor: '#fff',
             legend: {selectedMode:'single'},//单选模式
             tooltip: {},
             dataset: {
@@ -955,7 +1145,7 @@ export default [
           }          
           `),
           default_chart('漏斗图', `{"type": "funnel"}`,`{
-            backgroundColor: '#fff',
+            //backgroundColor: '#fff',
             legend: {},
             tooltip: {},
             dataset: {

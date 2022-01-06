@@ -74,9 +74,9 @@ export default {
             } )
             if(cur_data.length){
                 if(this.context.clickedEle[this.self.gridName])
-                    this.context.clickedEle[this.self.gridName]={data:deepClone(cur_data[0]),cell:cell.innerText,column,self:_this.self}
+                    this.context.clickedEle[this.self.gridName]={data:deepClone(cur_data[0]),cell:cell.innerText,column,self:this.self}
                 else
-                    this.$set(this.context.clickedEle,this.self.gridName,{data:deepClone(cur_data[0]),cell:cell.innerText,column,self:_this.self})
+                    this.$set(this.context.clickedEle,this.self.gridName,{data:deepClone(cur_data[0]),cell:cell.innerText,column,self:this.self})
                 this.click_fresh(this.context.clickedEle[this.self.gridName])
             }
             

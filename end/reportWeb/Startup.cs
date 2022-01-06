@@ -184,8 +184,9 @@ namespace reportWeb
                 RedisHelper.Initialization(redisClient);
             }
             DbProviderFactories.RegisterFactory("Microsoft.Data.Sqlite", SqliteFactory.Instance);
-            foreach(var one in Configuration.GetSection("DbProviderFactories").Get<DbProviderCfg[]>())
+            foreach (var one in Configuration.GetSection("DbProviderFactories").Get<DbProviderCfg[]>())
             {
+                //var ass = System.Reflection.Assembly.LoadFile(Path.Combine((new DirectoryInfo(Environment.ProcessPath)).Parent.FullName, one.DllName + ".dll"));
                 var ass = System.Reflection.Assembly.Load( one.DllName);
                 DbProviderFactory f = ass.GetType(one.FactoryClass).GetField(one.InstanceName).GetValue(null) as DbProviderFactory;
                 DbProviderFactories.RegisterFactory(one.Name, f );
@@ -279,16 +280,7 @@ namespace reportWeb
             });
             //app.UseHttpsRedirection();
             app.UseStaticFiles();
-            if (!String.IsNullOrEmpty(Configuration["wwwroot"]))
-            {
-                //env.WebRootPath = "E:\\my_app\\报表源码_2020\\front\\dist";
-                app.UseStaticFiles(new StaticFileOptions()
-                {
-                
-                    FileProvider = new Microsoft.Extensions.FileProviders.PhysicalFileProvider("E:\\my_app\\报表源码_2020\\front\\dist"),
-                    RequestPath = new PathString("")
-                });
-            }
+            
             app.Use(next => context =>
             {
                 var cur_path = context.Request.Path.Value;

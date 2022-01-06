@@ -1,5 +1,5 @@
 <template>
-  <div :style="{height: self.type!='el-row'?'100%':''}">
+  <div :style="{height: self.type!='el-row'?'calc(100% - '+border_size+'px)':'','width':'calc(100% - '+border_size+'px)'}"> 
     <template  v-if="context.canDraggable">
     <!--<h1 class="widget-form-group__head"
         v-show="self.label"><i :class="self.icon"
@@ -70,6 +70,7 @@ export default {
   name: 'widget-form-group',
   mixins:[mixins],
   components: { draggable },
+  props:["border_size"],
   updated(){
     let _this=this 
     this.self.children.column.forEach(element => {
