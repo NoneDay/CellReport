@@ -457,4 +457,12 @@ div::-webkit-scrollbar-track {
   background   : transparent;
   border-radius: 10px;
 }
+    .border-box-content {
+      color: rgb(66,185,131);
+      font-size: 40px;
+      font-weight: bold;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
 </style>

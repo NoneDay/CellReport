@@ -15,7 +15,7 @@ export default {
     },
     data: () => ({
         parentCompent:this, 
-        old_content:"" 
+        old_content:""
     }),
     mounted(){
         let _this=this
@@ -47,21 +47,13 @@ export default {
                 _this.old_content=_this.self.content
                 _this.buildDisplayData()
             })
-        },
-        dataset(ds_name,where){
-            let ds=this.context.report_result.dataSet[ds_name] 
-            if(ds==undefined)
-                return "没有数据集"+ds_name
-            ds=ds[0]
-            return ds
         }
     },
     watch: { 
-        "self.content"(){
-        let _this=this
-        setTimeout(function(){
-            _this.old_content=_this.self.content            
-        })
-        }
+        "self":{
+            handler(val,oldVal){
+                this.refresh()
+            },deep:true
+        }, 
     },
 }

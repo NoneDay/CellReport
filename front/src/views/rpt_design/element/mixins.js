@@ -77,6 +77,13 @@ export default {
       
     },
     methods:{
+      dataset(ds_name,from=0,to=Number.MAX_VALUE){
+          let ds=this.context.report_result.dataSet[ds_name] 
+          if(ds==undefined)
+              return "没有数据集"+ds_name
+          ds=ds[0]
+          return ds.slice(from,to)
+      },
       /**
        * 刷新机制：context.clickedEle 中存放每个元素的点击数据
        * 在点击grid或report或图等元素时，需要设置 clickedEle.然后调用click_fresh，参数为点击元素的选中数据p_data

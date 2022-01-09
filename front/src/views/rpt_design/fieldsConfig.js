@@ -173,12 +173,12 @@ export default [
           {"type":"装饰8",'label':'装饰8',gridName:"_random_",h:4, span:6,icon: 'icon-table','color':'#fff',
           display: true, 'component':'dync-template',style:{height:'100%'},'content':`<dv-decoration-8 :reverse="false" style="width:100%;height:100%;" />`},
           {"type":"装饰9",'label':'装饰9',gridName:"_random_",h:4, span:6,icon: 'icon-table','color':'#fff',
-          display: true, 'component':'dync-template',style:{height:'100%'},'content':`<dv-decoration-9 style="width:150px;height:150px;">66%</dv-decoration-9>`},
+          display: true, 'component':'dync-template',style:{height:'100%'},'content':`<dv-decoration-9 style="width:width:100%;height:100%;">66%</dv-decoration-9>`},
 
           {"type":"装饰10",'label':'装饰10',gridName:"_random_",h:4, span:6,icon: 'icon-table','color':'#fff',
           display: true, 'component':'dync-template',style:{height:'100%'},'content':`<dv-decoration-10 style="width:100%;height:100%;" />`},
           {"type":"装饰11",'label':'装饰11',gridName:"_random_",h:4, span:6,icon: 'icon-table','color':'#fff',
-          display: true, 'component':'dync-template',style:{height:'100%'},'content':`<dv-decoration-11 style="width:200px;height:60px;">dv-decoration-11</dv-decoration-11>`},
+          display: true, 'component':'dync-template',style:{height:'100%'},'content':`<dv-decoration-11 style="width:100%;height:100%;">dv-decoration-11</dv-decoration-11>`},
           {"type":"装饰12",'label':'装饰12',gridName:"_random_",h:4, span:6,icon: 'icon-table','color':'#fff',
           display: true, 'component':'dync-template',style:{height:'100%'},'content':`<dv-decoration-12 style="width:100%;height:100%;" />`},
  
@@ -234,7 +234,7 @@ export default [
             ]
           }" style="width:100%;height:100%;" />`},
           {"type":"水位图",'label':'水位图',gridName:"_random_",h:4, span:6,icon: 'icon-table','color':'#fff',
-          display: true, 'component':'dync-template',style:{height:'100%'},'content':`<dv-level-pond :config=" {
+          display: true, 'component':'dync-template',style:{height:'100%'},'content':`<dv-water-level-pond :config=" {
             data: [66]
           }" style="width:100%;height:100%;" />`},
           {"type":"进度池",'label':'进度池',gridName:"_random_",h:4, span:6,icon: 'icon-table','color':'#fff',
@@ -289,7 +289,13 @@ export default [
             ]
           }" style="width:100%;height:100%;" />`},
           {"type":"数字翻牌器",'label':'数字翻牌器',gridName:"_random_",h:4, span:6,icon: 'icon-table','color':'#fff',
-          display: true, 'component':'dync-template',style:{height:'100%'},'content':`<dv-digital-flop :config="config" style="width:100px;height:50px;" />`},
+          display: true, 'component':'dync-template',style:{height:'100%'},'content':`<dv-border-box-8 :reverse="true">
+          <dv-digital-flop :config="{number: [100],content: '{nt}个',style: {
+            fontSize: 30,
+            fill: '#3de7c9'
+          }}" 
+            style="width:100%;height:100%;" />
+          </dv-border-box-8>`},
           {"type":"轮播表",'label':'轮播表',gridName:"_random_",h:4, span:6,icon: 'icon-table','color':'#fff',
           display: true, 'component':'dync-template',style:{height:'100%'},'content':`<dv-scroll-board :config="{
             header: ['列1', '列2', '列3'],

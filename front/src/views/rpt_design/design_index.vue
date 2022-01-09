@@ -524,7 +524,7 @@ export default {
           this.report.range_level=response_data.range_level
           this.report.defaultsetting=response_data.defaultsetting
           if(this.report.defaultsetting && this.report.defaultsetting['BACKGROUND-COLOR']=="")
-            delete this.report.defaultsetting['BACKGROUND-COLOR']
+            this.report.defaultsetting['BACKGROUND-COLOR']="transparent"
           this.report.reportName=reportName
           if(this.report.layout){
             this.widgetForm=JSON.parse(this.report.layout)

@@ -1,3 +1,17 @@
+.cr_item_title{
+    
+  height: 15px;
+  border: 1px solid;
+  background: bisque;
+  cursor: move;
+  color:black;
+  font-size: 9px;
+  font-weight: bold;
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  z-index:1000;
+  }
 $primary-color: #409eff;
 $primary-active-color: #ecf5ff;
 $primary-background-color: #ecf8ff;

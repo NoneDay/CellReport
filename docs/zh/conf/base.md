@@ -114,7 +114,9 @@ window.luckysheet_alternateformat_save='{"cellrange":{"row":[0,8],"column":[-1,-
     
     context.report_result.dataSet //sql 结果数据，只有在设计预览状态，或设置变量_need_dataset_=True时才会有这个数据 
     // 内部为多个array ，每一个代表的都是数据集。如 context.report_result.dataSet['test'][0] 是数组。 里面才是真正的数据,第一行是表头，其他是数据
-    
+    // 可以简写：
+	dataset('累计')
+
     context.report_result.data['main'] //页面上名字叫main 的报表数据。
     // 格式为：{columns:[],tableData:[],colName_lines:[0,2],extend_lines:[4,22]} ,
     // tableData 存放的所有单元格的数据。colName_lines 列标题起止范围，extend_lines 明细行起止范围
@@ -122,3 +124,36 @@ window.luckysheet_alternateformat_save='{"cellrange":{"row":[0,8],"column":[-1,-
     self 配置
     
 ~~~
+::: tip
+如果运行时需要数据集的数据，但没有被传给前台，请在后端运行前设置中，加代码：`var _need_dataset_=true; `
+:::
+
+## 前端动态模板数据设置
+### 动态模板中可能会用到的数据转换
+| 表达式 | 解释  |
+|-------|-------|
+|`dataset('累计')[0]`  | 取数据集：累计 的列名 |
+| `dataset('累计').slice(1)` | 取数据集的数据 |
+|`Enumerable.from(dataset('累计')).skip(1).select(x=> {return {'name':x[0],value:x[1]} }).toArray()` | 转换数据集累计中的数据为对象：name属性对应第一列，value对应第二列 ，最后转换为数组返回|
+~~~html
+<dv-scroll-board :config="{
+            header: dataset('累计')[0],
+            data: dataset('累计').slice(1)
+          }" style="width:100%;height:100%;" />
+
+
+<dv-capsule-chart :config="{
+  data: Enumerable.from(dataset('累计')).skip(1).select(x=> {return {'name':x[0],value:x[1]} }).toArray()
+}" style="width:100%;height:100%" /> 
+
+<dv-conical-column-chart :config="{
+  data: Enumerable.from(dataset('累计')).skip(1).select(x=> {
+      return {'name':x[0],'value':x[1]} 
+    }).toArray()
+}" style="width:100%;height:100%" /> 
+~~~
+
+### charts中可能会用到的数据转换
+
+- 内置了已经转换好的数据：valid_data （有效数据，参看chart文档中的dataset）
+- series_type 自动转换过来的序列类型

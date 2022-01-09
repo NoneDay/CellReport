@@ -1,19 +1,22 @@
 ﻿<?xml version="1.0"?>
 
 <template>
-  <FIXTOP_BACKCOLOR></FIXTOP_BACKCOLOR>
-  <FIXTOP_COLOR></FIXTOP_COLOR>
-  <BACKGROUND-COLOR></BACKGROUND-COLOR>
-  <COLOR>black</COLOR>
-  <FONT>微软雅黑</FONT>
+	<FIXTOP_BACKCOLOR></FIXTOP_BACKCOLOR>
+	<FIXTOP_COLOR></FIXTOP_COLOR>
+	<BACKGROUND-COLOR>white</BACKGROUND-COLOR>
+	<COLOR>black</COLOR>
+	<FONT>微软雅黑</FONT>
 	<FONT-SIZE>11</FONT-SIZE>
 	<border_box>div</border_box>
 	<layout_mode></layout_mode>
-	<out_keys>BACKGROUND-COLOR,COLOR,FONT,FONT-SIZE,border_box,layout_mode</out_keys>
-	<BORDER_STYLE><![CDATA[gray 1px dotted]]></BORDER_STYLE>
-  <TABLE_APPEND><![CDATA[ x:str cellSpacing=0 cellPadding=0  style="TABLE-LAYOUT: fixed; MARGIN: 0px; FONT-SIZE: 11px; Z-INDEX: -5;  BORDER-COLLAPSE: collapse;"]]></TABLE_APPEND>
-  <footer2>
-    <![CDATA[
+	<show_form>true</show_form>
+	<layout_row_height>30</layout_row_height>
+	<BORDER_STYLE><![CDATA[0.5pt solid #000;]]></BORDER_STYLE>
+	<out_keys>BACKGROUND-COLOR,COLOR,FONT,FONT-SIZE,border_box,layout_mode,show_form,layout_row_height</out_keys>
+
+	<TABLE_APPEND><![CDATA[ x:str cellSpacing=0 cellPadding=0  style="TABLE-LAYOUT: fixed; MARGIN: 0px; FONT-SIZE: 11px; Z-INDEX: -5;  BORDER-COLLAPSE: collapse;"]]></TABLE_APPEND>
+	<footer2>
+		<![CDATA[
 <script>
 window.luckysheet_conditionformat=[
 		{column_match:".*(占比|率)\$" ,val:'{"type":"colorGradation","cellrange":[{ "row":[0,1],"column":[1,1] }],"format":["rgb(248, 105, 107)", "rgb(255, 235, 132)", "rgb(99, 190, 123)"] }' },
@@ -31,46 +34,46 @@ if (localStorage.luckysheet_alternateformat_save==undefined)
   localStorage.luckysheet_alternateformat_save=window.luckysheet_alternateformat_save
 </script>
     ]]>
-  </footer2>
+	</footer2>
 
-  <sqlRule>
-    <![CDATA[(('|<|>|%|\""\""|,|>=|=<|<>|;|\|\||\[|\]|&|/|@)|(\b)+(select|update|insert|delete|declare|exec|dbcc|alter|drop|create|backup|if|else|end|and|or|add|set|open|close|use|begin|retun|as|go|exists)(\b)+)]]>
-  </sqlRule>
+	<sqlRule>
+		<![CDATA[(('|<|>|%|\""\""|,|>=|=<|<>|;|\|\||\[|\]|&|/|@)|(\b)+(select|update|insert|delete|declare|exec|dbcc|alter|drop|create|backup|if|else|end|and|or|add|set|open|close|use|begin|retun|as|go|exists)(\b)+)]]>
+	</sqlRule>
 
-  <footer>
+	<footer>
 
-  </footer>
+	</footer>
 
-  <text_width><![CDATA[0.5,0.7,1.2 ]]></text_width>
-  <large_data_grid><![CDATA[  fit:true,pagination:true,rownumbers:true,singleSelect:true,  autoRowHeight:false,remoteSort:false   ]]></large_data_grid>
+	<text_width><![CDATA[0.5,0.7,1.2 ]]></text_width>
+	<large_data_grid><![CDATA[  fit:true,pagination:true,rownumbers:true,singleSelect:true,  autoRowHeight:false,remoteSort:false   ]]></large_data_grid>
 
-  <insertStatement>
-    <![CDATA[={
+	<insertStatement>
+		<![CDATA[={
 var db=openDb("$dataSource$");
 row.$primaryKey_cell$=db.select("insert into $tableName$ ($fieldNames$) values($valueNames$);select @@identity sn",row).sn;
 db.close();
 }
   ]]>
-  </insertStatement>
-  <updateStatement>
-    <![CDATA[={
+	</insertStatement>
+	<updateStatement>
+		<![CDATA[={
 var db=openDb("$dataSource$");
 db.insert("update $tableName$ set $updateFieldNames$ where $whereNames$",row);
 db.close();
 }
   ]]>
-  </updateStatement>
-  <deleteStatement>
-    <![CDATA[={
+	</updateStatement>
+	<deleteStatement>
+		<![CDATA[={
 var db=openDb("$dataSource$");
 db.insert("delete from $tableName$ where $whereNames$",row);
 db.close();
 }
   ]]>
-  </deleteStatement>
- 
-  <treeGrid>
-    <![CDATA[
+	</deleteStatement>
+
+	<treeGrid>
+		<![CDATA[
   <table id='reportDiv$grid.Name$thetable' class="easyui-treegrid" data-options="" > 
    	<thead data-options="frozen:true">$gridHeaderTable_frozen$</thead>
   	<thead>$gridHeaderTable$</thead>
@@ -92,9 +95,9 @@ db.close();
 
         }); </script> 
 ]]>
-  </treeGrid>
-  <dataGrid>
-    <![CDATA[
+	</treeGrid>
+	<dataGrid>
+		<![CDATA[
 $ if( env.global['datagrid-filter']==null){ env.global['datagrid-filter']="asdasdadasdadasda";$
 	<!--<script type="text/javascript" src="js/jquery-easyui-extend/datagrid-filter.js"></script>  -->
 $}$
@@ -126,6 +129,6 @@ $}$
 
         }); </script>
 ]]>
-  </dataGrid>
- 
+	</dataGrid>
+
 </template>

@@ -39,11 +39,14 @@
                 <el-radio v-model="tmp_css['show_form']" label="true">显示form</el-radio>
                 <el-radio v-model="tmp_css['show_form']" label="false">隐藏form</el-radio>
             </el-form-item>
-            
+
             <el-form-item label="布局">
                 <el-radio v-model="tmp_css['layout_mode']" label="">高度小于容器高度时自动撑满，大于时保持</el-radio>
                 <el-radio v-model="tmp_css['layout_mode']" label="1">保持与设计时一样的高度</el-radio>
                 <el-radio v-model="tmp_css['layout_mode']" label="2">强制适配到容器高度</el-radio>
+            </el-form-item>
+             <el-form-item label="布局中每行高度">
+                <el-input  v-model="tmp_css['layout_row_height']"></el-input>
             </el-form-item>
             <el-form-item label="边框样式">
                 <el-select v-model="tmp_css['border_box']" placeholder="请选择边框样式">
@@ -83,6 +86,7 @@ name: "templateManger",
         this.tmp_css['layout_mode']=this.action_target['layout_mode']??''
         this.tmp_css['border_box']=this.action_target['border_box']??'div'
         this.tmp_css['show_form']=this.action_target['show_form']??'true'
+        this.tmp_css['layout_row_height']=this.action_target['layout_row_height']??'30'
         let _this=this
         setTimeout(() => {
         _this.data_ready=true    
@@ -134,6 +138,8 @@ name: "templateManger",
             this.context.report.defaultsetting["layout_mode"] = this.action_target['layout_mode']=this.tmp_css['layout_mode']
             this.context.report.defaultsetting["border_box"] = this.action_target['border_box']=this.tmp_css['border_box']
             this.context.report.defaultsetting["show_form"] = this.action_target['show_form']=this.tmp_css['show_form']
+            this.context.report.defaultsetting["layout_row_height"] = this.action_target['layout_row_height']=this.tmp_css['layout_row_height']
+            
             this.$emit("submit");
             this.dialogVisible=false
         },

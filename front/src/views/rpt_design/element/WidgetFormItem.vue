@@ -5,6 +5,27 @@
       :class="{active: selectWidget.prop == self.prop, 'required': self.required }"
       @click.stop="handleSelectWidget(index)"> 
 
+    <span v-if="context.mode=='design' ||( self.show_title && self.label)"  class="cr_item_title">
+     <span> {{self.label}}</span>
+    <el-button title="克隆" style="margin-left: 0px;padding:0px;"
+                @click.stop="handleWidgetClone(index)"
+                v-if="context.canDraggable " 
+                circle
+                plain
+                size="mini"
+                type="danger">
+      <i class="el-icon-copy-document"></i>
+    </el-button>
+    <el-button title="删除" style="margin-left: 0px;padding:0px;"
+                @click.stop="handleWidgetDelete(index)"
+                v-if="context.canDraggable " 
+                circle
+                plain
+                size="mini"
+                type="danger">
+      <i class="el-icon-delete"></i>
+    </el-button>
+    </span>
     
     <div :style="{width:'100%',height:`calc(100% - 0px`}">
     <component draggable=".item" 
@@ -83,11 +104,11 @@ export default {
         //this.parent.children.column[index]
         this.$nextTick(() => {
           children.splice(index, 1)
-          if(children!=this.parent){
-            children.forEach(x=>{
-              x.height=100/children.length +"%"
-            })
-          }
+          //if(children!=this.parent){
+          //  children.forEach(x=>{
+          //    x.height=100/children.length +"%"
+          //  })
+          //}
           this.selectWidget = {prop:'--'}
           this.$emit("change")
         })
@@ -96,13 +117,17 @@ export default {
     handleWidgetClone (index) {
       this.selectWidget = this.self
       console.table(this.self)
-      //let cloneData = this.deepClone(this.parent.children.column[index])
-      //cloneData.prop = Date.now() + '_' + Math.ceil(Math.random() * 99999)
-      //this.parent.children.column.splice(index, 0, cloneData)
-      //this.$nextTick(() => {
-      //  this.handleSelectWidget(index + 1)
-      //  this.$emit("change")
-      //})
+      let cloneData = this.deepClone(this.parent.children.column[index])
+      cloneData.prop = Date.now() + '_' + Math.ceil(Math.random() * 99999)
+      if(cloneData.hasOwnProperty("gridName")){
+        cloneData.gridName=cloneData.type.replace(/-/,"_") + Date.now() + '_' + Math.ceil(Math.random() * 99999)
+        this.context?.allElementSet?.add(cloneData.gridName)
+      }
+      this.parent.children.column.splice(index, 0, cloneData)
+      this.$nextTick(() => {
+        this.handleSelectWidget(index + 1)
+        this.$emit("change")
+      })
     },
   },
   computed:{
@@ -121,13 +146,5 @@ export default {
 </script>
 
 <style scoped>
-.cr_item_title{
-    width: 100%;
-    height: 25px;
-    border: 1px solid;
-    background: bisque;
-    color:black;
-    font-size: 11px;
-    font-weight: bold;
-    }
+
 </style>

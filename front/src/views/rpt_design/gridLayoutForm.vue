@@ -18,8 +18,9 @@
                      :is-draggable="context.canDraggable"
                      :is-resizable="context.canDraggable"
                      :vertical-compact="true"
-                     :use-css-transforms="true"
+                     :use-css-transforms="false"
                      style="height:100%;width:100%"
+                     
                     @layout-ready="layoutUpdatedEvent"
         >
         
@@ -30,40 +31,48 @@
                        :y="item.y"
                        :w="item.w"
                        :h="item.h"
-                       :i="item.i"
+                       :i="item.i" @resized="resizedEvent"
+                       drag-allow-from=".draggable-handle"
+                       drag-ignore-from=".no-drag"
             >
-            <component v-if="isShow" :is="item.border_box?item.border_box:'div'" style="width:100%;height:100%">
-              
+            <component v-if="isShow && item.show" class="no-drag" :ref="'border_box'+item.i" :is="item.border_box?item.border_box:'div'" style="width:100%;height:100%">
+                   
                     <widget-form-group class="widget-form-list" 
                         :self="item.element" :border_size="calc_item_border_size(item.border_box)"
                         :parent="layout" :index="groupIndex"
-                        v-if="isShow && item.element.component=='widget-form-group'"
+                        v-if="item.element.component=='widget-form-group'"
                         :select.sync="selectWidget"  :depth="1"
                         >
                     </widget-form-group>
                     <widget-form-tabs class="widget-form-list" 
                         :self="item.element" 
                         :parent="layout" :index="groupIndex"
-                        v-else-if="isShow && item.element.component=='widget-form-tabs'"
+                        v-else-if="item.element.component=='widget-form-tabs'"
                         :select.sync="selectWidget"  :depth="1"
                         >
                     </widget-form-tabs>
                     <widget-form-item class="widget-form-list" 
                         :self="item.element" 
                         :parent="layout" :index="groupIndex"
-                        v-else-if="isShow  "  :depth="1"
+                        v-else  :depth="1"
                         :select.sync="selectWidget"
                         >
                     </widget-form-item>
 
-                     <span class="remove" @click="removeItem(item.i)">
-                       <i class="el-icon-delete"></i>
-                       </span>
-                       <span  class="setting" @click="settingItem(item.i)">
-                       <i class="el-icon-setting"></i>
-                       </span>
                 
             </component>
+            
+                <span :style="`position: absolute;right: 2px;top: 0;cursor: pointer;color:black;background:#fff;font-size: 11px;font-weight: bold;`" @click="removeItem(item.i)">
+                    <i class="el-icon-delete"></i>
+                    </span>
+                <span  class="draggable-handle" :style="`position: absolute;right: 16px;top: 0;cursor: pointer;color:black;background:#fff;font-size: 11px;font-weight: bold;`">
+                    <i class="el-icon-document-remove"></i>
+                </span>
+                <span  :style="`position: absolute;right: 30px;top: 0;cursor: pointer;color:black;background:#fff;font-size: 11px;font-weight: bold;`" @click="settingItem(item.i)">
+                    <i class="el-icon-setting"></i>
+                </span>
+            
+ 
             </grid-item>
         
         </grid-layout>
@@ -123,7 +132,7 @@
                      :is-draggable="context.canDraggable"
                      :is-resizable="context.canDraggable"
                      :vertical-compact="true" v-if="showGridLayout"
-                     :use-css-transforms="true"
+                     :use-css-transforms="false"
                      :style="{'height':'100%','width':'100%'}"
                     @layout-ready="layoutUpdatedEvent"
         >
@@ -135,7 +144,8 @@
                        :y="item.y"
                        :w="item.w"
                        :h="item.h"
-                       :i="item.i"
+                       :i="item.i" drag-allow-from=".draggable-handle"
+                       drag-ignore-from=".no-drag"
             >
                <component v-if="isShow" :is="item.border_box?item.border_box:'div'" style="width:100%;height:100%">
               
@@ -143,21 +153,21 @@
                     <widget-form-group class="widget-form-list" 
                         :self="item.element" :border_size="calc_item_border_size(item.border_box)"
                         :parent="layout" :index="groupIndex"  :depth="1"
-                        v-if="isShow && item.element.component=='widget-form-group'"
+                        v-if="item.element.component=='widget-form-group'"
                         :select.sync="selectWidget"
                         >
                     </widget-form-group>
                     <widget-form-tabs class="widget-form-list" 
                         :self="item.element"  :depth="1"
                         :parent="layout" :index="groupIndex"
-                        v-else-if="isShow && item.element.component=='widget-form-tabs'"
+                        v-else-if="item.element.component=='widget-form-tabs'"
                         :select.sync="selectWidget"
                         >
                     </widget-form-tabs>
                     <widget-form-item class="widget-form-list" 
                         :self="item.element" 
                         :parent="layout" :index="groupIndex"
-                        v-else-if="isShow"
+                        v-else
                         :select.sync="selectWidget"  :depth="1"
                         >
                     </widget-form-item>
@@ -202,7 +212,7 @@ export default {
             colNum:24,
             newX:0,
             newY:0,
-            margin:0,
+            margin:10,
             pan_height:"100%",
             dialogVisible:false,
         }
@@ -215,7 +225,9 @@ export default {
         this.gridLayoutIndex = this.layout.length;
         let max_rows=0
         let one_line_rows=0
-
+        this.layout.forEach(element => {
+            this.$set(element,'show',true)
+        })
         if(this.context.mode!='design'){
             let idx=0
             this.layout.forEach(element => {
@@ -229,7 +241,9 @@ export default {
             //这时候当前组件还没高度，所以要间接计算。 没有-1 滚动条会闪烁 ，-1.5 倍是为了避免form 如果是多行，当前pane 会撑破页面
             
             _this.pan_height=_this.$parent.$el.clientHeight-1-(this.context.crisMobile?1:1)* _this.$parent.$el.children[0].clientHeight - 1 * _this.margin            
-            _this.row_height=Math.max(30,parseInt(_this.pan_height/(this.context.crisMobile?one_line_rows:max_rows))) -_this.margin            
+            if(this.context.report_result?.defaultsetting?.layout_mode=='')//高度小于容器高度时自动撑满，大于时保持
+                _this.row_height=Math.max(30,parseInt(_this.pan_height/(this.context.crisMobile?one_line_rows:max_rows))) -_this.margin            
+            
             setTimeout(() => {
                 _this.showGridLayout=true
             });
@@ -250,6 +264,10 @@ export default {
     border: 0px solid ${_this.context.report.defaultsetting['COLOR']};
     
 }
+.vue-grid-item>.vue-resizable-handle{
+background:url("data:image/svg+xml;utf8,<svg t='1641536477492' class='icon' viewBox='0 0 1024 1024' version='1.1' xmlns='http://www.w3.org/2000/svg' p-id='6325' width='16' height='16'><path d='M903.68 949.76H92.16c-26.624 0-48.64-22.016-48.64-48.64s22.016-48.64 48.64-48.64h762.88v-762.88c0-26.624 22.016-48.64 48.64-48.64s48.64 22.016 48.64 48.64V901.12c0 26.624-22.016 48.64-48.64 48.64z' p-id='6326' fill='${_this.context.report.defaultsetting['COLOR'].replace('#','%23')}'></path></svg>") no-repeat;
+}
+</style>
 </style>
 `,"layout_css")
         }else{
@@ -268,6 +286,9 @@ export default {
     color: ${_this.context.report.defaultsetting['COLOR']};
     border: 1px solid ${_this.context.report.defaultsetting['COLOR']};
     
+}
+.vue-grid-item>.vue-resizable-handle{
+background:url("data:image/svg+xml;utf8,<svg t='1641536477492' class='icon' viewBox='0 0 1024 1024' version='1.1' xmlns='http://www.w3.org/2000/svg' p-id='6325' width='16' height='16'><path d='M903.68 949.76H92.16c-26.624 0-48.64-22.016-48.64-48.64s22.016-48.64 48.64-48.64h762.88v-762.88c0-26.624 22.016-48.64 48.64-48.64s48.64 22.016 48.64 48.64V901.12c0 26.624-22.016 48.64-48.64 48.64z' p-id='6326' fill='${_this.context.report.defaultsetting['COLOR'].replace('#','%23')}'></path></svg>") no-repeat;
 }
 </style>
 `,"layout_css")
@@ -303,6 +324,19 @@ export default {
         layoutUpdatedEvent: function(newLayout){
             this.isShow=true
         },
+         resizedEvent: function(i, newH, newW, newHPx, newWPx){
+            //this.$refs['border_box'+i].initWH(newHPx, newWPx)
+            let _this=this
+            this.layout.forEach(element => {
+                if(element.i==i && JSON.stringify( element.element).indexOf("luckySheetProxy")<0){
+                    _this.$set(element,'show',false)
+                    setTimeout(() => {
+                        _this.$set(element,'show',true)
+                    } );
+                }
+            })
+            //console.log("RESIZE i=" + i + ", H=" + newH + ", W=" + newW + ", H(px)=" + newHPx + ", W(px)=" + newWPx);
+        },
         addItem: function (item) {
             // Add a new item. It must have a unique key!
             let x=0,w=item.span??6,   h=item.h??10,y=0             
@@ -330,7 +364,7 @@ export default {
                 element.i=idx
                 idx=idx+1;
             })
-            this.layout.push({x,y,w,h,i: this.gridLayoutIndex,element:widget_div_layout(item),border_box:this.context.report.defaultsetting.border_box });
+            this.layout.push({x,y,w,h,i: this.gridLayoutIndex,element:widget_div_layout(item),show:true,border_box:this.context.report.defaultsetting.border_box });
             // Increment the counter to ensure key is always unique.
             this.gridLayoutIndex++;
             let _this=this
@@ -351,7 +385,7 @@ export default {
         },
         removeItem: function (val) {
             let _this=this
-            this.$confirm('此操作将永久删除该文件, 是否继续?', '提示', {
+            this.$confirm('此操作将永久删除该组件, 是否继续?', '提示', {
                 confirmButtonText: '确定',
                 cancelButtonText: '取消',
                 type: 'warning'
@@ -456,4 +490,5 @@ export default {
     box-sizing: border-box;
     cursor: pointer;
 }
+
 </style>
