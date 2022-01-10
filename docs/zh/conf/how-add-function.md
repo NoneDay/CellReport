@@ -13,7 +13,7 @@ function percent(val,比例){
 
 ## c#语言写的自定义函数
 ::: tip
-每个自定义函数都是一个必须继承`CellReport.core.expr.FunctionUnit` 的class，该class的名字必须以Func_开头。
+每个自定义普通函数都是一个必须继承`CellReport.function.FunctionUnit` 的class，该class的名字必须以Func_开头。
 :::
 例子：
 ```csharp
@@ -64,6 +64,34 @@ namespace CellReport.function
 if(this.exprTree.Children[1].GetChild(0).Type != ExprLexer.ID)
 	throw new ReportRuntimeException("参数不对！");
 ~~~
+
+::: tip
+每个自定义数据集函数都是一个必须继承`CellReport.function.IDelegate_ds_func` 的class，名字不要和已有数据集函数重复，否则将不会调用。
+:::
+
+```csharp
+//ds.sum 函数定义示例：
+   public class sum_delegate : IDelegate_ds_func
+    {
+        BigDecimal ret = new(0);
+        public void init(Group one,BaseExprFaced exprFaced, GroupMap func_ds_map, Object select_expr)
+        {
+            ret = new CellReport.math.BigDecimal(0);
+        }
+        public void midd_proc(Object obj, int cnt)
+        {
+            if (obj is CellReport.core.Variable)
+                obj = ((CellReport.core.Variable)obj).getValue();
+            if (ExprHelper.TryGetDecimal(obj, out var dec))
+                ret = ret.add(dec);
+        }
+        public Object Result()
+        {
+            return ret;
+        }
+    }
+```
+
 
 **将自定义函数添加到执行环境**
 在`startip.cs`中的函数`public void ConfigureServices(IServiceCollection services)`中添加以下代码：

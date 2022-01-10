@@ -16,7 +16,7 @@
 
 <script>
 import { mapGetters } from "vuex";
-import logs from "@/page/logs/index";
+import logs from "@/page/log_manage/index";
 export default {
   name: "top-logs",
   components: { logs },
