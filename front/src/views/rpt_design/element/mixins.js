@@ -78,10 +78,21 @@ export default {
     },
     methods:{
       dataset(ds_name,from=0,to=Number.MAX_VALUE){
-          let ds=this.context.report_result.dataSet[ds_name] 
-          if(ds==undefined)
-              return "没有数据集"+ds_name
-          ds=ds[0]
+        let ds
+        if(this.context?.report_result?.dataSet && this.context.report_result.dataSet[ds_name]  ){
+            ds=this.context.report_result.dataSet[ds_name] 
+            if(ds==undefined)
+                return "没有数据集"+ds_name
+            ds=ds[0]            
+        }
+        else
+          ds=[
+            ['product', '2015', '2016', '2017'],
+            ['Matcha Latte', 43.3, 85.8, 93.7],
+            ['Milk Tea', 83.1, 73.4, 55.1],
+            ['Cheese Cocoa', 86.4, 65.2, 82.5],
+            ['Walnut Brownie', 72.4, 53.9, 39.1]
+        ]
           return ds.slice(from,to)
       },
       /**

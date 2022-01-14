@@ -300,7 +300,7 @@ export function run_one(_this,reportFilePath,query,query_data={},_param_name=nul
             loading.hide(loading_conf)
             setTimeout(() => {
                 _this.$nextTick(x=>{
-                    let form_h=_this.$refs.form.clientHeight
+                    let form_h=_this.$refs.form?_this.$refs.form.clientHeight:0
                     _this.$refs.report_pane.style.height=`calc(100% - ${form_h}px)`
                     document.title = _this.result.data[Object.keys(_this.result.data)[0]].title
                 })

@@ -372,7 +372,3 @@ export default {
     }
 }
 </script>
-
-<style>
-.cr_title{background-color: bisque;line-height: 30px;}
-</style>

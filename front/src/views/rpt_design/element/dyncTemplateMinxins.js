@@ -45,7 +45,7 @@ export default {
             this.old_content=""
             setTimeout(()=>{
                 _this.old_content=_this.self.content
-                _this.buildDisplayData()
+                //_this.buildDisplayData()
             })
         }
     },

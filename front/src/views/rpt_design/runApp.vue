@@ -12,7 +12,7 @@
       </div>
     </el-popover>
 
-    <div ref="form" v-if="!crisMobile && isShow"> 
+    <div ref="form" v-if="!crisMobile && isShow && result.defaultsetting['show_form']=='true'"> 
       <el-form :inline="true" label-position="right" label-width="80px" >
         <input hidden v-for="one in result.form.filter(x=>x.hide=='True')" :key="one.name" v-model="queryForm[one.name]"/>
         <div style="display:inline;max-width:100px" v-for="one in result.form.filter(x=>x.hide=='False')" :key="one.name">
@@ -60,7 +60,7 @@
           </el-form-item>
       </el-form>
     </div>
-    <div  ref="form" v-if="crisMobile && isShow"> 
+    <div  ref="form" v-if=" crisMobile && isShow && result.defaultsetting['show_form']=='true'"> 
       <form > 
         <input hidden v-for="one in result.form.filter(x=>x.hide=='True')" :key="one.name" v-model="queryForm[one.name]"/>
         <img src="img/battle_2021.jpg" style="height: 80px;width: 100%;" v-if="result.form.filter(x=>x.hide=='False').length<=1">
@@ -141,17 +141,17 @@ export default {
   mounted(){    
     let _this=this
     window.onresize=function(){      
-      _this.isShow=false
-          setTimeout(() => {
-              _this.isShow=true
-              setTimeout(() => {
-                  _this.$nextTick(x=>{
-                      let form_h=_this.$refs.form.clientHeight
-                      _this.$refs.report_pane.style.height=`calc(100% - ${form_h}px)`
-                      document.title = _this.result.data[Object.keys(_this.result.data)[0]].title
-                  })
-              });
-          });
+        //_this.isShow=false
+        //  setTimeout(() => {
+        //      _this.isShow=true
+        //      setTimeout(() => {
+        //          _this.$nextTick(x=>{
+        //              let form_h=_this.$refs.form?_this.$refs.form.clientHeight:0
+        //              _this.$refs.report_pane.style.height=`calc(100% - ${form_h}px)`
+        //              document.title = _this.result.data[Object.keys(_this.result.data)[0]].title
+        //          })
+        //      });
+        //  });
       }
   },
   created() {
@@ -303,10 +303,10 @@ export default {
         Object.keys( _this.result?.name_lable_map).forEach(one => {
             one_obj=_this.result?.name_lable_map[one]
             if(one_obj.component=="ele-grid"){
-              let {valid_data,valid_fileds,real_data}=build_chart_data(one_obj.datasource,{report_result:_this.result,clickedEle:_this.clickedEle,
+              let {__valid_data__,valid_fileds,real_data}=build_chart_data(one_obj.datasource,{report_result:_this.result,clickedEle:_this.clickedEle,
                   allElementSet:_this.allElementSet,},one_obj.fields)
-              //let tableData = convert_array_to_json(valid_data)
-              ws= XLSX.utils.aoa_to_sheet(valid_data)
+              //let tableData = convert_array_to_json(__valid_data__)
+              ws= XLSX.utils.aoa_to_sheet(__valid_data__)
               Object.entries(ws).forEach(([k,cell])=>{
                 if(k=="!ref")
                   return
@@ -386,6 +386,9 @@ html, body, #report_app {
     margin: 0;
     padding: 0;
     overflow-x: hidden;
+    display: flex;
+    /* width: 100%; */
+    flex-direction: column;
 }
  .widget-form-container {
     height: 100%;
@@ -396,7 +399,7 @@ html, body, #report_app {
     bottom: 0;
 }
 .report_define .widget-form-container .el-form {
-    height: 100%;
+    flex:1;
 }
 .report_define .el-tabs--border-card .el-tabs__content {
     height: calc(100% - 40px);
@@ -458,9 +461,6 @@ div::-webkit-scrollbar-track {
   border-radius: 10px;
 }
     .border-box-content {
-      color: rgb(66,185,131);
-      font-size: 40px;
-      font-weight: bold;
       display: flex;
       justify-content: center;
       align-items: center;

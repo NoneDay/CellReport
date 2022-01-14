@@ -37,8 +37,8 @@ function default_chart(chart_name,series_type,chart_option=`{
   legend: {selectedMode:'single'},//单选模式
   tooltip: {},
   dataset: {
-      // 提供一份数据。valid_data为自动生成，如果全自定义，就不要使用
-      source: valid_data
+      // 提供一份数据。__valid_data__为自动生成，如果全自定义，就不要使用
+      source: __valid_data__
   },
   grid:{left :30,right:10,top:10,bottom:30},
   // 声明一个 X 轴，类目轴（category）。默认情况下，类目轴对应到 dataset 第一列。
@@ -53,7 +53,7 @@ function default_chart(chart_name,series_type,chart_option=`{
   // 声明多个 bar 系列，默认情况下，每个系列会自动对应到 dataset 的每一列。
   series:function(){
       let series_type=[]
-      valid_data[0].slice(1).forEach(ele=>{
+      __valid_data__[0].slice(1).forEach(ele=>{
           series_type.push(__series_type__)
       }); return series_type
     }() 
@@ -64,19 +64,11 @@ function default_chart(chart_name,series_type,chart_option=`{
       'icon-table','color':'#fff',display: true,
       'component':'echarts',style:{height:'100%'}, 
       "series_type":series_type,
-      
-        fields:[{key:'product',label:'product',selected:true,type: 'bar'},
-            {key:'2015',label:'2015年',selected:true,type: 'bar'},
-            {key:'2016',label:'2016年',selected:true,type: 'bar'},
-            {key:'2017',label:'2017年',selected:true,type: 'bar'}
+      fresh_ds:[],fresh_params:[],
+        fields:[
           ],
-        datasource:'示例',fresh_ds:[],fresh_params:[],
-        data:[
-            ['product', '2015', '2016', '2017'],
-            ['Matcha Latte', 43.3, 85.8, 93.7],
-            ['Milk Tea', 83.1, 73.4, 55.1],
-            ['Cheese Cocoa', 86.4, 65.2, 82.5],
-            ['Walnut Brownie', 72.4, 53.9, 39.1]
+        datasource:'示例',
+        data:[ 
         ]
         ,content:`option = `+chart_option
       
@@ -117,10 +109,7 @@ export default [
             pageSize:20,
             gridName:'_random_',
            datasource:"示例",fresh_ds:[],fresh_params:[],
-            fields:[{key:'product',label:'product',selected:true,type: 'bar'},
-            {key:'2015',label:'2015年',selected:true,type: 'bar'},
-            {key:'2016',label:'2016年',selected:true,type: 'bar'},
-            {key:'2017',label:'2017年',selected:true,type: 'bar'}
+            fields:[
           ],style:{height:'100%'},
             content:`<div style="width:100%;height:100%" v-if="tableData.length>0"> 
             <el-table stripe border height="calc(100% - 28px)"  @cell-click="cell_click"
@@ -183,56 +172,18 @@ export default [
           display: true, 'component':'dync-template',style:{height:'100%'},'content':`<dv-decoration-12 style="width:100%;height:100%;" />`},
  
           {"type":"动态环图",'label':'动态环图',gridName:"_random_",h:4, span:6,icon: 'icon-table','color':'#fff',
-          display: true, 'component':'dync-template',style:{height:'100%'},'content':`<dv-active-ring-chart :config="{
-            data: [
-              {
-                name: '周口',
-                value: 55
-              },
-              {
-                name: '南阳',
-                value: 120
-              },
-              {
-                name: '西峡',
-                value: 78
-              },
-              {
-                name: '驻马店',
-                value: 66
-              },
-              {
-                name: '新乡',
-                value: 80
-              }
-            ]
-          }" style="width:100%;height:100%;" />`},
+          display: true, 'component':'dync-template',style:{height:'100%'},'content':`<dv-active-ring-chart :config="{  
+            data: Enumerable.from(dataset('演示')).skip(1).select(x=> { 
+              return {'name':x[0],value:x[1]} 
+            }).toArray()
+          }"   style="width:100%;height:100%" /> `},
         
           {"type":"胶囊柱图",'label':'胶囊柱图',gridName:"_random_",h:4, span:6,icon: 'icon-table','color':'#fff',
-          display: true, 'component':'dync-template',style:{height:'100%'},'content':`<dv-capsule-chart :config=" {
-            data: [
-              {
-                name: '南阳',
-                value: 167
-              },
-              {
-                name: '周口',
-                value: 67
-              },
-              {
-                name: '漯河',
-                value: 123
-              },
-              {
-                name: '郑州',
-                value: 55
-              },
-              {
-                name: '西峡',
-                value: 98
-              }
-            ]
-          }" style="width:100%;height:100%;" />`},
+          display: true, 'component':'dync-template',style:{height:'100%'},'content':`<dv-capsule-chart :config="{  
+            data: Enumerable.from(dataset('演示')).skip(1).select(x=> { 
+              return {'name':x[0],value:x[1]} 
+            }).toArray()
+          }"  style="width:100%;height:100%;" />`},
           {"type":"水位图",'label':'水位图',gridName:"_random_",h:4, span:6,icon: 'icon-table','color':'#fff',
           display: true, 'component':'dync-template',style:{height:'100%'},'content':`<dv-water-level-pond :config=" {
             data: [66]
@@ -248,36 +199,9 @@ export default [
 
           {"type":"锥形柱图",'label':'锥形柱图',gridName:"_random_",h:4, span:6,icon: 'icon-table','color':'#fff',
           display: true, 'component':'dync-template',style:{height:'100%'},'content':`<dv-conical-column-chart :config="{
-            data: [
-              {
-                name: '周口',
-                value: 55
-              },
-              {
-                name: '南阳',
-                value: 120
-              },
-              {
-                name: '西峡',
-                value: 71
-              },
-              {
-                name: '驻马店',
-                value: 66
-              },
-              {
-                name: '新乡',
-                value: 80
-              },
-              {
-                name: '信阳',
-                value: 35
-              },
-              {
-                name: '漯河',
-                value: 15
-              }
-            ],
+            data:Enumerable.from(dataset('演示')).skip(1).select(x=> { 
+              return {'name':x[0],value:x[1]} 
+            }).toArray(),
             img: [
               '/img/conicalColumnChart/1st.png',
               '/img/conicalColumnChart/2st.png',
@@ -298,52 +222,14 @@ export default [
           </dv-border-box-8>`},
           {"type":"轮播表",'label':'轮播表',gridName:"_random_",h:4, span:6,icon: 'icon-table','color':'#fff',
           display: true, 'component':'dync-template',style:{height:'100%'},'content':`<dv-scroll-board :config="{
-            header: ['列1', '列2', '列3'],
-            data: [
-              ['行1列1', '行1列2', '行1列3'],
-              ['行2列1', '行2列2', '行2列3'],
-              ['行3列1', '行3列2', '行3列3'],
-              ['行4列1', '行4列2', '行4列3'],
-              ['行5列1', '行5列2', '行5列3'],
-              ['行6列1', '行6列2', '行6列3'],
-              ['行7列1', '行7列2', '行7列3'],
-              ['行8列1', '行8列2', '行8列3'],
-              ['行9列1', '行9列2', '行9列3'],
-              ['行10列1', '行10列2', '行10列3']
-            ]
+            header: dataset('演示')[0],
+            data: dataset('演示').slice(1)
           }" style="width:100%;height:100%;" />`},
           {"type":"排名轮播表",'label':'排名轮播表',gridName:"_random_",h:4, span:6,icon: 'icon-table','color':'#fff',
           display: true, 'component':'dync-template',style:{height:'100%'},'content':`<dv-scroll-ranking-board :config="{
-            data: [
-              {
-                name: '周口',
-                value: 55
-              },
-              {
-                name: '南阳',
-                value: 120
-              },
-              {
-                name: '西峡',
-                value: 78
-              },
-              {
-                name: '驻马店',
-                value: 66
-              },
-              {
-                name: '新乡',
-                value: 80
-              },
-              {
-                name: '信阳',
-                value: 45
-              },
-              {
-                name: '漯河',
-                value: 29
-              }
-            ]
+            data: Enumerable.from(dataset('演示')).skip(1).select(x=> { 
+              return {'name':x[0],value:x[1]} 
+            }).toArray()
           }" style="width:100%;height:100%;" />`},
 
       ]
@@ -1016,8 +902,8 @@ export default [
               tooltip: {},
               "polar": {},"angleAxis":{},
               dataset: {
-                  // 提供一份数据。valid_data为自动生成，如果全自定义，就不要使用
-                  source: valid_data
+                  // 提供一份数据。__valid_data__为自动生成，如果全自定义，就不要使用
+                  source: __valid_data__
               },
               // 声明一个 X 轴，类目轴（category）。默认情况下，类目轴对应到 dataset 第一列。
               
@@ -1026,7 +912,7 @@ export default [
               // 声明多个 bar 系列，默认情况下，每个系列会自动对应到 dataset 的每一列。
                 series:function(){
                   let series_type=[]
-                  valid_data[0].slice(1).forEach(ele=>{
+                  __valid_data__[0].slice(1).forEach(ele=>{
                       series_type.push(__series_type__)
                   }); return series_type
                 }() 
@@ -1048,12 +934,12 @@ export default [
             tooltip: {},
              
             dataset: {
-                // 提供一份数据。valid_data为自动生成，如果全自定义，就不要使用
-                source: valid_data
+                // 提供一份数据。__valid_data__为自动生成，如果全自定义，就不要使用
+                source: __valid_data__
             }, 
               series:function(){
                 let series_type=[]
-                valid_data[0].slice(1).forEach(ele=>{
+                __valid_data__[0].slice(1).forEach(ele=>{
                     series_type.push(__series_type__)
                 }); return series_type
               }() 
@@ -1070,13 +956,13 @@ export default [
             yAxis: {gridIndex: 0},
             grid: {top: '55%'}, 
             dataset: {
-                // 提供一份数据。valid_data为自动生成，如果全自定义，就不要使用
-                source: valid_data
+                // 提供一份数据。__valid_data__为自动生成，如果全自定义，就不要使用
+                source: __valid_data__
             }, 
               series:
               function(){
                 let series_type=[]
-                valid_data[0].slice(1).forEach(ele=>{
+                __valid_data__[0].slice(1).forEach(ele=>{
                     series_type.push(__series_type__)
                 }); 
                 series_type=series_type.concat([{
@@ -1088,9 +974,9 @@ export default [
                       formatter: '{b}: {@2012} ({d}%)'
                   },
                   encode: {
-                      itemName: valid_data[0][0],
-                      value: valid_data[0][1],
-                      tooltip: valid_data[0][1]
+                      itemName: __valid_data__[0][0],
+                      value: __valid_data__[0][1],
+                      tooltip: __valid_data__[0][1]
                   }
                 }])
                 return series_type
@@ -1123,8 +1009,8 @@ export default [
             legend: {selectedMode:'single'},//单选模式
             tooltip: {},
             dataset: {
-                // 提供一份数据。valid_data为自动生成，如果全自定义，就不要使用
-                source: valid_data
+                // 提供一份数据。__valid_data__为自动生成，如果全自定义，就不要使用
+                source: __valid_data__
             },
             grid:{left :0,right:0,top:0,bottom:0},
             // 声明一个 X 轴，类目轴（category）。默认情况下，类目轴对应到 dataset 第一列。
@@ -1139,7 +1025,7 @@ export default [
             // 声明多个 bar 系列，默认情况下，每个系列会自动对应到 dataset 的每一列。
             series:function(){
                 let series_type=[]
-                valid_data.slice(1).forEach(ele=>{
+                __valid_data__.slice(1).forEach(ele=>{
                     series_type.push({"type": "gauge" ,
                                   data: [{
                       value: ele[1],
@@ -1155,8 +1041,8 @@ export default [
             legend: {},
             tooltip: {},
             dataset: {
-                // 提供一份数据。valid_data为自动生成，如果全自定义，就不要使用
-                source: valid_data
+                // 提供一份数据。__valid_data__为自动生成，如果全自定义，就不要使用
+                source: __valid_data__
             },
             grid:{left :30,right:10,top:10,bottom:30},
             // 声明一个 X 轴，类目轴（category）。默认情况下，类目轴对应到 dataset 第一列。
@@ -1166,7 +1052,7 @@ export default [
             // 声明多个 bar 系列，默认情况下，每个系列会自动对应到 dataset 的每一列。
               series:function(){
                 let series_type=[]
-                valid_data[0].slice(1).forEach(ele=>{
+                __valid_data__[0].slice(1).forEach(ele=>{
                     series_type.push(__series_type__)
                 }); return series_type
               }() 

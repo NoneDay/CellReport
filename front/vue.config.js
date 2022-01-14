@@ -10,6 +10,7 @@ const port = process.env.port || process.env.npm_config_port || 8080 // dev port
 module.exports = {
   publicPath: baseUrl, // 根据你的实际情况更改这里
     lintOnSave: false,
+    outputDir:"../publish_release/wwwroot",
     productionSourceMap: true,
     // configureWebpack: config => {
     //     if (process.env.NODE_ENV === 'production') {

@@ -20,7 +20,7 @@
          />
         
     </el-tab-pane>
-    <el-tab-pane label='css缺省值'>
+    <el-tab-pane label='缺省值'>
         <el-form labelPosition="left" label-suffix="："
              labelWidth="100px">
             <el-form-item label="字体">
@@ -47,6 +47,18 @@
             </el-form-item>
              <el-form-item label="布局中每行高度">
                 <el-input  v-model="tmp_css['layout_row_height']"></el-input>
+            </el-form-item>
+             <el-form-item label="布局中列数">
+                <el-input  v-model="tmp_css['layout_colNum']"></el-input>
+            </el-form-item>
+             <el-form-item label="布局中组件间隔">
+                <el-input  v-model="tmp_css['layout_margin']"></el-input>
+            </el-form-item>
+            <el-form-item label="布局中页面大小">
+                <el-input  v-model="tmp_css['layout_pan_height']"></el-input>
+            </el-form-item>
+            <el-form-item label="row_col_gutter">
+                <el-input  v-model="tmp_css['row_col_gutter']"></el-input>
             </el-form-item>
             <el-form-item label="边框样式">
                 <el-select v-model="tmp_css['border_box']" placeholder="请选择边框样式">
@@ -79,14 +91,9 @@ name: "templateManger",
         this.temp_props.forEach(one => {
             one.val=this.action_target[one.name]??""
         });
-        this.tmp_css['BACKGROUND-COLOR']=this.action_target['BACKGROUND-COLOR']??'#FFF'
-        this.tmp_css['COLOR']=this.action_target['COLOR']??'#000'
-        this.tmp_css['FONT']=this.action_target['FONT']??'微软雅黑'
-        this.tmp_css['FONT-SIZE']=this.action_target['FONT-SIZE']??'11'
-        this.tmp_css['layout_mode']=this.action_target['layout_mode']??''
-        this.tmp_css['border_box']=this.action_target['border_box']??'div'
-        this.tmp_css['show_form']=this.action_target['show_form']??'true'
-        this.tmp_css['layout_row_height']=this.action_target['layout_row_height']??'30'
+        Object.keys(this.tmp_css).forEach(x=>{
+            this.copy_prop(this.tmp_css,this.action_target,x)
+        })
         let _this=this
         setTimeout(() => {
         _this.data_ready=true    
@@ -98,7 +105,10 @@ name: "templateManger",
             data_ready:false,
             //['notebook','before_exec_script','footer2','luckysheet_conditionformat',]
             tab_value:"notebook",
-            tmp_css:{'BACKGROUND-COLOR':'','COLOR':'','FONT-SIZE':'','FONT':'','layout_mode':'','border_box':'div','show_form':'true'},
+            tmp_css:{'BACKGROUND-COLOR':'#FFF','COLOR':'#000','FONT-SIZE':'11','FONT':'微软雅黑','layout_mode':'','border_box':'div',
+            'show_form':'true',layout_row_height:"30",layout_colNum:24,layout_margin:"10",layout_pan_height:"100%",'row_col_gutter':'10'
+            
+            },
             temp_props:[
                 {'name':'notebook','mode':"javascript",'label':'记事本','val':"11"},                
                 {'name':'before_exec_script','mode':"javascript",'label':'后端运行前脚本','val':"11"},            
@@ -118,6 +128,10 @@ name: "templateManger",
     
     },
     methods:{
+        copy_prop(target,source,prop){
+            if(source[prop])
+                target[prop]=source[prop]
+        },
         async handleSubmit(){
             let test_obj=this.temp_props.filter(x=>x.name=='before_exec_script')[0]
             if(test_obj.val.trim()!=""){
@@ -131,15 +145,17 @@ name: "templateManger",
             this.temp_props.forEach(one => {
                 this.action_target[one.name]=one.val
             });
-            this.context.report.defaultsetting["BACKGROUND-COLOR"] = this.action_target['BACKGROUND-COLOR']=this.tmp_css['BACKGROUND-COLOR']
-            this.context.report.defaultsetting["COLOR"] = this.action_target['COLOR']=this.tmp_css['COLOR']
-            this.context.report.defaultsetting["FONT"] = this.action_target['FONT']=this.tmp_css['FONT']
-            this.context.report.defaultsetting["FONT-SIZE"] = this.action_target['FONT-SIZE']=this.tmp_css['FONT-SIZE']
-            this.context.report.defaultsetting["layout_mode"] = this.action_target['layout_mode']=this.tmp_css['layout_mode']
-            this.context.report.defaultsetting["border_box"] = this.action_target['border_box']=this.tmp_css['border_box']
-            this.context.report.defaultsetting["show_form"] = this.action_target['show_form']=this.tmp_css['show_form']
-            this.context.report.defaultsetting["layout_row_height"] = this.action_target['layout_row_height']=this.tmp_css['layout_row_height']
+            Object.keys(this.tmp_css).forEach(x=>{
+                this.copy_prop(this.action_target,this.tmp_css,x)
+            })
             
+            if(this.context?.report){
+                Object.keys(this.tmp_css).forEach(x=>{
+                this.copy_prop(this.context.report.defaultsetting,this.action_target,x)
+            })
+            
+            }
+
             this.$emit("submit");
             this.dialogVisible=false
         },

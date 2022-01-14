@@ -6,16 +6,16 @@
          v-show="self.icon"
          style="margin-right: 10px;"></i>{{self.label}}</h1>
          -->
-      <el-row :is="MainComponent" v-if="MainComponent=='el-row'" :gutter="self.gutter" :style="MainComponent=='el-row'?'height: 100%;position: relative;overflow: auto;':''">
+      <el-row :is="MainComponent" v-if="MainComponent=='el-row'" :gutter="gutter" :style="MainComponent=='el-row'?'margin-bottom: 0px;height: 100%;position: relative;overflow: auto;':''">
         <draggable class="widget-form-group__body" style="overflow:auto"
                   :list="self.children.column"
                   :group="{ name: 'form' }"
-                  ghost-class="ghost" 
-                  :animation="200"
+                  ghost-class="ghost" handle=".mover"
+                  
                   @add="handleWidgetGroupAdd($event, self)"
                   @end="$emit('change')">
             <el-col :is="SubComponent" :key="groupIndex"  v-for="(item, groupIndex) in self.children.column"
-                    :md="item.span || 12" :xs="24" :offset="item.offset || 0" 
+                    :md="item.span || 12" :xs="24" :offset="item.offset || 0" :style="{height:(item.height)?item.height:item.style.height}"
                     > 
                 <widget-form-item :self="item" :parent="self"  :index="groupIndex"
                       :select.sync="selectWidget"  :depth="0"
@@ -27,7 +27,7 @@
         <draggable class="widget-form-group__body"
                   :list="self.children.column"
                   :group="{ name: 'form' }"
-                  ghost-class="ghost" 
+                  ghost-class="ghost" handle=".mover"
                   :animation="200" style="height:100%"
                   @add="handleWidgetGroupAdd($event, self)"
                   @end="$emit('change')">
@@ -42,10 +42,10 @@
     </template>
     <template v-else>   
       
-       <component :is="MainComponent" v-if="MainComponent=='el-row'" :gutter="self.gutter" :style="MainComponent=='el-row'?'height: 100%;position: relative;overflow: auto;':''"
+       <component :is="MainComponent" v-if="MainComponent=='el-row'" :gutter="gutter" :style="MainComponent=='el-row'?'margin-bottom: 0px;height: 100%;position: relative;overflow: auto;':''"
        >
             <component :is="SubComponent" :key="groupIndex"  v-for="(item, groupIndex) in self.children.column"
-                    :md="item.span || 12" :xs="24" :offset="item.offset || 0" 
+                    :md="item.span || 12" :xs="24" :offset="item.offset || 0"  :style="{height:(item.height)?item.height:item.style.height}"
                     > 
                 <widget-form-item :self="item" :parent="self" 
                        :index="groupIndex" :depth="0"
@@ -94,6 +94,16 @@ export default {
     SubComponent(){
       return this.my_map[this.self.type].sub
     },
+    gutter(){
+      return 0
+      if(this.self.gutter)
+        return this.self.gutter
+      else
+        if(this.context.mode=='design')
+                return this.context.report.defaultsetting['gutter']??10
+            else
+                return this.context.report_result.defaultsetting['gutter']??10
+    }
   },
   methods: {
     

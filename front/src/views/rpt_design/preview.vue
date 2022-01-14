@@ -38,7 +38,7 @@
   </div>
   <template v-else>
     <div id="report_app" >
-    <div ref="form" > 
+    <div ref="form"> 
       <el-form :inline="true" v-if="previewFormParam.form">
         <input hidden v-for="one in previewFormParam.form.filter(x=>x.hide=='True')" :key="one.name" v-model="queryForm[one.name]"/>
         
@@ -129,6 +129,7 @@ export default {
           //不放到这里，会导致动态runtime-template重算，如果是有滚动行的，会每次都重新跑到顶部
           in_exec_url:this.in_exec_url,
           fresh_ele:this.fresh_ele,
+          defaultsetting:this.result.defaultsetting
       },      
 
     }

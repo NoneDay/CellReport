@@ -1,3 +1,7 @@
+
+.el-col {
+   margin-bottom: 0px; 
+}
 .cr_item_title{
     
   height: 15px;
@@ -211,7 +215,7 @@ $primary-background-color: #ecf8ff;
         overflow-y: hidden;
 
         .widget-form-item {
-          min-height: 25px;
+          
           padding: 1px 1px 1px 1px;
           margin: 0;
           position: relative;
@@ -235,10 +239,7 @@ $primary-background-color: #ecf8ff;
             z-index: 1001;
           }
 
-          &:hover {
 
-            cursor: move;
-          }
 
 
 

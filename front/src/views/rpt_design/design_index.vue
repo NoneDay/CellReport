@@ -85,7 +85,9 @@
                             //{display:'字体大小',val:'_FONT-SIZE',disabled:true},
                             {display:'链接',val:'_link'},                            
                             {display:'显示值表达式',val:'_displayValueExpr'},
-                             {display:'值表达式',val:'_valueExpr'}]"  
+                             {display:'值表达式',val:'_valueExpr'},
+                             {display:'加到style中',val:'_append'},
+                             ]"  
                       style="display: flex;padding-bottom: 10px;" :key="item.display" >
                     
                     <el-tag style="color:black;width:100px">{{item.display}}</el-tag>
@@ -395,7 +397,8 @@ export default {
         in_exec_url:this.in_exec_url,
         mode:"design",
         allElementSet:this.allElementSet,
-        all_sheet_windows:this.all_sheet_windows
+        all_sheet_windows:this.all_sheet_windows,
+        defaultsetting:this.report.defaultsetting
       }, 
       fresh_ele:this.fresh_ele,
       clickedEle:this.clickedEle,

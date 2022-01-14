@@ -331,6 +331,6 @@ export default {
     height: calc(100% - 180px);    padding: 10px;    
 }
 .el-dialog__header{
-    padding: 10px;background-color: bisque;
+    padding: 10px;background-color: bisque;    cursor: move;
 }
 </style>

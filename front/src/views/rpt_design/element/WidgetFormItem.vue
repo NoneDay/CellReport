@@ -1,11 +1,12 @@
 <template>
   <div class="widget-form-item"   :depth="depth+1"
       :prop="self.prop"
-      v-bind="Object.assign({style:Object.assign({},self.style,self.height?{height:self.height}:{})}, self.params)"
+      v-bind="Object.assign({style:Object.assign({},self.style,{height:'100%'} )}, self.params)"
       :class="{active: selectWidget.prop == self.prop, 'required': self.required }"
       @click.stop="handleSelectWidget(index)"> 
 
-    <span v-if="context.mode=='design' ||( self.show_title && self.label)"  class="cr_item_title">
+    <span v-if="(context.mode=='design' ||( self.show_title && self.label))&& (selectWidget == self || self.type=='luckySheetProxy')"  
+    class="mover cr_item_title">
      <span> {{self.label}}</span>
     <el-button title="克隆" style="margin-left: 0px;padding:0px;"
                 @click.stop="handleWidgetClone(index)"
@@ -109,6 +110,12 @@ export default {
           //    x.height=100/children.length +"%"
           //  })
           //}
+          if(this.parent.children.column.length==1){
+            this.parent.type="layout_div"
+          }
+          else{
+            this.parent.type="layout_row_col"
+          }
           this.selectWidget = {prop:'--'}
           this.$emit("change")
         })
@@ -124,6 +131,12 @@ export default {
         this.context?.allElementSet?.add(cloneData.gridName)
       }
       this.parent.children.column.splice(index, 0, cloneData)
+      if(this.parent.children.column.length==1){
+        this.parent.type="layout_div"
+      }
+      else{
+        this.parent.type="layout_row_col"
+      }
       this.$nextTick(() => {
         this.handleSelectWidget(index + 1)
         this.$emit("change")

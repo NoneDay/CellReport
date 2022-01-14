@@ -514,12 +514,10 @@ export default {
                  if(_this.has_name(value))
                     return
                 _this.action_target={__text:'',_dataSource:'',_name:value,_type:command,_fields:"[]"}
-                if(command=="from"){
-                    _this.action_target._dataSource=""
-                    _this.action_target.__text=""
+                if(command=="memory"){
+                    _this.action_target._dataSource="memory"
                 }
                 if(command=="api"){
-                    _this.action_target._dataSource=""
                     _this.action_target.__text=`from_zb( { "url":"报表地址"} );                    
 
 web_request({

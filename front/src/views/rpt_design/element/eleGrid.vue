@@ -54,8 +54,8 @@ export default {
                 this.$message.warning("先点击预览，才能配置与报表结果有关的元素");
                 return;
             }
-            let {valid_data,valid_fileds,real_data}=build_chart_data(this.self.datasource,this.context,this.self.fields)
-            this.tableData = convert_array_to_json(valid_data)
+            let {__valid_data__,valid_fileds,real_data}=build_chart_data(this.self.datasource,this.context,this.self.fields)
+            this.tableData = convert_array_to_json(__valid_data__)
             this.real_data=convert_array_to_json(real_data)
             if(this.real_data.length && this.self.gridName!="_random_"){ 
                 this.$set(this.context.clickedEle,this.self.gridName,{data:this.real_data[0],cell:null,column:null,self:this.self})

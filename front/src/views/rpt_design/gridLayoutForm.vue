@@ -85,9 +85,6 @@
             <el-container style="height: 500px; border: 1px solid #eee">
                 <el-aside width="200px" style="background-color: rgb(238, 241, 246)">
                     <el-form ref="form" :model="form" label-width="80px">
-                        <el-form-item label="活动名称">
-                            <el-input v-model="form.name"></el-input>
-                        </el-form-item>
                         <el-form-item label="边框样式">
                             <el-select v-model="form.border_box" placeholder="请选择边框样式">
                                 <el-option :label="无边框" value="div"></el-option>
@@ -196,22 +193,19 @@ export default {
                 idx:-1,
                 name: '',
                 border_box: '',
-                date1: '',
-                date2: '',
-                delivery: false,
-                type: [],
-                resource: '',
-                desc: ''
+                backgroundColor:"",
+                color1:'',
+                color1:'',
             },
             tmp_layout:[],
             isShow:false,
             showGridLayout:false,
             draggable: true,
             resizable: true,
-            row_height:30,
-            colNum:24,
             newX:0,
             newY:0,
+            row_height:30,
+            colNum:24,
             margin:10,
             pan_height:"100%",
             dialogVisible:false,
@@ -221,7 +215,17 @@ export default {
         let _this=this
         this.isShow=false
         this.showGridLayout=false
-        // this.$gridlayout.load();
+        function defaultSetting(prop){
+            if(_this.context.mode=='design')
+                return _this.context.report.defaultsetting[prop]
+            else
+                return _this.context.report_result.defaultsetting[prop]
+        }
+        
+        this.row_height=isNaN(parseInt(defaultSetting('layout_row_height')))?30:parseInt(defaultSetting('layout_row_height')) 
+        this.colNum=isNaN(parseInt(defaultSetting('layout_colNum')))?24:parseInt(defaultSetting('layout_colNum')) 
+        this.margin=isNaN(parseInt(defaultSetting('layout_margin')))?10:parseInt(defaultSetting('layout_margin')) 
+        this.pan_height=defaultSetting('layout_pan_height')
         this.gridLayoutIndex = this.layout.length;
         let max_rows=0
         let one_line_rows=0
@@ -242,7 +246,9 @@ export default {
             
             _this.pan_height=_this.$parent.$el.clientHeight-1-(this.context.crisMobile?1:1)* _this.$parent.$el.children[0].clientHeight - 1 * _this.margin            
             if(this.context.report_result?.defaultsetting?.layout_mode=='')//高度小于容器高度时自动撑满，大于时保持
-                _this.row_height=Math.max(30,parseInt(_this.pan_height/(this.context.crisMobile?one_line_rows:max_rows))) -_this.margin            
+                _this.row_height=Math.max(
+                    isNaN(parseInt(defaultSetting('layout_row_height')))?30:parseInt(defaultSetting('layout_row_height')) 
+                    ,parseInt(_this.pan_height/(this.context.crisMobile?one_line_rows:max_rows))) -_this.margin            
             
             setTimeout(() => {
                 _this.showGridLayout=true
@@ -450,15 +456,6 @@ background:url("data:image/svg+xml;utf8,<svg t='1641536477492' class='icon' view
     color:black;
     font-size: 11px;
     font-weight: bold;
-}
-.vue-grid-layout {
-    background-color: #282c34;
-}
-.vue-grid-item:not(.vue-grid-placeholder) {
-    background-color: #282c34;
-    color: #303133;
-    border: 1px solid #282c34;
-    
 }
 .vue-grid-item .resizing {
     opacity: 0.9;

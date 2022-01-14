@@ -362,7 +362,8 @@ MigrationBackup/
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
 node_modules/
-dist/
+front/dist/
+/docs/.vuepress/dist/
 
 HnReportModel.cs
 F10.cshtml
@@ -372,3 +373,4 @@ report.db
 report.db-shm
 report.db-wal
 publish_release/
+

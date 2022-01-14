@@ -185,6 +185,8 @@ namespace reportWeb.Controllers
                 {
                     if (cur_exception != null)
                     {
+                        while (cur_exception.InnerException != null)
+                            cur_exception = cur_exception.InnerException;
                         reportDefine.getEnv().logger.Error(cur_exception.Message);
 
                     }
@@ -206,6 +208,8 @@ namespace reportWeb.Controllers
 
                                 if (cur_exception != null)
                                 {
+                                    while (cur_exception.InnerException != null)
+                                        cur_exception = cur_exception.InnerException;
                                     reportWeb.Pages.ReportModel.output_expection(cur_exception, Report.getEnv().logger, Report.getEnv());
                                     jsonWriter.Write(",\"error\":");
                                     jsonWriter.Write(JsonSerializer.Serialize(cur_exception.Message, json_option));

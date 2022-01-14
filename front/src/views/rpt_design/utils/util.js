@@ -229,24 +229,24 @@ export const build_chart_data=function (ds_name_source,context,fields) {
     }
     let valid_fileds=[]  
     if(!fields || fields.length==0)
-        return {valid_data:real_data,valid_fileds:real_data[0],real_data} 
+        return {__valid_data__:real_data,valid_fileds:real_data[0],real_data} 
       
-    let valid_data=[[]]
+    let __valid_data__=[[]]
     for (let index = 0; index < fields.length; index++) {
         const element = fields[index];
         if(!element.selected)
             continue
         valid_fileds.push(real_data[0].indexOf(element.key))
-        valid_data[0].push(element.label)
+        __valid_data__[0].push(element.label)
     }
     real_data.slice(1).forEach(element=>{
         let one_line=[]
-        valid_data.push(one_line)
+        __valid_data__.push(one_line)
         valid_fileds.forEach(i=>{
                 one_line.push(element[i])
         });
     });
-    return {valid_data,valid_fileds,real_data}
+    return {__valid_data__,valid_fileds,real_data}
 }
 export const convert_csv_to_json=function (txt,start=0,end=-1){
     let gridData=[]
