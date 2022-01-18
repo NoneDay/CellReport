@@ -399,7 +399,7 @@ html, body, #report_app {
     bottom: 0;
 }
 .report_define .widget-form-container .el-form {
-    flex:1;
+    height: 100%;
 }
 .report_define .el-tabs--border-card .el-tabs__content {
     height: calc(100% - 40px);

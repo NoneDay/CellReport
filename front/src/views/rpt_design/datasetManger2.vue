@@ -513,7 +513,7 @@ export default {
             .then( ({ value }) => {
                  if(_this.has_name(value))
                     return
-                _this.action_target={__text:'',_dataSource:'',_name:value,_type:command,_fields:"[]"}
+                _this.action_target={__text:' ',_dataSource:'',_name:value,_type:command,_fields:"[]"}
                 if(command=="memory"){
                     _this.action_target._dataSource="memory"
                 }

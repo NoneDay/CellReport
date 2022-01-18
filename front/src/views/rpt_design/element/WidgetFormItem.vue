@@ -94,30 +94,26 @@ export default {
         this.selectWidget = this.self
     },
     handleWidgetDelete (index) {
-      this.self.isDelete=true
-      let children=this.parent.children?.column??this.parent
-      
-        //if (children.length - 1 === index) {
-        //  if (index === 0) this.selectWidget = {}
-        //  else this.handleSelectWidget(index - 1)
-        //} else this.handleSelectWidget(index + 1)
-        
-        //this.parent.children.column[index]
-        this.$nextTick(() => {
-          children.splice(index, 1)
-          //if(children!=this.parent){
-          //  children.forEach(x=>{
-          //    x.height=100/children.length +"%"
-          //  })
-          //}
-          if(this.parent.children.column.length==1){
-            this.parent.type="layout_div"
-          }
-          else{
-            this.parent.type="layout_row_col"
-          }
-          this.selectWidget = {prop:'--'}
-          this.$emit("change")
+      let _this=this
+      this.$confirm('此操作将永久删除该组件, 是否继续?', '提示', {
+                confirmButtonText: '确定',
+                cancelButtonText: '取消',
+                type: 'warning'
+            }).then(() => {
+
+        _this.self.isDelete=true
+        let children=_this.parent.children?.column??_this.parent
+          _this.$nextTick(() => {
+            children.splice(index, 1)
+            if(_this.parent.children.column.length==1){
+              _this.parent.type="layout_div"
+            }
+            else{
+              _this.parent.type="layout_row_col"
+            }
+            _this.selectWidget = {prop:'--'}
+            _this.$emit("change")
+          })
         })
       
     },

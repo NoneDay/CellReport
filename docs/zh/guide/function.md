@@ -166,7 +166,60 @@ ds2数据集分组后的数据为:
 ::: tip
 除了leftJoin_set，其他集合函数都要保证每个数据集的计算结果是唯一的。只有leftJoin_set 的第一个主数据集的计算结果可以不唯一。其他集合的数据集计算如果使用select，需要自行保证计算结果唯一，否则最终结果在做完集合运算后可能不正确。
 :::
-  
+
+## 集合运算后可接函数
+### asc()
+对已经生成的列表做升序计算。如果没有参数，将按集合元素的value计算顺序，有参数就按参数计算结果计算顺序
+``` csharp
+=union_set(ds1.group(ds1.key),ds2.group(ds2.key)).asc()
+=ds1.group(ds1.key).asc()
+```
+### desc()
+对已经生成的列表做降序计算
+
+### where()
+对已经生成的列表做降序计算
+``` csharp
+=union_set(ds1.group(ds1.key),ds2.group(ds2.key)).where(ds1.xx==2)
+=ds1.group(ds1.key).where(@value>100)
+```
+### to_dict()
+将当前生成的列表转换为字典，主键为元素的值
+主要使用在自定义函数中，对数据集做进一步计算。如查找
+``` js
+var ds_dict;//定义一个全局变量
+//在所有数据集取数结束，计算报表的单元格前，将会自动调用这个函数
+function _after_calc_dataset_(){
+   ds_dict=ds.group(ds.订单ID).to_dict();  //字典的key是订单ID，value是group,group.rows是所有订单ID相同的行组成的列表
+}
+
+function 订单ID_count(订单ID,rowno){
+  var _yc=ds_dict[订单ID]; 
+  if(_yc==null)
+      return null;
+  //查找`订单ID`对应的group对应有多少条数据
+  return _yc.count();
+  // 也可以加条件，注意条件里面的数据集名称要和 函数前的一样。_yc.count(_yc.rowno<=rowno);
+  //                                                    ^          ^
+
+  //下面是类似sql中的row_number功能的实现。rowno是原始数据中存放的行号，通过判断行号是否相等来判断是否是同一条数据
+  //当然这样的实现很丑陋，但这仅仅是一个功能演示。_yc.count(_yc.rowno<=rowno)也可以实现类似功能
+  var idx=0;
+  for(var t in _yc){
+    idx=idx+1;
+    if(t.rowno==rowno)
+  	  return idx;  
+  }
+}
+```
+做好预定义后，我们可以在单元格中引用该函数
+``` js
+=订单ID_count(ds.订单ID)//计算某个订单号有几条记录
+```
+::: tip
+单元格计算中，不能使用变量数据集。变量数据集只能在自定义函数中使用。
+:::
+
 ## 单元格函数
 ### ifEmpty(,)
 

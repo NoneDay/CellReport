@@ -612,7 +612,7 @@ export default class ResultGrid2HtmlTable{
         cr-table--enable-row-transition" style="width: 100%; height: 100%;">`)
         let table_obj
         let height=0
-        let min_width,head_height,footer_obj,foot_height
+        let min_width,head_height=0,footer_obj,foot_height=0
         let background_color=this.defaultsetting['BACKGROUND-COLOR']
         if(this.param_grid.optimize){
             // header

@@ -90,7 +90,7 @@ datasetName.cols()
       函数说明：
       根据布尔表达式的不同结果，返回不同的值
       语法：
-      iif(boolExp, trueValueExp, falseValueExp)
+      iif([boolExp, trueValueExp]+, falseValueExp)
       参数说明：
       boolExp			结果为布尔类型的表达式
       trueValueExp		布尔表达式为真时，返回本参数的计算结果，本参数可以是常数或表达式
@@ -101,7 +101,12 @@ datasetName.cols()
       优先判断前面的条件
 
     </function>
+      <function  name="switchCase(,,)" >
+      
+    例子： switchCase(param.xxx,  1,'x1',  2,'x2',  'x3')
+	 	解释：当param。xxx为1时,返回x1，为2时，返回x2，否则返回x3
 
+    </function>
     <function  name="sum()" >参数必须是列表</function>
     <function  name="max()" >参数必须是列表</function>
     <function  name="min()" >参数必须是列表</function>
@@ -147,7 +152,7 @@ col()
       是否相等：缺省为相等
     </function>
 
-    <function  name="@vaule" >本单元格的实际值</function>
+    <function  name="@value" >本单元格的实际值</function>
     <function  name="floor()" >
       取带小数点的数字的地板值
       floor(3.5)=4

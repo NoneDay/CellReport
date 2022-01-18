@@ -256,22 +256,22 @@ export default {
             
             load_css_js(`<style>
             .remove {
-        color:${_this.context.report.defaultsetting['COLOR']};
+        color:${_this.context.report_result.defaultsetting['COLOR']};
 }
 .setting {
-    color:${_this.context.report.defaultsetting['COLOR']};
+    color:${_this.context.report_result.defaultsetting['COLOR']};
 }
 .vue-grid-layout {
-    background-color: ${_this.context.report.defaultsetting['BACKGROUND-COLOR']};
+    background-color: ${_this.context.report_result.defaultsetting['BACKGROUND-COLOR']};
 }
 .vue-grid-item:not(.vue-grid-placeholder) {
-    background-color: ${_this.context.report.defaultsetting['BACKGROUND-COLOR']};
-    color: ${_this.context.report.defaultsetting['COLOR']};
-    border: 0px solid ${_this.context.report.defaultsetting['COLOR']};
+    background-color: ${_this.context.report_result.defaultsetting['BACKGROUND-COLOR']};
+    color: ${_this.context.report_result.defaultsetting['COLOR']};
+    border: 0px solid ${_this.context.report_result.defaultsetting['COLOR']};
     
 }
 .vue-grid-item>.vue-resizable-handle{
-background:url("data:image/svg+xml;utf8,<svg t='1641536477492' class='icon' viewBox='0 0 1024 1024' version='1.1' xmlns='http://www.w3.org/2000/svg' p-id='6325' width='16' height='16'><path d='M903.68 949.76H92.16c-26.624 0-48.64-22.016-48.64-48.64s22.016-48.64 48.64-48.64h762.88v-762.88c0-26.624 22.016-48.64 48.64-48.64s48.64 22.016 48.64 48.64V901.12c0 26.624-22.016 48.64-48.64 48.64z' p-id='6326' fill='${_this.context.report.defaultsetting['COLOR'].replace('#','%23')}'></path></svg>") no-repeat;
+background:url("data:image/svg+xml;utf8,<svg t='1641536477492' class='icon' viewBox='0 0 1024 1024' version='1.1' xmlns='http://www.w3.org/2000/svg' p-id='6325' width='16' height='16'><path d='M903.68 949.76H92.16c-26.624 0-48.64-22.016-48.64-48.64s22.016-48.64 48.64-48.64h762.88v-762.88c0-26.624 22.016-48.64 48.64-48.64s48.64 22.016 48.64 48.64V901.12c0 26.624-22.016 48.64-48.64 48.64z' p-id='6326' fill='${_this.context.report_result.defaultsetting['COLOR'].replace('#','%23')}'></path></svg>") no-repeat;
 }
 </style>
 </style>
