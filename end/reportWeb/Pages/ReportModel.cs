@@ -286,7 +286,8 @@ namespace reportWeb.Pages
                 }
             }
             reportDefineForWeb.CurrentReportDefine.calcGridNames = calcGridNames?.ToArray();
-            reportDefineForWeb.CurrentReportDefine.calcDsNames = new HashSet<String>( calcDsNames );
+            if (calcDsNames != null)
+                reportDefineForWeb.CurrentReportDefine.calcDsNames = new HashSet<String>( calcDsNames );
         } 
         protected internal ReportDefineForWeb reportDefineForWeb;
         public async Task output()

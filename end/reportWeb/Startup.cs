@@ -353,7 +353,8 @@ namespace reportWeb
                     try
                     {
                         var m = MessageQueueBlock<DemoMessage>.Take();//Client(m.ConnectionId)
-                        await m.hubContext.Clients.Client(m.ConnectionId)?.SendAsync("ReceiveMessage",m.ConnectionId,m.Body);                    
+                        if (m.ConnectionId != null)
+                            await m.hubContext.Clients.Client(m.ConnectionId)?.SendAsync("ReceiveMessage",m.ConnectionId,m.Body);                    
                     }
                     catch (Exception ex)
                     {
