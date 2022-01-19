@@ -38,6 +38,8 @@ export default {
     },
     watch:{
         'data.fresh_ds'(){
+            if(this.data.fresh_params==undefined)
+                this.data.fresh_params=[]
             if(this.data.fresh_ds.length==0){
                 this.data.fresh_params.splice(0)
             }else{
@@ -72,6 +74,7 @@ export default {
             return ret;
         },
         fresh_datasource(){
+
             let ret=[]
             this.context.report.dataSets.dataSet.forEach(element=>{
                 ret.push(`数据集:${element._name}`)
@@ -79,6 +82,13 @@ export default {
             this.context.report.AllGrids.grid.forEach(element=>{
                     ret.push(`表格:${element._name}`)
                 });
+            let t_fresh_ds=[]
+            this.data.fresh_ds.forEach(x=>{ 
+                if(ret.includes(x))
+                    t_fresh_ds.push(x)
+            })
+            this.data.fresh_ds=t_fresh_ds
+
             return ret;
         }
     }

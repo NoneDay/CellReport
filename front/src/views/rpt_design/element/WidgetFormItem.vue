@@ -29,7 +29,7 @@
     </span>
     
     <div :style="{width:'100%',height:`calc(100% - 0px`}">
-    <component draggable=".item" 
+    <component draggable=".item" v-if="context.mode=='design'"
                :is="getComponent(self.type, self.component)"
                :self="self" :parent="parent" 
                :select.sync="selectWidget"  :depth="depth+1"
@@ -40,6 +40,18 @@
       <span v-if="params.html"
             v-html="params.html"></span>
     </component>
+    <component  v-else
+               :is="getComponent(self.type, self.component)"
+               :self="self" :parent="parent" 
+               :select.sync="selectWidget"  :depth="depth+1"
+               v-bind="Object.assign(this.deepClone(self), self.params, {content:undefined,___depth:depth,depth:depth+1, size:self.size || 'small' })"
+               
+               @change="$emit('change')">
+
+      <span v-if="params.html"
+            v-html="params.html"></span>
+    </component>
+
     </div>
   </div>
 </template>

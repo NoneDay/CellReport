@@ -131,7 +131,8 @@ export default {
           data.append(ele.name,p_data.data[ele.value])
         })        
         _this.context.in_exec_url.stat=true;
-        let url= `${baseUrl}/design/preview`
+        let grpid=_this.context.report.reportName.split(":")[0]
+        let url= `${baseUrl}/design/preview:${grpid}`
         if(_this.context.mode=='run')
         {
           url=_this.context.in_exec_url.run_url
