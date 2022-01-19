@@ -26,7 +26,7 @@ footer: MIT Licensed | Copyright © 2022-present
 ### 需要安装的软件
 - 下载安装NETCORE6 SDK 或 RUNTIME.[Download .NET (Linux, macOS, and Windows)](https://dotnet.microsoft.com/download)
 - 下载安装redis（可选）。最好安装 [https://github.com/MicrosoftArchive/redis/releases](https://github.com/MicrosoftArchive/redis/releases)
-- [github下载release](https://github.com/NoneDay/CellReport/releases/download/1.0.1/cellreport.zip) 。
+- [github下载release](https://github.com/NoneDay/CellReport/releases/download/1.0.2/cellreport.zip) 。
 
 
 ### 运行和配置
