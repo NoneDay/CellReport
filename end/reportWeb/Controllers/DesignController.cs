@@ -158,7 +158,10 @@ namespace reportWeb.Controllers
                 {
                     foreach (var item in JsonDocument.Parse(_fresh_params).RootElement.EnumerateArray())
                     {
-                        reportDefine.getEnv().addParam(item.GetProperty("name").GetString(), item.GetProperty("value").GetString());
+                        reportDefine.getEnv().addParam(item.GetProperty("name").GetString(),
+                            item.GetProperty("value").ValueKind == JsonValueKind.Number
+                            ? item.GetProperty("value").GetDecimal()
+                            : item.GetProperty("value").GetString());
                     }
                 }
                 reportDefine.calcGridNames = calcGridNames?.ToArray();
@@ -171,6 +174,7 @@ namespace reportWeb.Controllers
                 exprFaced.getVariableDefine("_zb_password_").value = rpt_group.zb_password;
                 exprFaced.getVariableDefine("_rpt_group_").value = rpt_group;
                 exprFaced.getVariableDefine("_need_dataset_").value = (_createFormParam != true);
+
                 if (_createFormParam == true)
                 {
                     exprFaced.addVariable("_createFormParam_", _createFormParam);
@@ -208,11 +212,15 @@ namespace reportWeb.Controllers
 
                                 if (cur_exception != null)
                                 {
-                                    while (cur_exception.InnerException != null)
-                                        cur_exception = cur_exception.InnerException;
                                     reportWeb.Pages.ReportModel.output_expection(cur_exception, Report.getEnv().logger, Report.getEnv());
+                                    StringBuilder sb = new StringBuilder();
+                                    while (cur_exception.InnerException != null)
+                                    {
+                                        sb.AppendLine(cur_exception.Message);
+                                        cur_exception = cur_exception.InnerException;
+                                    }
                                     jsonWriter.Write(",\"error\":");
-                                    jsonWriter.Write(JsonSerializer.Serialize(cur_exception.Message, json_option));
+                                    jsonWriter.Write(JsonSerializer.Serialize(sb.ToString(), json_option));
                                 }
 
                                 jsonWriter.Write("\n}");
@@ -290,6 +298,7 @@ namespace reportWeb.Controllers
                 exprFaced.addVariable("_zb_user_", rpt_group.zb_user);
                 exprFaced.addVariable("_zb_password_", rpt_group.zb_password);
                 exprFaced.addVariable("_rpt_group_", rpt_group);
+
                 var exec_result = exprFaced.calculate("{\n" + expr + "\n}", null);
 
                 return Json(new { errcode = 0, message = "", result = exec_result }, json_option);

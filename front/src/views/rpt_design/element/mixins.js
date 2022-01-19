@@ -131,12 +131,14 @@ export default {
           data.append(ele.name,p_data.data[ele.value])
         })        
         _this.context.in_exec_url.stat=true;
-        let grpid=_this.context.report.reportName.split(":")[0]
-        let url= `${baseUrl}/design/preview:${grpid}`
+        
+        let url
         if(_this.context.mode=='run')
         {
           url=_this.context.in_exec_url.run_url
         }else{
+          let grpid=_this.context.report.reportName.split(":")[0]
+          url= `${baseUrl}/design/preview:${grpid}`
           data.append("_fresh_params", JSON.stringify(t_params))
         }
         request({method: 'post',url,data,withCredentials: true
@@ -150,8 +152,8 @@ export default {
           _this.fresh_ele.splice(0)
           if(_this.context.report_result.dataSet==undefined)
             _this.context.report_result.dataSet={}
-          Object.keys(response.dataSet).forEach(name => {
-            _this.context.report_result.dataSet[name] =response.dataSet[name]  
+          Object.keys(_this.context.report_result.dataSet).forEach(name => {
+            _this.context.report_result.dataSet[name] =_this.context.report_result.dataSet[name]  
             _this.fresh_ele.push("数据集:"+name);
           });
           Object.keys(response.data).forEach(name => {
