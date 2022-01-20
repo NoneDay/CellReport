@@ -1,13 +1,7 @@
 ﻿<report version="2" needCatchQuShuException="False">
 <dataSets>
-<dataSet name="ds1" type="sql" dataSource="testsqlite" fields="[&quot;类别ID&quot;,&quot;类别名称&quot;]">SELECT 类别.类别ID, 类别.类别名称
-FROM 类别
-where
-类别.类别ID &lt; 8</dataSet>
-<dataSet name="ds2" type="sql" dataSource="testsqlite" fields="[&quot;类别ID&quot;,&quot;类别名称&quot;]">SELECT 类别.类别ID, 类别.类别名称
-FROM 类别
-where
-类别.类别ID &gt;1</dataSet>
+<dataSet name="ds1" type="sql" dataSource="testsqlite" fields="[&quot;类别ID&quot;,&quot;类别名称&quot;]">SELECT 类别.类别ID, 类别.类别名称&#xA;FROM 类别&#xA;where&#xA;类别.类别ID &lt; 8</dataSet>
+<dataSet name="ds2" type="sql" dataSource="testsqlite" fields="[&quot;类别ID&quot;,&quot;类别名称&quot;]">SELECT 类别.类别ID, 类别.类别名称&#xA;FROM 类别&#xA;where&#xA;类别.类别ID &gt;1</dataSet>
 </dataSets>
 <params />
 <AllGrids>
@@ -55,53 +49,8 @@ where
 <no_use_parent_css>0</no_use_parent_css>
 </grid>
 </AllGrids>
-<reportName>test:/test_交集.cr</reportName>
-<layout>[
-    {
-        &quot;x&quot;: 0,
-        &quot;y&quot;: 0,
-        &quot;w&quot;: 24,
-        &quot;h&quot;: 15,
-        &quot;i&quot;: 0,
-        &quot;element&quot;: {
-            &quot;type&quot;: &quot;layout_div&quot;,
-            &quot;label&quot;: &quot;div布局&quot;,
-            &quot;span&quot;: 24,
-            &quot;icon&quot;: &quot;icon-group&quot;,
-            &quot;display&quot;: true,
-            &quot;style&quot;: {
-                &quot;height&quot;: &quot;100%&quot;
-            },
-            &quot;component&quot;: &quot;widget-form-group&quot;,
-            &quot;prop&quot;: &quot;_random_&quot;,
-            &quot;children&quot;: {
-                &quot;column&quot;: [
-                    {
-                        &quot;type&quot;: &quot;luckySheetProxy&quot;,
-                        &quot;label&quot;: &quot;main&quot;,
-                        &quot;display&quot;: true,
-                        &quot;style&quot;: {
-                            &quot;height&quot;: &quot;100%&quot;
-                        },
-                        &quot;no_use_parent_css&quot;: true,
-                        &quot;fit&quot;: false,
-                        &quot;page_size&quot;: 20,
-                        &quot;page_sizes&quot;: &quot;[20, 50, 100, 200]&quot;,
-                        &quot;gridName&quot;: &quot;main&quot;,
-                        &quot;span&quot;: 24,
-                        &quot;component&quot;: &quot;luckySheetProxy&quot;,
-                        &quot;prop&quot;: &quot;1638166837614_89949&quot;,
-                        &quot;fresh_ds&quot;: [],
-                        &quot;fresh_params&quot;: [],
-                        &quot;conditionformat_save&quot;: &quot;[]&quot;,
-                        &quot;alternateformat_save&quot;: &quot;[]&quot;
-                    }
-                ]
-            }
-        },
-        &quot;moved&quot;: false
-    }
-]</layout>
+<reportName>example:/test_交集.cr</reportName>
+<layout>[&#xA;    {&#xA;        &quot;x&quot;: 0,&#xA;        &quot;y&quot;: 0,&#xA;        &quot;w&quot;: 24,&#xA;        &quot;h&quot;: 7,&#xA;        &quot;i&quot;: 0,&#xA;        &quot;element&quot;: {&#xA;            &quot;type&quot;: &quot;layout_div&quot;,&#xA;            &quot;label&quot;: &quot;div布局&quot;,&#xA;            &quot;span&quot;: 24,&#xA;            &quot;icon&quot;: &quot;icon-group&quot;,&#xA;            &quot;display&quot;: true,&#xA;            &quot;style&quot;: {&#xA;                &quot;height&quot;: &quot;100%&quot;&#xA;            },&#xA;            &quot;component&quot;: &quot;widget-form-group&quot;,&#xA;            &quot;prop&quot;: &quot;_random_&quot;,&#xA;            &quot;children&quot;: {&#xA;                &quot;column&quot;: [&#xA;                    {&#xA;                        &quot;type&quot;: &quot;luckySheetProxy&quot;,&#xA;                        &quot;label&quot;: &quot;main&quot;,&#xA;                        &quot;display&quot;: true,&#xA;                        &quot;style&quot;: {&#xA;                            &quot;height&quot;: &quot;100%&quot;&#xA;                        },&#xA;                        &quot;no_use_parent_css&quot;: true,&#xA;                        &quot;fit&quot;: false,&#xA;                        &quot;page_size&quot;: 20,&#xA;                        &quot;page_sizes&quot;: &quot;[20, 50, 100, 200]&quot;,&#xA;                        &quot;gridName&quot;: &quot;main&quot;,&#xA;                        &quot;span&quot;: 24,&#xA;                        &quot;component&quot;: &quot;luckySheetProxy&quot;,&#xA;                        &quot;prop&quot;: &quot;1638166837614_89949&quot;,&#xA;                        &quot;fresh_ds&quot;: [],&#xA;                        &quot;fresh_params&quot;: [],&#xA;                        &quot;conditionformat_save&quot;: &quot;[]&quot;,&#xA;                        &quot;alternateformat_save&quot;: &quot;[]&quot;&#xA;                    }&#xA;                ]&#xA;            }&#xA;        },&#xA;        &quot;moved&quot;: false,&#xA;        &quot;show&quot;: true&#xA;    },&#xA;    {&#xA;        &quot;x&quot;: 0,&#xA;        &quot;y&quot;: 7,&#xA;        &quot;w&quot;: 8,&#xA;        &quot;h&quot;: 7,&#xA;        &quot;i&quot;: 1,&#xA;        &quot;element&quot;: {&#xA;            &quot;type&quot;: &quot;layout_div&quot;,&#xA;            &quot;label&quot;: &quot;div布局&quot;,&#xA;            &quot;span&quot;: 24,&#xA;            &quot;icon&quot;: &quot;icon-group&quot;,&#xA;            &quot;display&quot;: true,&#xA;            &quot;style&quot;: {&#xA;                &quot;height&quot;: &quot;100%&quot;&#xA;            },&#xA;            &quot;component&quot;: &quot;widget-form-group&quot;,&#xA;            &quot;prop&quot;: &quot;_random_&quot;,&#xA;            &quot;children&quot;: {&#xA;                &quot;column&quot;: [&#xA;                    {&#xA;                        &quot;type&quot;: &quot;echart&quot;,&#xA;                        &quot;label&quot;: &quot;柱状图&quot;,&#xA;                        &quot;gridName&quot;: &quot;echart1642640215648_38473&quot;,&#xA;                        &quot;color&quot;: &quot;#fff&quot;,&#xA;                        &quot;display&quot;: true,&#xA;                        &quot;component&quot;: &quot;echarts&quot;,&#xA;                        &quot;style&quot;: {&#xA;                            &quot;height&quot;: &quot;100%&quot;&#xA;                        },&#xA;                        &quot;series_type&quot;: &quot;{\&quot;type\&quot;:\&quot;bar\&quot;}&quot;,&#xA;                        &quot;fresh_ds&quot;: [],&#xA;                        &quot;fresh_params&quot;: [],&#xA;                        &quot;fields&quot;: [],&#xA;                        &quot;datasource&quot;: &quot;示例&quot;,&#xA;                        &quot;data&quot;: [],&#xA;                        &quot;content&quot;: &quot;option = {\n  //backgroundColor: &#x27;#fff&#x27;,\n  legend: {selectedMode:&#x27;single&#x27;},//单选模式\n  tooltip: {},\n  dataset: {\n      // 提供一份数据。__valid_data__为自动生成，如果全自定义，就不要使用\n      source: __valid_data__\n  },\n  grid:{left :30,right:10,top:10,bottom:30},\n  // 声明一个 X 轴，类目轴（category）。默认情况下，类目轴对应到 dataset 第一列。\n  yAxis: {},\n  // 声明一个 Y 轴，数值轴。\n  xAxis: {type: &#x27;category&#x27;,\&quot;axisLabel\&quot;: {\n    \&quot;margin\&quot;: 8,\n    \&quot;interval\&quot;:0,//解决代码,坐标轴上的刻度是否全显示\n    \&quot;textStyle\&quot;: {\n        \&quot;color\&quot;: \&quot;#676767\&quot;\n    }}},\n  // 声明多个 bar 系列，默认情况下，每个系列会自动对应到 dataset 的每一列。\n  series:function(){\n      let series_type=[]\n      __valid_data__[0].slice(1).forEach(ele=&gt;{\n          series_type.push({\&quot;type\&quot;:\&quot;bar\&quot;})\n      }); return series_type\n    }() \n}&quot;,&#xA;                        &quot;prop&quot;: &quot;1642640215648_29386&quot;,&#xA;                        &quot;span&quot;: 12,&#xA;                        &quot;height&quot;: &quot;100%&quot;&#xA;                    }&#xA;                ]&#xA;            }&#xA;        },&#xA;        &quot;show&quot;: true,&#xA;        &quot;border_box&quot;: &quot;div&quot;,&#xA;        &quot;moved&quot;: false&#xA;    },&#xA;    {&#xA;        &quot;x&quot;: 8,&#xA;        &quot;y&quot;: 7,&#xA;        &quot;w&quot;: 9,&#xA;        &quot;h&quot;: 7,&#xA;        &quot;i&quot;: 2,&#xA;        &quot;element&quot;: {&#xA;            &quot;type&quot;: &quot;layout_div&quot;,&#xA;            &quot;label&quot;: &quot;div布局&quot;,&#xA;            &quot;span&quot;: 24,&#xA;            &quot;icon&quot;: &quot;icon-group&quot;,&#xA;            &quot;display&quot;: true,&#xA;            &quot;style&quot;: {&#xA;                &quot;height&quot;: &quot;100%&quot;&#xA;            },&#xA;            &quot;component&quot;: &quot;widget-form-group&quot;,&#xA;            &quot;prop&quot;: &quot;_random_&quot;,&#xA;            &quot;children&quot;: {&#xA;                &quot;column&quot;: [&#xA;                    {&#xA;                        &quot;type&quot;: &quot;ele-grid&quot;,&#xA;                        &quot;label&quot;: &quot;ele_grid&quot;,&#xA;                        &quot;color&quot;: &quot;#fff&quot;,&#xA;                        &quot;display&quot;: true,&#xA;                        &quot;pageSize&quot;: 20,&#xA;                        &quot;gridName&quot;: &quot;ele_grid1642640222712_74423&quot;,&#xA;                        &quot;datasource&quot;: &quot;示例&quot;,&#xA;                        &quot;fresh_ds&quot;: [],&#xA;                        &quot;fresh_params&quot;: [],&#xA;                        &quot;fields&quot;: [],&#xA;                        &quot;style&quot;: {&#xA;                            &quot;height&quot;: &quot;100%&quot;&#xA;                        },&#xA;                        &quot;content&quot;: &quot;&lt;div style=\&quot;width:100%;height:100%\&quot; v-if=\&quot;tableData.length&gt;0\&quot;&gt; \n            &lt;el-table stripe border height=\&quot;calc(100% - 28px)\&quot;  @cell-click=\&quot;cell_click\&quot;\n              :data=\&quot;tableData.slice((currentPage - 1) * self.pageSize, currentPage*self.pageSize)\&quot; \n            &gt;\n                &lt;el-table-column v-for=\&quot;(one,idx) in Object.keys(tableData[0])\&quot;  sortable\n                  :key=\&quot;one+idx\&quot; :prop=\&quot;one\&quot; :label=\&quot;one\&quot;&gt; \n                &lt;/el-table-column&gt;\n            &lt;/el-table&gt;\n            &lt;el-pagination  \n                :current-page.sync=\&quot;currentPage\&quot;\n                :page-sizes=\&quot;[2, 5, 10, 20]\&quot;\n                :page-size.sync=\&quot;self.pageSize\&quot; \n                layout=\&quot;total, sizes, prev, pager, next, jumper\&quot;\n                :total.sync=\&quot;tableData.length\&quot;&gt;\n            &lt;/el-pagination&gt;\n            &lt;/div&gt; &quot;,&#xA;                        &quot;component&quot;: &quot;ele-grid&quot;,&#xA;                        &quot;prop&quot;: &quot;1642640222712_92800&quot;,&#xA;                        &quot;span&quot;: 12,&#xA;                        &quot;height&quot;: &quot;100%&quot;&#xA;                    }&#xA;                ]&#xA;            }&#xA;        },&#xA;        &quot;show&quot;: true,&#xA;        &quot;border_box&quot;: &quot;div&quot;,&#xA;        &quot;moved&quot;: false&#xA;    }&#xA;]</layout>
 <includeFiles />
 <datasources>
 <dataSource name="as" oledb="0">Dsn=testDb</dataSource>
@@ -136,10 +85,18 @@ where
 <e_col>4</e_col>
 </range_level>
 <defaultsetting>
-<font>微软雅黑</font>
-<font_size>11</font_size>
-<color>black</color>
-<border_style>gray 1px dotted</border_style>
+<BACKGROUND-COLOR>white</BACKGROUND-COLOR>
+<COLOR>black</COLOR>
+<FONT>微软雅黑</FONT>
+<FONT-SIZE>11</FONT-SIZE>
+<border_box>div</border_box>
+<layout_mode />
+<show_form>true</show_form>
+<layout_row_height>30</layout_row_height>
+<layout_colNum>24</layout_colNum>
+<layout_margin>10</layout_margin>
+<layout_pan_height>100%</layout_pan_height>
+<row_col_gutter>10</row_col_gutter>
 </defaultsetting>
 <functions />
 <script />

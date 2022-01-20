@@ -201,7 +201,7 @@ namespace reportWeb
             _reportDbContext.Database.EnsureCreated();//数据库不存在的话，会自动创建
             if (_reportDbContext.Rpt_group.Count() == 0)
             {
-                var main_path = Path.Combine(Directory.GetDirectoryRoot(env.ContentRootPath), "reportdefine_root", "default");
+                var main_path = new DirectoryInfo(Path.Combine(env.ContentRootPath, "..", "reportdefine_root", "default")).FullName;
                 _reportDbContext.Rpt_group.Add(new Rpt_group()
                 {
                     Id = "default",

@@ -70,8 +70,8 @@ namespace CellReport
             if (reportDefine == null && reportName != null && reportName != ""
                 && gobal_reportDefinePath != null && gobal_reportDefinePath != "")
             {
-                    if (!gobal_reportDefinePath.EndsWith("\\"))
-                        gobal_reportDefinePath = gobal_reportDefinePath + "\\";
+                    if (!gobal_reportDefinePath.EndsWith(Path.DirectorySeparatorChar))
+                        gobal_reportDefinePath = gobal_reportDefinePath + Path.DirectorySeparatorChar;
                     reportDefine = XmlReport.loadReport(gobal_reportDefinePath, reportName);
                     reportDefine.getEnv().logger = logger;
                 //reportDefinePath = gobal_reportDefinePath + reportName;
