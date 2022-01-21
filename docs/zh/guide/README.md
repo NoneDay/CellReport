@@ -7,7 +7,7 @@ CellReport 诞生的初衷是为了解决日常快速制作统计报表的需要
  | 源码 | 文档 | 发行版 |
  | ------ | -------- | ------ |
  | [Github](https://github.com/noneday/CellReport)| [Github在线文档](https://noneday.github.io/CellReport) | [github下载](https://github.com/NoneDay/CellReport/releases/tag/1.0.1)  |
- | [Gitee](https://gitee.com/noneday/CellReport)| [Gitee在线文档](https://noneday.gitee.io/CellReport) | [gitee下载](https://gitee.com/NoneDay/CellReport/releases/1.0.1)  |
+ | [Gitee](https://gitee.com/noneday/CellReport)| [Gitee在线文档](https://noneday.gitee.io/CellReport) | [gitee下载](https://gitee.com/NoneDay/CellReport/releases/)  |
  
 
 制作统计报表，往往不是一个sql语句能搞定的:
