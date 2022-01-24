@@ -303,7 +303,6 @@ background:url("data:image/svg+xml;utf8,<svg t='1641536477492' class='icon' view
     },
     methods: { 
         calc_item_border_size(border_type){
-            console.info("border_type:"+border_type)
             if(border_type ==undefined || ['','div'].includes(border_type) )
                 return 0;
             else {

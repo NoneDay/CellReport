@@ -255,6 +255,12 @@ function cut_icon_image(l,t){
     icon_arr[l][t]=nCanvas.toDataURL('image/png');
     return icon_arr[l][t]
 }
+function build_col_arr(s_col,e_col){
+    let ret=[]
+    for(let i =s_col;i<e_col;i++)
+        ret.push(i)
+    return ret
+}
 export default class ResultGrid2HtmlTable{
     constructor(param_grid,el,setting,footer2,defaultsetting){
         let {name,tableData,extend_lines,rowlenArr,hyperlink,conditionformat,
@@ -275,18 +281,7 @@ export default class ResultGrid2HtmlTable{
         this.cell_cf={}
         let cdf_arr=[]
         
-        window.luckysheet_conditionformat=undefined
-        window.luckysheet_alternateformat_save=undefined
-        if(this.footer2){
-            let script_pattern=/<script.*?>*?>([\s\S]*?)<\/script>/img
-            let script_result;
-            while ((script_result = script_pattern.exec(this.footer2)) != null)  {
-                let match_result=script_result[1];
-                if(match_result && match_result.length>0){
-                    eval(match_result)                    
-                }
-            }
-        }
+        
         if(!setting.no_use_parent_css)
         {
             if(localStorage.luckysheet_conditionformat){
@@ -495,7 +490,8 @@ export default class ResultGrid2HtmlTable{
             }
         }
     }
-    _inner_table(s_row,e_row,s_col,e_col,gutter){
+
+    _inner_table(s_row,e_row,col_arr,gutter){
         let {name,tableData,extend_lines,rowlenArr,hyperlink,
             columnlenArr,styles,loc_style,colName_lines,my_sort,
             config_merge,reportDefaultCss} ={...this.param_grid}
@@ -508,9 +504,8 @@ export default class ResultGrid2HtmlTable{
         {
             table_height+=rowlenArr[i]
         }
-        
         sb.append(`<colgroup>`)
-        for(let i =s_col;i<e_col;i++)
+        col_arr.forEach(i=>//for(let i =s_col;i<e_col;i++)
         {
             let deta=0
             deta=table_width+Math.floor(columnlenArr[i]*this.ratio)-(this.el.clientWidth-this.ScrollBarWidth )
@@ -518,7 +513,7 @@ export default class ResultGrid2HtmlTable{
                 deta=0
             sb.append(`<col width=${Math.floor(columnlenArr[i]*this.ratio - deta)}px></col>\n`)
             table_width+=Math.floor(columnlenArr[i]*this.ratio- deta)
-        }
+        })
         sb.append(`</colgroup>\n`)
         let tableBitFlag =new Array( e_row-s_row)
         for(let i=0;i<tableBitFlag.length;i++)
@@ -538,13 +533,17 @@ export default class ResultGrid2HtmlTable{
             else
                 row_type='isComment isAfterExtend'
             sb.append(`<tr ${row_type} data-n=${rowNo} style='height:${rowlenArr[rowNo]??rowlenArr["default"]}px' >`)
-            rowData.slice(s_col,e_col).forEach((cell,col_idx)=>{
-                let colNo=s_col+col_idx
-                if(tableBitFlag[rowNo-s_row].get(colNo-s_col))
+            
+            rowData.forEach((cell,colNo)=>{
+                if(false== col_arr.includes(colNo)){
+                    return
+                }
+                //let colNo=s_col+col_idx
+                if(tableBitFlag[rowNo-s_row].get(colNo))
                 {
                     return;
                 }
-                tableBitFlag[rowNo-s_row].set(colNo-s_col ,1)
+                tableBitFlag[rowNo-s_row].set(colNo ,1)
                 let max_height=rowlenArr[rowNo]??rowlenArr["default"]
                 let max_width=columnlenArr[colNo]
                 sb.append(`\n<td `)
@@ -563,7 +562,7 @@ export default class ResultGrid2HtmlTable{
                     for(let ri=0;ri<rs;ri++){
                         max_height+=rowlenArr[rowNo+ri]
                         for(let ci=0;ci<cs;ci++){
-                            tableBitFlag[r+ri-s_row]?.set(c+ci-s_col ,1)
+                            tableBitFlag[r+ri-s_row]?.set(c+ci ,1)
                         }
                     }
                 }
@@ -596,10 +595,20 @@ export default class ResultGrid2HtmlTable{
 
     show(cur_page,page_size){
         let tmp_width=0
-        for(let i =0;i<this.total_columns;i++)
-        {
-            tmp_width+=this.param_grid.columnlenArr[i]
-        }   
+        let col_arr,start_row=0
+        if(this.param_grid.mobile_col_button_arr && this.param_grid.mobile_col_button_arr.length >0){
+            let t_arr=this.param_grid.mobile_col_button_arr
+            t_arr=t_arr[t_arr.length-1].arr[t_arr[t_arr.length-1].selected]
+            col_arr=build_col_arr(0,this.fix_cols).concat(build_col_arr(t_arr.col_span[0],t_arr.col_span[1]+1) )
+            start_row=this.param_grid.colName_lines[1]
+        }else{
+            col_arr=build_col_arr(0,this.total_columns)
+        }
+        col_arr.forEach(i=>
+            {
+                tmp_width+=this.param_grid.columnlenArr[i]
+            })
+
         this.ratio=1
         if (this.fit && tmp_width<this.el.clientWidth)
         this.ratio=(1.0*(this.el.clientWidth-this.ScrollBarWidth)/tmp_width)
@@ -616,7 +625,7 @@ export default class ResultGrid2HtmlTable{
         let background_color=this.defaultsetting['BACKGROUND-COLOR']
         if(this.param_grid.optimize){
             // header
-            table_obj=this._inner_table(0,this.param_grid.extend_lines[0],  0,this.total_columns,true)
+            table_obj=this._inner_table(start_row,this.param_grid.extend_lines[0], col_arr,true)
             min_width=Math.min(this.el.clientWidth-this.ScrollBarWidth-2,table_obj.table_width+(this.ratio==1?0:this.ScrollBarWidth))
             sb.append(`<div id='reportDiv${this.param_grid.name}Top' class='cr-table__header-wrapper'  style='background-color:${background_color};width:${min_width+this.ScrollBarWidth+2}px'>\n
             <table class='cr-table__header reportDefaultCss' height=${table_obj.table_height} width=${table_obj.table_width}  `)
@@ -626,7 +635,7 @@ export default class ResultGrid2HtmlTable{
             head_height=table_obj.table_height
             foot_height=0            
             if (this.param_grid.extend_lines[1]+1<this.total_rows && this.param_grid.need_footer){
-                footer_obj=this._inner_table(this.param_grid.extend_lines[1]+1,this.total_rows,  0,this.total_columns)
+                footer_obj=this._inner_table(this.param_grid.extend_lines[1]+1,this.total_rows, col_arr)
                 foot_height=footer_obj.table_height
             }
         }else{
@@ -637,7 +646,7 @@ export default class ResultGrid2HtmlTable{
             ,this.param_grid.need_footer?
                 Math.min(this.param_grid.extend_lines[0] +cur_page*page_size ,this.param_grid.extend_lines[1]+1 )
                 : this.param_grid.extend_lines[0] +cur_page*page_size 
-            ,  0,this.total_columns)
+            ,  col_arr)
         min_width=Math.min(this.el.clientWidth-this.ScrollBarWidth-2, table_obj.table_width+(this.ratio==1?0:this.ScrollBarWidth))
         sb.append(`<div id='reportDiv${this.param_grid.name}' class="cr-table__body-wrapper is-scrolling-middle" 
         style='background-color:${background_color};height: calc(100% - ${head_height+foot_height}px);width:${min_width+this.ScrollBarWidth+3}px'>\n
@@ -655,7 +664,7 @@ export default class ResultGrid2HtmlTable{
         }
         if(this.param_grid.optimize){
             // 固定列，header
-            table_obj=this._inner_table(0,this.param_grid.extend_lines[0],  0,this.fix_cols)
+            table_obj=this._inner_table(start_row,this.param_grid.extend_lines[0],  build_col_arr(0,this.fix_cols))
             sb.append(`<div class="cr-table__fixed" style="width: ${table_obj.table_width+1}px; height:100%;">`)
             
             sb.append(`<div class='cr-table__fixed-header-wrapper'  style='background-color:${background_color};' >\n
@@ -667,7 +676,7 @@ export default class ResultGrid2HtmlTable{
                     this.param_grid.need_footer?
                     Math.min(this.param_grid.extend_lines[0] +cur_page*page_size ,this.param_grid.extend_lines[1]+1 )
                     : this.param_grid.extend_lines[0] +cur_page*page_size ,
-                0,this.fix_cols)
+                    build_col_arr(0,this.fix_cols))
             sb.append(`<div id='reportDiv${this.param_grid.name}Left' class="cr-table__fixed-body-wrapper" 
             style='background-color:${background_color};top: ${head_height+1}px;height: calc(100% - ${head_height+foot_height}px)'>\n
             <table class='cr-table__body  reportDefaultCss' height=${table_obj.table_height} width=${table_obj.table_width}  `)
@@ -676,7 +685,7 @@ export default class ResultGrid2HtmlTable{
 
             // 固定列，footer
             if (this.param_grid.extend_lines[1]+1<this.total_rows && this.param_grid.need_footer){
-                footer_obj=this._inner_table(this.param_grid.extend_lines[1]+1,this.total_rows,  0,this.fix_cols)
+                footer_obj=this._inner_table(this.param_grid.extend_lines[1]+1,this.total_rows,build_col_arr(0,this.fix_cols))
                 sb.append(`<div class="cr-table__fixed-footer-wrapper" style='background-color:${background_color};'>\n
                 <table class='cr-table__footer reportDefaultCss' height=${footer_obj.table_height} width=${footer_obj.table_width}  `)
                 add_other()

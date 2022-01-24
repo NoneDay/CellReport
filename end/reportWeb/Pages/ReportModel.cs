@@ -332,6 +332,8 @@ namespace reportWeb.Pages
                             await calc_output(htmlWrite);
                             htmlWrite.Write(",\"notebook\":");
                             htmlWrite.Write(System.Text.Json.JsonSerializer.Serialize(report_env.TemplateGet("notebook"), report_env.getJsonOption()));
+                            htmlWrite.Write(",\"footer2\":");
+                            htmlWrite.Write(System.Text.Json.JsonSerializer.Serialize(report_env.TemplateGet("footer2"), report_env.getJsonOption()));
                             htmlWrite.Write("\n}");
                         }
                         await htmlWrite.FlushAsync();
@@ -348,6 +350,8 @@ namespace reportWeb.Pages
                 await Response.Body.FlushAsync();
                 await Response.WriteAsync(",\"notebook\":");
                 await Response.WriteAsync(System.Text.Json.JsonSerializer.Serialize(report_env.TemplateGet("notebook"), report_env.getJsonOption()));
+                await Response.WriteAsync(",\"footer2\":");
+                await Response.WriteAsync(System.Text.Json.JsonSerializer.Serialize(report_env.TemplateGet("footer2"), report_env.getJsonOption()));
 
                 if (this.myCache != null )
                 {

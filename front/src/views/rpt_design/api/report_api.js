@@ -281,8 +281,6 @@ export function run_one(_this,reportFilePath,query,query_data={},_param_name=nul
         }
         else
             Object.assign(_this.result,response_data)
-        _this.last_js_cript=load_css_js(_this.result.footer2,"report_back_css")
-        eval("(function(run_one1){\n console.info(loading_conf)\n"+_this.last_js_cript+"\n})(run_one)")
         if(_this.result.layout)
         {
             _this.layout=_this.result.layout
@@ -294,6 +292,70 @@ export function run_one(_this,reportFilePath,query,query_data={},_param_name=nul
                 grid:Object.values(_this.result.data).filter(ele=>["common",'large'].includes( ele.type))
                 } )
         }
+        _this.last_js_cript=load_css_js(_this.result.footer2,"report_back_css")
+        eval("(function(){\n console.info(loading_conf)\n"+_this.last_js_cript+"\n})()")
+        //手机端列表头转按钮
+        if( window.convert_col_to_button &&
+            _this.layout.length==1 && _this.layout[0].element.children.column.length==1 
+            && _this.layout[0].element.children.column[0].type=="luckySheetProxy"
+            && Object.keys(_this.result.data).length==1
+            && _this.result.data[_this.layout[0].element.children.column[0].gridName].optimize)
+        {
+            let grid_result=_this.result.data[_this.layout[0].element.children.column[0].gridName]
+            let all_t_arr=[]
+            for(let line_idx=grid_result.colName_lines[0];line_idx<grid_result.colName_lines[1];line_idx++){
+                let start_str,start_col=Number.parseInt(grid_result.fix_cols)
+                let t_arr=[]
+                all_t_arr.push(t_arr)
+                for(let col_idx=Number.parseInt(grid_result.fix_cols);col_idx<grid_result.tableData[line_idx].length;col_idx++)
+                {
+                    if(start_str ==undefined)
+                        start_str=grid_result.tableData[line_idx][col_idx]
+                    else if(start_str!=grid_result.tableData[line_idx][col_idx]){
+                        t_arr.push({'txt':start_str,col_span:[start_col,col_idx-1],arr:[]})
+                        start_str=grid_result.tableData[line_idx][col_idx]
+                        start_col=col_idx
+                    }
+                }
+            }
+            let col_vaild=true
+            for(let idx=all_t_arr.length-1;idx>0;idx--) {
+                if(idx==0)
+                break
+                let parent_idx=0
+                for(let i=0;i<all_t_arr[idx].length;i++)
+                {
+                    let parent_col_span=all_t_arr[idx-1][parent_idx].col_span
+                    let cur_span=all_t_arr[idx][i].col_span
+                    if(cur_span[0]>=parent_col_span[0] && cur_span[1]<=parent_col_span[1])
+                    {
+                        all_t_arr[idx-1][parent_idx].arr.push(all_t_arr[idx][i])
+                        continue
+                    }
+                    if(cur_span[0]<parent_col_span[0]){
+                        col_vaild=false
+                        break
+                    }
+                    i--
+                    parent_idx++
+                }
+                if(col_vaild==false)
+                    break
+            }
+            if(col_vaild){
+                _this.mobile_col_arr=all_t_arr[0]
+                _this.mobile_col_button_arr=[ {selected:0,arr:_this.mobile_col_arr}]  
+                for(let idx=0;;idx++){
+                    if(_this.mobile_col_button_arr[idx].arr[0].arr.length>0)
+                        _this.click_col_button(idx,0)
+                    else
+                        break
+                }
+                grid_result.mobile_col_button_arr=_this.mobile_col_button_arr
+            }
+        }
+        
+
         _this.isShow=false
         setTimeout(() => {
             _this.isShow=true
@@ -302,7 +364,10 @@ export function run_one(_this,reportFilePath,query,query_data={},_param_name=nul
                 _this.$nextTick(x=>{
                     let form_h=_this.$refs.form?_this.$refs.form.clientHeight:0
                     _this.$refs.report_pane.style.height=`calc(100% - ${form_h}px)`
+                    try{
                     document.title = _this.result.data[Object.keys(_this.result.data)[0]].title
+                    }catch(ex){}
+                    if(window.after_show_report_hook){window.after_show_report_hook()}
                 })
             });
         });

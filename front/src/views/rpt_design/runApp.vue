@@ -13,7 +13,9 @@
     </el-popover>
 
     <div ref="form" v-if="!crisMobile && isShow && result.defaultsetting['show_form']=='true'"> 
-      <el-form :inline="true" label-position="right" label-width="80px" >
+      <RuntimeTemplateCompiler  :template="result.pc_form"   v-if="result.pc_form">
+      </RuntimeTemplateCompiler>
+      <el-form :inline="true" v-else label-position="right" label-width="80px" >
         <input hidden v-for="one in result.form.filter(x=>x.hide=='True')" :key="one.name" v-model="queryForm[one.name]"/>
         <div style="display:inline;max-width:100px" v-for="one in result.form.filter(x=>x.hide=='False')" :key="one.name">
           <el-form-item :label="one.prompt">
@@ -61,7 +63,9 @@
       </el-form>
     </div>
     <div  ref="form" v-if=" crisMobile && isShow && result.defaultsetting['show_form']=='true'"> 
-      <form > 
+      <RuntimeTemplateCompiler  :template="result.moblie_form" v-if="result.moblie_form">
+      </RuntimeTemplateCompiler>
+      <form v-else> 
         <input hidden v-for="one in result.form.filter(x=>x.hide=='True')" :key="one.name" v-model="queryForm[one.name]"/>
         <img src="img/battle_2021.jpg" style="height: 80px;width: 100%;" v-if="result.form.filter(x=>x.hide=='False').length<=1">
         <div v-for="one in result.form.filter(x=>x.hide=='False')" :key="one.name">
@@ -91,15 +95,17 @@
                 submit()
                 }"  
             > </nut-picker>
-
-            <nut-buttonroup  v-if=" one.data_type=='string' && one.tagValueList.length>0 && one.allowMutil=='False'">
-              <div style="display: inline;    font-size: 14px;   padding-left: 10px; margin-right: 20px;"> <b>{{one.prompt}}</b></div>
+           
+            <div  style="display: flex;flex: 0 0 auto;overflow-x: auto;"  v-if=" one.data_type=='string' && one.tagValueList.length>0 && one.allowMutil=='False'">
+              <div style="display: relative; word-break: keep-all; font-size: 14px;   padding-left: 10px; margin-right: 20px;"> <b>{{one.prompt}}</b></div>
+              <div style="position:relative;    word-break: keep-all;" v-for="item in one.tagValueList" :key="item[1]">
               <nut-button  :type="queryForm[one.name]==item[1]?'primary':'lightred'"
-               shape="circle"   small  
-               v-for="item in one.tagValueList" :key="item[1]"
+               shape="circle"   small  style="margin-right: 2px;"
+               
               @click.prevent=" queryForm[one.name]=item[1]
               submit()"> {{item[0]}}</nut-button>
-            </nut-buttonroup>
+              </div>
+            </div>
 
             <nut-cell  v-if="one.data_type=='string' && one.tagValueList.length>0 && one.allowMutil!='False'" 
              @click.native="queryForm_show[one.name] = true">
@@ -117,7 +123,14 @@
             </div>           
             </nut-actionsheet>
            </div>
-          
+
+           <div  style="display: flex;flex: 0 0 auto;overflow-x: auto;" v-for="one_button_arr,idx in mobile_col_button_arr" :key="idx">
+           <div style="position:relative;    word-break: keep-all;"  v-for="item,item_idx in one_button_arr.arr" :key="''+idx+'_'+item_idx">
+              <nut-button  :type="one_button_arr.selected==item_idx?'red':'lightred'" @click.prevent="click_col_button(idx,item_idx)"
+               shape="circle"   small  style="margin-right: 2px;"
+              > {{item.txt}}</nut-button>
+            </div>
+          </div>
       </form>
     </div>
     <div ref="report_pane" class="report_define" v-if="isShow" :style="{color:result.defaultsetting['COLOR'],background:result.defaultsetting['BACKGROUND-COLOR']}">
@@ -135,24 +148,13 @@ import {dateToString} from './utils/resultGrid2HtmlTable.js'
 import {run_one} from "./api/report_api"
 import {convert_csv_to_json,convert_array_to_json,build_chart_data, deepClone,arrayToTree,seriesLoadScripts,load_css_file } from "./utils/util"
 import install_component from './install_component'
+import { RuntimeTemplateCompiler } from 'vue-runtime-template-compiler'
 export default {
   name: 'App', //CellReportFormDesign
   components:{widgetForm },
   mounted(){    
     let _this=this
-    window.onresize=function(){      
-        //_this.isShow=false
-        //  setTimeout(() => {
-        //      _this.isShow=true
-        //      setTimeout(() => {
-        //          _this.$nextTick(x=>{
-        //              let form_h=_this.$refs.form?_this.$refs.form.clientHeight:0
-        //              _this.$refs.report_pane.style.height=`calc(100% - ${form_h}px)`
-        //              document.title = _this.result.data[Object.keys(_this.result.data)[0]].title
-        //          })
-        //      });
-        //  });
-      }
+    window.onresize=this.refresh_layout
   },
   created() {
     
@@ -222,12 +224,35 @@ export default {
         last_js_cript:"",
         layout:[],
         fresh_ele:[],
+        mobile_col_arr:[ ],
+        mobile_col_button_arr:[ ],
+        
         allElementSet:new Set(),//所有有ID名称的集合
         in_exec_url:{stat:false,run_url:""},
     }
   },
   methods:{
-    
+    refresh_layout(){  
+        let _this=this    
+        _this.isShow=false
+          setTimeout(() => {
+              _this.isShow=true
+              setTimeout(() => {
+                  _this.$nextTick(x=>{
+                      let form_h=_this.$refs.form?_this.$refs.form.clientHeight:0
+                      _this.$refs.report_pane.style.height=`calc(100% - ${form_h}px)`
+                      document.title = _this.result.data[Object.keys(_this.result.data)[0]].title
+                  })
+              });
+          });
+      },
+    click_col_button(idx,item_idx){
+      this.$set(this.mobile_col_button_arr[idx],'selected',item_idx)
+      this.mobile_col_button_arr.splice(idx+1)
+      if(this.mobile_col_button_arr[idx].arr[item_idx].arr.length>0)
+        this.mobile_col_button_arr.push({selected:0,arr:this.mobile_col_button_arr[idx].arr[item_idx].arr })
+      this.refresh_layout()
+    },
     marked(val){
       //seriesLoadScripts("cdn/editor.md-master/lib/marked.min.js")
       return val;//marked(val??"",{breaks:true})

@@ -157,3 +157,39 @@ window.luckysheet_alternateformat_save='{"cellrange":{"row":[0,8],"column":[-1,-
 
 - 内置了已经转换好的数据：valid_data （有效数据，参看chart文档中的dataset）
 - series_type 自动转换过来的序列类型
+
+## 前端页面css和js脚本
+
+style标签包起来的部分，将会在报表展现前注入当前页面的样式表中
+```
+<style>
+  #report_app .vue-grid-item:not(.vue-grid-placeholder) {
+    background: rgb(255, 254, 254);
+    border: 0px solid black;
+}
+#report_app {
+  background-color:#fff ;
+}
+#report_app .data-progress{
+  background-color:#fff ;
+}
+</style>
+```
+
+- script标签包起来的部分，将会在报表展现前执行，如果script中定义了函数`after_report_show_hook`,那么这个函数将会在报表显示后执行
+- 可以访问变量_this来动态修改里面的内容。如果不知道结构，我们可以在这个里面加入console.infp(_this)，查看控制台就可以了解内部结构。
+- _this.result 代表的就是报表查询结果。
+- _this.result.pc_form 如果定义了该变量，那么pc端显示的form将会使用这个定义来显示
+- - _this.result.mobile_form 如果定义了该变量，那么移动端显示的form将会使用这个定义来显示
+```
+<script> 
+function after_show_report_hook(){
+  	console.info("function report_after_show exec")
+}
+
+if(_this.crisMobile)
+  window.convert_col_to_button=true //如果是移动端，那么如果只有一个报表，并且 是多行列头的情况下，设置这个参数控制将列转换为标签按钮的形式
+console.info(_this) //d打印_this的内容到控制台。这仅仅是测试，生产期间最好不要执行
+</script>
+```
+
