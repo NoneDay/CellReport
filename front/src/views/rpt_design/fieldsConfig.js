@@ -130,8 +130,8 @@ export default [
         ,
             'component':'ele-grid'},
 
-            {"type":"luckySheetProxy",'label':'自由格式报表',h:12, span:24,icon: 'icon-table',display: true,style:{height:'100%'},
-              gridName:"_random_",span: 24,'component':'luckySheetProxy',fit:true,
+            {"type":"luckySheetProxy",'label':'自由格式报表',h:12, span:12,icon: 'icon-table',display: true,style:{height:'100%'},
+              gridName:"_random_",'component':'luckySheetProxy',fit:true,
               page_size:20,no_use_parent_css:false,
               page_sizes:"[20, 50, 100, 200]"
             },

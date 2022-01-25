@@ -13,7 +13,7 @@
     </el-popover>
 
     <div ref="form" v-if="!crisMobile && isShow && result.defaultsetting['show_form']=='true'"> 
-      <RuntimeTemplateCompiler  :template="result.pc_form"   v-if="result.pc_form">
+      <RuntimeTemplateCompiler  :template="result.pc_form"   v-if="result.pc_form" :parent="parentComponent">
       </RuntimeTemplateCompiler>
       <el-form :inline="true" v-else label-position="right" label-width="80px" >
         <input hidden v-for="one in result.form.filter(x=>x.hide=='True')" :key="one.name" v-model="queryForm[one.name]"/>
@@ -63,9 +63,9 @@
       </el-form>
     </div>
     <div  ref="form" v-if=" crisMobile && isShow && result.defaultsetting['show_form']=='true'"> 
-      <RuntimeTemplateCompiler  :template="result.moblie_form" v-if="result.moblie_form">
+      <RuntimeTemplateCompiler  :template="result.mobile_form" v-if="result.mobile_form" :parent="parentComponent">
       </RuntimeTemplateCompiler>
-      <form v-else> 
+      <form v-else > 
         <input hidden v-for="one in result.form.filter(x=>x.hide=='True')" :key="one.name" v-model="queryForm[one.name]"/>
         <img src="img/battle_2021.jpg" style="height: 80px;width: 100%;" v-if="result.form.filter(x=>x.hide=='False').length<=1">
         <div v-for="one in result.form.filter(x=>x.hide=='False')" :key="one.name">
@@ -81,7 +81,7 @@
               :is-visible.sync="queryForm_show[one.name]"
               :default-value="queryForm[one.name]" :type="one.data_type" 
               @close="queryForm_show[one.name]=false" :title="'请选择'+one.prompt" 
-              @choose="val=>{queryForm[one.name]=`${val[0]}-${val[1]}-${val[2]}`
+              @choose="val=>{queryForm[one.name]=val[0]+'-'+val[1]+'-'+val[2]
                 submit()
                 }"  
             > </nut-datepicker >
@@ -91,7 +91,7 @@
               ['01','02','03','04','05','06','07','08','09','10','11','12']]"
               :default-value-data="[queryForm[one.name].substring(0,4),queryForm[one.name].substring(4,6)]"
               @close="queryForm_show[one.name]=false" :title="'请选择'+one.prompt" 
-              @confirm="val=>{queryForm[one.name]=`${val[0]}${val[1]}`
+              @confirm="val=>{queryForm[one.name]=val[0]+''+val[1]
                 submit()
                 }"  
             > </nut-picker>
@@ -151,7 +151,7 @@ import install_component from './install_component'
 import { RuntimeTemplateCompiler } from 'vue-runtime-template-compiler'
 export default {
   name: 'App', //CellReportFormDesign
-  components:{widgetForm },
+  components:{widgetForm ,RuntimeTemplateCompiler},
   mounted(){    
     let _this=this
     window.onresize=this.refresh_layout
@@ -226,17 +226,18 @@ export default {
         fresh_ele:[],
         mobile_col_arr:[ ],
         mobile_col_button_arr:[ ],
-        
+        parentComponent: this,
         allElementSet:new Set(),//所有有ID名称的集合
         in_exec_url:{stat:false,run_url:""},
     }
   },
   methods:{
-    refresh_layout(){  
-        let _this=this    
-        _this.isShow=false
+    refresh_layout(ddd,_this){  
+      if(_this==undefined)
+        _this=this
+        _this.$set(_this,'isShow',false)
           setTimeout(() => {
-              _this.isShow=true
+              _this.$set(_this,'isShow',true)
               setTimeout(() => {
                   _this.$nextTick(x=>{
                       let form_h=_this.$refs.form?_this.$refs.form.clientHeight:0
@@ -251,7 +252,7 @@ export default {
       this.mobile_col_button_arr.splice(idx+1)
       if(this.mobile_col_button_arr[idx].arr[item_idx].arr.length>0)
         this.mobile_col_button_arr.push({selected:0,arr:this.mobile_col_button_arr[idx].arr[item_idx].arr })
-      this.refresh_layout()
+      this.refresh_layout(null,this.$parent.$parent)
     },
     marked(val){
       //seriesLoadScripts("cdn/editor.md-master/lib/marked.min.js")

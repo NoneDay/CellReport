@@ -634,6 +634,11 @@ function designGrid2LuckySheet(grid,setting,DefaultCssSetting){
         one.v.fs=parseInt(cell['_FONT-SIZE']??DefaultCssSetting["FONT-SIZE"])
         if(cell['_BOLD'] && cell['_BOLD']=="True")
             one.v.bl=1
+        if(cell['_ITALIC'] && cell['_ITALIC']=="True")
+            one.v.it=1
+        if(cell['_UNDERLINE'] && cell['_UNDERLINE']=="True")
+            one.v.cl=1
+            
         if(cell._color)
             one.v.fc=color(cell._color) ? cell._color :DefaultCssSetting["COLOR"]
         else

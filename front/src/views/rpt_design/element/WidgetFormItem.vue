@@ -1,11 +1,11 @@
 <template>
-  <div class="widget-form-item"   :depth="depth+1"
-      :prop="self.prop"
+  <div class="widget-form-item" style="height: 100%;display: flex;flex-direction: column;"  :depth="depth+1"
+      :prop="self.prop" :id="'cr_id_'+self.gridName"
       v-bind="Object.assign({style:Object.assign({},self.style,{height:'100%'} )}, self.params)"
       :class="{active: selectWidget.prop == self.prop, 'required': self.required }"
       @click.stop="handleSelectWidget(index)"> 
 
-    <span v-if="(context.mode=='design' ||( self.show_title && self.label))&& (selectWidget == self || self.type=='luckySheetProxy')"  
+    <span v-if="context.mode=='design' && (selectWidget == self || self.type=='luckySheetProxy')"  
     class="mover cr_item_title">
      <span> {{self.label}}</span>
     <el-button title="克隆" style="margin-left: 0px;padding:0px;"
@@ -27,7 +27,10 @@
       <i class="el-icon-delete"></i>
     </el-button>
     </span>
-    
+    <div v-if="(self.show_title && self.label)"  class="cr_run_title">
+      <img :src="self.icon" style="width: 20px;height: 20px;vertical-align:middle;">
+      <span>  {{self.label}}</span>
+    </div>
     <div :style="{width:'100%',height:`calc(100% - 0px`}">
     <component draggable=".item" v-if="context.mode=='design'"
                :is="getComponent(self.type, self.component)"
@@ -64,6 +67,8 @@ export default {
     if(this.context.report_result.name_lable_map==undefined)
       this.context.report_result.name_lable_map={}
     this.context.report_result.name_lable_map[this.self.gridName]=this.self
+    if(this.self.icon==undefined)
+      this.$set(this.self,'icon',"img/m_pm.png")
   },
   name: 'widget-form-item',
   data () {

@@ -30,9 +30,12 @@
             </el-switch>
           </el-form-item>   
           <el-form-item label="标题内容">
-            <el-input v-model="data.label"
+            <div style="display:flex;">
+             <img :src="data.icon" style="width: 20px;height: 20px;vertical-align:middle;" @click="update_img_src"/>
+              <el-input v-model="data.label"
                       clearable
                       placeholder="标题"></el-input>
+            </div>
           </el-form-item>        
           <el-form-item label="ID">
             <el-button @click="update_name" type="primary">{{data.gridName}}</el-button>
@@ -49,7 +52,7 @@
           <el-form-item label="高度"
                         v-if="!data.subfield && !['group'].includes(data.type)">
             <el-input style="width:100%;"
-                             v-model="data.height"
+                             v-model="data.style.height"
                              controls-position="right"
                              placeholder="高度"
                              ></el-input>
@@ -107,7 +110,18 @@ export default {
         }
         return false
       },
-      
+      update_img_src(){
+          let _this=this
+          this.$prompt('请输入图片地址', '图片地址', 
+          {
+              confirmButtonText: '确定',
+              cancelButtonText: '取消',
+              inputValue:this.data.icon
+          })
+          .then( ({ value }) => {
+              _this.$set(_this.data,'icon',value)              
+          }).catch(error=>error) 
+      },    
       update_name(){
           let _this=this
           this.$prompt('请输入组件ID', 'ID', 
@@ -151,6 +165,18 @@ export default {
   }
 }
 </script>
-<style scoped>
-.el-form-item--mini.el-form-item{margin-bottom: 8px;}
+<style >
+
+.el-form-item--mini.el-form-item{margin-bottom: 2px;}
+.el-form-item--mini .el-form-item__content, .el-form-item--mini .el-form-item__label{
+    line-height: 18px;font-size: 11px;
+}
+.el-button--mini, .el-button--small {
+    font-size: 11px;
+}
+.el-switch__label * {
+    line-height: 1;
+    font-size: 11px;
+    display: inline-block;
+}
 </style>

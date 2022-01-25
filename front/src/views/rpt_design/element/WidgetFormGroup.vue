@@ -124,7 +124,7 @@ export default {
         data.gridName=data.type.replace(/-/,"_") + Date.now() + '_' + Math.ceil(Math.random() * 99999)
         this.context?.allElementSet?.add(data.gridName)
       }
-      delete data.icon
+      
       if (data.span == undefined) data.span = 12
       if (data.height == undefined) data.height = '100%'
       

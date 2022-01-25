@@ -284,29 +284,26 @@ export default class ResultGrid2HtmlTable{
         
         if(!setting.no_use_parent_css)
         {
-            if(localStorage.luckysheet_conditionformat){
-                let cond
-                try{
-                    cond=JSON.parse( localStorage.luckysheet_conditionformat)
-                }catch{
-                    cond=JSON.parse( window.luckysheet_conditionformat)
-                }
-                if(columns)
-                    cond.forEach(one=>{
-                        let a_reg=RegExp(one.column_match)
-                        for(let i=0;i<columns.length;i++){
-                            if(a_reg.test( columns[i]))
-                            {
-                                let x=JSON.parse(one.val)
-                                x.cellrange.forEach(xcr=>{
-                                    xcr.row=[extend_lines[0], extend_lines[1]]
-                                    xcr.column=[i, i]
-                                })
-                                cdf_arr.push(x)
-                            }
+            let cond=[]
+            if(localStorage.luckysheet_conditionformat)
+                cond=JSON.parse( localStorage.luckysheet_conditionformat)
+            if(window.luckysheet_conditionformat)
+                cond=window.luckysheet_conditionformat
+            if(columns)
+                cond.forEach(one=>{
+                    let a_reg=RegExp(one.column_match)
+                    for(let i=0;i<columns.length;i++){
+                        if(a_reg.test( columns[i]))
+                        {
+                            let x=JSON.parse(one.val)
+                            x.cellrange.forEach(xcr=>{
+                                xcr.row=[extend_lines[0], extend_lines[1]]
+                                xcr.column=[i, i]
+                            })
+                            cdf_arr.push(x)
                         }
-                    })
-            }
+                    }
+                })
         }
         
         JSON.parse(setting.conditionformat_save??"[]").forEach(x=>{
@@ -697,7 +694,15 @@ export default class ResultGrid2HtmlTable{
         sb.append("</div>")
         let alter_format_arr=[]
         if(!this.setting.no_use_parent_css){
-            alter_format_arr=alter_format_arr.concat(JSON.parse("["+(localStorage.luckysheet_alternateformat_save ??'') +"]"))
+            try{
+            if(localStorage.luckysheet_alternateformat_save)
+                alter_format_arr=alter_format_arr.concat(JSON.parse("["+(localStorage.luckysheet_alternateformat_save ??'') +"]"))
+            if(window.luckysheet_alternateformat_save){
+                if(typeof window.luckysheet_alternateformat_save=='string')
+                    window.luckysheet_alternateformat_save=JSON.parse(window.luckysheet_alternateformat_save)
+                alter_format_arr=[window.luckysheet_alternateformat_save]
+            }
+            }catch{}
         }
         sb.append(`<style type="text/css">`)
         alter_format_arr=alter_format_arr.concat(JSON.parse(this.setting.alternateformat_save??'[]'))

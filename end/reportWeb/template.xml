@@ -21,7 +21,7 @@
 
 	<TABLE_APPEND><![CDATA[ x:str cellSpacing=0 cellPadding=0  style="TABLE-LAYOUT: fixed; MARGIN: 0px; FONT-SIZE: 11px; Z-INDEX: -5;  BORDER-COLLAPSE: collapse;"]]></TABLE_APPEND>
 	<footer2>
-		<![CDATA[
+<![CDATA[
 <script>
 window.luckysheet_conditionformat=[
 		{column_match:".*(占比|率)\$" ,val:'{"type":"colorGradation","cellrange":[{ "row":[0,1],"column":[1,1] }],"format":["rgb(248, 105, 107)", "rgb(255, 235, 132)", "rgb(99, 190, 123)"] }' },
@@ -33,10 +33,10 @@ if (localStorage.luckysheet_conditionformat==undefined || localStorage.luckyshee
 
 
 //luckysheet_alternateformat_save='{"cellrange":{"row":[0,8],"column":[0,19]},"format":{"head":{"fc":"#ffffff","bc":"#f2711c"},"one":{"fc":"#000","bc":"#ffffff"},"two":{"fc":"#000","bc":"#fef0d7"},"foot":{"fc":"#000","bc":"#fbb335"}},"hasRowHeader":true,"hasRowFooter":false}'
-window.luckysheet_alternateformat_save='{"cellrange":{"row":[0,8],"column":[-1,-1]},"format":{"head":{"fc":"#000","bc":"#dff0d8"},"one":{"fc":"#000","bc":"#ffffff"},"two":{"fc":"#000","bc":"#dff0d8"},"foot":{"fc":"#000","bc":"#cef3bf"}},"hasRowHeader":true,"hasRowFooter":false}'
+window.luckysheet_alternateformat_save={"cellrange":{"row":[0,8],"column":[-1,-1]},"format":{"head":{"fc":"#000","bc":"#dff0d8"},"one":{"fc":"#000","bc":"#ffffff"},"two":{"fc":"#000","bc":"#dff0d8"},"foot":{"fc":"#000","bc":"#cef3bf"}},"hasRowHeader":true,"hasRowFooter":false}
 
 if (localStorage.luckysheet_alternateformat_save==undefined)
-  localStorage.luckysheet_alternateformat_save=window.luckysheet_alternateformat_save
+  localStorage.luckysheet_alternateformat_save=JSON.stringify(window.luckysheet_alternateformat_save)
 </script>
     ]]>
 	</footer2>

@@ -99,7 +99,7 @@ export default {
 
       const data = this.deepClone(this.self.children.column[newIndex]);
       if (!data.prop) data.prop = Date.now() + '_' + Math.ceil(Math.random() * 99999)
-      delete data.icon
+      
       data.span = 24
       this.$set(this.self.children.column, newIndex, { ...data })
       this.selectWidget = this.self.children.column[newIndex]

@@ -558,13 +558,17 @@ innerReport(); //设计好的报表页面选中有关单元格，复制粘贴到
             }).catch(function () {});
         },
     save_data_for_init(){
-        return
         if(this.context.report.template==undefined)
             this.context.report.template={}
         this.context.report.template.before_exec_script=`
         var _init_dataset_dict_=
             ${ JSON.stringify(this.context.report_result.dataSet,null).replaceAll("{}",null).replaceAll("],[","],\n[")};
         `
+        this.$message({
+          message: '备份成功。下一次报表运算将会离线运行。你可以在设置(后端运行前脚本)中，删除相应备份数据，以恢复正常运行。',
+          type: 'success'
+        });
+         
     },
     choose_file(file) {
       this.file = file.raw;//这是element的导入数据选择，必须要添加.raw才能获取，其他表单不需要

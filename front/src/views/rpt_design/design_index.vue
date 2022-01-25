@@ -819,6 +819,7 @@ export default {
                 if(cell.bl!=undefined) cell.cr['_BOLD']=(cell?.bl==1?"True":"False")
                 cell.cr['_text-align']=(cell.ht==0?"center":(cell.ht==1?"left":'right'))
                 if(cell.it!=undefined) cell.cr['_ITALIC']=cell.it==1 ?"True" :"False"
+                if(cell.cl!=undefined) cell.cr['_UNDERLINE']=cell.cl==1 ?"True" :"False"
                 if(cell.f &&  cell.f.startsWith("=")) //
                   cell.cr._valueExpr=cell.v=cell.m=cell.f
                 else
