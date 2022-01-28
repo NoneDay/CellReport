@@ -1,7 +1,7 @@
 <template>
-  <div :style="{width:'100%',height:height||'100%'}">
+  <div :style="{width:'100%',height:height||'100%','display':'flex','flex-direction': 'column'}">
     <template v-if="context.mode!='design' && useHtml && gridType=='common'">
-      <div  :style="{width:'100%','height':'calc(100% - '+pager_height+'px)'}" v-html="html_table" ref="htmTalbe">
+      <div  :style="{'flex-grow':1,width:'100%','height':'20px'}" v-html="html_table" ref="htmTalbe">
           
       </div>
       <el-pagination  v-if="__TABLEOBJ!=undefined" 
@@ -149,7 +149,7 @@ export default {
               sortArr?.off('click',this.sortFunc)
           }
           if(this.__TABLEOBJ==undefined)
-            this.__TABLEOBJ=new ResultGrid2HtmlTable2(cur_grid,this.$el,this.self,_this.context.report_result.footer2,_this.context.report_result.defaultsetting)
+            this.$set(this,'__TABLEOBJ',new ResultGrid2HtmlTable2(cur_grid,this.$el,this.self,_this.context.report_result.footer2,_this.context.report_result.defaultsetting))
           this.pager_height=this.__TABLEOBJ!=undefined && (parseInt(this.self.page_size)<=this.__TABLEOBJ.total() )?32:0
           this.html_table=this.__TABLEOBJ.show(this.cur_page,this.self.page_size)
           
@@ -510,7 +510,7 @@ export default {
     left: 0;
     overflow-x: hidden;
     overflow-y: hidden;
-    box-shadow: 0 0 10px rgb(0 0 0 / 12%);
+    
 }
 .cr-table__fixed-header-wrapper {
     position: absolute;

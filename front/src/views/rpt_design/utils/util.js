@@ -283,8 +283,8 @@ export const convert_array_to_json=function (data,start=0,end=-1,col_list){
             return false;
         gridData.push(one_line)
         for (let index = 0; index < col_list.length; index++) {
-            if(getObjType(element[index]) =="object")
-                one_line[col_list[index]]='';
+            if(["object","array"].includes(getObjType(element[index])))
+                one_line[col_list[index]]=JSON.stringify(element[index]);
             else
                 one_line[col_list[index]]=element[index];
         }  
@@ -915,32 +915,42 @@ export const json_by_path=function(root,path="$"){
     })
     return cur
 }
+export function extract_style_txt(txt){
+    let script_pattern=/<style.*?>*?>([\s\S]*?)<\/style>/img
+    let script_result;
+    let css_result=''
+    while ((script_result = script_pattern.exec(txt)) != null)  {
+        let match_result=script_result[1];
+        if(match_result && match_result.length>0){
+            css_result=css_result+match_result
+        }
+    }
+    return css_result
+}
+export function extract_script_txt(txt){
+    let ret=""
+    let script_result;
+    let script_pattern=/<script.*?>*?>([\s\S]*?)<\/script>/img
+    while ((script_result = script_pattern.exec(txt)) != null)  {
+        let match_result=script_result[1];
+        if(match_result && match_result.length>0){
+            ret=ret+ "\n"+match_result
+        }
+    }
+    return ret
+}
 export function load_css_js(txt,id="report_back_css") {
     if(txt){
-        let script_pattern=/<style.*?>*?>([\s\S]*?)<\/style>/img
-        let script_result;
-        let css_result=''
-        while ((script_result = script_pattern.exec(txt)) != null)  {
-            let match_result=script_result[1];
-            if(match_result && match_result.length>0){
-                css_result=css_result+match_result
-            }
+        let css_result=extract_style_txt(txt)
+        if(css_result!=""){
+            document.getElementById(id)?.remove()
+            const css_node = document.createElement('style');
+            css_node.id = id;
+            css_node.type="text/css"
+            css_node.appendChild(document.createTextNode(css_result))
+            document.getElementsByTagName('head')[0].appendChild(css_node);
         }
-        document.getElementById(id)?.remove()
-        const css_node = document.createElement('style');
-        css_node.id = id;
-        css_node.type="text/css"
-        css_node.appendChild(document.createTextNode(css_result))
-        document.getElementsByTagName('head')[0].appendChild(css_node);
-        
-        let ret=""
-        script_pattern=/<script.*?>*?>([\s\S]*?)<\/script>/img
-        while ((script_result = script_pattern.exec(txt)) != null)  {
-            let match_result=script_result[1];
-            if(match_result && match_result.length>0){
-                ret=ret+ "\n"+match_result
-            }
-        }
+        let ret=extract_script_txt(txt)
         return ret
     } 
 }

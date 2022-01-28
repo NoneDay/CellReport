@@ -1,6 +1,6 @@
 <template>
-	<div style="width:100%;height:100%"  v-if="old_content==self.content" >
-		<RuntimeTemplateCompiler :template="self.content" :parent="parentCompent"/>
+	<div style="width:100%;height:100%"  v-if="old_content==cut_script_css_content" >
+		<RuntimeTemplateCompiler :template="cut_script_css_content" :parent="parentCompent"/>
 	</div>
 </template>
 

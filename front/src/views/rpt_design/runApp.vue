@@ -133,7 +133,7 @@
           </div>
       </form>
     </div>
-    <div ref="report_pane" class="report_define" v-if="isShow" :style="{color:result.defaultsetting['COLOR'],background:result.defaultsetting['BACKGROUND-COLOR']}">
+    <div ref="report_pane" class="report_define" v-if="isShow" :style="{'flex-grow': 1,color:result.defaultsetting['COLOR'],background:result.defaultsetting['BACKGROUND-COLOR']}">
         <grid-layout-form v-if="layoutType=='gridLayout'" :layout="layout" >
         </grid-layout-form>          
         <widget-form v-else   :data="layout"   
@@ -407,6 +407,7 @@ export default {
 </script>
 
 <style>
+.cr_run_title { line-height: 28px;    border-bottom: 1px solid gray;font-weight: 500; margin-bottom: 5px;   }
 html, body, #report_app {
     height: 100%;
     margin: 0;

@@ -1,4 +1,4 @@
-import {seriesLoadScripts,load_css_file } from "../utils/util"
+import {seriesLoadScripts,load_css_js,extract_style_txt,extract_script_txt } from "../utils/util"
 export default {
     provide(){
         let ret={
@@ -15,18 +15,19 @@ export default {
     },
     data: () => ({
         parentCompent:this, 
-        old_content:""
+        old_content:"",
+        cut_script_css_content:""
     }),
     mounted(){
         let _this=this
         if(this.self.type.startsWith("Data") && window.AVUE==undefined){
             load_css_file("cdn/avue/2.8.1/index.css")
             seriesLoadScripts("cdn/avue/2.8.1/avue.min.js",null,function(){
-                _this.old_content=_this.self.content
+                _this.refresh()
             })
         }
         else
-            this.old_content=this.self.content
+            _this.refresh()
     },
     computed: { 
         _context(){
@@ -41,10 +42,16 @@ export default {
     },
     methods:{
         refresh(){
-            let _this=this
-            this.old_content=""
+            let _this=this 
+            let script_txt=load_css_js(_this.self.content,"cr_css_"+_this.self.gridName)
+            script_txt=script_txt.replace(/function\s*(\w+)\s*/,'_this.$1=_this.$options.methods.$1=function')
+            let style=extract_style_txt(_this.self.content)
+            eval("(function(){\n"+script_txt+"\n})()")
+            _this.cut_script_css_content=_this.self.content.replace(/<script.*?>*?>([\s\S]*?)<\/script>/img,'')
+                    .replace(/<style.*?>*?>([\s\S]*?)<\/style>/img,'')
+            _this.old_content=''
             setTimeout(()=>{
-                _this.old_content=_this.self.content
+                _this.old_content=_this.cut_script_css_content
                 //_this.buildDisplayData()
             })
         }

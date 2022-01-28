@@ -297,7 +297,9 @@ export default {
     ]),
     cull_cell_cr(){
       if(this.cur_cell!=undefined && this.cur_cell.cr==undefined )
-        this.cur_cell.cr={}
+        this.cur_cell.cr={"_leftHead":"","_topHead":"","_color":"","_background-color":"",
+"_link":"","_displayValueExpr":"=@value","_valueExpr":"",
+"_calcLevel":"","_FONT-SIZE":"","_text-align":"",}
       if(this.cur_cell.cr)
         return JSON.parse(JSON.stringify(this.cur_cell.cr))
       else
@@ -576,7 +578,7 @@ export default {
         let children=this.widgetForm.children.column
         this.widgetForm=[]
         children.forEach(ele=>{
-          this.gridLayoutAddItem(ele,children.length==1?24:ele.span,15);//15 是新建报表时的缺省高度
+          this.gridLayoutAddItem(ele,children.length==1?24:ele.span,10);//10 是新建报表时的缺省高度
         });
       }
       
@@ -647,6 +649,7 @@ export default {
     },
     
     expr_edit(cur_cell,prop){
+        this.sheet_window.luckysheet.exitEditMode()//退出编辑模式，进入表达式输入对话框，否则对话框中输入的内容将没作用
         this.action_name=prop
         this.action_target=cur_cell
         this.ExprEditorDialog_visible=true
@@ -804,7 +807,7 @@ export default {
             for(let c=one_range.column[0];c<=one_range.column[1];c++){
               let cell=data[r][c]
               if(cell ){
-                if(cell.v==undefined && cell.mc)//不处理合并单元格
+                if(cell.v==undefined && cell.mc!=undefined && cell.mc.cs==undefined)//不处理合并单元格
                   continue
                 if(!cell.cr) cell.cr={"_displayValueExpr":"=@value"}
                 if(!cell.cr['_displayValueExpr'])
@@ -918,6 +921,7 @@ export default {
           this.can_watch_cell=true
           return
         }
+        this.sheet_window.luckysheet.exitEditMode()
         let cacheUpdate=[]
         Object.keys(newVal).forEach(k=>{
           if(newVal[k]!=oldVal[k]){
@@ -933,7 +937,7 @@ export default {
                   cell={m:'',v:'',cr:{"_displayValueExpr":"=@value"}}
                   this.sheet_window.luckysheet.setCellValue(r,c,cell);  
               }
-              if(cell.v==undefined && cell.mc)//不处理合并单元格
+              if(cell.v==undefined && cell.mc!=undefined && cell.mc.cs==undefined)//不处理合并单元格
                 continue
               if(cell.cr==undefined)
                   cell.cr={"_displayValueExpr":"=@value"}

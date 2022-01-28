@@ -97,7 +97,7 @@ export default [
     },
     { title: '元素',
         list: [ 
-            {"type":"dync_template",'label':'动态模板',gridName:"_random_",icon: 'icon-table','color':'#fff',display: true, 
+            {"type":"dync_template",'label':'动态模板',gridName:"_random_",icon: 'icon-table','color':'#fff',display: true,style:{height:'100px'}, 
             'content':`
         <div>
         <div>Hello {{ name }}!</div>
@@ -238,7 +238,7 @@ export default [
     list: [
       
       {"type":"DataPay",'label':'DataPay',gridName:"_random_",h:4, span:24,icon: 'icon-table','color':'#fff',
-    display: true, 'component':'dync-template',style:{height:'100px'},
+    display: true, 'component':'dync-template',style:{height:'100px',overflow:'hidden'},
     'content':`<avue-data-pay :option=" {
       decimals:2, span: 8,
       data: [
@@ -691,9 +691,9 @@ export default [
     } "></avue-data-operatext>`},
 
     {"type":"DataProgress",'label':'DataProgress',gridName:"_random_",h:4, span:24,icon: 'icon-table','color':'#fff',
-    display: true, 'component':'dync-template',style:{height:'100px'},
+    display: true, 'component':'dync-template',style:{height:'100px',overflow:'hidden'},
     'content':`<avue-data-progress :option="{
-      decimals:2, span:6,
+      decimals:2, span:24,
       data: [
         {
             click: function (item) {
@@ -702,36 +702,6 @@ export default [
             title: '转化率（日同比 28%）',
             color: 'rgb(178, 159, 255)',
             count: 32,
-            href:'',
-            target:'_blank'
-        },
-        {
-            click: function (item) {
-              
-            },
-            title: '签到率（日同比 11%）',
-            color:'rgb(230, 71, 88)',
-            count: 32,
-            href:'',
-            target:'_blank'
-        },
-        {
-            click: function (item) {
-              
-            },
-            title: 'CPU使用率',
-            color:'rgb(27, 201, 142)',
-            count: 56,
-            href:'',
-            target:'_blank'
-        },
-        {
-            click: function (item) {
-              
-            },
-            title: '使用人数',
-            color:'red',
-            count: 56,
             href:'',
             target:'_blank'
         }

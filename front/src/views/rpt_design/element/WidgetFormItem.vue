@@ -31,12 +31,12 @@
       <img :src="self.icon" style="width: 20px;height: 20px;vertical-align:middle;">
       <span>  {{self.label}}</span>
     </div>
-    <div :style="{width:'100%',height:`calc(100% - 0px`}">
+    <div :style="{width:'100%','flex-grow':1,height:`20px`}">
     <component draggable=".item" v-if="context.mode=='design'"
                :is="getComponent(self.type, self.component)"
                :self="self" :parent="parent" 
                :select.sync="selectWidget"  :depth="depth+1"
-               v-bind="Object.assign(this.deepClone(self), self.params, {content:undefined,___depth:depth,depth:depth+1, size:self.size || 'small' })"
+               v-bind="Object.assign(this.deepClone(self), self.params, {content:undefined,___depth:depth,depth:depth+1, size:self.size || 'mini' })"
                
                @change="$emit('change')">
 
@@ -47,7 +47,7 @@
                :is="getComponent(self.type, self.component)"
                :self="self" :parent="parent" 
                :select.sync="selectWidget"  :depth="depth+1"
-               v-bind="Object.assign(this.deepClone(self), self.params, {content:undefined,___depth:depth,depth:depth+1, size:self.size || 'small' })"
+               v-bind="Object.assign(this.deepClone(self), self.params, {content:undefined,___depth:depth,depth:depth+1, size:self.size || 'mini' })"
                
                @change="$emit('change')">
 

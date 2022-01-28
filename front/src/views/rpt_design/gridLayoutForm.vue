@@ -130,6 +130,7 @@
                      :is-resizable="context.canDraggable"
                      :vertical-compact="true" v-if="showGridLayout"
                      :use-css-transforms="false"
+                     :responsive="context.crisMobile"
                      :style="{'height':'100%','width':'100%'}"
                     @layout-ready="layoutUpdatedEvent"
         >
@@ -267,7 +268,7 @@ export default {
 .vue-grid-item:not(.vue-grid-placeholder) {
     background-color: ${_this.context.report_result.defaultsetting['BACKGROUND-COLOR']};
     color: ${_this.context.report_result.defaultsetting['COLOR']};
-    border: 0px solid ${_this.context.report_result.defaultsetting['COLOR']};
+    border: 1px solid ${_this.context.report_result.defaultsetting['COLOR']};
     
 }
 .vue-grid-item>.vue-resizable-handle{
