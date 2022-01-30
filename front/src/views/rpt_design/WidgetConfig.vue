@@ -92,6 +92,15 @@ export default {
       return prefix + result
     }
   },
+  watch:{
+    data(){
+      if(this.data.style==undefined)
+        this.data.style={}
+      if(this.data.style.height==undefined){
+        this.data.style.height="100%"
+      }
+    }
+  },
   data() {
     return {
       fields,

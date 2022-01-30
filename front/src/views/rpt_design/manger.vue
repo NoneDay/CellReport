@@ -155,7 +155,7 @@ export default {
                     {type: 'input',label: '标识', editDisabled:true,rules: [{required: true}],span: 12,formslot:true,display: true,prop: 'id'},
                     {type: 'input',label: '名称', rules: [{required: true}],span: 12,formslot:true,display: true,prop: 'name'},
                     {type: 'input',label: '管理员',editDisabled:this.userInfo.username!='admin', rules: [{required: true}],span: 12,formslot:true,display: true,prop: 'owner'},
-                    {type: 'input',label: '缺省页',editDisabled:this.userInfo.username!='admin', rules: [{required: true}],span: 12,formslot:true,display: true,prop: 'default_page'},
+                    {type: 'input',label: '缺省页',value:'default',editDisabled:this.userInfo.username!='admin', rules: [{required: true}],span: 12,formslot:true,display: true,prop: 'default_page'},
                     {type: 'input',label: '报表存放根路径',editDisabled:this.userInfo.username!='admin', rules: [{required: true}],span: 12,formslot:true,display: true,prop: 'report_path'},
                     {type: 'input',label: '协助管理人员', span: 12,formslot:true,display: true,prop: 'members'},
                     {type: 'input',label: '战报用户', span: 12,formslot:true,display: true,prop: 'zb_user'},
@@ -183,7 +183,7 @@ export default {
             login_tbl:[],
             user_obj:{},
             parsers:[],
-            data:{login_script:`var result=web_request({'url':'http://yzl.hn.clic/auth/user/login'  
+            data:{login_script:`var result=web_request({'url':'http://xxx.xxx.xxx/auth/user/login'  
             ,'method':'post','data':{'userid':userid,'password':password,'attrib':'mobile,phone,mail'} } );
 var json=eval('='+result);	
 return {'errcode':json.errcode,'message':json.errmsg, 'userid':json.userid,'username':json.username,'old_result':result};`,},

@@ -939,16 +939,19 @@ export function extract_script_txt(txt){
     }
     return ret
 }
+export function insert_css_to_head(css_result,id="report_back_css") {
+        document.getElementById(id)?.remove()
+        const css_node = document.createElement('style');
+        css_node.id = id;
+        css_node.type="text/css"
+        css_node.appendChild(document.createTextNode(css_result))
+        document.getElementsByTagName('head')[0].appendChild(css_node);    
+}
 export function load_css_js(txt,id="report_back_css") {
     if(txt){
         let css_result=extract_style_txt(txt)
         if(css_result!=""){
-            document.getElementById(id)?.remove()
-            const css_node = document.createElement('style');
-            css_node.id = id;
-            css_node.type="text/css"
-            css_node.appendChild(document.createTextNode(css_result))
-            document.getElementsByTagName('head')[0].appendChild(css_node);
+            insert_css_to_head(css_result,id)
         }
         let ret=extract_script_txt(txt)
         return ret

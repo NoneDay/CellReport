@@ -13,8 +13,8 @@
     </el-popover>
 
     <div ref="form" v-if="!crisMobile && isShow && result.defaultsetting['show_form']=='true'"> 
-      <RuntimeTemplateCompiler  :template="result.pc_form"   v-if="result.pc_form" :parent="parentComponent">
-      </RuntimeTemplateCompiler>
+      <dyncTemplate  :self="{type:'pc_form',content:result.pc_form,gridName:'pc_form'}"  v-if="result.pc_form">
+      </dyncTemplate>
       <el-form :inline="true" v-else label-position="right" label-width="80px" >
         <input hidden v-for="one in result.form.filter(x=>x.hide=='True')" :key="one.name" v-model="queryForm[one.name]"/>
         <div style="display:inline;max-width:100px" v-for="one in result.form.filter(x=>x.hide=='False')" :key="one.name">
@@ -63,8 +63,8 @@
       </el-form>
     </div>
     <div  ref="form" v-if=" crisMobile && isShow && result.defaultsetting['show_form']=='true'"> 
-      <RuntimeTemplateCompiler  :template="result.mobile_form" v-if="result.mobile_form" :parent="parentComponent">
-      </RuntimeTemplateCompiler>
+      <dyncTemplate  :self="{type:'pc_form',content:result.mobile_form,gridName:'pc_form'}" v-if="result.mobile_form">
+      </dyncTemplate>
       <form v-else > 
         <input hidden v-for="one in result.form.filter(x=>x.hide=='True')" :key="one.name" v-model="queryForm[one.name]"/>
         <img src="img/battle_2021.jpg" style="height: 80px;width: 100%;" v-if="result.form.filter(x=>x.hide=='False').length<=1">
@@ -149,9 +149,10 @@ import {run_one} from "./api/report_api"
 import {convert_csv_to_json,convert_array_to_json,build_chart_data, deepClone,arrayToTree,seriesLoadScripts,load_css_file } from "./utils/util"
 import install_component from './install_component'
 import { RuntimeTemplateCompiler } from 'vue-runtime-template-compiler'
+import dyncTemplate from './element/dyncTemplate.vue'
 export default {
   name: 'App', //CellReportFormDesign
-  components:{widgetForm ,RuntimeTemplateCompiler},
+  components:{widgetForm ,RuntimeTemplateCompiler,dyncTemplate},
   mounted(){    
     let _this=this
     window.onresize=this.refresh_layout

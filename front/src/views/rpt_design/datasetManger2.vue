@@ -190,7 +190,6 @@
   </el-container>
           <span slot="footer" class="dialog-footer">
             <el-button @click="dialogVisible = false">取 消</el-button>
-            <el-button @click="print_json">print_json</el-button>
             <el-button type="primary" @click="handleSubmit">确 定</el-button>
         </span>
 </el-dialog>
@@ -246,7 +245,7 @@ export default {
         tableData(){
             if(this.action_target.report_result && getObjType(this.action_target.report_result)=="string")
                 this.action_target.report_result=JSON.parse(this.action_target.report_result)
-            let ret
+            let ret=[]
             try{
                 if(this.action_target._type=="csv" && this.action_target.get)
                 {
@@ -304,7 +303,7 @@ export default {
                         let data=JSON.parse( this.action_target.report_result.ds_dict[this.action_target.get])
                         ret=convert_array_to_json(data.data,0,-1,data.columns)
                     }
-                    else
+                    else if(this.action_target.report_result)
                         ret= json_by_path(this.action_target.report_result,this.action_target.get)
                     return ret
                 }
