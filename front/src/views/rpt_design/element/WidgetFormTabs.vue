@@ -15,17 +15,17 @@
               ></widget-form-item>     
           </component>
     </component>
-    
+    <widgetDialog v-if="widget_dialogVisible" :visible.sync="widget_dialogVisible" >
+    </widgetDialog>
   </div>
 </template>
 <script>
-import draggable from 'vuedraggable'
 import {widget_div_layout} from '../fieldsConfig'
 import mixins from "./mixins"
 export default {
   name: 'widget-form-tabs',
   mixins:[mixins],
-  components: { draggable },
+  components: {  },
   updated(){
       if(this.self.children.column.length>0){
           if(!this.self.children.column.some(element => element.label===this.editableTabsValue))
@@ -74,7 +74,8 @@ export default {
       "collapse":{'main':'el-collapse','sub':'el-collapse-item'},
       },
       editableTabsValue:"Tab0",
-      cur_tab:"-1"
+      cur_tab:"-1",
+      widget_dialogVisible:false
     }
   },
   mounted(){
@@ -108,6 +109,8 @@ export default {
     },
     handleTabsEdit(targetName, action) {
         if (action === 'add') {
+          this.widget_dialogVisible=true
+          return
           let newIndex = (this.self.children.column.length) ;
           let data={...widget_div_layout(), prop : Date.now() + '_' + Math.ceil(Math.random() * 99999) };
           let idx=newIndex
@@ -131,9 +134,9 @@ export default {
               }
             });
           }
-          
+          tabs[targetName].isDelete=true
           this.editableTabsValue = activeName;
-          this.self.children.column = tabs.filter(tab => tab.label !== targetName);
+          tabs.splice(targetName,1);
         }
       }
   },

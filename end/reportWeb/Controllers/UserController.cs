@@ -213,13 +213,18 @@ namespace reportWeb.Controllers
                     new{
                         path = "/rpt-list/index",
                         icon = "el-icon-document",
-                        component = "views/zhanbao/zb_index",
+                        component = "",
                         label = "报表目录"
                     },new{
                         path = "/manger/index",
                         icon = "el-icon-document",
-                        component = "views/zhanbao/zb_index",
+                        component = "",
                         label = "报表组管理"
+                    },new{
+                        path = "/widget/index",
+                        icon = "el-icon-document",
+                        component = "",
+                        label = "组件管理"
                     }
                 }
             }

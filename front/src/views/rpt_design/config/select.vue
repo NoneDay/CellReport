@@ -202,12 +202,11 @@
 </template>
 
 <script>
-import Draggable from 'vuedraggable'
 
 export default {
   name: "config-select",
   props: ['data'],
-  components: { Draggable },
+  components: {  },
   data() {
     return {
       validator: {

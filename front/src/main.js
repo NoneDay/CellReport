@@ -19,6 +19,11 @@ import './styles/common.scss';
 import basicBlock from './components/basic-block/main'
 import basicContainer from './components/basic-container/main'
 import Contextmenu from "vue-contextmenujs"
+import install_component from './views/rpt_design/install_component'
+//import Config from './views/rpt_design/Config'
+//Vue.use(Config);
+Vue.use(install_component);
+
 Vue.use(Contextmenu);
 Vue.use(router)
 Vue.use(VueAxios, axios)

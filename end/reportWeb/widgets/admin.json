@@ -1,0 +1,658 @@
+﻿[
+    {
+        "title": "DATAV",
+        "list": [
+            {
+                "type": "装饰1",
+                "label": "装饰1",
+                "gridName": "_random_",
+                "h": 4,
+                "span": 6,
+                "icon": "icon-table",
+                "color": "#fff",
+                "display": true,
+                "component": "dync-template",
+                "style": {
+                    "height": "100%"
+                },
+                "content": "<dv-decoration-1 style=\"width:100%;height:100%;\" />"
+            },
+            {
+                "type": "装饰2",
+                "label": "装饰2",
+                "gridName": "_random_",
+                "h": 4,
+                "span": 6,
+                "icon": "icon-table",
+                "color": "#fff",
+                "display": true,
+                "component": "dync-template",
+                "style": {
+                    "height": "100%"
+                },
+                "content": "<dv-decoration-2 :reverse=\"false\"   style=\"width:100%;height:100%;\" />"
+            },
+            {
+                "type": "装饰3",
+                "label": "装饰3",
+                "gridName": "_random_",
+                "h": 4,
+                "span": 6,
+                "icon": "icon-table",
+                "color": "#fff",
+                "display": true,
+                "component": "dync-template",
+                "style": {
+                    "height": "100%"
+                },
+                "content": "<dv-decoration-3 style=\"width:100%;height:100%;\" />"
+            },
+            {
+                "type": "装饰4",
+                "label": "装饰4",
+                "gridName": "_random_",
+                "h": 4,
+                "span": 6,
+                "icon": "icon-table",
+                "color": "#fff",
+                "display": true,
+                "component": "dync-template",
+                "style": {
+                    "height": "100%"
+                },
+                "content": "<dv-decoration-4 :reverse=\"false\"  style=\"width:100%;height:100%;\" />"
+            },
+            {
+                "type": "装饰5",
+                "label": "装饰5",
+                "gridName": "_random_",
+                "h": 4,
+                "span": 6,
+                "icon": "icon-table",
+                "color": "#fff",
+                "display": true,
+                "component": "dync-template",
+                "style": {
+                    "height": "100%"
+                },
+                "content": "<dv-decoration-5 style=\"width:100%;height:100%;\" />"
+            },
+            {
+                "type": "装饰6",
+                "label": "装饰6",
+                "gridName": "_random_",
+                "h": 4,
+                "span": 6,
+                "icon": "icon-table",
+                "color": "#fff",
+                "display": true,
+                "component": "dync-template",
+                "style": {
+                    "height": "100%"
+                },
+                "content": "<dv-decoration-6 style=\"width:100%;height:100%;\" />"
+            },
+            {
+                "type": "装饰7",
+                "label": "装饰7",
+                "gridName": "_random_",
+                "h": 4,
+                "span": 6,
+                "icon": "icon-table",
+                "color": "#fff",
+                "display": true,
+                "component": "dync-template",
+                "style": {
+                    "height": "100%"
+                },
+                "content": "<dv-decoration-7 style=\"width:150px;height:30px;\">Decoration</dv-decoration-7>"
+            },
+            {
+                "type": "装饰8",
+                "label": "装饰8",
+                "gridName": "_random_",
+                "h": 4,
+                "span": 6,
+                "icon": "icon-table",
+                "color": "#fff",
+                "display": true,
+                "component": "dync-template",
+                "style": {
+                    "height": "100%"
+                },
+                "content": "<dv-decoration-8 :reverse=\"false\" style=\"width:100%;height:100%;\" />"
+            },
+            {
+                "type": "装饰9",
+                "label": "装饰9",
+                "gridName": "_random_",
+                "h": 4,
+                "span": 6,
+                "icon": "icon-table",
+                "color": "#fff",
+                "display": true,
+                "component": "dync-template",
+                "style": {
+                    "height": "100%"
+                },
+                "content": "<dv-decoration-9 style=\"width:width:100%;height:100%;\">66%</dv-decoration-9>"
+            },
+            {
+                "type": "装饰10",
+                "label": "装饰10",
+                "gridName": "_random_",
+                "h": 4,
+                "span": 6,
+                "icon": "icon-table",
+                "color": "#fff",
+                "display": true,
+                "component": "dync-template",
+                "style": {
+                    "height": "100%"
+                },
+                "content": "<dv-decoration-10 style=\"width:100%;height:100%;\" />"
+            },
+            {
+                "type": "装饰11",
+                "label": "装饰11",
+                "gridName": "_random_",
+                "h": 4,
+                "span": 6,
+                "icon": "icon-table",
+                "color": "#fff",
+                "display": true,
+                "component": "dync-template",
+                "style": {
+                    "height": "100%"
+                },
+                "content": "<dv-decoration-11 style=\"width:100%;height:100%;\">dv-decoration-11</dv-decoration-11>"
+            },
+            {
+                "type": "装饰12",
+                "label": "装饰12",
+                "gridName": "_random_",
+                "h": 4,
+                "span": 6,
+                "icon": "icon-table",
+                "color": "#fff",
+                "display": true,
+                "component": "dync-template",
+                "style": {
+                    "height": "100%"
+                },
+                "content": "<dv-decoration-12 style=\"width:100%;height:100%;\" />"
+            },
+            {
+                "type": "动态环图",
+                "label": "动态环图",
+                "gridName": "_random_",
+                "h": 4,
+                "span": 6,
+                "icon": "icon-table",
+                "color": "#fff",
+                "display": true,
+                "component": "dync-template",
+                "style": {
+                    "height": "100%"
+                },
+                "content": "<dv-active-ring-chart :config=\"{  \n            data: Enumerable.from(dataset('演示')).skip(1).select(x=> { \n              return {'name':x[0],value:x[1]} \n            }).toArray()\n          }\"   style=\"width:100%;height:100%\" /> "
+            },
+            {
+                "type": "胶囊柱图",
+                "label": "胶囊柱图",
+                "gridName": "_random_",
+                "h": 4,
+                "span": 6,
+                "icon": "icon-table",
+                "color": "#fff",
+                "display": true,
+                "component": "dync-template",
+                "style": {
+                    "height": "100%"
+                },
+                "content": "<dv-capsule-chart :config=\"{  \n            data: Enumerable.from(dataset('演示')).skip(1).select(x=> { \n              return {'name':x[0],value:x[1]} \n            }).toArray()\n          }\"  style=\"width:100%;height:100%;color:black\" />"
+            },
+            {
+                "type": "水位图",
+                "label": "水位图",
+                "gridName": "_random_",
+                "h": 4,
+                "span": 6,
+                "icon": "icon-table",
+                "color": "#fff",
+                "display": true,
+                "component": "dync-template",
+                "style": {
+                    "height": "100%"
+                },
+                "content": "<dv-water-level-pond :config=\" {\n            data: [66]\n          }\" style=\"width:100%;height:100%;\" />"
+            },
+            {
+                "type": "进度池",
+                "label": "进度池",
+                "gridName": "_random_",
+                "h": 4,
+                "span": 6,
+                "icon": "icon-table",
+                "color": "#fff",
+                "display": true,
+                "component": "dync-template",
+                "style": {
+                    "height": "100%"
+                },
+                "content": "<dv-percent-pond  :config=\"{\n            value: 66\n          }\" style=\"width:100%;height:100%;\" />"
+            },
+            {
+                "type": "飞线图",
+                "label": "飞线图",
+                "gridName": "_random_",
+                "h": 4,
+                "span": 6,
+                "icon": "icon-table",
+                "color": "#fff",
+                "display": true,
+                "component": "dync-template",
+                "style": {
+                    "height": "100%"
+                },
+                "content": "<dv-flyline-chart :config=\"config\" style=\"width:100%;height:100%;\" />"
+            },
+            {
+                "type": "飞线图增强版",
+                "label": "飞线图增强版",
+                "gridName": "_random_",
+                "h": 4,
+                "span": 6,
+                "icon": "icon-table",
+                "color": "#fff",
+                "display": true,
+                "component": "dync-template",
+                "style": {
+                    "height": "100%"
+                },
+                "content": "<dv-flyline-chart-enhanced :config=\"config\" style=\"width:100%;height:100%;\" />"
+            },
+            {
+                "type": "锥形柱图",
+                "label": "锥形柱图",
+                "gridName": "_random_",
+                "h": 4,
+                "span": 6,
+                "icon": "icon-table",
+                "color": "#fff",
+                "display": true,
+                "component": "dync-template",
+                "style": {
+                    "height": "100%"
+                },
+                "content": "<dv-conical-column-chart :config=\"{\n            data:Enumerable.from(dataset('演示')).skip(1).select(x=> { \n              return {'name':x[0],value:x[1]} \n            }).toArray(),\n            img: [\n              '/img/conicalColumnChart/1st.png',\n              '/img/conicalColumnChart/2st.png',\n              '/img/conicalColumnChart/3st.png',\n              '/img/conicalColumnChart/4st.png',\n              '/img/conicalColumnChart/5st.png',\n              '/img/conicalColumnChart/6st.png',\n              '/img/conicalColumnChart/7st.png'\n            ]\n          }\" style=\"width:100%;height:100%;\" />"
+            },
+            {
+                "type": "数字翻牌器",
+                "label": "数字翻牌器",
+                "gridName": "_random_",
+                "h": 4,
+                "span": 6,
+                "icon": "icon-table",
+                "color": "#fff",
+                "display": true,
+                "component": "dync-template",
+                "style": {
+                    "height": "100%"
+                },
+                "content": "<dv-border-box-8 :reverse=\"true\">\n          <dv-digital-flop :config=\"{number: [100],content: '{nt}个',style: {\n            fontSize: 30,\n            fill: '#3de7c9'\n          }}\" \n            style=\"width:100%;height:100%;\" />\n          </dv-border-box-8>"
+            },
+            {
+                "type": "轮播表",
+                "label": "轮播表",
+                "gridName": "_random_",
+                "h": 4,
+                "span": 6,
+                "icon": "icon-table",
+                "color": "#fff",
+                "display": true,
+                "component": "dync-template",
+                "style": {
+                    "height": "100%"
+                },
+                "content": "<dv-scroll-board :config=\"{\n            header: dataset('演示')[0],\n            data: dataset('演示').slice(1)\n          }\" style=\"width:100%;height:100%;\" />"
+            },
+            {
+                "type": "排名轮播表",
+                "label": "排名轮播表",
+                "gridName": "_random_",
+                "h": 4,
+                "span": 6,
+                "icon": "icon-table",
+                "color": "#fff",
+                "display": true,
+                "component": "dync-template",
+                "style": {
+                    "height": "100%"
+                },
+                "content": "<dv-scroll-ranking-board :config=\"{\n            data: Enumerable.from(dataset('演示')).skip(1).select(x=> { \n              return {'name':x[0],value:x[1]} \n            }).toArray()\n          }\" style=\"width:100%;height:100%;color:black\" />"
+            }
+        ]
+    },
+    {
+        "title": "数据展示",
+        "list": [
+            {
+                "type": "DataTabs",
+                "label": "DataTabs",
+                "gridName": "_random_",
+                "h": 4,
+                "span": 24,
+                "icon": "icon-table",
+                "color": "#fff",
+                "display": true,
+                "component": "dync-template",
+                "style": {
+                    "height": "100px"
+                },
+                "content": "<avue-data-tabs :option=\"{\n      data: [\n        {\n          click: function (item) {\n            \n          },\n          title: '分类统计',\n          subtitle: '实时',\n          count: 7993,\n          allcount: 10222,\n          text: '当前分类总记录数',\n          color: 'rgb(27, 201, 142)',\n          key: '类'\n        },\n        {\n          click: function (item) {\n            \n          },\n          title: '附件统计',\n          subtitle: '实时',\n          count: 3112,\n          allcount: 10222,\n          text: '当前上传的附件数',\n          color: 'rgb(230, 71, 88)',\n          key: '附'\n        },\n        {\n          click: function (item) {\n            \n          },\n          title: '文章统计',\n          subtitle: '实时',\n          count: 908,\n          allcount: 10222,\n          text: '评论次数',\n          color: 'rgb(178, 159, 255)',\n          key: '评'\n        }\n      ]\n    } \"></avue-data-tabs>"
+            },
+            {
+                "type": "DataBox",
+                "label": "DataBox",
+                "gridName": "_random_",
+                "h": 4,
+                "span": 24,
+                "icon": "icon-table",
+                "color": "#fff",
+                "display": true,
+                "component": "dync-template",
+                "style": {
+                    "height": "100px"
+                },
+                "content": "<template>\n<div class=\"cr-data-box\">\n  <div class=\"item\"  @click=\"my_sayHi2\">\n    <div class=\"item-icon\" style=\"background-color: rgb(49, 180, 141);\">\n        <i class=\"el-icon-warning\"></i>\n    </div> \n    <div class=\"item-info\">\n        <span class=\"title\" style=\"color: rgb(49, 180, 141);\">12,332</span>\n        <div class=\"info\">{{my_test_computed}}日志{{my_t_data1 }}</div>\n    </div> \n  </div>\n</div>  \n</template>\n<script>  \n   \n   return {\n     data:{\n       my_t_data1:'test_data1',\n       my_t_data2:'test_data2',\n       my_cnt:0,\n     },\n     computed:{\n       my_test_computed(){\n        return this.my_t_data1+'_'+this.my_cnt \n       }\n     },\n     methods:{\n         my_sayHi2() { \n            this.my_t_data1='test_'+this.my_cnt;\n            this.my_cnt++\n        },\n         my_sayHi3() { \n            //console.info(this.context.clickedEle['test'])\n            console.log(\"Hi3333\"); \n        }\n     }\n   }\n</script>\n<style>\n.cr-data-box{\n  height: 100%;\n}\n.cr-data-box .item { \n    position: relative;\n    margin: 0 auto 10px;\n    width: 96%;\n    display: flex;\n    height: 100%;\n    overflow: hidden;\n    border-radius: 5px;\n    box-sizing: border-box;\n    border: 1px solid gray\n}\n.cr-data-box .item-icon {\n    width: 100px;\n    height: 100%;\n    color: #fff;\n    text-align: center;\n    line-height: 100px;\n    align-items: center;\n    justify-content: center;\n    display: flex;\n}\n.cr-data-box .item-icon i {\n    font-size: 48px!important;\n}\n.cr-data-box .item-info {\n    border-radius: 0 5px 5px 0;\n    border: 1px solid #eee;\n    border-left: none;\n    background-color: #fff;\n    flex: 1;\n    display: flex;\n    justify-content: center;\n    flex-direction: column;\n}\n.cr-data-box .item-info .title {\n    font-size: 30px;\n    line-height: 40px;\n    text-align: center;\n}\n.cr-data-box .item-info .info {\n    color: #999;\n    font-size: 14px; \n    text-align: center;\n}\n</style>"
+            },
+            {
+                "type": "DataDisplay",
+                "label": "DataDisplay",
+                "gridName": "_random_",
+                "h": 4,
+                "span": 24,
+                "icon": "icon-table",
+                "color": "#fff",
+                "display": true,
+                "component": "dync-template",
+                "style": {
+                    "height": "100px"
+                },
+                "content": "<div  style=\"display: flex;align-items: center;flex-direction: column;\nmargin: 5px 0;text-align: center;color: rgb(63, 161, 255);\">\n\n<span style=\"flex:1; margin: 8px 0 15px;font-weight: 700;font-size: 32px;color: #15a0ff;\">\n  100.00\n</span> \n<span style=\"margin: 0 auto;width: 24px;height: 1px;background: #9b9b9b;\">\n</span>\n<div style=\"line-height: 32px;color: #999;\">日活跃数</div>\n\n</div>"
+            },
+            {
+                "type": "DataIcons",
+                "label": "DataIcons",
+                "gridName": "_random_",
+                "h": 4,
+                "span": 24,
+                "icon": "icon-table",
+                "color": "#fff",
+                "display": true,
+                "component": "dync-template",
+                "style": {
+                    "height": "100px"
+                },
+                "content": "<avue-data-icons :option=\"{\n      decimals:2, span:4,\n      data: [\n        {\n          click: function (item) {\n            \n          },\n          title: '今日注册',\n          count: 12678,\n          decimals:2,\n          icon: 'el-icon-tickets',\n          href:'',\n          target:'_blank'\n        },\n        {\n          click: function (item) {\n            \n          },\n          title: '今日登录',\n          count: 22139,\n          icon: 'el-icon-success',\n          href:'',\n          target:'_blank'\n        },\n        {\n          click: function (item) {\n            \n          },\n          title: '今日订阅',\n          count: 35623,\n          icon: 'el-icon-info',\n          href:'',\n          target:'_blank'\n        },\n        {\n          click: function (item) {\n            \n          },\n          title: '今日评论',\n          count: 16826,\n          icon: 'el-icon-message',\n          href:'',\n          target:'_blank'\n        },\n        {\n          click: function (item) {\n            \n          },\n          title: '今日评论',\n          count: 16826,\n          icon: 'el-icon-message',\n          href:'',\n          target:'_blank'\n        },\n        {\n          click: function (item) {\n            \n          },\n          title: '今日评论',\n          count: 16826,\n          icon: 'el-icon-message',\n          href:'',\n          target:'_blank'\n        }\n      ]\n    } \"></avue-data-icons>"
+            },
+            {
+                "type": "DataOperatext",
+                "label": "DataOperatext",
+                "gridName": "_random_",
+                "h": 4,
+                "span": 24,
+                "icon": "icon-table",
+                "color": "#fff",
+                "display": true,
+                "component": "dync-template",
+                "style": {
+                    "height": "100px"
+                },
+                "content": "<avue-data-operatext :option=\"{\n      decimals:2, span: 8,\n      data: [\n        {\n          click: function (item) {\n            \n          },\n          title: 'smallwei',\n          subtitle: 'avue部门-前端研发工程师',\n          img: 'https://avatar.gitee.com/uploads/61/632261_smallweigit.jpg!avatar100?1518660401',\n          color: '#00a7d0',\n          list: [{\n            label: '点赞',\n            value: '3,200'\n          }, {\n            label: '关注',\n            value: '13,000'\n          }, {\n            label: '项目',\n            value: '13,000'\n          }]\n        },\n        {\n          click: function (item) {\n            \n          },\n          title: 'smallwei',\n          subtitle: 'avue部门-前端研发工程师',\n          img: 'https://avatar.gitee.com/uploads/61/632261_smallweigit.jpg!avatar100?1518660401',\n          color: '#f39c12',\n          list: [{\n            label: '点赞',\n            value: '3,200'\n          }, {\n            label: '关注',\n            value: '13,000'\n          }, {\n            label: '项目',\n            value: '13,000'\n          }]\n        },\n        {\n          click: function (item) {\n            \n          },\n          title: 'smallwei',\n          subtitle: 'avue部门-前端研发工程师',\n          img: 'https://avatar.gitee.com/uploads/61/632261_smallweigit.jpg!avatar100?1518660401',\n          colorImg: 'http://img.sccnn.com/bimg/337/15595.jpg',\n          list: [{\n            label: '点赞',\n            value: '3,200'\n          }, {\n            label: '关注',\n            value: '13,000'\n          }, {\n            label: '项目',\n            value: '13,000'\n          }]\n        },\n      ]\n    } \"></avue-data-operatext>"
+            },
+            {
+                "type": "DataProgress",
+                "label": "DataProgress",
+                "gridName": "_random_",
+                "h": 4,
+                "span": 24,
+                "icon": "icon-table",
+                "color": "#fff",
+                "display": true,
+                "component": "dync-template",
+                "style": {
+                    "height": "100px",
+                    "overflow": "hidden"
+                },
+                "content": "<div style=\"margin: 10px;\">\n  \t<div style=\" margin: 10px;display: flex;justify-content: space-between;;\">\n        <span style=\"line-height: 26px;font-size: 26px; color: #666;\">32.00</span>\n        <div style=\"color: #999;font-size: 14px;\">转化率（日同比 28%）</div>\n\t</div>\n\t<el-progress style=\"flex:1\" type=\"line\" :text-inside=\"true\" \n    :stroke-width=\"20\" :percentage=\"51\" status=\"success\">\n    </el-progress>\n</div>"
+            },
+            {
+                "type": "DataRotate",
+                "label": "DataRotate",
+                "gridName": "_random_",
+                "h": 4,
+                "span": 24,
+                "icon": "icon-table",
+                "color": "#fff",
+                "display": true,
+                "component": "dync-template",
+                "style": {
+                    "height": "100px"
+                },
+                "content": "<div style=\"color: #fff;background-color: rgb(49, 180, 141); margin: 5px 10px;-webkit-box-sizing: border-box;box-sizing: border-box;position: relative;border-radius: 3px;\">\n  <div style=\"padding: 10px 20px;\">\n    <span style=\" margin-bottom: 5px;font-size: 38px;white-space: nowrap;font-weight: 300;display: block;\">\n      150.00\n    </span>\n    <span style=\" font-size: 15px;\">\n      新订单\n    </span>\n  <i class=\"el-icon-warning\" style=\"-webkit-transition: all .3s linear;transition: all .3s linear;position: absolute;top: 20px;right: 20px;font-size: 65px;color: rgba(0,0,0,.15);\"></i>\n  </div>\n\n<a href=\"javascript:void(0);\" draggable=\"false\">\n  <p style=\"    position: relative; text-align: center;  padding: 3px 0; color: #fff;color: rgba(255,255,255,.8);\n    display: block;    z-index: 10;    font-size: 14px;    letter-spacing: 2px;    background: rgba(0,0,0,.1);    text-decoration: none;\">\n  \t更多\n    <i class=\"el-icon-arrow-right\"></i>\n  </p>\n</a>\n\n</div>"
+            },
+            {
+                "type": "DataPanel",
+                "label": "DataPanel",
+                "gridName": "_random_",
+                "h": 4,
+                "span": 24,
+                "icon": "icon-table",
+                "color": "#fff",
+                "display": true,
+                "component": "dync-template",
+                "style": {
+                    "height": "100px"
+                },
+                "content": "<div style=\"padding: 0 30px;margin: 0 20px;cursor: pointer;height: 108px;font-size: 12px;\nposition: relative;overflow: hidden;color: #666;background: #fff;-webkit-box-shadow: 4px 4px 40px rgb(0 0 0 / 5%);\nbox-shadow: 4px 4px 40px rgb(0 0 0 / 5%);border-color: rgba(0,0,0,.05);display: -webkit-box;display: -ms-flexbox;\ndisplay: flex;-webkit-box-align: center;-ms-flex-align: center;align-items: center;\n-webkit-box-pack: justify;-ms-flex-pack: justify;justify-content: space-between;\">\n<div style=\"font-size: 52px;\">\n<i class=\"el-icon-message\" style=\"color: rgb(0, 167, 208);\"></i>\n</div>\n<div style=\"text-align: center;\">\n<div style=\"line-height: 18px;color: rgba(0,0,0,.45);font-size: 16px;margin-bottom: 12px;\">最新拜访</div>\n<span style=\"font-size: 20px;\">102,400</span>\n</div>\n</div>"
+            }
+        ]
+    },
+    {
+        "title": "图",
+        "list": [
+            {
+                "type": "echart",
+                "label": "柱状图",
+                "gridName": "_random_",
+                "icon": "icon-table",
+                "color": "#fff",
+                "display": true,
+                "component": "echarts",
+                "style": {
+                    "height": "100%"
+                },
+                "series_type": "{\"type\":\"bar\"}",
+                "fresh_ds": [],
+                "fresh_params": [],
+                "fields": [],
+                "datasource": "示例",
+                "data": [],
+                "content": "option = {\n  //backgroundColor: '#fff',\n  legend: {selectedMode:'single'},//单选模式\n  tooltip: {},\n  dataset: {\n      // 提供一份数据。__valid_data__为自动生成，如果全自定义，就不要使用\n      source: __valid_data__\n  },\n  grid:{left :30,right:10,top:10,bottom:30},\n  // 声明一个 X 轴，类目轴（category）。默认情况下，类目轴对应到 dataset 第一列。\n  yAxis: {},\n  // 声明一个 Y 轴，数值轴。\n  xAxis: {type: 'category',\"axisLabel\": {\n    \"margin\": 8,\n    \"interval\":0,//解决代码,坐标轴上的刻度是否全显示\n    \"textStyle\": {\n        \"color\": \"#676767\"\n    }}},\n  // 声明多个 bar 系列，默认情况下，每个系列会自动对应到 dataset 的每一列。\n  series:function(){\n      let series_type=[]\n      __valid_data__[0].slice(1).forEach(ele=>{\n          series_type.push({\"type\":\"bar\"})\n      }); return series_type\n    }() \n}"
+            },
+            {
+                "type": "echart",
+                "label": "极坐标堆叠图",
+                "gridName": "_random_",
+                "icon": "icon-table",
+                "color": "#fff",
+                "display": true,
+                "component": "echarts",
+                "style": {
+                    "height": "100%"
+                },
+                "series_type": "{\"type\": \"bar\", \"coordinateSystem\": \"polar\",\"stack\": \"a\"}",
+                "fresh_ds": [],
+                "fresh_params": [],
+                "fields": [],
+                "datasource": "示例",
+                "data": [],
+                "content": "option = {\n              //backgroundColor: '#fff',\n              legend: {},\n              tooltip: {},\n              \"polar\": {},\"angleAxis\":{},\n              dataset: {\n                  // 提供一份数据。__valid_data__为自动生成，如果全自定义，就不要使用\n                  source: __valid_data__\n              },\n              // 声明一个 X 轴，类目轴（category）。默认情况下，类目轴对应到 dataset 第一列。\n              \n              // 声明一个 Y 轴，数值轴。\n              radiusAxis: {type: 'category'},\n              // 声明多个 bar 系列，默认情况下，每个系列会自动对应到 dataset 的每一列。\n                series:function(){\n                  let series_type=[]\n                  __valid_data__[0].slice(1).forEach(ele=>{\n                      series_type.push({\"type\": \"bar\", \"coordinateSystem\": \"polar\",\"stack\": \"a\"})\n                  }); return series_type\n                }() \n            }"
+            },
+            {
+                "type": "echart",
+                "label": "堆叠图",
+                "gridName": "_random_",
+                "icon": "icon-table",
+                "color": "#fff",
+                "display": true,
+                "component": "echarts",
+                "style": {
+                    "height": "100%"
+                },
+                "series_type": "{\"type\": \"bar\", \"stack\": \"one\"}",
+                "fresh_ds": [],
+                "fresh_params": [],
+                "fields": [],
+                "datasource": "示例",
+                "data": [],
+                "content": "option = {\n  //backgroundColor: '#fff',\n  legend: {selectedMode:'single'},//单选模式\n  tooltip: {},\n  dataset: {\n      // 提供一份数据。__valid_data__为自动生成，如果全自定义，就不要使用\n      source: __valid_data__\n  },\n  grid:{left :30,right:10,top:10,bottom:30},\n  // 声明一个 X 轴，类目轴（category）。默认情况下，类目轴对应到 dataset 第一列。\n  yAxis: {},\n  // 声明一个 Y 轴，数值轴。\n  xAxis: {type: 'category',\"axisLabel\": {\n    \"margin\": 8,\n    \"interval\":0,//解决代码,坐标轴上的刻度是否全显示\n    \"textStyle\": {\n        \"color\": \"#676767\"\n    }}},\n  // 声明多个 bar 系列，默认情况下，每个系列会自动对应到 dataset 的每一列。\n  series:function(){\n      let series_type=[]\n      __valid_data__[0].slice(1).forEach(ele=>{\n          series_type.push({\"type\": \"bar\", \"stack\": \"one\"})\n      }); return series_type\n    }() \n}"
+            },
+            {
+                "type": "echart",
+                "label": "面积图",
+                "gridName": "_random_",
+                "icon": "icon-table",
+                "color": "#fff",
+                "display": true,
+                "component": "echarts",
+                "style": {
+                    "height": "100%"
+                },
+                "series_type": "{\"type\":\"line\",\"stack\":\"z\",\"areaStyle\": {}}",
+                "fresh_ds": [],
+                "fresh_params": [],
+                "fields": [],
+                "datasource": "示例",
+                "data": [],
+                "content": "option = {\n  //backgroundColor: '#fff',\n  legend: {selectedMode:'single'},//单选模式\n  tooltip: {},\n  dataset: {\n      // 提供一份数据。__valid_data__为自动生成，如果全自定义，就不要使用\n      source: __valid_data__\n  },\n  grid:{left :30,right:10,top:10,bottom:30},\n  // 声明一个 X 轴，类目轴（category）。默认情况下，类目轴对应到 dataset 第一列。\n  yAxis: {},\n  // 声明一个 Y 轴，数值轴。\n  xAxis: {type: 'category',\"axisLabel\": {\n    \"margin\": 8,\n    \"interval\":0,//解决代码,坐标轴上的刻度是否全显示\n    \"textStyle\": {\n        \"color\": \"#676767\"\n    }}},\n  // 声明多个 bar 系列，默认情况下，每个系列会自动对应到 dataset 的每一列。\n  series:function(){\n      let series_type=[]\n      __valid_data__[0].slice(1).forEach(ele=>{\n          series_type.push({\"type\":\"line\",\"stack\":\"z\",\"areaStyle\": {}})\n      }); return series_type\n    }() \n}"
+            },
+            {
+                "type": "echart",
+                "label": "line_symbol",
+                "gridName": "_random_",
+                "icon": "icon-table",
+                "color": "#fff",
+                "display": true,
+                "component": "echarts",
+                "style": {
+                    "height": "100%"
+                },
+                "series_type": "{\n            \"type\": \"line\",\n            \"smooth\": true,\n            \"showAllSymbol\": true,\n            \"symbol\": \"emptyCircle\",\n            \"symbolSize\": 5\n        }",
+                "fresh_ds": [],
+                "fresh_params": [],
+                "fields": [],
+                "datasource": "示例",
+                "data": [],
+                "content": "option = {\n  //backgroundColor: '#fff',\n  legend: {selectedMode:'single'},//单选模式\n  tooltip: {},\n  dataset: {\n      // 提供一份数据。__valid_data__为自动生成，如果全自定义，就不要使用\n      source: __valid_data__\n  },\n  grid:{left :30,right:10,top:10,bottom:30},\n  // 声明一个 X 轴，类目轴（category）。默认情况下，类目轴对应到 dataset 第一列。\n  yAxis: {},\n  // 声明一个 Y 轴，数值轴。\n  xAxis: {type: 'category',\"axisLabel\": {\n    \"margin\": 8,\n    \"interval\":0,//解决代码,坐标轴上的刻度是否全显示\n    \"textStyle\": {\n        \"color\": \"#676767\"\n    }}},\n  // 声明多个 bar 系列，默认情况下，每个系列会自动对应到 dataset 的每一列。\n  series:function(){\n      let series_type=[]\n      __valid_data__[0].slice(1).forEach(ele=>{\n          series_type.push({\n            \"type\": \"line\",\n            \"smooth\": true,\n            \"showAllSymbol\": true,\n            \"symbol\": \"emptyCircle\",\n            \"symbolSize\": 5\n        })\n      }); return series_type\n    }() \n}"
+            },
+            {
+                "type": "echart",
+                "label": "线型图",
+                "gridName": "_random_",
+                "icon": "icon-table",
+                "color": "#fff",
+                "display": true,
+                "component": "echarts",
+                "style": {
+                    "height": "100%"
+                },
+                "series_type": "{\"type\":\"line\"}",
+                "fresh_ds": [],
+                "fresh_params": [],
+                "fields": [],
+                "datasource": "示例",
+                "data": [],
+                "content": "option = {\n  //backgroundColor: '#fff',\n  legend: {selectedMode:'single'},//单选模式\n  tooltip: {},\n  dataset: {\n      // 提供一份数据。__valid_data__为自动生成，如果全自定义，就不要使用\n      source: __valid_data__\n  },\n  grid:{left :30,right:10,top:10,bottom:30},\n  // 声明一个 X 轴，类目轴（category）。默认情况下，类目轴对应到 dataset 第一列。\n  yAxis: {},\n  // 声明一个 Y 轴，数值轴。\n  xAxis: {type: 'category',\"axisLabel\": {\n    \"margin\": 8,\n    \"interval\":0,//解决代码,坐标轴上的刻度是否全显示\n    \"textStyle\": {\n        \"color\": \"#676767\"\n    }}},\n  // 声明多个 bar 系列，默认情况下，每个系列会自动对应到 dataset 的每一列。\n  series:function(){\n      let series_type=[]\n      __valid_data__[0].slice(1).forEach(ele=>{\n          series_type.push({\"type\":\"line\"})\n      }); return series_type\n    }() \n}"
+            },
+            {
+                "type": "echart",
+                "label": "多饼图",
+                "gridName": "_random_",
+                "icon": "icon-table",
+                "color": "#fff",
+                "display": true,
+                "component": "echarts",
+                "style": {
+                    "height": "100%"
+                },
+                "series_type": "{\"type\":\"pie\"}",
+                "fresh_ds": [],
+                "fresh_params": [],
+                "fields": [],
+                "datasource": "示例",
+                "data": [],
+                "content": "option = {\n            //backgroundColor: '#fff',\n            legend: {},\n            tooltip: {},\n             \n            dataset: {\n                // 提供一份数据。__valid_data__为自动生成，如果全自定义，就不要使用\n                source: __valid_data__\n            }, \n              series:function(){\n                let series_type=[]\n                __valid_data__[0].slice(1).forEach(ele=>{\n                    series_type.push({\"type\":\"pie\"})\n                }); return series_type\n              }() \n          }"
+            },
+            {
+                "type": "echart",
+                "label": "上饼下线",
+                "gridName": "_random_",
+                "icon": "icon-table",
+                "color": "#fff",
+                "display": true,
+                "component": "echarts",
+                "style": {
+                    "height": "100%"
+                },
+                "series_type": "{\"type\": \"line\", \"smooth\": true, \"seriesLayoutBy\": \"row\"}",
+                "fresh_ds": [],
+                "fresh_params": [],
+                "fields": [],
+                "datasource": "示例",
+                "data": [],
+                "content": "option = {\n            //backgroundColor: '#fff',\n            legend: {},\n            tooltip: {\n              trigger: 'axis',\n              showContent: false\n          },\n            xAxis: {type: 'category'},\n            yAxis: {gridIndex: 0},\n            grid: {top: '55%'}, \n            dataset: {\n                // 提供一份数据。__valid_data__为自动生成，如果全自定义，就不要使用\n                source: __valid_data__\n            }, \n              series:\n              function(){\n                let series_type=[]\n                __valid_data__[0].slice(1).forEach(ele=>{\n                    series_type.push({\"type\": \"line\", \"smooth\": true, \"seriesLayoutBy\": \"row\"})\n                }); \n                series_type=series_type.concat([{\n                  type: 'pie',\n                  id: 'pie',\n                  radius: '30%',\n                  center: ['50%', '25%'],\n                  label: {\n                      formatter: '{b}: {@2012} ({d}%)'\n                  },\n                  encode: {\n                      itemName: __valid_data__[0][0],\n                      value: __valid_data__[0][1],\n                      tooltip: __valid_data__[0][1]\n                  }\n                }])\n                return series_type\n              }() \n              \n          }\n          myChart.on('updateAxisPointer', function (event) {\n            var xAxisInfo = event.axesInfo[0];\n            if (xAxisInfo) {\n                var dimension = xAxisInfo.value + 1;\n                myChart.setOption({\n                    series: {\n                        id: 'pie',\n                        label: {\n                            formatter: '{b}: {@[' + dimension + ']} ({d}%)'\n                        },\n                        encode: {\n                            value: dimension,\n                            tooltip: dimension\n                        }\n                    }\n                });\n            }\n        });\n          "
+            },
+            {
+                "type": "echart",
+                "label": "仪表盘",
+                "gridName": "_random_",
+                "icon": "icon-table",
+                "color": "#fff",
+                "display": true,
+                "component": "echarts",
+                "style": {
+                    "height": "100%"
+                },
+                "series_type": "{\"type\": \"gauge\"}",
+                "fresh_ds": [],
+                "fresh_params": [],
+                "fields": [],
+                "datasource": "示例",
+                "data": [],
+                "content": "option = \n          {\n            //backgroundColor: '#fff',\n            legend: {selectedMode:'single'},//单选模式\n            tooltip: {},\n            dataset: {\n                // 提供一份数据。__valid_data__为自动生成，如果全自定义，就不要使用\n                source: __valid_data__\n            },\n            grid:{left :0,right:0,top:0,bottom:0},\n            // 声明一个 X 轴，类目轴（category）。默认情况下，类目轴对应到 dataset 第一列。\n            yAxis: {},\n            // 声明一个 Y 轴，数值轴。\n            xAxis: {type: 'category',\"axisLabel\": {\n              \"margin\": 8,\n              \"interval\":0,//解决代码,坐标轴上的刻度是否全显示\n              \"textStyle\": {\n                  \"color\": \"#676767\"\n              }}},\n            // 声明多个 bar 系列，默认情况下，每个系列会自动对应到 dataset 的每一列。\n            series:function(){\n                let series_type=[]\n                __valid_data__.slice(1).forEach(ele=>{\n                    series_type.push({\"type\": \"gauge\" ,\n                                  data: [{\n                      value: ele[1],\n                      name: ele[0]\n                  }]   \n                                })\n                }); return series_type\n              }() \n          }          \n          "
+            },
+            {
+                "type": "echart",
+                "label": "漏斗图",
+                "gridName": "_random_",
+                "icon": "icon-table",
+                "color": "#fff",
+                "display": true,
+                "component": "echarts",
+                "style": {
+                    "height": "100%"
+                },
+                "series_type": "{\"type\": \"funnel\"}",
+                "fresh_ds": [],
+                "fresh_params": [],
+                "fields": [],
+                "datasource": "示例",
+                "data": [],
+                "content": "option = {\n            //backgroundColor: '#fff',\n            legend: {},\n            tooltip: {},\n            dataset: {\n                // 提供一份数据。__valid_data__为自动生成，如果全自定义，就不要使用\n                source: __valid_data__\n            },\n            grid:{left :30,right:10,top:10,bottom:30},\n            // 声明一个 X 轴，类目轴（category）。默认情况下，类目轴对应到 dataset 第一列。\n            yAxis: {},\n            // 声明一个 Y 轴，数值轴。\n            xAxis: {type: 'category' },\n            // 声明多个 bar 系列，默认情况下，每个系列会自动对应到 dataset 的每一列。\n              series:function(){\n                let series_type=[]\n                __valid_data__[0].slice(1).forEach(ele=>{\n                    series_type.push({\"type\": \"funnel\"})\n                }); return series_type\n              }() \n          }"
+            }
+        ]
+    }
+]

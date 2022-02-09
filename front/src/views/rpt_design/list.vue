@@ -52,7 +52,9 @@
   </div>
   </el-tab-pane>
   <templateManger v-if="template_dialog_visible" @submit="template_handleSubmit"
-        :visible.sync="template_dialog_visible" :action_target.sync="template_xml"
+        :visible.sync="template_dialog_visible" 
+        :action_target.sync="template_xml"
+        :parent_defaultsetting="parent_defaultsetting"
         > 
     </templateManger>
  </el-tabs>
@@ -101,6 +103,7 @@ export default {
             grp_id:-1, 
             template_dialog_visible:false,
             template_xml:{},
+            parent_defaultsetting:{},
             search_file_name:"",
             cur_pre_copy_file:""
         }
@@ -170,16 +173,6 @@ export default {
                   ) 
             }
         },
-        async open_template_dialog(){
-            let _this=this
-            let resp=await open_template(this.grp_id,this.cur_grp.loc_path.join("/"))
-            if(resp.errcode==undefined)
-                this.template_xml=x2jsone.xml2js(resp.content).template
-            else
-                this.template_xml={}
-
-            this.template_dialog_visible=true
-        },
         async template_handleSubmit(){
             let _this=this
             let resp=await save_template(this.grp_id,this.cur_grp.loc_path.join("/"),x2jsone.js2xml({template: this.template_xml}))
@@ -214,8 +207,10 @@ export default {
             if(command=="修改模板"){
                 let _this=this
                 let resp=await open_template(this.grp_id,this.cur_grp.loc_path.join("/"))
-                if(resp.errcode==undefined)
+                if(resp.errcode==undefined){
                     this.template_xml=x2jsone.xml2js(resp.content).template
+                    this.parent_defaultsetting=resp.parent_defaultsetting
+                }
                 else
                     this.template_xml={}
                 if(this.template_xml=="")

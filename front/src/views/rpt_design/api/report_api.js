@@ -88,6 +88,27 @@ export function save_one(report,zb_data) {
     })
 }
 
+export async function getAllWidget(action) {
+    let data=new FormData();
+    data.append('action',action)
+    return request({
+        method: 'post',
+        data,
+        url: `${baseUrl}/design/getAllWidget` ,       
+        withCredentials: true
+    })
+}
+export async function saveWidget(txt) {
+    let data=new FormData();
+    data.append('txt',txt)
+    return request({
+        method: 'post',
+        data,
+        url: `${baseUrl}/design/saveWidget` ,       
+        withCredentials: true
+    })
+}
+
 export async function preview_one(_this,createFormParam=false,query_data={},param_name=null) {
     
     _this.context.report.params.param?.forEach(ele=>{

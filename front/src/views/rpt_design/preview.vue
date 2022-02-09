@@ -102,13 +102,12 @@
 
 <script>
 import widgetForm from './WidgetForm'
-import {loadFile,deepClone,build_layout,get_signalR_connection,convert_array_to_json,arrayToTree} from './utils/util.js'
-import Textarea from './config/textarea.vue'
+import {convert_array_to_json,arrayToTree} from './utils/util.js'
 import {preview_one} from "./api/report_api"
-import { number } from 'echarts'
+
 export default {
     name: 'preview',  
-    props:["context","grpId"],
+    props:["grpId"],
     components:{widgetForm },
     async mounted() {
         

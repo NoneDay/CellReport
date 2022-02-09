@@ -1,16 +1,7 @@
 <template>
-
-<draggable  v-if="context.mode=='design'"
-                  :list="tmp_layout" style="height:100%;width:100%"
-                  :group="{ name: 'form' }"
-                  ghost-class="ghost" 
-                  :animation="200"
-                  @end="onEnd" 
-                  @drop="onEnd" 
-                  @move="onEnd"
-                  @add="handleWidgetGroupAdd($event)">
-
-    <div  class="widget-form-container">
+    <div  v-if="context.mode=='design'"
+        class="widget-form-container gridLayout" ref='content' 
+        style="height:100%;width:100%;flex: 1;overflow: auto;">
         <grid-layout :layout.sync="layout" ref="gridLayout"
                      :col-num="colNum" 
                      :row-height="row_height"
@@ -23,8 +14,6 @@
                      
                     @layout-ready="layoutUpdatedEvent"
         >
-        
-
             <grid-item v-for="(item,groupIndex) in layout"
                        :static="item.static" :key="item.i"
                        :x="item.x"
@@ -39,21 +28,21 @@
                    
                     <widget-form-group class="widget-form-list" 
                         :self="item.element" :border_size="calc_item_border_size(item.border_box)"
-                        :parent="layout" :index="groupIndex"
+                        :parent="layout" :index="groupIndex" :ref="'item_'+item.i"
                         v-if="item.element.component=='widget-form-group'"
                         :select.sync="selectWidget"  :depth="1"
                         >
                     </widget-form-group>
                     <widget-form-tabs class="widget-form-list" 
                         :self="item.element" 
-                        :parent="layout" :index="groupIndex"
+                        :parent="layout" :index="groupIndex" :ref="'item_'+item.i"
                         v-else-if="item.element.component=='widget-form-tabs'"
                         :select.sync="selectWidget"  :depth="1"
                         >
                     </widget-form-tabs>
                     <widget-form-item class="widget-form-list" 
-                        :self="item.element" 
-                        :parent="layout" :index="groupIndex"
+                        :self="item.element"  
+                        :parent="layout" :index="groupIndex" :ref="'item_'+item.i"
                         v-else  :depth="1"
                         :select.sync="selectWidget"
                         >
@@ -62,22 +51,26 @@
                 
             </component>
             
-                <span :style="`position: absolute;right: 2px;top: 0;cursor: pointer;color:black;background:#fff;font-size: 11px;font-weight: bold;`" @click="removeItem(item.i)">
+                <span :style="`position: absolute;right: 2px;top: 0;cursor: pointer;color:black;background:#fff;font-size: 11px;font-weight: bold;`" 
+                @click="removeItem(item.i)">
                     <i class="el-icon-delete"></i>
                     </span>
                 <span  class="draggable-handle" :style="`position: absolute;right: 16px;top: 0;cursor: pointer;color:black;background:#fff;font-size: 11px;font-weight: bold;`">
                     <i class="el-icon-document-remove"></i>
                 </span>
-                <span  :style="`position: absolute;right: 30px;top: 0;cursor: pointer;color:black;background:#fff;font-size: 11px;font-weight: bold;`" @click="settingItem(item.i)">
+                <span  :style="`position: absolute;right: 30px;top: 0;cursor: pointer;color:black;background:#fff;font-size: 11px;font-weight: bold;`" 
+                @click="settingItem(item.i)">
                     <i class="el-icon-setting"></i>
                 </span>
-            
+                <span  :style="`position: absolute;right: 45px;top: 0;cursor: pointer;color:black;background:#fff;font-size: 11px;font-weight: bold;`" 
+                @click="call_widget_dialog(item)">
+                    +
+                </span>
  
             </grid-item>
-        
-        </grid-layout>
-    </div>
-        <el-dialog  v-draggable style="text-align: left;" v-if="dialogVisible"
+            <widgetDialog v-if="widget_dialogVisible" :visible.sync="widget_dialogVisible" :action_target="ref_item">
+            </widgetDialog>  
+          <el-dialog  v-draggable style="text-align: left;" v-if="dialogVisible"
             :visible.sync="dialogVisible" title="布局和当前条目设置" 
                 :close-on-click-modal="false"  @close="close" 
                 direction="btt" append-to-body  
@@ -119,8 +112,9 @@
                 <el-button @click="dialogVisible = false">取 消</el-button>
                 <el-button type="primary" @click="dialogSubmit(form.idx)">确 定</el-button>
             </span>
-        </el-dialog>
-    </draggable>
+        </el-dialog>      
+        </grid-layout>
+    </div>
     <div v-else class="widget-form-container">
         <grid-layout :layout.sync="layout" ref="gridLayout"
                      :col-num="colNum" 
@@ -134,8 +128,6 @@
                      :style="{'height':'100%','width':'100%'}"
                     @layout-ready="layoutUpdatedEvent"
         >
-        
-
             <grid-item v-for="(item,groupIndex) in layout"
                        :static="item.static" :key="item.i"
                        :x="item.x"
@@ -146,8 +138,6 @@
                        drag-ignore-from=".no-drag"
             >
                <component v-if="isShow" :is="item.border_box?item.border_box:'div'" style="width:100%;height:100%">
-              
-                  
                     <widget-form-group class="widget-form-list" 
                         :self="item.element" :border_size="calc_item_border_size(item.border_box)"
                         :parent="layout" :index="groupIndex"  :depth="1"
@@ -185,7 +175,7 @@ export default {
     name: "gridLayoutForm",
     mixins: [history,mixins],
     components: {
-        GridLayout,GridItem,
+        GridLayout,GridItem
     },
     props:['layout'],
     data() {
@@ -198,6 +188,7 @@ export default {
                 color1:'',
                 color1:'',
             },
+            widget_dialogVisible:false,
             tmp_layout:[],
             isShow:false,
             showGridLayout:false,
@@ -210,6 +201,7 @@ export default {
             margin:10,
             pan_height:"100%",
             dialogVisible:false,
+            call_item:-1,
         }
     },
     mounted() {
@@ -302,7 +294,16 @@ background:url("data:image/svg+xml;utf8,<svg t='1641536477492' class='icon' view
         }
         
     },
+    computed:{
+        ref_item(){
+            return this.$refs["item_"+this.call_item][0]
+        }
+    },
     methods: { 
+        call_widget_dialog(item){
+            this.call_item=item.i
+            this.widget_dialogVisible=true
+        },
         calc_item_border_size(border_type){
             if(border_type ==undefined || ['','div'].includes(border_type) )
                 return 0;
@@ -315,6 +316,7 @@ background:url("data:image/svg+xml;utf8,<svg t='1641536477492' class='icon' view
             const item = evt.item;
             const data = this.deepClone( this.tmp_layout[0] )
             this.tmp_layout.splice(0,1)
+            this.layout = this.layout.filter(obj => obj.i !== 'drop');
             this.addItem(data)
             if (!data.prop) data.prop = Date.now() + '_' + Math.ceil(Math.random() * 99999)
                 if(data.hasOwnProperty("gridName") && data.gridName=="_random_"){
@@ -373,11 +375,12 @@ background:url("data:image/svg+xml;utf8,<svg t='1641536477492' class='icon' view
             this.layout.push({x,y,w,h,i: this.gridLayoutIndex,element:widget_div_layout(item),show:true,border_box:this.context.report.defaultsetting.border_box });
             // Increment the counter to ensure key is always unique.
             this.gridLayoutIndex++;
+            this.$set(this,'layout',this.layout)
             let _this=this
             setTimeout(() => {
             //_this.$refs.gridLayout.layoutUpdate()
             _this.$refs.gridLayout.dragEvent('dragend', _this.gridLayoutIndex-1, x,y,h,w);
-            } ,10);
+            });
             
             //this.$refs.gridLayout.layoutUpdatedEvent(this.layout);
         },

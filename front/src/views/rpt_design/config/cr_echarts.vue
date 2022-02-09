@@ -58,10 +58,9 @@
 
 import  codemirror  from '../element/vue-codemirror.vue'
 import cr_set_fresh from "./cr_set_fresh.vue"
-import Draggable from 'vuedraggable'
 export default {
   name: 'config-echart',
-  components: { codemirror,Draggable,cr_set_fresh},
+  components: { codemirror,cr_set_fresh},
   inject: ["context"],
   props: ['data'],
   mounted(){

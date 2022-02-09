@@ -64,12 +64,11 @@
   </div>
 </template>
 <script>
-import draggable from 'vuedraggable'
 import mixins from "./mixins"
 export default {
   name: 'widget-form-group',
   mixins:[mixins],
-  components: { draggable },
+  components: {  },
   props:["border_size"],
   updated(){
     let _this=this 

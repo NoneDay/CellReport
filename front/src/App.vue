@@ -21,6 +21,7 @@ export default {
   height: 100%;
   overflow: hidden;
 }
+.cr_run_title { line-height: 28px;    border-bottom: 1px solid gray;font-weight: 500; margin-bottom: 5px;   }
 .vue-codemirror{border: 1px solid black;}
 .el-table td, .el-table th {
     padding: 1px 0;

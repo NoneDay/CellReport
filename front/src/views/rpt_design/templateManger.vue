@@ -21,56 +21,92 @@
         
     </el-tab-pane>
     <el-tab-pane label='缺省值'>
-        <el-form labelPosition="left" label-suffix="："
+        <el-form labelPosition="left" label-suffix="：" :label-position="'right'"
              labelWidth="100px">
+            <el-row style="height: 60px;">
+                <el-col :span="6">
             <el-form-item label="字体">
                 <el-input  v-model="tmp_css['FONT']"></el-input>
             </el-form-item>
+                </el-col>
+                <el-col :span="6">
             <el-form-item label="字体大小">
                 <el-input  v-model="tmp_css['FONT-SIZE']"></el-input>
             </el-form-item>
+            </el-col>
+                <el-col :span="6">
             <el-form-item label="文字颜色">
                 <el-color-picker size="medium"  v-model="tmp_css['COLOR']"></el-color-picker>
             </el-form-item>
+            </el-col>
+                <el-col :span="6">
             <el-form-item label="背景色">
                 <el-color-picker size="medium"  v-model="tmp_css['BACKGROUND-COLOR']"></el-color-picker>
             </el-form-item>
+            </el-col>
+             </el-row>
+            <el-row style="height: 60px;">
+                <el-col :span="12">
             <el-form-item label="显示form">
                 <el-radio v-model="tmp_css['show_form']" label="true">显示form</el-radio>
                 <el-radio v-model="tmp_css['show_form']" label="false">隐藏form</el-radio>
             </el-form-item>
-
+            </el-col>
+                </el-row>
+            <el-row style="height: 60px;">
+                <el-col >
             <el-form-item label="布局">
                 <el-radio v-model="tmp_css['layout_mode']" label="">高度小于容器高度时自动撑满，大于时保持</el-radio>
                 <el-radio v-model="tmp_css['layout_mode']" label="1">保持与设计时一样的高度</el-radio>
                 <el-radio v-model="tmp_css['layout_mode']" label="2">强制适配到容器高度</el-radio>
             </el-form-item>
+            </el-col>
+            </el-row>
+            <el-row style="height: 60px;">
+                <el-col :span="6">
              <el-form-item label="布局中每行高度">
                 <el-input  v-model="tmp_css['layout_row_height']"></el-input>
             </el-form-item>
+            </el-col>
+                <el-col :span="6">
              <el-form-item label="布局中列数">
                 <el-input  v-model="tmp_css['layout_colNum']"></el-input>
             </el-form-item>
+            </el-col>
+                <el-col :span="6">
              <el-form-item label="布局中组件间隔">
                 <el-input  v-model="tmp_css['layout_margin']"></el-input>
             </el-form-item>
+            </el-col>
+                <el-col :span="6">
             <el-form-item label="布局中页面大小">
                 <el-input  v-model="tmp_css['layout_pan_height']"></el-input>
             </el-form-item>
+            </el-col>
+                </el-row>
+            <el-row style="height: 60px;">
+                <el-col  :span="6">
             <el-form-item label="row_col_gutter">
                 <el-input  v-model="tmp_css['row_col_gutter']"></el-input>
             </el-form-item>
+            </el-col>
+                <el-col :span="6">
             <el-form-item label="边框样式">
                 <el-select v-model="tmp_css['border_box']" placeholder="请选择边框样式">
                     <el-option :label="无边框" value="div"></el-option>
                     <el-option :label="'dv-border-Box-'+i" :key="i" v-for="i in 13" :value="'dv-border-Box-'+i"></el-option>
                 </el-select>
             </el-form-item>
-        
+            </el-col>
+                
+            </el-row>
+            
         </el-form>
+        <el-button type="primary" @click="use_parent_css">使用继承设置</el-button>
     </el-tab-pane>
 </el-tabs>
         <div slot="footer" class="dialog-footer">
+            
             <el-button @click="dialogVisible = false">取 消</el-button>
             <el-button type="primary" @click="handleSubmit">确 定</el-button>
         </div>
@@ -82,9 +118,9 @@ import  codemirror  from './element/vue-codemirror.vue'
 import  edmitormd  from './element/edmitormd.vue'
 import {test_expr} from "./api/report_api.js"
 export default {
-name: "templateManger",
+    name: "templateManger",
     components: {codemirror,edmitormd},
-    props: [ "visible","action_target"],
+    props: [ "visible","action_target","parent_defaultsetting"],
     inject: ["context"],
     mounted(){
         this.dialogVisible=true
@@ -133,6 +169,7 @@ name: "templateManger",
                 target[prop]=source[prop]
         },
         async handleSubmit(){
+            let _this=this
             let test_obj=this.temp_props.filter(x=>x.name=='before_exec_script')[0]
             if(test_obj.val.trim()!=""){
                 let resp=await test_expr('{' + test_obj.val +' }')
@@ -141,23 +178,30 @@ name: "templateManger",
                     this.$message.error(resp.message)
                     return 
                 }            
-                }
+            }
             this.temp_props.forEach(one => {
                 this.action_target[one.name]=one.val
             });
-            Object.keys(this.tmp_css).forEach(x=>{
-                this.copy_prop(this.action_target,this.tmp_css,x)
-            })
-            
+        
             if(this.context?.report){
                 Object.keys(this.tmp_css).forEach(x=>{
-                this.copy_prop(this.context.report.defaultsetting,this.action_target,x)
-            })
-            
+                    this.copy_prop(this.context.report.defaultsetting,this.tmp_css,x)
+                })               
             }
-
+            Object.keys(this.tmp_css).forEach(x=>{
+                if(this.parent_defaultsetting[x]==this.tmp_css[x])
+                    delete this.action_target[x]
+                else
+                    this.copy_prop(this.action_target,this.tmp_css,x)
+            })
             this.$emit("submit");
             this.dialogVisible=false
+        },
+        use_parent_css(){
+            Object.keys(this.tmp_css).forEach(x=>{
+                this.copy_prop(this.tmp_css,this.parent_defaultsetting,x)
+            })
+        
         },
         editor_ready(name){
             let _this=this

@@ -58,6 +58,18 @@ export default [{
       import( /* webpackChunkName: "views_rpt_desgin" */ '@/views/rpt_design/manger')
   }]
 },{
+  path: '/widget',
+  component: Layout,
+  children: [{
+    path: 'index',
+    name: '组件管理', 
+    meta: {
+      keepAlive: false,
+    },
+    component: () =>
+      import( /* webpackChunkName: "views_rpt_desgin" */ '@/views/rpt_design/widgetManger')
+  }]
+},{
   path: '/rpt-design',
   component: Layout,
   children: [{

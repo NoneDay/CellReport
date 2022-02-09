@@ -28,6 +28,7 @@ namespace reportWeb
         public DbSet<Rpt_group> Rpt_group { get; set; }
         public DbSet<Rpt_db_connection> Rpt_db_connection { get; set; }
         public DbSet<Rpt_config> Rpt_config { get; set; }
+        
     }
     public class Rpt_group
     {

@@ -39,9 +39,12 @@ export default {
         _clickedEle(){
             return this.clickedEle
         }, 
+        id_name(){
+            return (this.self.gridName!='_random_'? this.self.gridName:this.self.type)
+        }
     },
     beforeDestroy(){
-        $("#"+this.self.gridName+"_css_"+this.context.mode).remove()
+        $("#"+this.id_name+"_css_"+this.context.mode).remove()
     },
     methods:{
         refresh(){
@@ -49,21 +52,35 @@ export default {
             let tmp=_this.self.content.replaceAll("dync_script>","script>")
             let script_txt=extract_script_txt(tmp)
             //https://github.com/JonWatkins/vue-runtime-template-compiler/blob/master/src/components/RuntimeTemplateCompiler.vue
-            script_txt=script_txt.replace(/function\s*(\w+)\s*/img,'_this.$1=_this.$options.methods.$1=function')
-            //^(\s*\.[-|\w]+\s*)((\s*\.[-|\w]+\s*)*\{[\s|\S]*?\})  '#cr_dyn_id_'+_this.self.gridName+' $1 $2'
+            //script_txt=script_txt.replace(/function\s*(\w+)\s*/img,'_this.$1=_this.$options.methods.$1=function')
             let style=extract_style_txt(tmp).trim()
             style=style.replace(/([^{]+)\{[\s|\S]*?\}/img,
             function(t1,t2,t3,t4) {
-                return t2.trim().split(",").map(x=>'#cr_dyn_id_'+_this.context.mode+'_'+_this.self.gridName+" "+x).join() + t1.substring( t1.indexOf("{") ) +'\n'
+                return t2.trim().split(",").map(x=>'#cr_dyn_id_'+_this.context.mode+'_'+_this.id_name+" "+x).join() + t1.substring( t1.indexOf("{") ) +'\n'
                 //console.log(t1,t2,t3,t4)
             }
             ) 
-            eval("(function(){\n"+script_txt+"\n})()")
+            let t_vue_obj=eval("(function(){\n"+script_txt+"\n})()")
+            if(t_vue_obj?.methods)
+                Object.assign(_this.$options.methods,t_vue_obj.methods)
+            if(t_vue_obj?.data)
+                Object.assign(_this.$data,t_vue_obj.data)
+            if(t_vue_obj?.computed )
+                Object.assign(_this.$options.computed ,t_vue_obj.computed)
+            
             if(style!=""){
-                insert_css_to_head(style,_this.self.gridName+"_css_"+_this.context.mode)
+                insert_css_to_head(style,_this.id_name+"_css_"+_this.context.mode)
             }
-            _this.cut_script_css_content=tmp.replace(/<script.*?>*?>([\s\S]*?)<\/script>/img,'')
+            let start_pos=tmp.indexOf("<template>")
+            if(start_pos>=0){
+                _this.cut_script_css_content=tmp.substring(
+                    start_pos+'<template>'.length
+                    ,tmp.indexOf("</template>")
+                )
+            }else{
+                _this.cut_script_css_content=tmp.replace(/<script.*?>*?>([\s\S]*?)<\/script>/img,'')
                     .replace(/<style.*?>*?>([\s\S]*?)<\/style>/img,'')
+            }
             _this.old_content=''
             setTimeout(()=>{
                 _this.old_content=_this.cut_script_css_content

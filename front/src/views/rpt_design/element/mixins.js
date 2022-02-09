@@ -88,10 +88,10 @@ export default {
         else
           ds=[
             ['product', '2015', '2016', '2017'],
-            ['Matcha Latte', 43.3, 85.8, 93.7],
-            ['Milk Tea', 83.1, 73.4, 55.1],
-            ['Cheese Cocoa', 86.4, 65.2, 82.5],
-            ['Walnut Brownie', 72.4, 53.9, 39.1]
+            ['Matcha', 43.3, 85.8, 93.7],
+            ['Milk', 83.1, 73.4, 55.1],
+            ['Cheese', 86.4, 65.2, 82.5],
+            ['Walnut', 72.4, 53.9, 39.1]
         ]
           return ds.slice(from,to)
       },
@@ -171,13 +171,13 @@ export default {
       if(this?.self?.gridName){
         if(this?.self?.gridName=="_random_")
           return
-        console.info(this.self.gridName+":created")
+        //console.info(this.self.gridName+":created")
         this.$set(this.context.clickedEle,this.self.gridName,{data:{},cell:null,column:{},self:this.self})
       }
     },
     beforeDestroy(){
       if(this?.self?.gridName){
-        console.info(this.self.gridName+":beforeDestroy")
+        //console.info(this.self.gridName+":beforeDestroy")
         delete this.context.clickedEle[this.self.gridName]
       }
     },

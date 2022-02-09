@@ -146,13 +146,12 @@
 import widgetForm from './WidgetForm'
 import {dateToString} from './utils/resultGrid2HtmlTable.js'
 import {run_one} from "./api/report_api"
-import {convert_csv_to_json,convert_array_to_json,build_chart_data, deepClone,arrayToTree,seriesLoadScripts,load_css_file } from "./utils/util"
+import {convert_array_to_json,build_chart_data,arrayToTree,seriesLoadScripts,load_css_file } from "./utils/util"
 import install_component from './install_component'
-import { RuntimeTemplateCompiler } from 'vue-runtime-template-compiler'
 import dyncTemplate from './element/dyncTemplate.vue'
 export default {
   name: 'App', //CellReportFormDesign
-  components:{widgetForm ,RuntimeTemplateCompiler,dyncTemplate},
+  components:{dyncTemplate,widgetForm},
   mounted(){    
     let _this=this
     window.onresize=this.refresh_layout
@@ -406,7 +405,6 @@ export default {
   },
 }
 </script>
-
 <style>
 .cr_run_title { line-height: 28px;    border-bottom: 1px solid gray;font-weight: 500; margin-bottom: 5px;   }
 html, body, #report_app {

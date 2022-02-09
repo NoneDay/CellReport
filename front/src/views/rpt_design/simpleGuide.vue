@@ -146,9 +146,9 @@
 </template>
 
 <script>
-import Draggable from 'vuedraggable'
+
 export default {
-    components: {Draggable},
+    components: {},
     name:'simpleGuide',
     props: [ "visible","sheet_window"],
     inject: ["context"],

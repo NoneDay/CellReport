@@ -169,7 +169,7 @@
             >
             <el-button size="small" type="primary">请选择导入excel</el-button>
             </el-upload>
-            <div v-if="tableData.length==0" >无数据</div>
+            <div v-if="tableData==undefined || tableData.length==0" >无数据</div>
             
             <el-table stripe border  :height="250" v-if="tableData.length>0" 
                 :data="tableData.slice((currentPage - 1) * pageSize, currentPage*pageSize)"  
@@ -260,7 +260,10 @@ export default {
                 {
                     let cur_ds=this.all_dataSet.find(a=>a._name==this.action_target._dataSource)
                     if(cur_ds._type=='api'){
-                        ret=json_by_path(cur_ds.report_result,this.action_target.__text)
+                        if(cur_ds.report_result!=undefined)
+                            ret=json_by_path(cur_ds.report_result,this.action_target.__text)
+                        if(ret==undefined)
+                            ret= []
                         return ret
                     }
                     if(cur_ds.report_result){

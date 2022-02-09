@@ -11,14 +11,20 @@
               direction="btt" append-to-body  
         > 
         <preview :grpId="grpId"/>
-    </el-dialog>    
+    </el-dialog> 
 
+    <widgetDialog v-if="widget_dialogVisible" :visible.sync="widget_dialogVisible" 
+      :action_target="ref_gridlayout()"  @submit="refresh_setting">
+    </widgetDialog>
 
-    <datasetManger2 v-if="datamanger_dialogVisible"  :visible.sync="datamanger_dialogVisible"  > 
+    <datasetManger2 v-if="datamanger_dialogVisible"  :grpId="grpId"
+      :visible.sync="datamanger_dialogVisible" > 
     </datasetManger2>  
 
     <templateManger v-if="notebook_dialog_visible" 
-      :visible.sync="notebook_dialog_visible" :action_target.sync="report.template" @submit="refresh_setting"
+      :visible.sync="notebook_dialog_visible" :action_target.sync="report.template" 
+      :parent_defaultsetting="report.parent_defaultsetting"
+      @submit="refresh_setting"
       > 
     </templateManger>
     <simpleGuide v-if="simpleGuide_dialogVisible"  :visible.sync="simpleGuide_dialogVisible" :sheet_window="sheet_window" > 
@@ -42,6 +48,7 @@
             <el-button type='primary' round @click="datamanger_dialogVisible=true" >数据</el-button>
             <el-button type='primary' round @click="notebook_dialog_visible=true" >设置</el-button>
             <el-button type='primary' round @click="simpleGuide_dialogVisible=true" >向导</el-button>
+            <el-button type='primary' round @click="widget_dialogVisible=!widget_dialogVisible" >组件</el-button>
             <el-link :href="baseUrl+'/run'+(report.reportName.split(':')[0]=='default'?'':(':'+report.reportName.split(':')[0]))+'?reportName='+report.reportName.split(':')[1]" target="_blank"><i class="el-icon-view el-icon--right"></i></el-link>
             
           </el-header>
@@ -50,8 +57,8 @@
           background: formIsEmpty ? `url(${widgetEmpty}) no-repeat 50%`: report.defaultsetting['BACKGROUND-COLOR']}"
           v-if="widgetForm!=null"
           >
-               <grid-layout-form v-if="formType=='gridLayout'" 
-               :layout="widgetForm" 
+               <grid-layout-form v-if="formType=='gridLayout'" ref="gridlayout"
+               :layout.sync="widgetForm" 
                :select.sync="selectWidget"
                 
                 @change="handleHistoryChange(widgetForm)"
@@ -67,9 +74,7 @@
       </el-container>
       <!-- 右侧配置 -->
       <el-aside class="widget-config-container" :width="rightWidth"> 
-        <el-tabs type="border-card">
-        <el-tab-pane label="属性" >
-                <ul v-if="cur_select_type=='cell'" ghost-class="ghost" style="padding-left: 10px;">
+              <ul v-if="cur_select_type=='cell'" ghost-class="ghost" style="padding-left: 10px;">
                   <li  style="display: flex;padding-bottom: 10px;" >
                     <el-tag style="color:black" >扩展方向</el-tag>
                     <el-select v-model="cur_cell.cr._extendDirection" placeholder="扩展方向">
@@ -90,8 +95,11 @@
                              ]"  
                       style="display: flex;padding-bottom: 10px;" :key="item.display" >
                     
-                    <el-tag style="color:black;width:100px">{{item.display}}</el-tag>
-                    <el-input :placeholder="'请输入内容:'+item.display" v-model="cur_cell.cr[item.val]" :disabled="item.disabled==true">
+                    <el-tag style="color:black;width:100px">{{item.display}}
+                      </el-tag>
+                    <span v-if="item.disabled==true" style="color:red;font-weight: 800;flex: 1;text-align: center;"> {{ cur_cell.cr[item.val] }}
+                        </span>
+                    <el-input :placeholder="'请输入内容:'+item.display" v-model="cur_cell.cr[item.val]" v-else>
                     </el-input>
                       <el-button  @click="expr_edit(cur_cell.cr,item)" v-if="['_calcLevel'].includes(item.val)==false"
                                 circle  :type="item.val=='_valueExpr'?'danger': 'success'" size="mini" icon="el-icon-edit"
@@ -102,54 +110,6 @@
         <widget-config  v-else 
           :data="selectWidget" 
         ></widget-config>
-        </el-tab-pane>
-      <el-tab-pane label="工具箱" >
-          
-        <div class="fields-list">
-          <div v-for="(field, index) in fields" :key="index">
-            <div v-if="!field.disabled">
-              <div class="field-title">{{field.title}}</div>
-              <draggable tag="ul"
-                          :list="field.list"
-                         @end="onEnd" 
-                        @drop="onEnd" 
-                        @move="onEnd"                   
-                          :group="{ name: 'form', pull: 'clone', put: false }"
-                          ghost-class="ghost" 
-                          :sort="false">
-                <li class="field-label"
-                    v-for="(item, index) in field.list"
-                    :key="index">
-                  <a>
-                    <i class="icon iconfont"
-                        :class="item.icon"></i>
-                    <span>{{item.label}}</span>
-                  </a>
-                </li>
-              </draggable>
-            </div>
-            <div v-else>
-              <div class="field-title">{{field.title}}
-                <span class="danger">（开发中）</span>
-              </div>
-              <ul>
-                <li class="field-label-disabled"
-                    v-for="(item, index) in field.list"
-                    :key="index">
-                  <a>
-                    <i class="icon iconfont"
-                        :class="item.icon"></i>
-                    <span>{{item.label}}</span>
-                  </a>
-                </li>
-              </ul>
-            </div>
-          </div>
-        </div>        
-      </el-tab-pane>    
-  
-      </el-tabs>  
-      
       </el-aside>
     </el-container>
 
@@ -178,13 +138,14 @@ import Config from './config'
 import install_component from './install_component'
 import  codemirror  from './element/vue-codemirror.vue'
 import templateManger from "./templateManger.vue"
+import widgetDialog from "./widgetDialog.vue"
 import x2js from 'x2js' 
 const x2jsone=new x2js(); //实例
 const report_cache={}
 export default {
   name: "FormDesign",
   mixins: [history],
-  components: {paramManger,ExprEditorDialog,simpleGuide,codemirror,
+  components: {paramManger,ExprEditorDialog,simpleGuide,codemirror,widgetDialog,
         Draggable,widgetEmpty,WidgetForm,WidgetConfig,templateManger,
         datasetManger2, Preview, },
   
@@ -209,14 +170,15 @@ export default {
     // 在同一组件对应的多个路由间切换时触发
   async beforeRouteUpdate(to, from, next) {
     let _this=this
-    console.info(from.query.label)
+    console.info(x2jsone.js2xml({report:this.fields}))
     console.info("prepare cache:"+_this.report.reportName)
     this.save_fix()
     report_cache[_this.report.reportName]={
       report_content:x2jsone.js2xml({report:this.report}),
       conn_list:this.report.conn_list,
       range_level:this.report.range_level,
-      defaultsetting:this.report.defaultsetting
+      defaultsetting:this.report.defaultsetting,
+      parent_defaultsetting:this.report.parent_defaultsetting
     }
     const reportName = to.query.label || to.meta.id
     if (reportName) {
@@ -234,13 +196,16 @@ export default {
       report_content:x2jsone.js2xml({report:this.report}),
       conn_list:this.report.conn_list,
       range_level:this.report.range_level,
-      defaultsetting:this.report.defaultsetting
+      defaultsetting:this.report.defaultsetting,
+      parent_defaultsetting:this.report.parent_defaultsetting
     }
     next();
   },
   created() {
     Vue.use(Config)
     Vue.use(install_component)
+    Vue.component('widgetDialog', widgetDialog);
+    Vue.component('draggable', draggable);
     let url_arr=window.location.href.split('?')
     if(url_arr.length>0){
       let cs = url_arr[1];                //获取?之后的参数字符串
@@ -348,6 +313,7 @@ export default {
         preview_dialogVisible:false,
        
         simpleGuide_dialogVisible:false,
+        widget_dialogVisible:false,
         datamanger_dialogVisible:false,
         paramDialog_visible:false,
         notebook_dialog_visible:false,
@@ -400,14 +366,22 @@ export default {
         mode:"design",
         allElementSet:this.allElementSet,
         all_sheet_windows:this.all_sheet_windows,
-        defaultsetting:this.report.defaultsetting
+        parent_defaultsetting:this.report.parent_defaultsetting,
+        fields:this.fields
       }, 
       fresh_ele:this.fresh_ele,
       clickedEle:this.clickedEle,
     }
     },
+    ref_gridlayout()
+    {
+      return this.$refs.gridlayout
+    },
     onEnd(e,o){
-      console.info() //e.from.__vue__.context.element
+       //if (e.draggedContext?.element?.id == 4) 
+       // return true;
+       return true;
+      
     },
     init(reportName,data,zb_dict,zb_param){
       Object.keys(this.report_result).forEach(key=>{
@@ -528,6 +502,7 @@ export default {
       this.report.conn_list=response_data.conn_list
           this.report.range_level=response_data.range_level
           this.report.defaultsetting=response_data.defaultsetting
+          this.report.parent_defaultsetting=response_data.parent_defaultsetting
           if(this.report.defaultsetting && this.report.defaultsetting['BACKGROUND-COLOR']=="")
             this.report.defaultsetting['BACKGROUND-COLOR']="transparent"
           this.report.reportName=reportName
@@ -899,11 +874,11 @@ export default {
       let _this=this
       let old_widgetForm=_this.widgetForm
       _this.selectWidget={}
-      _this.widgetForm=""
+      _this.widgetForm=[]
       setTimeout(()=>{
         _this.widgetForm=old_widgetForm
       })
-    }
+    },
   },
   
   watch: { 
@@ -961,7 +936,8 @@ export default {
       },
       deep:true,immediate: true
     }
- }
+ },
+
 }
 </script>
 
