@@ -1075,8 +1075,9 @@ export function load_css_file(url){
     var link = doc.createElement("link");
     link.setAttribute("rel", "stylesheet");
     link.setAttribute("type", "text/css");
+    link.setAttribute("id", url);
     link.setAttribute("href", url);
-
+    document.getElementById(url)?.remove()
     var heads = doc.getElementsByTagName("head");
     if (heads.length) {
         heads[0].appendChild(link);

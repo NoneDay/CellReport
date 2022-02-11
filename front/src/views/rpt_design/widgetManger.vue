@@ -1,5 +1,5 @@
 <template>
-  <el-tabs
+  <el-tabs @tab-click="add_catlog"
     v-model="tab_value"
     style="overflow: hidden; height: 100%; width: 100%"
   >
@@ -10,6 +10,7 @@
       style="overflow: auto; height: 100%; width: 100%"
       :name="field.title"
     >
+    <span slot="label">{{field.title}} <i class="el-icon-edit" @click.prevent="tab_edit(field)"></i> </span>
       <el-row :gutter="12" >
         <el-col
           :span="7"
@@ -72,6 +73,9 @@
         </el-col>
         
       </el-row>
+    </el-tab-pane>
+    <el-tab-pane label="新增分类"  name="新增分类">
+        <span slot="label"> 新增分类 <i class="el-icon-folder-add"></i> </span>
     </el-tab-pane>
     <el-dialog
       v-draggable
@@ -215,6 +219,53 @@ export default {
     },
   },
   methods: {
+    tab_edit(field){
+        this.$prompt(`请输入新的名称`, '名称', 
+            {
+                confirmButtonText: '确定',
+                cancelButtonText: '取消',
+                inputValue:field.title
+            })
+            .then(async ({ value }) => { 
+                if(this.t_fields.filter(x=>x.title==value && x!=field).length>0){
+                     this.$message.error(`已经存在这个名称[${value}]`);
+                        return
+                }
+                field.title=value
+                this.tab_value=value
+                let resp = await saveWidget(JSON.stringify(this.t_fields, null, 4));
+            }).catch(() => {
+          this.$message({
+            type: "info",
+            message: "已取消",
+          });
+        });
+    },
+    add_catlog(tab, event){
+        if(this.tab_value!='新增分类')
+            return
+        this.$prompt(`请输入新分类的名称`, '名称', 
+            {
+                confirmButtonText: '确定',
+                cancelButtonText: '取消',
+                inputValue:"新分类"
+            })
+            .then(async ({ value }) => { 
+                if(this.t_fields.filter(x=>x.title==value).length>0){
+                     this.$message.error(`已经存在这个名称[${value}]`);
+                        return
+                }
+                this.cur_field=[]
+                this.tab_value = value
+                this.t_fields.push({title:value,list:this.cur_field})
+                let resp = await saveWidget(JSON.stringify(this.t_fields, null, 4));
+            }).catch(() => {
+          this.$message({
+            type: "info",
+            message: "已取消",
+          });
+        });
+    },
     async editSubmit() {
         let is_new=false
         if(this.cur_item==undefined){

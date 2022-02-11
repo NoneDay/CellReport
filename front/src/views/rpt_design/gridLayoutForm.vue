@@ -268,8 +268,9 @@ background:url("data:image/svg+xml;utf8,<svg t='1641536477492' class='icon' view
 }
 </style>
 </style>
-`,"layout_css")
+`,"layout_css_run")
         }else{
+            $("#layout_css_run").remove()
             load_css_js(`<style>
             .remove {
         color:${_this.context.report.defaultsetting['COLOR']};

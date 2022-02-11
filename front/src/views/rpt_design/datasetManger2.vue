@@ -52,15 +52,18 @@
                 <el-form-item label="名字"><el-button type="primary" @click="update_name" >{{action_target._name}}</el-button ></el-form-item>
             </el-col>
             
-            <el-col v-if="action_target._type=='sql'|| action_target._type=='db'" :span="8">
+            <el-col v-if="action_target._type=='sql'|| action_target._type=='db'" :span="4">
                 <el-form-item label="数据源">
                     <el-select v-model="action_target._dataSource" placeholder="数据源">
                         <el-option  v-for="(one,index) in context.report.conn_list" :key="one+index" :label="one" :value="one"></el-option>
                     </el-select>
                 </el-form-item>
-                </el-col>  <el-col :span="4">
-                <el-form-item label="类型">{{action_target._type}} </el-form-item> </el-col>
-                <el-button  v-if="['memory','sql','userDefine'].includes(action_target._type)" 
+                </el-col>  
+                <el-col :span="4"><el-form-item label="类型" style="color:red">{{action_target._type}} </el-form-item> </el-col>
+                <el-col v-if="action_target._type=='sql'|| action_target._type=='db'" :span="4">
+                    <el-form-item label="舍弃数值全零的行">  <el-checkbox v-model="action_target._FilterZero"></el-checkbox></el-form-item> 
+                </el-col>
+                <el-button  type="primary" v-if="['memory','sql','userDefine'].includes(action_target._type)" 
                  @click="preview">取数</el-button>
             </el-row>
 
@@ -80,8 +83,8 @@
                     <el-input v-model="action_target._dataSource" placeholder="请输入URL地址"></el-input> 
                 </el-col>
                  <el-col :span="2">
-                     <el-button v-if="action_target._type=='cr'" @click="cr_run">取数</el-button> 
-                     <el-button v-if="action_target._type=='api'" @click="api_run">取数</el-button> 
+                     <el-button type="primary" v-if="action_target._type=='cr'" @click="cr_run">取数</el-button> 
+                     <el-button type="primary" v-if="action_target._type=='api'" @click="api_run">取数</el-button> 
                      </el-col>
                  <el-col :span="6" style="font-weight:800" > 
                      当前选择的是 ： 
@@ -515,7 +518,7 @@ export default {
             .then( ({ value }) => {
                  if(_this.has_name(value))
                     return
-                _this.action_target={__text:' ',_dataSource:'',_name:value,_type:command,_fields:"[]"}
+                _this.action_target={__text:' ',_dataSource:'',_name:value,_type:command,_fields:"[]",_FilterZero:false}
                 if(command=="memory"){
                     _this.action_target._dataSource="memory"
                 }
