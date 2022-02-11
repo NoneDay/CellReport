@@ -117,7 +117,6 @@ export default {
         let x2jsone=new x2js(); //实例
         let _this=this
         let data=new FormData();
-        console.info(_this.context.report)
         data.append("_content", x2jsone.js2xml({report:_this.context.report}) )
         data.append("_createFormParam", false )
         let all_gridname=Object.keys(_this.context.report_result.data)
