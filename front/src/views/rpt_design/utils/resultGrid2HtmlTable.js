@@ -334,7 +334,7 @@ export default class ResultGrid2HtmlTable{
         this.total_rows=Object.keys(this.param_grid.rowlenArr).length
         this.fix_rows=1
         this.fix_cols=parseInt( param_grid.fix_cols||param_grid.fixCols||0 )
-        if(this.fix_col==undefined || this.fix_cols<1) this.fix_cols=1
+        if(this.fix_cols==undefined || this.fix_cols<1) this.fix_cols=1
         this.fix_rows=parseInt( param_grid.fix_rows||Math.max(this.fix_rows,this.param_grid.colName_lines[1]+1) )
 
         
