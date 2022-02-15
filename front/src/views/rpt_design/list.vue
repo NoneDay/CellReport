@@ -35,12 +35,14 @@
         </el-table-column>
         <el-table-column  label="操作" :width="250">
             <template slot-scope="scope" v-if="scope.row.LastAccessTime">
-                <el-tooltip class="item" effect="dark" content="克隆" placement="top-start"><el-button type="primary" icon="el-icon-edit" circle @click="handleClick('克隆',scope.row)"></el-button>
-                </el-tooltip><el-tooltip class="item" effect="dark" content="复制" placement="top-start"><el-button type="success" icon="el-icon-document-copy" circle @click="handleClick('复制',scope.row)"></el-button>
-                </el-tooltip><el-tooltip class="item" effect="dark" content="剪切" placement="top-start"><el-button type="info" icon="el-icon-message" circle @click="handleClick('剪切',scope.row)"></el-button>
-                </el-tooltip><el-tooltip class="item" effect="dark" content="重命名" placement="top-start"><el-button type="warning" icon="el-icon-star-off" circle @click="handleClick('rename',scope.row)"></el-button>
+                <el-tooltip class="item" effect="dark" content="克隆" placement="top-start"><el-button type="primary" icon="el-icon-document-copy" circle @click="handleClick('克隆',scope.row)"></el-button>
+                </el-tooltip><el-tooltip class="item" effect="dark" content="复制" placement="top-start"><el-button type="success" icon="el-icon-copy-document" circle @click="handleClick('复制',scope.row)"></el-button>
+                </el-tooltip><el-tooltip class="item" effect="dark" content="剪切" placement="top-start"><el-button type="info" icon="el-icon-scissors" circle @click="handleClick('剪切',scope.row)"></el-button>
+                </el-tooltip><el-tooltip class="item" effect="dark" content="重命名" placement="top-start"><el-button type="warning" icon="el-icon-edit" circle @click="handleClick('rename',scope.row)"></el-button>
                 </el-tooltip><el-tooltip class="item" effect="dark" content="删除" placement="top-start"><el-button type="danger" icon="el-icon-delete" circle @click="handleClick('删除',scope.row)"></el-button>
-                </el-tooltip><el-tooltip class="item" effect="dark" content="运行" placement="top-start"><el-link :href="baseUrl+'/run'+(grp.Id=='default'?'':(':'+grp.Id))+'?reportName='+scope.row.FullPathFileName" target="_blank"><i class="el-icon-view el-icon--right"></i></el-link>
+                </el-tooltip><el-tooltip class="item" effect="dark" content="运行" placement="top-start">
+                    <el-link :href="baseUrl+'/run'+(grp.Id=='default'?'':(':'+grp.Id))+'?reportName='+scope.row.FullPathFileName" target="_blank">
+                    <el-button type="danger" icon="el-icon-view" circle></el-button> </el-link>
                 </el-tooltip>
             </template>
         </el-table-column>

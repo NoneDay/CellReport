@@ -50,23 +50,22 @@
 
                 
             </component>
-            
-                <span :style="`position: absolute;right: 2px;top: 0;cursor: pointer;color:black;background:#fff;font-size: 11px;font-weight: bold;`" 
-                @click="removeItem(item.i)">
-                    <i class="el-icon-delete"></i>
-                    </span>
-                <span  class="draggable-handle" :style="`position: absolute;right: 16px;top: 0;cursor: pointer;color:black;background:#fff;font-size: 11px;font-weight: bold;`">
-                    <i class="el-icon-document-remove"></i>
-                </span>
-                <span  :style="`position: absolute;right: 30px;top: 0;cursor: pointer;color:black;background:#fff;font-size: 11px;font-weight: bold;`" 
-                @click="settingItem(item.i)">
-                    <i class="el-icon-setting"></i>
-                </span>
-                <span  :style="`position: absolute;right: 45px;top: 0;cursor: pointer;color:black;background:#fff;font-size: 11px;font-weight: bold;`" 
-                @click="call_widget_dialog(item)">
-                    +
-                </span>
- 
+                <div style="position: absolute;right: 2px;top: 0;display:flex;height:18px" >
+                    <el-tooltip class="item" effect="dark" content="在本grid格子中添加新组件" placement="top-start">
+                        <div  style=" cursor: pointer;color:black;background:#fff;"  @click="call_widget_dialog(item)"><img src="img/add.png"></div> 
+                        </el-tooltip>
+                    <el-tooltip class="item" effect="dark" content="设置本格子的配置" placement="top-start">
+                        <div  style="cursor: pointer;color:black;background:#fff;" @click="settingItem(item.i)"><img src="img/setting.png"></div>
+                        </el-tooltip>
+
+                    <el-tooltip class="item" effect="dark" content="鼠标左键点住我不松手拖动，调整格子的位置" placement="top-start">
+                        <div  style="cursor: move;color:black;background:#fff;" class="draggable-handle"  ><img src="img/move.png"></div>
+                        </el-tooltip>
+
+                    <el-tooltip class="item" effect="dark" content="删除本格子" placement="top-start">
+                        <div style="cursor: pointer;color:black;background:#fff;" @click="removeItem(item.i)"><img src="img/delete.png"></div>
+                        </el-tooltip>
+                </div>
             </grid-item>
             <widgetDialog v-if="widget_dialogVisible" :visible.sync="widget_dialogVisible" :action_target="ref_item">
             </widgetDialog>  
@@ -294,6 +293,13 @@ background:url("data:image/svg+xml;utf8,<svg t='1641536477492' class='icon' view
 `,"layout_css")
         }
         
+    },
+    watch: { 
+        "context.selectWidget":{
+            handler(val,oldVal){
+                  console.info(val)
+            },deep:false
+        }, 
     },
     computed:{
         ref_item(){

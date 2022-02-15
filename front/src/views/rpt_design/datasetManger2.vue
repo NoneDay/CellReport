@@ -2,7 +2,7 @@
 <el-dialog  style="text-align: left;" :inline="true"
     :visible.sync="dialogVisible" :title="'数据管理'" 
         :close-on-click-modal="false"  @close="dialogVisible=false" 
-          direction="btt" append-to-body  :fullscreen="true"
+          direction="btt" append-to-body  :fullscreen="true" 
     >
     <ExprEditorDialog  :visible.sync="ExprEditorDialog_visible" 
         :target_obj="url_param" 
@@ -59,12 +59,13 @@
                     </el-select>
                 </el-form-item>
                 </el-col>  
-                <el-col :span="4"><el-form-item label="类型" style="color:red">{{action_target._type}} </el-form-item> </el-col>
+                <el-col :span="4"><el-form-item label="类型" style="color:red;font-weight: 900;">{{action_target._type}} </el-form-item> </el-col>
                 <el-col v-if="action_target._type=='sql'|| action_target._type=='db'" :span="4">
                     <el-form-item label="舍弃数值全零的行">  <el-checkbox v-model="action_target._FilterZero"></el-checkbox></el-form-item> 
                 </el-col>
-                <el-button  type="primary" v-if="['memory','sql','userDefine'].includes(action_target._type)" 
-                 @click="preview">取数</el-button>
+                <el-button  type="primary" v-if="['memory','sql','userDefine'].includes(action_target._type)"  @click="preview">取数</el-button>
+                 <el-button type="primary" v-if="action_target._type=='cr'" @click="cr_run">取数</el-button> 
+                <el-button type="primary" v-if="action_target._type=='api'" @click="api_run">取数</el-button> 
             </el-row>
 
             <el-row v-if="['sql','db'].includes(action_target._type) " :span="6">
@@ -83,8 +84,7 @@
                     <el-input v-model="action_target._dataSource" placeholder="请输入URL地址"></el-input> 
                 </el-col>
                  <el-col :span="2">
-                     <el-button type="primary" v-if="action_target._type=='cr'" @click="cr_run">取数</el-button> 
-                     <el-button type="primary" v-if="action_target._type=='api'" @click="api_run">取数</el-button> 
+                     
                      </el-col>
                  <el-col :span="6" style="font-weight:800" > 
                      当前选择的是 ： 
@@ -204,6 +204,7 @@ import  codemirror  from './element/vue-codemirror.vue'
 import ExprEditorDialog from './ExprEditorDialog.vue'
 import {request} from 'axios'
 import {baseUrl} from './api/report_api'
+import x2js from 'x2js' 
 import {convert_csv_to_json,convert_array_to_json,parse_json,json_by_path,getObjType } from "./utils/util"
 export default {
     name: "datasetManger2",
@@ -253,10 +254,8 @@ export default {
                 if(this.action_target._type=="csv" && this.action_target.get)
                 {
                     ret=JSON.parse(this.action_target.data) [this.action_target.get]
-                    console.info(getObjType(ret[0]))
                     if(ret.length>0 && getObjType(ret[0])=="array" )
-                        ret=convert_array_to_json(ret)
-                    //console.info(getObjType(ret[0]))
+                        ret=convert_array_to_json(ret)                    
                     return ret
                 }
                 if(this.action_target._type=="from" && this.action_target._dataSource!="" && this.action_target.__text!="")
@@ -324,10 +323,58 @@ export default {
        
     },
     
-    methods:{
-        
+    methods:{        
         preview(){
-
+            if(this.context.in_exec_url.stat){
+                this.$notify({title: '提示',message: "已经在执行一个查询！",type: 'error',duration:3000});
+                return
+            }
+            let x2jsone=new x2js(); //实例
+            let _this=this
+            let data=new FormData();
+            let t_content_json=JSON.parse(JSON.stringify(this.context.report))
+            this.all_dataSet.forEach(one=>{
+                if(['cr','api'].includes( one._type)){
+                     if( one.report_result )
+                        delete one.report_result
+                }
+            })
+            t_content_json.dataSets.dataSet.splice(0)
+            JSON.parse(JSON.stringify(this.all_dataSet)).forEach(ele=>{
+                t_content_json.dataSets.dataSet.push(ele)
+            })
+            data.append("_content", x2jsone.js2xml({report:t_content_json}) )
+            data.append("_createFormParam", false )
+            data.append("_fresh_ds", JSON.stringify(['数据集:'+this.action_target._name]))
+            _this.context.in_exec_url.stat=true;
+            let grpid=_this.context.report.reportName.split(":")[0]
+            let url= `${baseUrl}/design/preview:${grpid}`
+            request({method: 'post',url,data,withCredentials: true})
+            .then(response => {
+                _this.context.in_exec_url.stat=false;
+                if(response.errcode && response.errcode ==1){
+                    this.$message({showClose: true,message: response.message,type: 'error'});                   
+                    return;
+                }
+                if(_this.context.report_result==undefined)
+                    _this.context.report_result={}
+                _this.$set(_this.context.report_result,'report_result',_this.context.report_result )
+                if(_this.context.report_result.dataSet==undefined)
+                    _this.$set(_this.context.report_result,'dataSet',{} )
+                
+                Object.keys(response.dataSet).forEach(name => {
+                    _this.$set(_this.context.report_result.dataSet,name,response.dataSet[name]  )
+                });
+                let old=this.action_target
+                _this.$set(this,'action_target',{})                
+                 
+                    _this.$set(this,'action_target',old)
+                    _this.$message({showClose: true,message: "取数成功",type: 'success',duration: 3000});   
+            })
+            .catch(error=> { 
+            _this.context.in_exec_url.stat=false;
+            _this.$notify({title: '提示',message: error.message,type: 'error',duration:0});
+            })
         },
         paramDialog_open(row){
             this.url_param=row
@@ -390,8 +437,7 @@ export default {
                     _this.$alert(resp.message)
                     return
                 }
-                let response_data=JSON.parse( resp.result)
-                console.log(response_data);
+                let response_data=JSON.parse( resp.result)                
                 _this.$set(this.action_target,"report_result",response_data)
                 let param=[]
                 _this.action_target.report_result.form.forEach(ele=>{
@@ -422,7 +468,6 @@ export default {
                 url: `${baseUrl}/design/exec_expr:${grpid}`,
                 withCredentials: true
             }).then(response_data => {
-                console.info('api 成功')
                 if(response_data.errcode==1){
                     this.$message.error(response_data.message)
                     return
@@ -452,12 +497,6 @@ export default {
             })
         },
         print_json(){
-            //his.all_dataSet.forEach(one=>{
-            //     if(['cr','api'].includes( one._type)){
-            //        if( one.report_result && getObjType(one.report_result)=="object")
-            //           one.report_result=JSON.stringify(one.report_result)
-            //    }
-            //})
             console.info(JSON.stringify(this.all_dataSet,null,4))
         },
         handleSubmit(){
@@ -577,7 +616,6 @@ innerReport(); //设计好的报表页面选中有关单元格，复制粘贴到
     },
     choose_file(file) {
       this.file = file.raw;//这是element的导入数据选择，必须要添加.raw才能获取，其他表单不需要
-      // console.log(file);//上传文件信息
       this.importExcel(this.file)
     },
     importExcel(file) {//来自euiadmin ，在https://github.com/chenboyan1/Euiadmin
@@ -615,6 +653,7 @@ innerReport(); //设计好的报表页面选中有关单元格，复制粘贴到
 }
 </script>
 
-<style>
+<style scoped>
+.el-dialog {display: flex;flex-direction: column;}
 .el-dialog__body {height: calc(100% - 200px);}
 </style>

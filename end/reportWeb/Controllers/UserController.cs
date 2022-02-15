@@ -72,7 +72,9 @@ namespace reportWeb.Controllers
             ef.addVariable("__env__", new Env());
             ef.addVariable("userid", test_user);
             ef.addVariable("password", test_password);
-            var result = ef.addNewScopeForScript(login_script) as IDictionary<Object, Object>;            
+            var result = ef.addNewScopeForScript(login_script) as IDictionary<Object, Object>;
+            if (result == null)
+                return Json(new { errcode = 1, message = "测试失败", result = "不是正常返回对象，请仔细看说明要求" }, json_option);
             if (!"0".Equals(result["errcode"]?.ToString()))
             {
                 return Json(new { errcode = 0, message = "测试成功", result }, json_option);

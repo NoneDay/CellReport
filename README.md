@@ -7,7 +7,7 @@ CellReport 诞生的初衷是为了解决日常快速制作统计报表的需要
  | 源码 | 文档 | 发行版 |
  | ------ | -------- | ------ |
  | [Github](https://github.com/noneday/CellReport)| [Github在线文档](https://noneday.github.io/CellReport) | [github下载](https://github.com/NoneDay/CellReport/releases/tag/1.0.2)  |
- | [Gitee](https://gitee.com/noneday/CellReport)| [Gitee在线文档](https://noneday.gitee.io/CellReport) | [gitee下载](https://gitee.com/NoneDay/CellReport/releases/)  |
+ | [Gitee](https://gitee.com/noneday/CellReport)| [Gitee在线文档](https://noneday.gitee.io/CellReport) | [gitee下载](https://gitee.com/NoneDay/CellReport/releases/1.0.2)  |
  
 
 
@@ -44,7 +44,7 @@ CellReport 诞生的初衷是为了解决日常快速制作统计报表的需要
 我们可以通过实现FunctionUnit接口实现系统没有预定义的函数，也可以用内置语言实现一些简单的函数扩展。
 
 ## 需要安装的软件
-1. 下载安装NETCORE6 SDK 或 RUNTIME.[Download .NET (Linux, macOS, and Windows)](https://dotnet.microsoft.com/download)
+1. 下载安装NET6 SDK6 或 ASP.NET Core Runtime 6. [Download .NET (Linux, macOS, and Windows)](https://dotnet.microsoft.com/en-us/download/dotnet/6.0)
 2. 下载安装redis（可选）。最好安装 [https://github.com/MicrosoftArchive/redis/releases](https://github.com/MicrosoftArchive/redis/releases)
 3. [github下载release](https://github.com/NoneDay/CellReport/releases/) 。
 
@@ -62,8 +62,15 @@ CellReport 诞生的初衷是为了解决日常快速制作统计报表的需要
 
 
 ```
-sql server 连接串
+sql server 连接串格式
 Data Source=ip地址;Initial Catalog=数据库名字;Persist Security Info=True;User ID=用户;Password=口令;Min Pool Size=1;Max Pool Size=50;Connect Timeout=15000;Application Name=报表连接
+
+oracle 连接串 格式
+Data Source=(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=ip地址)(PORT=端口))(CONNECT_DATA=(SERVER = SERVER名字)(SERVICE_NAME = 数据库)));User Id=用户;Password=口令;
+
+sqlite 连接串 格式
+Data Source=E:\my_app\报表源码_2020\a_new_lib\test.db
+
 ```
 
 配置完毕后，按F5 刷新页面，点报表目录，正常的话，这是应该能看到所有的测试报表了

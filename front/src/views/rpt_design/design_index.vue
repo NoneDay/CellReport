@@ -49,7 +49,9 @@
             <el-button type='primary' round @click="notebook_dialog_visible=true" >设置</el-button>
             <el-button type='primary' round @click="simpleGuide_dialogVisible=true" >向导</el-button>
             <el-button type='primary' round @click="widget_dialogVisible=!widget_dialogVisible" >组件</el-button>
-            <el-link :href="baseUrl+'/run'+(report.reportName.split(':')[0]=='default'?'':(':'+report.reportName.split(':')[0]))+'?reportName='+report.reportName.split(':')[1]" target="_blank"><i class="el-icon-view el-icon--right"></i></el-link>
+            <el-link :href="baseUrl+'/run'+(report.reportName.split(':')[0]=='default'?'':(':'+report.reportName.split(':')[0]))+'?reportName='+report.reportName.split(':')[1]" target="_blank">
+            <el-button type='primary' icon="el-icon-view" round @click="save_report" >运行</el-button>
+            </el-link>
             
           </el-header>
           <!-- 中间主布局 -->
@@ -361,6 +363,7 @@ export default {
         updated:this.lucky_updated,
         rangePasteBefore:this.rangePasteBefore,
         design:true,
+        selectWidget:this.selectWidget,
         clickedEle:this.clickedEle,
         in_exec_url:this.in_exec_url,
         mode:"design",

@@ -1,5 +1,5 @@
 <template>
-<el-tabs v-model="tab_value" value="first" v-if="ready">
+<el-tabs v-model="tab_value" value="first" v-if="ready" style="overflow: hidden; height: 100%; width: 100%">
     <el-tab-pane label="报表组管理" name="first">
         <avue-crud :data="data.grp_register" :option="option_grp()" v-model="grp_obj"
             @row-save="grp_rowSave"  @row-update="grp_rowUpdate" @row-del="grp_rowDelete"
@@ -21,7 +21,8 @@
         </template>
         </avue-crud>
     </el-tab-pane>
-    <el-tab-pane label="登陆验证管理" name="second" v-if="userInfo.username=='admin'" >
+    <el-tab-pane label="登陆验证管理" name="second" v-if="userInfo.username=='admin'" style=" height: 100%; width: 100%" >
+        <div style="display:flex;height:100%">
         <span class="demonstration">
         传入用户名userid和口令password，返回为json，必须有errcode，userid，username。errcode为零，表示验证成功。<br>
         {'errcode':json.errcode,'message':json.errmsg, 'userid':json.userid,'username':json.username,'old_result':result};<br>以下是脚本：
@@ -30,11 +31,14 @@
                         v-model="data.login_script" 
                         style="height:100%" @ready="editor_ready"
                         :options="{tabSize: 4, mode: 'text/javascript', lineNumbers: true,line: true,}"  
-            />        
+            />
+        <div>     
         测试用户<el-input v-model="test_user" placeholder="请输入内容"></el-input>
         测试口令<el-input v-model="test_password" placeholder="请输入内容"></el-input>
         <el-button type="danger" @click="test_login">登陆测试</el-button>
         <el-button type="danger" @click="save_config">保存</el-button>
+        </div>
+        </div>
     </el-tab-pane>
   </el-tabs>
 </template>
@@ -67,7 +71,7 @@ export default {
         },
         async test_login(){
             let ret=await test_login(this.data.login_script,this.test_user,this.test_password)
-            this.$alert(ret.result)
+            this.$alert(JSON.stringify(ret.result))
         },
         editor_ready(){
             this.$refs.editor.codemirror.setSize('auto','350px')
