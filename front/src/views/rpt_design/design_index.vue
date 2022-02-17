@@ -37,22 +37,23 @@
     <el-container class="form-designer">
      
       <el-container style="height: 100%; border: 1px solid #eee">
-          <el-header class="widget-container-header" style="height: 40px;" >
-           
-          
-            
+          <el-header class="widget-container-header" style="height: 30px;" >
             <el-button type='primary' round @click="save_report" >保存</el-button>
             <el-button type='primary' round @click="preview_run" >预览</el-button>
-            <el-button type='primary' icon='el-icon-refresh'  round @click="init(report.reportName)" >重载</el-button>
+            <el-button type='primary' icon='el-icon-refresh'  round @click="layout_mode=true;init(report.reportName)" >重载</el-button>
             <el-button type='primary' round @click="paramMangerDrawerVisible=true" >参数</el-button>
             <el-button type='primary' round @click="datamanger_dialogVisible=true" >数据</el-button>
             <el-button type='primary' round @click="notebook_dialog_visible=true" >设置</el-button>
             <el-button type='primary' round @click="simpleGuide_dialogVisible=true" >向导</el-button>
             <el-button type='primary' round @click="widget_dialogVisible=!widget_dialogVisible" >组件</el-button>
+            <div style="display: inline-flex"><el-select v-model="layout_mode" placeholder="请选择">
+                <el-option label="设计显示页" value="show"></el-option>
+                <el-option label="设计隐藏页" value="hidden"></el-option>
+              </el-select>
+            </div>            
             <el-link :href="baseUrl+'/run'+(report.reportName.split(':')[0]=='default'?'':(':'+report.reportName.split(':')[0]))+'?reportName='+report.reportName.split(':')[1]" target="_blank">
             <el-button type='primary' icon="el-icon-view" round @click="save_report" >运行</el-button>
             </el-link>
-            
           </el-header>
           <!-- 中间主布局 -->
           <el-main  class="widget-container" :style="{color:report.defaultsetting['COLOR'],
@@ -71,7 +72,7 @@
                           :select.sync="selectWidget"
                           style="overflow:auto"
                           @change="handleHistoryChange(widgetForm)"
-                          ></widget-form>
+              ></widget-form>
             </el-main>
       </el-container>
       <!-- 右侧配置 -->
@@ -173,8 +174,9 @@ export default {
   async beforeRouteUpdate(to, from, next) {
     let _this=this
     console.info(x2jsone.js2xml({report:this.fields}))
-    console.info("prepare cache:"+_this.report.reportName)
+    console.info("prepare cache:"+_this.report.reportName)    
     this.save_fix()
+    this.layout_mode=''
     report_cache[_this.report.reportName]={
       report_content:x2jsone.js2xml({report:this.report}),
       conn_list:this.report.conn_list,
@@ -192,8 +194,9 @@ export default {
     }
   },
     // 在同一组件对应的多个路由间切换时触发
-  beforeRouteLeave(to, from, next) {
+  beforeRouteLeave(to, from, next) {    
     this.save_fix()
+    this.layout_mode=''
     report_cache[this.report.reportName]={
       report_content:x2jsone.js2xml({report:this.report}),
       conn_list:this.report.conn_list,
@@ -210,12 +213,12 @@ export default {
     Vue.component('draggable', draggable);
     let url_arr=window.location.href.split('?')
     if(url_arr.length>0){
-      let cs = url_arr[1];                //获取?之后的参数字符串
-      let cs_arr = cs.split('&');                    //参数字符串分割为数组
-      cs={};
-      for(var i=0;i<cs_arr.length;i++){         //遍历数组，拿到json对象
-        cs[cs_arr[i].split('=')[0]] = cs_arr[i].split('=')[1]
-      }
+      let cs = url_arr[1];                //获取?之后的参数字符串
+      let cs_arr = cs.split('&');                    //参数字符串分割为数组
+      cs={};
+      for(var i=0;i<cs_arr.length;i++){         //遍历数组，拿到json对象
+        cs[cs_arr[i].split('=')[0]] = cs_arr[i].split('=')[1]
+      }
       if (cs.reportName)
         this.init(window.location.hash??0,cs.reportName)
     }
@@ -334,7 +337,7 @@ export default {
         sheet_window:null,
         
         can_watch_cell:false,//因为第一次切换单元格后就会执行update cell ，用他来避免首次更新不必要的计算
-
+        layout_mode:"show",
         cur_select_type:'cell',
         fields,
         widgetEmpty, 
@@ -352,6 +355,17 @@ export default {
       }
   },
   methods:{
+    has_name(name){
+      if(this.allElementSet.has(name)){
+        this.$alert("名字不能重复");
+        return true;
+      }
+      if(this.report.dataSets.dataSet.filter(x=>x._name==name).length>0){
+        this.$alert("名字不能和数据集名称重复");
+        return true;
+      }
+      return false
+    },
     createContext(){
       return {
       context:{
@@ -374,6 +388,7 @@ export default {
       }, 
       fresh_ele:this.fresh_ele,
       clickedEle:this.clickedEle,
+      has_name:this.has_name
     }
     },
     ref_gridlayout()
@@ -472,66 +487,73 @@ export default {
         _report.template={}
       if(_report.AllGrids==undefined)
         _report.AllGrids={}
-          if(getObjType(_report.grid)=='object'){
-            if(_report.grid._name==undefined)
-              _report.grid._name="main"
-              _report.AllGrids.grid=[_report.grid]
+      if(getObjType(_report.grid)=='object'){
+        if(_report.grid._name==undefined)
+          _report.grid._name="main"
+          _report.AllGrids.grid=[_report.grid]
+      }
+      delete _report.grid
+      if(getObjType(_report.AllGrids.grid)=='object')
+        _report.AllGrids.grid=[_report.AllGrids.grid]
+      if(getObjType(_report.AllGrids.HtmlText)=='object'){
+        _report.AllGrids.HtmlText=[_report.AllGrids.HtmlText]
+      }
+      if(_report.AllGrids.grid==undefined || _report.AllGrids.grid=="")
+        _report.AllGrids.grid=[]
+      if(_report.AllGrids.LargeDataGrid){
+          if(getObjType(_report.AllGrids.LargeDataGrid) =="object"){
+            //_report.AllGrids.LargeDataGrid._is_large=1
+            _report.AllGrids.grid.push(_report.AllGrids.LargeDataGrid)
           }
-          delete _report.grid
-          if(getObjType(_report.AllGrids.grid)=='object')
-            _report.AllGrids.grid=[_report.AllGrids.grid]
-          if(getObjType(_report.AllGrids.HtmlText)=='object'){
-            _report.AllGrids.HtmlText=[_report.AllGrids.HtmlText]
+          else{
+            _report.AllGrids.LargeDataGrid.forEach(ele=>{
+                //ele._is_large=1
+                _report.AllGrids.grid.push(ele)
+            })
           }
-          if(_report.AllGrids.grid==undefined || _report.AllGrids.grid=="")
-            _report.AllGrids.grid=[]
-          if(_report.AllGrids.LargeDataGrid){
-              if(getObjType(_report.AllGrids.LargeDataGrid) =="object"){
-                //_report.AllGrids.LargeDataGrid._is_large=1
-                _report.AllGrids.grid.push(_report.AllGrids.LargeDataGrid)
-              }
-              else{
-                _report.AllGrids.LargeDataGrid.forEach(ele=>{
-                    //ele._is_large=1
-                    _report.AllGrids.grid.push(ele)
-                })
-              }
-            delete _report.AllGrids.LargeDataGrid
-          }
+        delete _report.AllGrids.LargeDataGrid
+      }
+      
+
       this.report.layout=undefined
       this.report.AllGrids={HtmlText:[],grid:[]}
       delete this.report.zb_var
       Object.assign(this.report,_report)
       this.report.conn_list=response_data.conn_list
-          this.report.range_level=response_data.range_level
-          this.report.defaultsetting=response_data.defaultsetting
-          this.report.parent_defaultsetting=response_data.parent_defaultsetting
-          if(this.report.defaultsetting && this.report.defaultsetting['BACKGROUND-COLOR']=="")
-            this.report.defaultsetting['BACKGROUND-COLOR']="transparent"
-          this.report.reportName=reportName
-          if(this.report.layout){
-            this.widgetForm=JSON.parse(this.report.layout)
-             if (!Array.isArray(this.widgetForm))
-             this.change_layout()  
+      this.report.range_level=response_data.range_level
+      this.report.defaultsetting=response_data.defaultsetting
+      this.report.parent_defaultsetting=response_data.parent_defaultsetting
+      if(this.report.defaultsetting && this.report.defaultsetting['BACKGROUND-COLOR']=="")
+        this.report.defaultsetting['BACKGROUND-COLOR']="transparent"
+      this.report.reportName=reportName
+      
+      if(this.report.layout){
+        this.widgetForm=JSON.parse(this.report.layout)
+          if (!Array.isArray(this.widgetForm))
+          this.change_layout()  
+      }
+      else{
+        this.widgetForm=build_layout(this.report.AllGrids)    
+        this.change_layout()  
+      }
+      if(!this.report.layout_hidden || this.report.layout_hidden=="null"){
+        this.report.layout_hidden='[]'
+      }
+      this.layout_mode='show' 
+      this.allElementSet.clear()
+      _report.AllGrids.grid.forEach(x=>this.allElementSet.add(x._name) )
+      
+      if(getObjType(this.report.dataSets.dataSet)=="object")
+        this.report.dataSets.dataSet=[this.report.dataSets.dataSet]
+      if(getObjType(this.report.params.param)=="object")
+        this.report.params.param=[this.report.params.param]      
+      if(this.report.dataSets.dataSet[0]=="")
+        this.report.dataSets.dataSet.splice(0,1)
+      this.report.dataSets.dataSet.forEach(element => {
+          if(element._fields==undefined){
+            element._fields="[]"
           }
-          else{
-            this.widgetForm=build_layout(this.report.AllGrids)    
-            this.change_layout()  
-          }
-            
-          if(getObjType(this.report.dataSets.dataSet)=="object")
-            this.report.dataSets.dataSet=[this.report.dataSets.dataSet]
-          if(getObjType(this.report.params.param)=="object")
-            this.report.params.param=[this.report.params.param]
-
-          console.info(this.report)
-          if(this.report.dataSets.dataSet[0]=="")
-            this.report.dataSets.dataSet.splice(0,1)
-          this.report.dataSets.dataSet.forEach(element => {
-              if(element._fields==undefined){
-                element._fields="[]"
-              }
-          });
+      });
     },
     notebook_handleSubmit(){
       this.notebook_dialog_visible=false
@@ -851,12 +873,20 @@ export default {
     },
     preview_run(){
       this.save_fix()
-      this.report.layout=JSON.stringify( this.widgetForm, null, 4)
+      this.save_layout(this.layout_mode)
       this.preview_dialogVisible=true
       
     },
+    save_layout(val){
+      if(val=="show"){
+        this.report.layout=JSON.stringify( this.widgetForm, null, 4)
+      }
+      if(val=="hidden"){
+        this.report.layout_hidden=JSON.stringify( this.widgetForm, null, 4)
+      }
+    },
     save_fix(){
-      this.report.layout=JSON.stringify( this.widgetForm, null, 4)
+      this.save_layout(this.layout_mode)
       this.all_sheet_windows.forEach(one=>{
         if(one._window.luckysheet){
           let grid=this.report.AllGrids.grid.find(a=>a._name==one.gridName)
@@ -869,7 +899,7 @@ export default {
     },
     save_report(){
       this.save_fix()
-      this.report.layout=JSON.stringify( this.widgetForm, null, 4)
+      this.save_layout(this.layout_mode)
       save_one(this.report)
       //console.info(x2jsone.js2xml({report:this.report}))
     },
@@ -885,6 +915,19 @@ export default {
   },
   
   watch: { 
+    layout_mode(newVal,oldval){
+      this.save_layout(oldval)
+      this.widgetForm=[]
+      this.$nextTick(function(){
+        if(newVal=="show"){
+          this.widgetForm=JSON.parse(this.report.layout)
+        }
+        if(newVal=="hidden"){
+          this.widgetForm=JSON.parse(this.report.layout_hidden)
+        }
+
+      })
+    },
     selectWidget (newVal,oldval) {
       if(JSON.stringify(this.selectWidget)=='{"prop":"--"}')
         return

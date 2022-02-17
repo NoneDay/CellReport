@@ -70,7 +70,7 @@ export default {
   name: "widgetDialog",
   components: { codemirror },
   props: ["visible", "action_target"],
-  inject: ["context"],
+  inject: ["context","has_name"],
   async mounted() {
     let t_fields=await getAllWidget('design_rpt');    
     this.t_fields=eval("(function(){\nreturn "+t_fields.txt+"\n})()")
@@ -84,25 +84,16 @@ export default {
     };
   },
   methods: {
-    has_name(name){
-        if(this.context.allElementSet.has(name)){
-          this.$alert("名字不能重复");
-          return true;
-        }
-        if(this.context.report.dataSets.dataSet.filter(x=>x._name==name).length>0){
-          this.$alert("名字不能和数据集名称重复");
-          return true;
-        }
-        return false
-      },
     add(item) {
       let data = this.deepClone(item);
       if (!data.prop)
         data.prop = Date.now() + "_" + Math.ceil(Math.random() * 99999);
-      
+      let name_prefix=data.type
+      if(name_prefix=="luckySheetProxy")
+          name_prefix="report"
       if (data.hasOwnProperty("gridName") && data.gridName == "_random_") {
           do{
-            data.gridName =data.type.replace(/-/, "_") +"_" + Math.ceil(Math.random() * 999);
+            data.gridName =name_prefix.replace(/-/, "_") +"_" + Math.ceil(Math.random() * 999);
           }while(this.has_name(data.gridName));
         this.context?.allElementSet?.add(data.gridName);
       }

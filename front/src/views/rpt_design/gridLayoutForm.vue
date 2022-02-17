@@ -1,7 +1,7 @@
 <template>
     <div  v-if="context.mode=='design'"
         class="widget-form-container gridLayout" ref='content' 
-        style="height:100%;width:100%;flex: 1;overflow: auto;">
+        style="height:1000px;width:100%;flex: 1;overflow: auto;">
         <grid-layout :layout.sync="layout" ref="gridLayout"
                      :col-num="colNum" 
                      :row-height="row_height"

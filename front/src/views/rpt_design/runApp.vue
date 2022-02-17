@@ -164,13 +164,13 @@ export default {
     if(window.location.hash!='')
       this.grpId=window.location.hash.split("?")[0].substring(1)
     if(url_arr.length>0){
-      let cs = url_arr[1];                //获取?之后的参数字符串
+      let cs = url_arr[1];                //获取?之后的参数字符串
       this.queryPara=url_arr[1]
-      let cs_arr = cs.split('&');                    //参数字符串分割为数组
-      cs={};
-      for(var i=0;i<cs_arr.length;i++){         //遍历数组，拿到json对象
-        cs[cs_arr[i].split('=')[0]] = cs_arr[i].split('=')[1]
-      }
+      let cs_arr = cs.split('&');                    //参数字符串分割为数组
+      cs={};
+      for(var i=0;i<cs_arr.length;i++){         //遍历数组，拿到json对象
+        cs[cs_arr[i].split('=')[0]] = cs_arr[i].split('=')[1]
+      }
       if (cs.reportName){
         this.reportName=cs.reportName
       }
@@ -386,11 +386,11 @@ export default {
   },
   computed: {
     crisMobile(){
-        let flag = navigator.userAgent.match(/(phone|pad|pod|iPhone|iPod|ios|iPad|Android|Mobile|BlackBerry|IEMobile|MQQBrowser|JUC|Fennec|wOSBrowser|BrowserNG|WebOS|Symbian|Windows Phone)/i)
-        // localStorage.setItem('isiphone',flag)
-        //localStorage.setItem('ismobile',flag?1:0)
+        let flag = navigator.userAgent.match(/(phone|pad|pod|iPhone|iPod|ios|iPad|Android|Mobile|BlackBerry|IEMobile|MQQBrowser|JUC|Fennec|wOSBrowser|BrowserNG|WebOS|Symbian|Windows Phone)/i)
+        // localStorage.setItem('isiphone',flag)
+        //localStorage.setItem('ismobile',flag?1:0)
       console.info(flag)
-        return flag!=null && flag.length>0;
+        return flag!=null && flag.length>0;
     },
     parentHeight(){
         return this.$parent.$el.clientHeight
