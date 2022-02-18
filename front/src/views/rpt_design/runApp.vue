@@ -219,6 +219,7 @@ export default {
         queryForm_show:{},
         exec_log:"",
         result:{form:[]},
+        mode:'run',
         clickedEle:{},
         executed:false,
         last_js_cript:"",

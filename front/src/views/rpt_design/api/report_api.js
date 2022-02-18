@@ -263,6 +263,7 @@ export function run_one(_this,reportFilePath,query,query_data={},_param_name=nul
     Object.entries(query_data).forEach(kv=>{
         data.append(kv[0], kv[1])    
     })
+    let _fresh_ds=query_data._fresh_ds
     loading.show(loading_conf)
     data.append("reportName", reportFilePath)
     if(_param_name!=null)
@@ -302,6 +303,13 @@ export function run_one(_this,reportFilePath,query,query_data={},_param_name=nul
         }
         else
             Object.assign(_this.result,response_data)
+        _this.last_js_cript=load_css_js(_this.result.footer2,"report_back_css")
+        eval("(function(){\n"+_this.last_js_cript+"\n})()")
+        if(_fresh_ds){
+            loading.hide(loading_conf)
+            return  
+        }
+            
         if(_this.result.layout)
         {
             _this.layout=_this.result.layout
@@ -313,8 +321,7 @@ export function run_one(_this,reportFilePath,query,query_data={},_param_name=nul
                 grid:Object.values(_this.result.data).filter(ele=>["common",'large'].includes( ele.type))
                 } )
         }
-        _this.last_js_cript=load_css_js(_this.result.footer2,"report_back_css")
-        eval("(function(){\n console.info(loading_conf)\n"+_this.last_js_cript+"\n})()")
+        
         //手机端列表头转按钮
         if( window.convert_col_to_button &&
             _this.layout.length==1 && _this.layout[0].element.children.column.length==1 

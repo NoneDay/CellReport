@@ -662,7 +662,7 @@ export default class ResultGrid2HtmlTable{
         if(this.param_grid.optimize){
             // 固定列，header
             table_obj=this._inner_table(start_row,this.param_grid.extend_lines[0],  build_col_arr(0,this.fix_cols))
-            sb.append(`<div class="cr-table__fixed" style="width: ${table_obj.table_width+1}px; height:100%;">`)
+            sb.append(`<div class="cr-table__fixed" style="width: ${table_obj.table_width+1}px; height:calc(100% - ${this.ScrollBarWidth}px);">`)
             
             sb.append(`<div class='cr-table__fixed-header-wrapper'  style='background-color:${background_color};' >\n
             <table class='cr-table__header reportDefaultCss' height=${table_obj.table_height} width=${table_obj.table_width}  `)

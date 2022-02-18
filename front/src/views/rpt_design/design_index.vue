@@ -40,7 +40,7 @@
           <el-header class="widget-container-header" style="height: 30px;" >
             <el-button type='primary' round @click="save_report" >保存</el-button>
             <el-button type='primary' round @click="preview_run" >预览</el-button>
-            <el-button type='primary' icon='el-icon-refresh'  round @click="layout_mode=true;init(report.reportName)" >重载</el-button>
+            <el-button type='primary' icon='el-icon-refresh'  round @click="layout_mode='';init(report.reportName)" >重载</el-button>
             <el-button type='primary' round @click="paramMangerDrawerVisible=true" >参数</el-button>
             <el-button type='primary' round @click="datamanger_dialogVisible=true" >数据</el-button>
             <el-button type='primary' round @click="notebook_dialog_visible=true" >设置</el-button>
@@ -67,12 +67,7 @@
                 @change="handleHistoryChange(widgetForm)"
                 >
               </grid-layout-form>          
-              <widget-form v-else  ref="widgetForm"
-                          :data="widgetForm" 
-                          :select.sync="selectWidget"
-                          style="overflow:auto"
-                          @change="handleHistoryChange(widgetForm)"
-              ></widget-form>
+              
             </el-main>
       </el-container>
       <!-- 右侧配置 -->
@@ -917,7 +912,7 @@ export default {
   watch: { 
     layout_mode(newVal,oldval){
       this.save_layout(oldval)
-      this.widgetForm=[]
+      this.widgetForm=null
       this.$nextTick(function(){
         if(newVal=="show"){
           this.widgetForm=JSON.parse(this.report.layout)
@@ -925,7 +920,8 @@ export default {
         if(newVal=="hidden"){
           this.widgetForm=JSON.parse(this.report.layout_hidden)
         }
-
+        if(!this.widgetForm)
+          this.widgetForm=null
       })
     },
     selectWidget (newVal,oldval) {

@@ -141,6 +141,7 @@ export default {
         queryForm_show:{},
         exec_log:"",
         result:{},
+        mode:"preview",
         last_js_cript:"",
         clickedEle:{},
         executed:false,
