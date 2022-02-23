@@ -170,7 +170,7 @@ export default {
         in_exec_url: false,
         defaultsetting: {},
       },
-      fresh_ele: {},
+      fresh_ele: [],
     };
   },
   data() {

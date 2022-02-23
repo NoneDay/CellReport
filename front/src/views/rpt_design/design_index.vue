@@ -46,7 +46,7 @@
             <el-button type='primary' round @click="notebook_dialog_visible=true" >设置</el-button>
             <el-button type='primary' round @click="simpleGuide_dialogVisible=true" >向导</el-button>
             <el-button type='primary' round @click="widget_dialogVisible=!widget_dialogVisible" >组件</el-button>
-            <div style="display: inline-flex"><el-select v-model="layout_mode" placeholder="请选择">
+            <div style="display: inline-flex;width:40px"><el-select v-model="layout_mode" placeholder="请选择">
                 <el-option label="设计显示页" value="show"></el-option>
                 <el-option label="设计隐藏页" value="hidden"></el-option>
               </el-select>
@@ -883,14 +883,13 @@ export default {
     save_fix(){
       this.save_layout(this.layout_mode)
       this.all_sheet_windows.forEach(one=>{
-        if(one._window.luckysheet){
+        if(one._window && one._window.luckysheet){
           let grid=this.report.AllGrids.grid.find(a=>a._name==one.gridName)
           let sheet=one._window.luckysheet.getSheet(0)
           grid._fix_rows=sheet.freezen?.horizontal?.freezenhorizontaldata[1] ||-1
           grid._fix_cols=sheet.freezen?.vertical?.freezenverticaldata[1] ||-1
         }
-      })
-      console.info(this.report.AllGrids.grid.length)
+      })      
     },
     save_report(){
       this.save_fix()

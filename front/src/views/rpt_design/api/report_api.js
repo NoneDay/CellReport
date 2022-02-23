@@ -301,8 +301,16 @@ export function run_one(_this,reportFilePath,query,query_data={},_param_name=nul
             loading.hide(loading_conf)
             return
         }
-        else
+        else if(_fresh_ds){
+            Object.assign(_this.result.dataSet,response_data.dataSet)
+            _this.result.fresh_report=Object.keys( response_data.data??{})
+            _this.result.fresh_dataset=Object.keys( response_data.dataSet??{})
+        }
+        else{
             Object.assign(_this.result,response_data)
+            _this.result.fresh_report=Object.keys( response_data.data??{})
+            _this.result.fresh_dataset=Object.keys( response_data.dataSet??{})
+        }
         _this.last_js_cript=load_css_js(_this.result.footer2,"report_back_css")
         eval("(function(){\n"+_this.last_js_cript+"\n})()")
         if(_fresh_ds){

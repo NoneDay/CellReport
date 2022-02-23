@@ -18,7 +18,7 @@ export default {
             handler(val,oldVal){
                 this.buildDisplayData()
             },deep:true
-        }, 
+        },         
     },
     data(){
         return {

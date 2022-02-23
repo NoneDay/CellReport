@@ -411,7 +411,7 @@ function getLuckyStyle(border){
         return;
     let size="0.5pt"
     let line_type="solid"
-    let color="black"
+    let _color="black"
     border.replace(";","").split(" ").forEach(x=>{
         if(x.includes("px") || x.includes("pt")){
             if(x=="1.5pt")
@@ -422,7 +422,9 @@ function getLuckyStyle(border){
             size="";
         }
         else if(x.indexOf("#")>=0 || x.indexOf("rgb")>=0){
-            color=x;
+            _color=x;
+            if(!color(_color))
+                _color="black"
         }
         else if(x.indexOf("double")> -1){
             line_type = "Hair";
@@ -454,9 +456,9 @@ function getLuckyStyle(border){
         "SlantedDashDot" : "12",
         "Thick" : "13",
     };
-    return [borderType[size+line_type]??'0',color??"#000"]    
+    return [borderType[size+line_type]??'0',_color??"#000"]    
 }
-function getHtmlBorderStyle(type, color){
+function getHtmlBorderStyle(type, _color){
     let style = "";
     let borderType = {
         "0": "none",
@@ -504,8 +506,9 @@ function getHtmlBorderStyle(type, color){
     else{
         style += "solid ";
     }
-
-    return style + color + ";";
+    if(!color(_color))
+        _color="black"
+    return style + _color;
 }
 
 function luckySheet2ReportGrid(sheet_window,DefaultCssSetting){
@@ -672,13 +675,13 @@ function designGrid2LuckySheet(grid,setting,DefaultCssSetting){
         function push_border(param) {
             if(cell[param]){
                 let result=getLuckyStyle(cell[param])
-                borderInfo.push({"rangeType": "range","borderType": param.toLowerCase().substring(1),"style": result[0],"color": result[1],
+                borderInfo.push({"rangeType": "range","borderType": param.toLowerCase().substring(1),"style": result[0],"color": color(result[1])?result[1]:'black',
                             "range": [{"row": [pos.r,pos.r+(pos.rs?(pos.rs-1):0)],"column": [pos.c,pos.c+(pos.cs?(pos.cs-1):0)]}]  });
             }
         } 
         if(cell['_BORDER-BOTTOM'] &&  cell['_BORDER-TOP'] &&  cell['_BORDER-LEFT'] &&  cell['_BORDER-RIGHT'])    {
             let result=getLuckyStyle(cell['_BORDER-BOTTOM'])
-            borderInfo.push({"rangeType": "range","borderType": "border-all","style":result[0],"color": result[1],
+            borderInfo.push({"rangeType": "range","borderType": "border-all","style":result[0],"color": color(result[1])?result[1]:'black',
             "range": [{"row": [pos.r,pos.r+(pos.rs?(pos.rs-1):0)],"column": [pos.c,pos.c+(pos.cs?(pos.cs-1):0)]}]  });
         }else
         {
@@ -802,6 +805,7 @@ export function sleep(duration) {
 let signalR_connection
 let _onReceiveMessage = undefined;
 import { baseUrl } from '@/config/env'; 
+import color from 'onecolor/lib/color';
 export const get_signalR_connection=function(onReceiveMessage)
 { 
     _onReceiveMessage=onReceiveMessage
@@ -839,10 +843,10 @@ export const output_largeGrid=function(_this,cur_grid,onclickrow){
            }  
         });
         gridData={rows:gridData,footer:undefined,footer_merger_cell:undefined,total:gridData.length}
-        cur_grid.content=cur_grid.content.replace('data-options=""', 'data-options="" style="height:250px"').replaceAll("__url__",`${baseUrl}/run`)
-        cur_grid.content=cur_grid.content.replace("__exportjson__",JSON.stringify(gridData))
+        _this.self.content=cur_grid.content.replace('data-options=""', 'data-options="" style="height:250px"').replaceAll("__url__",`${baseUrl}/run`)
+        _this.self.content=cur_grid.content.replace("__exportjson__",JSON.stringify(gridData))
       }
-      _this.self.content=cur_grid.content//.replace(/needResizeFunc.push\( function \(\) \{myChart.resize\(\);\}\);/,'')
+      //_this.self.content=cur_grid.content//.replace(/needResizeFunc.push\( function \(\) \{myChart.resize\(\);\}\);/,'')
       
     if($.easyui==undefined){
         load_css_file("cdn/jquery-easyui-1.4.5/themes/default/easyui.css")

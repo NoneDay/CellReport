@@ -55,13 +55,17 @@ export default {
           if(this.self.gridName && this.self.gridName!="_random_")
             this.$set(this.context.clickedEle,this.self.gridName,{data:{},cell:null,column:{},self:this.self})
         },
-        'fresh_ele':{//这里有个问题，会照成重复刷新
+        'fresh_ele':{//这里有个问题，会照成重复刷新.
           handler:function(newVal,oldVal){
-            let cur_ds=this.self.datasource || this.self.gridName
+            let cur_ds=this.self.datasource 
             if(!cur_ds || !this.buildDisplayData){
               return 
             }
-            if(this.buildDisplayData && this.fresh_ele.find(x=>x==this.self.datasource || x==this.datasource))
+            if(this.self.component=="echarts" || this.self.component=="luckySheetProxy")
+                return
+            if(this.self.datasource && (this.self.datasource.startsWith("数据集") || this.self.datasource.startsWith("表格")))
+              return;
+            if(this.buildDisplayData && this.fresh_ele.find(x=>x==this.self.datasource))
             {
               console.info("重构"+this.self.gridName)
               if(this.refresh)
@@ -71,7 +75,35 @@ export default {
               }
             }
           },deep:true,
-        }
+        },
+        "context.report_result":{
+          handler(val,oldVal){
+              if(this.self.component!="echarts" && this.self.component!="luckySheetProxy")
+                return
+              if(val.data && this.self.component=="luckySheetProxy"){
+                if(["run" ,"preview" ].includes( this.context.mode) && this.buildDisplayData && val.data[this.self.gridName]){
+                  this.buildDisplayData(true)
+                  return
+                }
+                else
+                  return
+              }
+              if(!this.self.datasource || (!this.buildDisplayData&&!this.refresh))
+                  return   
+              if(!val.dataSet && !val.data)
+                  return   
+              let name_arr=this.self.datasource.split(":")
+              if((name_arr[0]=='数据集' && val.dataSet[name_arr[1]])              
+                || (name_arr[0].startsWith('表格') && val.data[name_arr[1]])
+              ){
+                if(this.refresh)
+                  this.refresh()
+                else
+                  this.buildDisplayData()
+                return
+              }      
+          },deep:true
+      }, 
     },
     computed: {
       
@@ -147,7 +179,7 @@ export default {
             _this.$notify({title: '提示',message: response.message,duration: 0});
             return;
           }
-          console.info(response)
+          //console.info(response)
           _this.fresh_ele.splice(0)
           if(_this.context.report_result.dataSet==undefined)
             _this.context.report_result.dataSet={}

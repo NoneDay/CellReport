@@ -218,7 +218,7 @@ export default {
         queryForm:{},
         queryForm_show:{},
         exec_log:"",
-        result:{form:[]},
+        result:{form:[],dataSet:{},data:{}},
         mode:'run',
         clickedEle:{},
         executed:false,

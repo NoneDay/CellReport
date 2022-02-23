@@ -22,14 +22,14 @@
         </avue-crud>
     </el-tab-pane>
     <el-tab-pane label="登陆验证管理" name="second" v-if="userInfo.username=='admin'" style=" height: 100%; width: 100%" >
-        <div style="display:flex;height:100%">
+        <div style="display:flex;height:400px;flex-direction: column;">
         <span class="demonstration">
         传入用户名userid和口令password，返回为json，必须有errcode，userid，username。errcode为零，表示验证成功。<br>
         {'errcode':json.errcode,'message':json.errmsg, 'userid':json.userid,'username':json.username,'old_result':result};<br>以下是脚本：
         </span>
         <codemirror  ref="editor"  v-if='tab_value=="second"'
                         v-model="data.login_script" 
-                        style="height:100%" @ready="editor_ready"
+                        style="flex:1" @ready="editor_ready"
                         :options="{tabSize: 4, mode: 'text/javascript', lineNumbers: true,line: true,}"  
             />
         <div>     

@@ -173,6 +173,7 @@ export default {
                 $(`#reportDiv${_this.gridName}Top .gutter`).width(target.offsetWidth - target.clientWidth)
                 target.scrollLeft=_this.scrollLeft
                 target.scrollTop=_this.scrollTop
+                $(`#reportDiv${_this.gridName} .cr-table__body tr`).unbind()
                 $(`#reportDiv${_this.gridName} .cr-table__body tr`).bind('click',
                 function(evt){
                   let cur_row=_this.__TABLEOBJ.param_grid.tableData[$(evt.currentTarget).data("n")]
@@ -214,6 +215,7 @@ export default {
         }
         else{//large
           output_largeGrid(this,this.context.report_result.data[_this.gridName],this.onclickrow) 
+          return;
         }
         let cur_row=_this.__TABLEOBJ.param_grid.tableData[_this.__TABLEOBJ.param_grid.extend_lines[0]]
         let ret=convert_array_to_json([_this.__TABLEOBJ.param_grid.columns,cur_row])[0]
