@@ -13,7 +13,7 @@
          />
     </div>
     </el-dialog>
-   <el-button @click="dialogVisible=true" type="primary">编辑内容</el-button>
+   <el-button @click="dialogVisible=true" type="primary">编辑模板</el-button>
 <el-row>
 <el-col :span="4">
 数据：</el-col>    <el-col :span="20">

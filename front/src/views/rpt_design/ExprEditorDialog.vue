@@ -157,7 +157,13 @@ export default {
       this.$refs.editor.value=expr
     },
    async handleSubmit(){
-      if( this.obj[this.prop.val].startsWith("=")){
+     if(this.prop.val=="_leftHead" || this.prop.val=="_topHead" ){
+       if(this.obj[this.prop.val]!='`0' && false==(/^[a-zA-Z]{1,2}\d{1,2}$/i).test(this.obj[this.prop.val])){
+          this.$message.error('格式只能是`0或字母数字组合')
+          return 
+       }
+     }
+     else if( this.obj[this.prop.val].startsWith("=")){
         let resp=await test_expr(this.obj[this.prop.val])
         if(resp.errcode!=0)
         {

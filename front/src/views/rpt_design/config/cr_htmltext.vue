@@ -14,7 +14,18 @@
          />
     </div>
     </el-dialog>
-   <el-button @click="dialogVisible=true" type="primary">编辑内容</el-button>
+   <el-button @click="dialogVisible=true" type="primary">编辑模板</el-button>
+   <div>
+     <span>依赖数据：</span>
+<el-select clearable  v-model="data.datasource" placeholder="请选择" @change="change_ds" >
+    <el-option
+      v-for="item in all_datasource"
+      :key="item"
+      :label="item"
+      :value="item">
+    </el-option>
+  </el-select>
+  </div>
   </div>
 
 </template>
@@ -36,6 +47,21 @@ export default {
     }
   },
   methods: {
+  },
+    computed:{
+    all_datasource(){
+      let ret=["数据集:示例"]
+      this.context.report.dataSets.dataSet.forEach(element=>{
+        ret.push(`数据集:${element._name}`)
+      });
+      //this.context.report.AllGrids.grid.forEach(element=>{
+      //    if(element._is_large=="0"){
+      //      ret.push(`表格:${element._name}`)
+      //    }
+      //  });
+      return ret;
+    },
+
   },
   watch: {
     'data.content'(val) {

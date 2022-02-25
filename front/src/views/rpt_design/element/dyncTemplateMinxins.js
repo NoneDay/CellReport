@@ -75,14 +75,23 @@ export default (function(){ return {
         },
         cur_ds(){
             let ds_name=''
-            if(this.self.datasource)
-                  ds_name=this.self.datasource.split(":")[1]
             let ret
-            if(this.context?.report_result?.dataSet && this.context?.report_result?.dataSet[ds_name])
-                 ret=this.context?.report_result?.dataSet[ds_name][0]
-             else
-               ret=this.dataset('xxx')
-            return ret
+            if(this.self.datasource){
+                let source_arr=this.self.datasource.split(":")
+                if(source_arr[0]=='数据集'){
+                    ds_name=source_arr[1]
+                    
+                    if(this.context?.report_result?.dataSet && this.context?.report_result?.dataSet[ds_name])
+                        ret=this.context?.report_result?.dataSet[ds_name][0]
+                    else
+                        ret=this.dataset('xxx')
+                    return ret
+                }else if(source_arr[0]=='表格'){
+                    ret=this.dataset('xxx')
+                    return ret
+                }
+            }
+            
           },
     },
     beforeDestroy(){

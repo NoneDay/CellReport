@@ -46,7 +46,7 @@
             <el-button type='primary' round @click="notebook_dialog_visible=true" >设置</el-button>
             <el-button type='primary' round @click="simpleGuide_dialogVisible=true" >向导</el-button>
             <el-button type='primary' round @click="widget_dialogVisible=!widget_dialogVisible" >组件</el-button>
-            <div style="display: inline-flex;width:40px"><el-select v-model="layout_mode" placeholder="请选择">
+            <div style="display: inline-flex;width:110px"><el-select v-model="layout_mode" placeholder="请选择">
                 <el-option label="设计显示页" value="show"></el-option>
                 <el-option label="设计隐藏页" value="hidden"></el-option>
               </el-select>
@@ -575,6 +575,7 @@ export default {
         children.forEach(ele=>{
           this.gridLayoutAddItem(ele,children.length==1?24:ele.span,10);//10 是新建报表时的缺省高度
         });
+        this.report.layout = JSON.stringify(this.widgetForm)
       }
       
     },
@@ -784,6 +785,8 @@ export default {
                   continue;              
                 if (cell.mc!=undefined && cell.v==undefined )
                   continue
+                let old_cell=curData[r-this.rangePaste_val.row][c-this.rangePaste_val.column]
+                cell.cr=JSON.parse(JSON.stringify(old_cell.cr))
                 _inner_add_del(cell,this.rangePaste_val)   
               }
             }
@@ -913,7 +916,7 @@ export default {
       this.save_layout(oldval)
       this.widgetForm=null
       this.$nextTick(function(){
-        if(newVal=="show"){
+        if(newVal=="show" && this.report.layout){
           this.widgetForm=JSON.parse(this.report.layout)
         }
         if(newVal=="hidden"){
