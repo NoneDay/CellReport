@@ -226,22 +226,33 @@ export default {
         })
         if(this.context.mode!='design'){
             let idx=0
+            let max_row_element=0
             this.layout.forEach(element => {
                 element.i=idx
                 idx=idx+1;
-                if(max_rows < element.y+element.h)
+                if(max_rows < element.y+element.h){
                     max_rows = element.y+element.h
+                    max_row_element=element
+                }
                 if(one_line_rows < element.h)
                     one_line_rows = element.h
             });
             //这时候当前组件还没高度，所以要间接计算。 没有-1 滚动条会闪烁 ，-1.5 倍是为了避免form 如果是多行，当前pane 会撑破页面
-            
-            _this.pan_height=_this.$parent.$el.clientHeight-1-(this.context.crisMobile?1:1)* _this.$parent.$el.children[0].clientHeight - 1 * _this.margin            
-            if(this.context.report_result?.defaultsetting?.layout_mode=='')//高度小于容器高度时自动撑满，大于时保持
-                _this.row_height=Math.max(
-                    isNaN(parseInt(defaultSetting('layout_row_height')))?30:parseInt(defaultSetting('layout_row_height')) 
-                    ,parseInt(_this.pan_height/(this.context.crisMobile?one_line_rows:max_rows))) -_this.margin            
-            
+            let {x,y,w,h}={...max_row_element}
+            _this.pan_height=_this.$parent.$el.clientHeight-1-(this.context.crisMobile?1:1)* _this.$parent.$el.children[0].clientHeight
+            let last_top =Math.round(_this.row_height * y + (y + 1) * _this.margin)
+            let last_height= h === Infinity ? h : Math.round(_this.row_height * h + Math.max(0, h - 1) * _this.margin)
+            if(last_top+last_height < _this.pan_height)
+            {
+                _this.row_height=Math.round((_this.pan_height - Math.max(0, h - 1) * _this.margin - (y + 1) * _this.margin)/(y+h))
+                console.info( _this.row_height)
+            }
+            //if(this.context.report_result?.defaultsetting?.layout_mode=='')//高度小于容器高度时自动撑满，大于时保持
+            //    _this.row_height=Math.max(
+            //        isNaN(parseInt(defaultSetting('layout_row_height')))?30:parseInt(defaultSetting('layout_row_height')) 
+            //        ,parseInt(_this.pan_height/(this.context.crisMobile?one_line_rows:max_rows))) -_this.margin            
+            //if(_this.row_height<10)
+            //    _this.row_height=isNaN(parseInt(defaultSetting('layout_row_height')))?30:parseInt(defaultSetting('layout_row_height'))
             setTimeout(() => {
                 _this.showGridLayout=true
             });

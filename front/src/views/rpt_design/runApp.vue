@@ -175,9 +175,20 @@ export default {
         this.reportName=cs.reportName
       }
       let _this=this
+      setInterval(function(){
+        if(_this.setTimeout_second==0){
+          if(typeof _this.setTimeout_function=="function")
+            _this.setTimeout_function(_this)
+        }
+        else
+          _this.setTimeout_second--
+        if(_this.setTimeout_second<0)
+          _this.setTimeout_second=-1
+      },1000)
       function inner_exec(){
         if(_this.reportName)
-          run_one(_this,_this.reportName,_this.queryPara)
+          _this.submit()
+          //run_one(_this,_this.reportName,_this.queryPara)
         else
           _this.$notify({title: '提示',message: '没有提供参数：reportName',type: 'error'});
       }
@@ -227,10 +238,15 @@ export default {
         fresh_ele:[],
         mobile_col_arr:[ ],
         mobile_col_button_arr:[ ],
+        setTimeout_function:function(){},
+        setTimeout_second:10,
+        setTimeout_exec_num:0,
         parentComponent: this,
         allElementSet:new Set(),//所有有ID名称的集合
         in_exec_url:{stat:false,run_url:""},
     }
+  },
+  watch:{
   },
   methods:{
     refresh_layout(ddd,_this){  
@@ -278,16 +294,7 @@ export default {
     dateToString:function(val){
       return dateToString(val)
     }, 
-    init(){
-        //this.queryPara=""
-        for(let k in this.queryForm)
-          delete this.queryForm[k]
-        for(let k in this.clickedEle)
-          delete this.clickedEle[k]
 
-        this.allElementSet.clear()
-        
-    },
     submit(){
       run_one(this,this.reportName,this.queryPara,this.queryForm)
     },

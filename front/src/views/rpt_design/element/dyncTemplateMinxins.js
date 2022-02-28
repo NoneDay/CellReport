@@ -91,7 +91,7 @@ export default (function(){ return {
                     return ret
                 }
             }
-            
+            return this.dataset('xxx')
           },
     },
     beforeDestroy(){

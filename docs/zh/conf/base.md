@@ -202,8 +202,8 @@ console.info(_this) //d打印_this的内容到控制台。这仅仅是测试，�
 - style 将是scoped的，style的处理是将每个css前动态加上 了id名称，所以对模板外的其他网页部分没有影响。
 - 为避免data、methods中的名字和系统内部定义的名字冲突，最好将data、methods中的名字加上一个固定前缀，如： my_ 。
 - export default  用return替代
-
-``` html
+- 如果设置依赖数据集名称（this.self.dataSource），this.cur_ds 表示的将是这个数据集对应的二维数组json，第一行是列名，其他行是数据
+``` vue
 <template>
 <div class="cr-data-box">
   <div class="item"  @click="my_sayHi2">
@@ -212,18 +212,25 @@ console.info(_this) //d打印_this的内容到控制台。这仅仅是测试，�
     </div> 
     <div class="item-info">
         <span class="title" style="color: rgb(49, 180, 141);">12,332</span>
-        <div class="info">{{my_test_computed}}错误日志{{my_t_data1 }}</div>
+        <div class="info">{{my_test_computed}}日志{{my_t_data1 }}</div>
     </div> 
   </div>
-</div> 
+</div>  
 </template>
-<script>
+<script>  
+    if( window.AVUE==undefined){ // 载入外部的css和js 
+       tool.load_css_file("cdn/avue/2.8.1/index.css")
+       tool.seriesLoadScripts("cdn/avue/2.8.1/avue.min.js",null,function(){
+           _this.refresh()
+           console.info("success")
+       })
+   }
    return {
-     data:{
+     data:{ 
        my_t_data1:'test_data1',
        my_t_data2:'test_data2',
        my_cnt:0,
-     },
+     }, 
      computed:{
        my_test_computed(){
         return this.my_t_data1+'_'+this.my_cnt 
@@ -233,10 +240,6 @@ console.info(_this) //d打印_this的内容到控制台。这仅仅是测试，�
          my_sayHi2() { 
             this.my_t_data1='test_'+this.my_cnt;
             this.my_cnt++
-        },
-         my_sayHi3() { 
-            //console.info(this.context.clickedEle['test'])
-            console.log("Hi3333"); 
         }
      }
    }
@@ -244,50 +247,6 @@ console.info(_this) //d打印_this的内容到控制台。这仅仅是测试，�
 <style>
 .cr-data-box{
   height: 100%;
-}
-.cr-data-box .item { 
-    position: relative;
-    margin: 0 auto 10px;
-    width: 96%;
-    display: flex;
-    height: 100%;
-    overflow: hidden;
-    border-radius: 5px;
-    box-sizing: border-box;
-    border: 1px solid gray
-}
-.cr-data-box .item-icon {
-    width: 100px;
-    height: 100%;
-    color: #fff;
-    text-align: center;
-    line-height: 100px;
-    align-items: center;
-    justify-content: center;
-    display: flex;
-}
-.cr-data-box .item-icon i {
-    font-size: 48px!important;
-}
-.cr-data-box .item-info {
-    border-radius: 0 5px 5px 0;
-    border: 1px solid #eee;
-    border-left: none;
-    background-color: #fff;
-    flex: 1;
-    display: flex;
-    justify-content: center;
-    flex-direction: column;
-}
-.cr-data-box .item-info .title {
-    font-size: 30px;
-    line-height: 40px;
-    text-align: center;
-}
-.cr-data-box .item-info .info {
-    color: #999;
-    font-size: 14px; 
-    text-align: center;
 }
 </style>
 ```

@@ -279,7 +279,14 @@ export function run_one(_this,reportFilePath,query,query_data={},_param_name=nul
       data
       ,withCredentials: true
     }).then(response_data => {
-        _this.init()
+        if(_this.reportName!=reportFilePath){
+            for(let k in _this.queryForm)
+                delete _this.queryForm[k]
+            for(let k in _this.clickedEle)
+                delete _this.clickedEle[k]
+            _this.allElementSet.clear()
+        }
+        delete _this.queryForm._fresh_ds
         _this.executed =true
         if(response_data.errcode && response_data.errcode ==1){
         _this.$notify({title: '提示',message: response_data.message,duration: 0});
@@ -313,6 +320,7 @@ export function run_one(_this,reportFilePath,query,query_data={},_param_name=nul
         }
         _this.last_js_cript=load_css_js(_this.result.footer2,"report_back_css")
         eval("(function(){\n"+_this.last_js_cript+"\n})()")
+        _this.setTimeout_function=eval("(function(){\n return "+_this.setTimeout_function.toString()+"\n})()")
         if(_fresh_ds){
             loading.hide(loading_conf)
             return  
