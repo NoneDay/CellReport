@@ -73,9 +73,77 @@ function before_exec(){
 - **如果报表需要缓存，将根据fresh_flag标记报表的基础数据是否改变，从而决定报表是否重新计算**
 - tips 是可以被前台接收到的额外提示信息。根据喜好设置内容
 :::
+## 如何在后台脚本中取当前请求中的参数
 
+后台脚本中取当前请求中的参数,可以方便报表系统和已有poral 门户 的集成 。
+通过nginx反向代理后，在客户的浏览器中，看到的就是同一个网址了，这时候通过类似下面的取数，就可以去到portal 中存的用户信息
 
+``` js
+ __page__.Cookies["access_token"]; //返回字符串
+ __page__.Headers["host"].ToString(); //Headers中取值，一定要加上ToString转换，因为Headers["host"]存的是一个列表
+ __page__.Form["branch_no"]; //返回字符串
+ __page__.Query["reportName"].ToString() //类似Headers
 
+__env__.logger.Info( __page__.Cookies["access_token"] );//- 打印日志
+```
+## nginx 配置样例
+
+``` 
+
+worker_processes  1;
+
+events {
+    worker_connections  1024;
+}
+
+http {
+    include       mime.types;
+    default_type  application/octet-stream;
+
+    sendfile        on;
+
+    #gzip  on;
+    upstream report{
+        hash $remote_addr consistent;
+        server 127.0.0.1:5300 max_fails=0 weight=1;
+        #server 127.0.0.1:8080 max_fails=0 weight=1;
+    }
+    server {
+        listen       80;
+        server_name  localhost;
+
+        location / {
+            root   html;
+            index  index.html index.htm;
+        }
+
+        location  /report5/ {             
+            proxy_pass     http://report/;
+            client_max_body_size    100m;
+            proxy_set_header Upgrade $http_upgrade;
+            proxy_set_header Connection "upgrade";
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            #if ( !-e $request_filename) {
+            #   proxy_pass     http://report/;        
+            #}
+        }
+        location ~ /report5/(.*\.)(js|css|png|map|svg|woff|jpg|svg|gif|ico)$ {    
+            alias 'D:/publish_test3/wwwroot/$2$3';
+        } 
+        #error_page  404              /404.html;
+
+        # redirect server error pages to the static page /50x.html
+        #
+        error_page   500 502 503 504  /50x.html;
+        location = /50x.html {
+            root   html;
+        }
+    }
+}
+
+```
 ## 缺省参数的重置
 
 - 在《设置模板》中设置报表运行前的脚本（后端运行前脚本）添加代码：

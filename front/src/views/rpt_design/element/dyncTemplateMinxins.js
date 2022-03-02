@@ -14,7 +14,7 @@ export default (function(){ return {
         return ret
     },
     data: () => ({
-        parentCompent:{}, 
+        real_parentCompent:{}, 
         old_content:"",
         cut_script_css_content:"",
         t_vue_obj:{},
@@ -118,31 +118,34 @@ export default (function(){ return {
                 let tool=require('../utils/util.js')
                 let t_vue_obj=eval("(function(){\n"+script_txt+"\n})()")
                 this.t_vue_obj=t_vue_obj
-                this.parentCompent={
-                    _provided:_this._provided,
-                    $data:Object.assign({},_this.$data),
-                    $props :Object.assign({},_this.$props ),
-                    $options:{computed: Object.assign({},_this.$options.computed) ,
-                                methods:Object.assign({},_this.$options.methods),
-                                filters:Object.assign({},_this.$options.filters),
-                                components :Object.assign({},_this.$options.components ),
-                            watch:_this.$options.watch }
-                }
+
+                this.t_vue_obj=t_vue_obj
+                let t_parentCompent=this.parentCompent??{$data:{},$props:{},$options:{computed:{},methods:{},filters:{},components:{}},}
+                this.real_parentCompent={
+                        _provided:_this._provided,
+                        $data:Object.assign({},t_parentCompent.$data,_this.$data),
+                        $props :Object.assign({},t_parentCompent.$props,_this.$props ),
+                        $options:{computed: Object.assign({},t_parentCompent.$options.computed,_this.$options.computed) ,
+                                    methods:Object.assign({},t_parentCompent.$options.methods,_this.$options.methods),
+                                    filters:Object.assign({},t_parentCompent.$options.filters,_this.$options.filters),
+                                    components :Object.assign({},t_parentCompent.$options.components,_this.$options.components ),
+                                watch:_this.$options.watch }
+                    }
                 //for(let one in _this){
                 //    if("function"==getObjType(_this[one])){
-                //        _this.parentCompent.$options.methods[one]=_this[one]
+                //        _this.real_parentCompent.$options.methods[one]=_this[one]
                 //    }
                 //}
                 if(t_vue_obj?.methods)
-                    Object.assign(_this.parentCompent.$options.methods,t_vue_obj.methods)
+                    Object.assign(_this.real_parentCompent.$options.methods,t_vue_obj.methods)
                 if(t_vue_obj?.prop)
-                    Object.assign(_this.parentCompent.$props,t_vue_obj.prop)
+                    Object.assign(_this.real_parentCompent.$props,t_vue_obj.prop)
                 if(t_vue_obj?.data)
-                    Object.assign(_this.parentCompent.$data,t_vue_obj.data)                
+                    Object.assign(_this.real_parentCompent.$data,t_vue_obj.data)                
                 if(t_vue_obj?.computed )
-                    Object.assign(_this.parentCompent.$options.computed ,t_vue_obj.computed)
+                    Object.assign(_this.real_parentCompent.$options.computed ,t_vue_obj.computed)
                 if(t_vue_obj?.filters  )
-                    Object.assign(_this.parentCompent.$options.filters  ,t_vue_obj.filters )
+                    Object.assign(_this.real_parentCompent.$options.filters  ,t_vue_obj.filters )
 
                 if(style!=""){
                     insert_css_to_head(style,_this.id_name+"_css_"+_this.context.mode)

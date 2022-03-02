@@ -13,7 +13,7 @@
     </el-popover>
 
     <div ref="form" v-if="!crisMobile && isShow && result.defaultsetting['show_form']=='true'"> 
-      <dyncTemplate  :self="{type:'pc_form',content:result.pc_form,gridName:'pc_form'}"  v-if="result.pc_form">
+      <dyncTemplate :parentCompent="parentCompent" :self="{type:'pc_form',content:result.pc_form,gridName:'pc_form'}"  v-if="result.pc_form">
       </dyncTemplate>
       <el-form :inline="true" v-else label-position="right" label-width="80px" >
         <input hidden v-for="one in result.form.filter(x=>x.hide=='True')" :key="one.name" v-model="queryForm[one.name]"/>
@@ -63,7 +63,7 @@
       </el-form>
     </div>
     <div  ref="form" v-if=" crisMobile && isShow && result.defaultsetting['show_form']=='true'"> 
-      <dyncTemplate  :self="{type:'pc_form',content:result.mobile_form,gridName:'pc_form'}" v-if="result.mobile_form">
+      <dyncTemplate :parentCompent="parentCompent" :self="{type:'pc_form',content:result.mobile_form,gridName:'pc_form'}" v-if="result.mobile_form">
       </dyncTemplate>
       <form v-else > 
         <input hidden v-for="one in result.form.filter(x=>x.hide=='True')" :key="one.name" v-model="queryForm[one.name]"/>
@@ -146,7 +146,7 @@
 import widgetForm from './WidgetForm'
 import {dateToString} from './utils/resultGrid2HtmlTable.js'
 import {run_one} from "./api/report_api"
-import {convert_array_to_json,build_chart_data,arrayToTree,seriesLoadScripts,load_css_file } from "./utils/util"
+import {convert_array_to_json,build_chart_data,arrayToTree,seriesLoadScripts,load_css_file,numToString } from "./utils/util"
 import install_component from './install_component'
 import dyncTemplate from './element/dyncTemplate.vue'
 export default {
@@ -330,7 +330,7 @@ export default {
               return buf;
           }
       }
-      function _inner_exec(){
+      function xlsx_inner_exec(){
         const wb = XLSX.utils.book_new()
         
         let ws ,title,one_obj
@@ -387,12 +387,62 @@ export default {
         "这里是下载的文件名" + ".xlsx");
   
       }
-      seriesLoadScripts('cdn/xlsx/dist/xlsx.full.min.js',null,_inner_exec)
-      
+      async function exceljs_inner_exec(){
+        const wb = new ExcelJS.Workbook();
+        let ws ,title,one_obj
+        Object.keys( _this.result?.name_lable_map).forEach(one => {
+          
+            one_obj=_this.result?.name_lable_map[one]
+            if(one_obj.component=="luckySheetProxy"){
+              title=one_obj.label??one
+              let cur_table=_this.result.data[one]
+              if (cur_table.type== "common"){
+                let cut_last=false
+                
+                if(cur_table.optimize=true &&
+                  cur_table.columns.slice(-1)=="key")
+                cut_last=true;
+                //while(wb.SheetNames.includes(title)) //_worksheets[1].name
+                //  title=title+one_obj.gridName
+                ws =wb.addWorksheet(title);
+                let line_no=0
+                cur_table.tableData.forEach(one_line=>{                                    
+                  if(cut_last && cur_table.extend_lines[0]<=line_no && line_no<=cur_table.extend_lines[1] )
+                    ws.addRow(one_line.slice(0,-1))
+                  else
+                    ws.addRow(one_line)
+                  line_no++
+                })
+                
+                Object.keys( cur_table.config_merge).forEach(ele_m=>{
+                  let m=cur_table.config_merge[ele_m]
+                  ws.mergeCells(numToString(m.c+1) + (m.r+1)+":"+ numToString(m.c+m.cs)+ (m.r+m.rs));
+                })                
+              }
+              if (_this.result.data[one].type== "large"){
+                ws= XLSX.utils.aoa_to_sheet(_this.result.data[one].tableData)
+                let header_len=_this.result.data[one].tableData.length
+                XLSX.utils.sheet_add_json (ws,_this.result.data[one].data, { origin: { r: header_len, c: 0 }})
+                title=one_obj.label??one
+              }
+            }
+            if(ws==undefined)
+              return
+            //while(wb.SheetNames.includes(title))
+            //  title=title+one_obj.gridName
+            //XLSX.utils.book_append_sheet(wb, ws, title.replace(/[\\|/|?|*|\[|\]]/,'_'))
+            //ws=undefined
+        });
+        const buffer = await wb.xlsx.writeBuffer();
+        saveAs(new Blob([buffer], { type: "application/octet-stream"}), "这里是下载的文件名" + ".xlsx");
+      }
+      //seriesLoadScripts('cdn/xlsx/dist/xlsx.full.min.js',null,xlsx_inner_exec)
+      seriesLoadScripts('cdn/exceljs/exceljs.min.js',null,exceljs_inner_exec)
     }
     
   },
   computed: {
+    parentCompent(){ return this},
     crisMobile(){
         let flag = navigator.userAgent.match(/(phone|pad|pod|iPhone|iPod|ios|iPad|Android|Mobile|BlackBerry|IEMobile|MQQBrowser|JUC|Fennec|wOSBrowser|BrowserNG|WebOS|Symbian|Windows Phone)/i)
         // localStorage.setItem('isiphone',flag)

@@ -372,7 +372,7 @@ export default class ResultGrid2HtmlTable{
                 let one=this.abs_to_design[idx]
                 if(one.row[0]<=rowNo && rowNo<=one.row[1]
                     && one.col[0]<=colNo && colNo<=one.col[1]){
-                        return (this.loc_style[`${rowNo}_${colNo}_D`]??"")+ " " +(this.loc_style[one.cell+"_S"] ??"")
+                        return (this.loc_style[one.cell+"_S"] ??"") + " " +(this.loc_style[`${rowNo}_${colNo}_D`]??"")
                 }
             }
         }

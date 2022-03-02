@@ -26,7 +26,7 @@ footer: MIT Licensed | Copyright © 2022-present
 ### 需要安装的软件
 - 下载安装NETCORE6 SDK 或 RUNTIME.[Download .NET (Linux, macOS, and Windows)](https://dotnet.microsoft.com/download)
 - 下载安装redis（可选）。最好安装 [https://github.com/MicrosoftArchive/redis/releases](https://github.com/MicrosoftArchive/redis/releases)
-- [github下载release](https://github.com/NoneDay/CellReport/releases/download/1.0.2/cellreport.zip) 。
+- [github下载release](https://gitee.com/NoneDay/CellReport/releases/) 。
 
 
 ### 运行和配置
@@ -43,3 +43,7 @@ footer: MIT Licensed | Copyright © 2022-present
 ![](https://atts.w3cschool.cn/attachments/image/20211125/1637815124338385.png)
 
 配置完毕后，按F5 刷新页面，点报表目录，正常的话，这是应该能看到所有的测试报表了.
+
+### 捐赠名单
+庄鹏 70元
+补丁 66元
