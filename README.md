@@ -82,3 +82,9 @@ Database=dbname;Data Source=x.x.x.x;Port=3306;User Id=xxx;Password=****;Charset=
 ## 本软件使用到的的第三方软件，在此一并致谢
 前端： [luckysheet](https://github.com/mengshukeji/Luckysheet) ，vue ，element-ui, [avuejs](http://avuejs.com)
 后端: antlr3
+
+## 捐赠名单
+**感谢各位大佬支持！**
+
+庄鹏 70元
+补丁 66元
