@@ -146,7 +146,8 @@
 import widgetForm from './WidgetForm'
 import {dateToString} from './utils/resultGrid2HtmlTable.js'
 import {run_one} from "./api/report_api"
-import {convert_array_to_json,build_chart_data,arrayToTree,seriesLoadScripts,load_css_file,numToString } from "./utils/util"
+import {convert_array_to_json,build_chart_data,arrayToTree,
+getLuckyStyle,seriesLoadScripts,load_css_file,numToString } from "./utils/util"
 import install_component from './install_component'
 import dyncTemplate from './element/dyncTemplate.vue'
 export default {
@@ -387,6 +388,101 @@ export default {
         "这里是下载的文件名" + ".xlsx");
   
       }
+      function find_style(tbl,rowNo,colNo,cur_tbl_class_dict){        
+        for(let idx=0;idx<tbl.abs_to_design.length;idx++){
+            let one=tbl.abs_to_design[idx]
+            let cur_ret={}
+            if(one.row[0]<=rowNo && rowNo<=one.row[1] && one.col[0]<=colNo && colNo<=one.col[1]){
+                Object.assign(cur_ret,default_css,cur_tbl_class_dict[tbl.loc_style[one.cell+"_S"] ??""],cur_tbl_class_dict[tbl.loc_style[one.cell+"_D"] ??""]
+                )
+                return cur_ret
+            }
+        }        
+        return {}
+      }
+      var color_convert = require('onecolor');
+      let default_css
+      function parse_elelment(x_ele){
+        let ccc
+        let ret={'font':{},'alignment':{},'border':{},'fill':{}};
+        x_ele.split(";").forEach(element => {
+            if(element=="")
+              return
+            let one_pair=element.split(":")
+            switch(one_pair[0].trim()){
+              case "background-color":
+                ccc=color_convert(one_pair[1])
+                if(ccc)
+                  ret['fill']['fgColor']={argb:ccc.hex().substring(1)}
+                break
+              case "color":
+                ccc=color_convert(one_pair[1])
+                if(ccc)
+                  ret['font']['color']={argb:ccc.hex().substring(1)}
+                break
+              case "font-family":
+                  ret['font']['name']=one_pair[1]
+                break
+              case "FONT-SIZE":
+                  ret['font']['size']=one_pair[1].substring(0,one_pair[1].length-2)
+                break
+              case "font-weight":
+                if(one_pair[1].trim()=='bold') ret['font']['bold']=true
+                break
+              case "text-align":
+                if(one_pair[1].trim()!='')ret['alignment']['horizontal']=one_pair[1].trim()
+                break
+              case "vertical-align":
+                  if(one_pair[1].trim()!='')ret['alignment']['vertical']=one_pair[1].trim()
+                break
+              case "BORDER-LEFT":
+                ccc=getLuckyStyle(one_pair[1])
+                ret['border']['left']={style:ccc[2], color: {argb: color_convert(ccc[1]).hex()}}
+                break
+              case "BORDER-RIGHT":
+                ccc=getLuckyStyle(one_pair[1])
+                ret['border']['right']={style:ccc[2], color: {argb: color_convert(ccc[1]).hex()}}
+                break
+              case "BORDER-BOTTOM":
+                ccc=getLuckyStyle(one_pair[1])
+                ret['border']['bottom']={style:ccc[2], color: {argb: color_convert(ccc[1]).hex()}}
+                break
+              case "BORDER-TOP":
+                ccc=getLuckyStyle(one_pair[1])
+                ret['border']['top']={style:ccc[2], color: {argb: color_convert(ccc[1]).hex()}}
+                break
+                
+            }
+          });
+          ['font','alignment','border','fill'].forEach(x=>{
+            if(JSON.stringify(ret[x])=="{}")
+              delete ret[x]
+          })
+          if(ret['fill']){
+            ret['fill']['type']='pattern'
+            ret['fill']['pattern']='solid'
+          }
+        
+          return ret;
+      }
+      function parse_class(tbl){
+        let cur_tbl_class_dict={'':{}}
+        default_css=parse_elelment(tbl.reportDefaultCss) 
+        
+        //tbl.reportDefaultCss.split()
+         //"background-color:#FFF; color:#000; font-family:微软雅黑; text-align:; FONT-SIZE:11pt; "
+        Object.entries(tbl.styles).forEach(element=>{
+          let ret=parse_elelment(element[1]) ;  
+          ['font','alignment','border','fill'].forEach(prop=>{
+              if(ret[prop]){
+                ret[prop]=Object.assign({},default_css[prop],ret[prop])
+              }
+          })  
+          cur_tbl_class_dict[element[0].trim()]=ret
+                        
+        })
+        return cur_tbl_class_dict
+      }
       async function exceljs_inner_exec(){
         const wb = new ExcelJS.Workbook();
         let ws ,title,one_obj
@@ -396,6 +492,7 @@ export default {
             if(one_obj.component=="luckySheetProxy"){
               title=one_obj.label??one
               let cur_table=_this.result.data[one]
+              let cur_tbl_class_dict=parse_class(cur_table)
               if (cur_table.type== "common"){
                 let cut_last=false
                 
@@ -406,14 +503,25 @@ export default {
                 //  title=title+one_obj.gridName
                 ws =wb.addWorksheet(title);
                 let line_no=0
+                let column_nums=Object.keys( cur_table.columnlenArr).length
                 cur_table.tableData.forEach(one_line=>{                                    
-                  if(cut_last && cur_table.extend_lines[0]<=line_no && line_no<=cur_table.extend_lines[1] )
-                    ws.addRow(one_line.slice(0,-1))
-                  else
-                    ws.addRow(one_line)
+                  ws.addRow(one_line.slice(0,column_nums))
+                  let col_no=0
+                  one_line.forEach(one_cell => {
+                    if(col_no>=column_nums)
+                      return
+                    let ret=find_style(cur_table,line_no,col_no,cur_tbl_class_dict)
+                    let name=numToString(col_no+1)+(line_no+1)
+                    let cur_cell=ws.getCell(name);
+                    ['font','alignment','border','fill'].forEach(p=>{
+                      if(ret[p]){
+                        cur_cell[p]=ret[p]
+                      }
+                    })
+                    col_no++
+                  });
                   line_no++
-                })
-                
+                })                
                 Object.keys( cur_table.config_merge).forEach(ele_m=>{
                   let m=cur_table.config_merge[ele_m]
                   ws.mergeCells(numToString(m.c+1) + (m.r+1)+":"+ numToString(m.c+m.cs)+ (m.r+m.rs));

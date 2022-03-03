@@ -414,11 +414,11 @@ export function getRangeByText(txt){
     else
       return {r:ret[0].r,c:ret[0].c  , rs:ret[1].r-ret[0].r+1,cs:ret[1].c- ret[0].c+1 }
 }
-function getLuckyStyle(border){
+export function getLuckyStyle(border){
     if(!border)
         return;
-    let size="0.5pt"
-    let line_type="solid"
+    let size=""
+    let line_type=""
     let _color="black"
     border.replace(";","").split(" ").forEach(x=>{
         if(x.includes("px") || x.includes("pt")){
@@ -426,8 +426,7 @@ function getLuckyStyle(border){
             size="Thick";
             else if(x=="1pt")
             size="Medium";
-            else 
-            size="";
+
         }
         else if(x.indexOf("#")>=0 || x.indexOf("rgb")>=0){
             _color=x;
@@ -442,9 +441,6 @@ function getLuckyStyle(border){
         }
         else if(x.indexOf("Dashed") > -1){
             line_type = "Dashed";
-        }
-        else{
-            line_type = "";
         }
     })
     
@@ -464,7 +460,10 @@ function getLuckyStyle(border){
         "SlantedDashDot" : "12",
         "Thick" : "13",
     };
-    return [borderType[size+line_type]??'0',_color??"#000"]    
+    
+    let t_type=size+line_type
+    if(t_type=="")t_type="thin"
+    return [borderType[t_type]??'0',_color??"#000",t_type==""?"":(t_type[0].toLowerCase()+t_type.substring(1))]
 }
 function getHtmlBorderStyle(type, _color){
     let style = "";

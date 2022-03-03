@@ -362,7 +362,7 @@ export function run_one(_this,reportFilePath,query,query_data={},_param_name=nul
                     }
                 }
             }
-            let col_vaild=true
+            let col_vaild=(all_t_arr.length>0)
             for(let idx=all_t_arr.length-1;idx>0;idx--) {
                 if(idx==0)
                 break
@@ -386,7 +386,7 @@ export function run_one(_this,reportFilePath,query,query_data={},_param_name=nul
                 if(col_vaild==false)
                     break
             }
-            if(col_vaild){
+            if(col_vaild ){
                 _this.mobile_col_arr=all_t_arr[0]
                 _this.mobile_col_button_arr=[ {selected:0,arr:_this.mobile_col_arr}]  
                 for(let idx=0;;idx++){
