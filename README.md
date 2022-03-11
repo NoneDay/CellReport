@@ -88,3 +88,4 @@ Database=dbname;Data Source=x.x.x.x;Port=3306;User Id=xxx;Password=****;Charset=
 
 庄鹏 70元
 补丁 66元
+C罗  66.6元

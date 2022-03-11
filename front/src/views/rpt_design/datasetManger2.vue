@@ -144,7 +144,7 @@
                             && dataLengthList(x._name).length>1) )|| x._type=='cr')" 
                         :key="ds._name+index" :label="ds._name" :value="ds._name"></el-option>
                     <el-option  v-for="(ds,index) in all_dataSet.filter(x=> 
-                            ['api'].includes(x._type) && JSON.parse(x._path_list).length>1)" 
+                            ['api'].includes(x._type) && x._path_list && JSON.parse(x._path_list).length>1)" 
                         :key="ds._name+index" :label="ds._name" :value="ds._name"></el-option>
                     
                 </el-select> 
@@ -369,6 +369,7 @@ export default {
                 _this.$set(this,'action_target',{})                
                  
                     _this.$set(this,'action_target',old)
+                    _this.action_target._fields=JSON.stringify(response.dataSet[_this.action_target._name][0][0])
                     _this.$message({showClose: true,message: "取数成功",type: 'success',duration: 3000});   
             })
             .catch(error=> { 
@@ -489,11 +490,12 @@ export default {
                 }
 
                 _this.$set(this.action_target,"report_result",result)
-                this.action_target._path_list=JSON.stringify(path_list)
+                _this.action_target._path_list=JSON.stringify(path_list)
                 _this.$set(this.action_target,"get",path_list[0])
 
             }).catch(error=> { 
-                this.$message.error(JSON.stringify(error.response_data));
+                _this.$notify({title: '提示',message: error.message,type: 'error',duration:0});
+                //this.$message.error(JSON.stringify(error.response_data));
             })
         },
         print_json(){

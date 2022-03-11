@@ -191,8 +191,8 @@ export default {
           _this.fresh_ele.splice(0)
           if(_this.context.report_result.dataSet==undefined)
             _this.context.report_result.dataSet={}
-          Object.keys(_this.context.report_result.dataSet).forEach(name => {
-            _this.context.report_result.dataSet[name] =_this.context.report_result.dataSet[name]  
+          Object.keys(response.dataSet).forEach(name => {
+            _this.context.report_result.dataSet[name] =response.dataSet[name]  
             _this.fresh_ele.push("数据集:"+name);
           });
           Object.keys(response.data).forEach(name => {

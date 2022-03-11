@@ -1,5 +1,24 @@
 <template>
   <div id="report_app"> 
+    <el-dialog v-draggable v-if="pdf_output_dialogVisible" style="text-align: left;" class="report_define"
+        :visible.sync="pdf_output_dialogVisible" :title="'PDF导出和打印预览'" 
+            :close-on-click-modal="false"   :fullscreen="true"
+              direction="btt" append-to-body  
+        > 
+        <div slot="title" class="dialog-footer">
+          PDF导出和打印预览
+          <el-button @click="pdf_output_dialogVisible = false">取 消</el-button>
+          <el-button type="primary" @click="pdf_output_dialogVisible = false">确 定</el-button>
+        </div>
+         <div id="wrapper" class="pure-u-1 pure-u-md-4-5" style="height: 100%;width: 100%;">
+            <!--<iframe id="output"></iframe>-->
+            <object id="pdf_output" type="application/pdf" style="height: 100%;width: 100%;">
+                <p>It appears you don't have PDF support in this web browser. <a href="#" id="download-link">Click here to download the PDF</a>.</p>
+            </object>
+        </div>
+
+    </el-dialog> 
+   
     <el-popover v-if="false && !crisMobile && isShow" style='position: fixed;z-index: 5;right: 40px;top: 100px;'
       placement="top-start" title="标题" width="200" trigger="hover" >
       <el-button slot="reference" style="background-color: rgb(229 200 200);width: 40px;height: 40px;
@@ -59,6 +78,7 @@
             <el-form-item style="text-align: center;width: 264px;">
             <el-button type="primary" class='form_query_button' @click="submit">查询</el-button>
             <el-button type="primary" class='form_query_button' @click="export_excel">导出excel</el-button>
+            <el-button type="primary" class='form_query_button' @click="export_pdf">PDF预览</el-button>
           </el-form-item>
       </el-form>
     </div>
@@ -145,11 +165,11 @@
 <script>
 import widgetForm from './WidgetForm'
 import {dateToString} from './utils/resultGrid2HtmlTable.js'
-import {run_one} from "./api/report_api"
-import {convert_array_to_json,build_chart_data,arrayToTree,
-getLuckyStyle,seriesLoadScripts,load_css_file,numToString } from "./utils/util"
+import {run_one,get_pdf} from "./api/report_api"
+import {convert_array_to_json,arrayToTree,seriesLoadScripts,load_css_file } from "./utils/util"
 import install_component from './install_component'
 import dyncTemplate from './element/dyncTemplate.vue'
+import {exceljs_inner_exec} from './utils/export_excel.js'
 export default {
   name: 'App', //CellReportFormDesign
   components:{dyncTemplate,widgetForm},
@@ -245,6 +265,7 @@ export default {
         parentComponent: this,
         allElementSet:new Set(),//所有有ID名称的集合
         in_exec_url:{stat:false,run_url:""},
+        pdf_output_dialogVisible:false,
     }
   },
   watch:{
@@ -308,246 +329,23 @@ export default {
       }
     },
     export_excel(){
-      let _this=this
-      //如果使用 FileSaver.js 就不要同时使用以下函数
-      function saveAs(obj, fileName) {//当然可以自定义简单的下载文件实现方式 
-          var tmpa = document.createElement("a");
-          tmpa.download = fileName || "下载";
-          tmpa.href = URL.createObjectURL(obj); //绑定a标签
-          tmpa.click(); //模拟点击实现下载
-          setTimeout(function () { //延时释放
-              URL.revokeObjectURL(obj); //用URL.revokeObjectURL()来释放这个object URL
-          }, 100);
-      }
-      function s2ab(s) {
-          if (typeof ArrayBuffer !== 'undefined') {
-              var buf = new ArrayBuffer(s.length);
-              var view = new Uint8Array(buf);
-              for (var i = 0; i != s.length; ++i) view[i] = s.charCodeAt(i) & 0xFF;
-              return buf;
-          } else {
-              var buf = new Array(s.length);
-              for (var i = 0; i != s.length; ++i) buf[i] = s.charCodeAt(i) & 0xFF;
-              return buf;
-          }
-      }
-      function xlsx_inner_exec(){
-        const wb = XLSX.utils.book_new()
-        
-        let ws ,title,one_obj
-        Object.keys( _this.result?.name_lable_map).forEach(one => {
-            one_obj=_this.result?.name_lable_map[one]
-            if(one_obj.component=="ele-grid"){
-              let {__valid_data__,valid_fileds,real_data}=build_chart_data(one_obj.datasource,{report_result:_this.result,clickedEle:_this.clickedEle,
-                  allElementSet:_this.allElementSet,},one_obj.fields)
-              //let tableData = convert_array_to_json(__valid_data__)
-              ws= XLSX.utils.aoa_to_sheet(__valid_data__)
-              Object.entries(ws).forEach(([k,cell])=>{
-                if(k=="!ref")
-                  return
-                cell.s = {									//为某个单元格设置单独样式
-                  font: {
-                    name: '宋体',
-                    sz: 24,
-                    bold: true,
-                    color: { rgb: "red" }
-                  },
-                  alignment: { horizontal: "center", vertical: "center", wrap_text: true },
-                  fill: { bgcolor: { rgb: 'ffff00' } }
-                }
-              })
-              title=one_obj.label??one
-            }
-            else if(one_obj.component=="luckySheetProxy"){
-              if (_this.result.data[one].type== "common"){
-                ws= XLSX.utils.aoa_to_sheet(_this.result.data[one].tableData)
-                ws['!merges']=[]
-                Object.keys( _this.result.data[one].config_merge).forEach(ele_m=>{
-                  let m=_this.result.data[one].config_merge[ele_m]
-                  ws['!merges'].push({s:{c:m.c,r:m.r},e:{c:m.c+m.cs-1,r:m.r+m.rs-1}})
-                                
-                })
-                title=one_obj.label??one
-              }
-              if (_this.result.data[one].type== "large"){
-                ws= XLSX.utils.aoa_to_sheet(_this.result.data[one].tableData)
-                let header_len=_this.result.data[one].tableData.length
-                XLSX.utils.sheet_add_json (ws,_this.result.data[one].data, { origin: { r: header_len, c: 0 }})
-                title=one_obj.label??one
-              }
-            }
-            if(ws==undefined)
-              return
-            while(wb.SheetNames.includes(title))
-              title=title+one_obj.gridName
-            XLSX.utils.book_append_sheet(wb, ws, title.replace(/[\\|/|?|*|\[|\]]/,'_'))
-            ws=undefined
-        });
-        const wopts = { bookType: 'xlsx', bookSST: true, type: 'binary' };//这里的数据是用来定义导出的格式类型 
-        saveAs(new Blob([s2ab(XLSX.write(wb, wopts))], { type: "application/octet-stream"}), 
-        "这里是下载的文件名" + ".xlsx");
-  
-      }
-      function find_style(tbl,rowNo,colNo,cur_tbl_class_dict){        
-        for(let idx=0;idx<tbl.abs_to_design.length;idx++){
-            let one=tbl.abs_to_design[idx]
-            let cur_ret={}
-            if(one.row[0]<=rowNo && rowNo<=one.row[1] && one.col[0]<=colNo && colNo<=one.col[1]){
-                Object.assign(cur_ret,default_css,cur_tbl_class_dict[tbl.loc_style[one.cell+"_S"] ??""],cur_tbl_class_dict[tbl.loc_style[one.cell+"_D"] ??""]
-                )
-                return cur_ret
-            }
-        }        
-        return {}
-      }
-      var color_convert = require('onecolor');
-      let default_css
-      function parse_elelment(x_ele){
-        let ccc
-        let ret={'font':{},'alignment':{},'border':{},'fill':{}};
-        x_ele.split(";").forEach(element => {
-            if(element=="")
-              return
-            let one_pair=element.split(":")
-            switch(one_pair[0].trim()){
-              case "background-color":
-                ccc=color_convert(one_pair[1])
-                if(ccc)
-                  ret['fill']['fgColor']={argb:ccc.hex().substring(1)}
-                break
-              case "color":
-                ccc=color_convert(one_pair[1])
-                if(ccc)
-                  ret['font']['color']={argb:ccc.hex().substring(1)}
-                break
-              case "font-family":
-                  ret['font']['name']=one_pair[1]
-                break
-              case "FONT-SIZE":
-                  ret['font']['size']=one_pair[1].substring(0,one_pair[1].length-2)
-                break
-              case "font-weight":
-                if(one_pair[1].trim()=='bold') ret['font']['bold']=true
-                break
-              case "text-align":
-                if(one_pair[1].trim()!='')ret['alignment']['horizontal']=one_pair[1].trim()
-                break
-              case "vertical-align":
-                  if(one_pair[1].trim()!='')ret['alignment']['vertical']=one_pair[1].trim()
-                break
-              case "BORDER-LEFT":
-                ccc=getLuckyStyle(one_pair[1])
-                ret['border']['left']={style:ccc[2], color: {argb: color_convert(ccc[1]).hex()}}
-                break
-              case "BORDER-RIGHT":
-                ccc=getLuckyStyle(one_pair[1])
-                ret['border']['right']={style:ccc[2], color: {argb: color_convert(ccc[1]).hex()}}
-                break
-              case "BORDER-BOTTOM":
-                ccc=getLuckyStyle(one_pair[1])
-                ret['border']['bottom']={style:ccc[2], color: {argb: color_convert(ccc[1]).hex()}}
-                break
-              case "BORDER-TOP":
-                ccc=getLuckyStyle(one_pair[1])
-                ret['border']['top']={style:ccc[2], color: {argb: color_convert(ccc[1]).hex()}}
-                break
-                
-            }
-          });
-          ['font','alignment','border','fill'].forEach(x=>{
-            if(JSON.stringify(ret[x])=="{}")
-              delete ret[x]
+       let _this=this
+       seriesLoadScripts('cdn/exceljs/exceljs.min.js',null,function (){
+          exceljs_inner_exec(_this.result)
           })
-          if(ret['fill']){
-            ret['fill']['type']='pattern'
-            ret['fill']['pattern']='solid'
-          }
+      
+    },
+    async export_pdf(){
+      let _this=this
+      let pdf_data=await get_pdf(this.result)
+       _this.pdf_output_dialogVisible=true
+       let datauri = URL.createObjectURL(pdf_data)
+      _this.$nextTick(()=>{
+        document.getElementById("pdf_output").data =datauri
+      })          
         
-          return ret;
-      }
-      function parse_class(tbl){
-        let cur_tbl_class_dict={'':{}}
-        default_css=parse_elelment(tbl.reportDefaultCss) 
-        
-        //tbl.reportDefaultCss.split()
-         //"background-color:#FFF; color:#000; font-family:微软雅黑; text-align:; FONT-SIZE:11pt; "
-        Object.entries(tbl.styles).forEach(element=>{
-          let ret=parse_elelment(element[1]) ;  
-          ['font','alignment','border','fill'].forEach(prop=>{
-              if(ret[prop]){
-                ret[prop]=Object.assign({},default_css[prop],ret[prop])
-              }
-          })  
-          cur_tbl_class_dict[element[0].trim()]=ret
-                        
-        })
-        return cur_tbl_class_dict
-      }
-      async function exceljs_inner_exec(){
-        const wb = new ExcelJS.Workbook();
-        let ws ,title,one_obj
-        Object.keys( _this.result?.name_lable_map).forEach(one => {
-          
-            one_obj=_this.result?.name_lable_map[one]
-            if(one_obj.component=="luckySheetProxy"){
-              title=one_obj.label??one
-              let cur_table=_this.result.data[one]
-              let cur_tbl_class_dict=parse_class(cur_table)
-              if (cur_table.type== "common"){
-                let cut_last=false
-                
-                if(cur_table.optimize=true &&
-                  cur_table.columns.slice(-1)=="key")
-                cut_last=true;
-                //while(wb.SheetNames.includes(title)) //_worksheets[1].name
-                //  title=title+one_obj.gridName
-                ws =wb.addWorksheet(title);
-                let line_no=0
-                let column_nums=Object.keys( cur_table.columnlenArr).length
-                cur_table.tableData.forEach(one_line=>{                                    
-                  ws.addRow(one_line.slice(0,column_nums))
-                  let col_no=0
-                  one_line.forEach(one_cell => {
-                    if(col_no>=column_nums)
-                      return
-                    let ret=find_style(cur_table,line_no,col_no,cur_tbl_class_dict)
-                    let name=numToString(col_no+1)+(line_no+1)
-                    let cur_cell=ws.getCell(name);
-                    ['font','alignment','border','fill'].forEach(p=>{
-                      if(ret[p]){
-                        cur_cell[p]=ret[p]
-                      }
-                    })
-                    col_no++
-                  });
-                  line_no++
-                })                
-                Object.keys( cur_table.config_merge).forEach(ele_m=>{
-                  let m=cur_table.config_merge[ele_m]
-                  ws.mergeCells(numToString(m.c+1) + (m.r+1)+":"+ numToString(m.c+m.cs)+ (m.r+m.rs));
-                })                
-              }
-              if (_this.result.data[one].type== "large"){
-                ws= XLSX.utils.aoa_to_sheet(_this.result.data[one].tableData)
-                let header_len=_this.result.data[one].tableData.length
-                XLSX.utils.sheet_add_json (ws,_this.result.data[one].data, { origin: { r: header_len, c: 0 }})
-                title=one_obj.label??one
-              }
-            }
-            if(ws==undefined)
-              return
-            //while(wb.SheetNames.includes(title))
-            //  title=title+one_obj.gridName
-            //XLSX.utils.book_append_sheet(wb, ws, title.replace(/[\\|/|?|*|\[|\]]/,'_'))
-            //ws=undefined
-        });
-        const buffer = await wb.xlsx.writeBuffer();
-        saveAs(new Blob([buffer], { type: "application/octet-stream"}), "这里是下载的文件名" + ".xlsx");
-      }
-      //seriesLoadScripts('cdn/xlsx/dist/xlsx.full.min.js',null,xlsx_inner_exec)
-      seriesLoadScripts('cdn/exceljs/exceljs.min.js',null,exceljs_inner_exec)
+
     }
-    
   },
   computed: {
     parentCompent(){ return this},
@@ -656,5 +454,18 @@ div::-webkit-scrollbar-track {
       display: flex;
       justify-content: center;
       align-items: center;
+    }
+    .report_define .el-dialog{
+      display: flex;
+      flex-direction: column;
+    }
+    .report_define .el-dialog .el-dialog__body{
+      flex: 1;
+    padding-bottom: 10px;
+    padding-top: 10px;
+    }    
+    .report_define .el-dialog .el-dialog__header{
+    padding-bottom: 0px;
+    padding-top: 10px;
     }
 </style>

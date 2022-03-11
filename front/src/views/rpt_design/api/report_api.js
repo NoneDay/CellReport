@@ -27,6 +27,26 @@ export function save_template(grpId,path,content) {
         withCredentials: true
   })
 }
+export function get_pdf(report_obj) {
+    let data=new FormData();
+    data.append('report_obj',JSON.stringify(report_obj))
+    let run_url
+    if(window.location.pathname.endsWith("run.html"))
+        run_url=`${baseUrl}/report5/pdf`
+    else
+        run_url=`${baseUrl}/pdf`
+    return request({
+        headers: {
+            'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+          },
+          responseType: 'blob',  //设置响应的数据类型为一个包含二进制数据的 Blob 对象，必须设置！！！
+        method: 'post',
+        data,
+        url: run_url,       
+        withCredentials: true,
+  })
+}
+
 
 export function open_one(reportName,zb_dict,zb_param) {
     let arr=reportName.split(":")
