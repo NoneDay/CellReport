@@ -28,7 +28,7 @@
     </el-button>
     </span>
     <div v-if="(self.show_title && self.label)"  class="cr_run_title">
-      <img :src="self.icon" style="width: 20px;height: 20px;vertical-align:middle;">
+      <img :src="self.icon" v-if="self.icon!=''" style="width: 20px;height: 20px;vertical-align:middle;">
       <span>  {{self.label}}</span>
     </div>
     <div :style="{width:'100%','flex-grow':1,height:`20px`}">

@@ -44,15 +44,35 @@ export default {
       __TABLEOBJ:undefined,
       scriptArr:[],pager_height:0,
       gridType:"common",
-      delayShowType:"none" // or block
+      delayShowType:"none", // or block
     }
   },
   computed:{
+    cur_grid(){
+      return this.context.report.AllGrids?.grid?.find(a=>a._name==this.gridName)
+    },
     datasource(){
       return "表格:"+this.gridName
     }
   },
+  
   watch: {
+    "self.page_sizes"(){
+      if(this.$refs.iframe){
+        let paperSetting=JSON.parse(this.cur_grid.paperSetting??
+        `{"pageSize_name":"A4",
+                "pageSize_Width":595,
+                "pageSize_Height":842,
+               "margin_top":36,
+                "margin_bottom":36,
+                "margin_left":36,
+                "margin_right":36}`
+        )
+
+        this.$refs.iframe?.contentWindow.jQuery("#luckysheet_paper_width").css('left',
+        `${paperSetting.pageSize_Width - paperSetting.margin_left - paperSetting.margin_right}pt`)
+      }
+    },
     cur_page(){
       this.grid_sort_action()
     },
@@ -337,7 +357,7 @@ export default {
               //<svg t="1610004191863" class="icon" viewBox="0 0 1000 1000" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="1103" width="200" height="200"><path d="M227.986 584.688l257.492 257.492c20.11 20.11 52.709 20.11 72.819 0l257.492-257.492c20.11-20.11 20.11-52.709 0-72.819s-52.709-20.11-72.819 0l-169.585 169.585v-493.664c0-28.453-23.046-51.499-51.499-51.499s-51.499 23.046-51.499 51.499v493.664l-169.585-169.585c-10.042-10.043-23.226-15.089-36.41-15.089s-26.367 5.021-36.41 15.089c-20.11 20.11-20.11 52.709 0 72.819z" p-id="1104" fill="#d81e06"></path></svg>
             }
         }
-        let sheet_data;
+        let sheet_data,cur_grid;
         if(_this.context.mode!='design'){
             this._window.selectChange=function(){ } 
             this._window.cellUpdateBefore=function(){ } 
@@ -347,7 +367,7 @@ export default {
                 sheet_data=JSON.stringify(resultGrid2LuckySheet( _this.gridName,  cur_grid))
         }
         else{
-          let cur_grid=_this.context.report.AllGrids?.grid?.find(a=>a._name==_this.gridName)
+          cur_grid=_this.context.report.AllGrids?.grid?.find(a=>a._name==_this.gridName)
           if(!cur_grid){
             cur_grid={}
             if(_this.gridName=="_random_"){
@@ -359,6 +379,14 @@ export default {
           //this._window.cur_grid=reportGrid2LuckySheet(cur_grid)
           sheet_data=JSON.stringify(designGrid2LuckySheet(cur_grid,_this.self,_this.context.report.defaultsetting))
         }
+        this.self.paperSetting=cur_grid.paperSetting??`{"pageSize_name":"A4",
+                "pageSize_Width":595,
+                "pageSize_Height":842,
+                "margin_top":36,
+                "margin_bottom":36,
+                "margin_left":36,
+                "margin_right":36}`
+        let paperSetting=JSON.parse(this.self.paperSetting)
         let append
         if(_this.context.mode!='design'){
             append= `rowHeaderWidth:0,columnHeaderHeight:0,showtoolbar:false,defaultTextColor: 'red',defaultCellColor: '#fff',`
@@ -460,6 +488,7 @@ export default {
                       },
                     ${append}
               })
+              $("#luckysheet-cell-main").append("<div id='luckysheet_paper_width' style='position: absolute;left: ${paperSetting.pageSize_Width-paperSetting.margin_left-paperSetting.margin_right}pt;top: 0;bottom: 0px;border: 1px solid gray;z-index: 100002;'></div>");
             }
             insertScript("cdn/luckysheet/plugins/js/plugin.js",function(){insertScript("cdn/luckysheet/luckysheet.umd.js",buildReport)})
           `

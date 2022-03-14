@@ -27,9 +27,10 @@ export function save_template(grpId,path,content) {
         withCredentials: true
   })
 }
-export function get_pdf(report_obj) {
+export function get_pdf(report_obj,paperSetting) {
     let data=new FormData();
     data.append('report_obj',JSON.stringify(report_obj))
+    data.append('paperSetting',JSON.stringify(paperSetting))
     let run_url
     if(window.location.pathname.endsWith("run.html"))
         run_url=`${baseUrl}/report5/pdf`

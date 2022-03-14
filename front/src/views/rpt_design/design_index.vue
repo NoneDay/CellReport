@@ -754,11 +754,63 @@ export default {
       
       this.setCellFromAPI = true;
       try{
-        
+        //删除被lucky添加的无用单元格
+        if("addRC"==val.type){
+          let ctrlValue=val.ctrlValue
+          //{"index": 8, "len": 1, "direction": "lefttop","rc": "c", "restore": false}
+          if(ctrlValue && ctrlValue.rc=='r'){
+            if(ctrlValue.direction=="lefttop"){
+              for(let row=ctrlValue.index ;row<ctrlValue.index  + ctrlValue.len;row++){
+                  for(let col=0  ;col<val.curData[row].length  ;col++){
+                      console.info(row,col)
+                      let cell=val.curData[row][col]
+                      if(cell.mc)
+                        continue
+                      else
+                        val.curData[row][col]=null
+                  }
+                }
+            }else{
+              for(let row=ctrlValue.index +1 ;row<=ctrlValue.index  + ctrlValue.len;row++){
+                  for(let col=0  ;col<val.curData[row].length  ;col++){
+                      console.info(row,col)
+                      let cell=val.curData[row][col]
+                      if(cell.mc)
+                        continue
+                      else
+                        val.curData[row][col]=null
+                  }
+                }
+            }
+          }
+          else if(ctrlValue && ctrlValue.rc=='c'){
+            if(ctrlValue.direction=="lefttop"){
+              for(let row=0;row<val.curData.length;row++){
+                  for(let col=ctrlValue.index  ;col<ctrlValue.index  + ctrlValue.len  ;col++){
+                      console.info(row,col)
+                      let cell=val.curData[row][col]
+                      if(cell.mc)
+                        continue
+                      else
+                        val.curData[row][col]=null
+                  }
+                }
+            }else{
+              for(let row=0;row<val.curData.length;row++){
+                  for(let col=ctrlValue.index+1  ;col<=ctrlValue.index  + ctrlValue.len  ;col++){
+                      console.info(row,col)
+                      let cell=val.curData[row][col]
+                      if(cell.mc)
+                        continue
+                      else
+                        val.curData[row][col]=null
+                  }
+                }
+            }
+          }
+        }
         
         if(["addRC","delRC"].includes( val.type)){
-           
-
           for(let row=0;row<val.curData.length;row++){
             for(let col=0;col<val.curData[row].length;col++){
               let cell=val.curData[row][col]

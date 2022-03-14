@@ -270,7 +270,7 @@ export default {
 .vue-grid-item:not(.vue-grid-placeholder) {
     background-color: ${_this.context.report_result.defaultsetting['BACKGROUND-COLOR']};
     color: ${_this.context.report_result.defaultsetting['COLOR']};
-    border: 1px solid ${_this.context.report_result.defaultsetting['COLOR']};
+    
     
 }
 .vue-grid-item>.vue-resizable-handle{
@@ -294,7 +294,7 @@ background:url("data:image/svg+xml;utf8,<svg t='1641536477492' class='icon' view
 .vue-grid-item:not(.vue-grid-placeholder) {
     background-color: ${_this.context.report.defaultsetting['BACKGROUND-COLOR']};
     color: ${_this.context.report.defaultsetting['COLOR']};
-    border: 1px solid ${_this.context.report.defaultsetting['COLOR']};
+   
     
 }
 .vue-grid-item>.vue-resizable-handle{

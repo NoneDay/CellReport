@@ -1,7 +1,26 @@
 <template>
   <div style="width:100%;height:100%;overflow: hidden; "  >
     
-  
+      <el-dialog v-draggable v-if="pdf_output_dialogVisible" style="text-align: left;" class="report_define"
+        :visible.sync="pdf_output_dialogVisible" :title="'PDF导出和打印预览'" 
+            :close-on-click-modal="false"   :fullscreen="true"
+              direction="btt" append-to-body  
+        > 
+        <div slot="title" class="dialog-footer">
+          PDF导出和打印预览
+          <el-button @click="paper_setting_dialogVisible = true">页面设置</el-button>
+          <el-button @click="pdf_output_dialogVisible = false">取 消</el-button>
+          <el-button type="primary" @click="pdf_output_dialogVisible = false">确 定</el-button>
+          <el-button type="primary" @click="pdf_print">打印</el-button>
+        </div>
+         <div id="pdf_wrapper" class="pure-u-1 pure-u-md-4-5" style="height: 100%;width: 100%;">
+            <iframe id="printIframe" style="display:none"></iframe>
+            <object id="pdf_output" type="application/pdf" style="height: 100%;width: 100%;">
+                <p>It appears you don't have PDF support in this web browser. <a href="#" id="download-link">Click here to download the PDF</a>.</p>
+            </object>
+        </div>
+
+    </el-dialog> 
     <div style="position: absolute;right:40px;top:10px;">
     <div v-if="!executed || showLog" style="display:inline-block;">  
       <div v-for="([key,val]) in Object.entries(ds_log)" :key="key" style="display:inline-block;padding-right:20px">
@@ -84,7 +103,8 @@
            </div>
             <el-form-item>
             <el-button type="primary"  class='form_query_button'  @click="submit">查询</el-button>
-            
+            <el-button type="primary" class='form_query_button' @click="export_excel">导出excel</el-button>
+            <el-button type="primary" class='form_query_button' @click="export_pdf">PDF预览</el-button>
           </el-form-item>
       </el-form>
     </div>
@@ -103,8 +123,8 @@
 <script>
 import widgetForm from './WidgetForm'
 import {convert_array_to_json,arrayToTree} from './utils/util.js'
-import {preview_one} from "./api/report_api"
-
+import {preview_one,get_pdf} from "./api/report_api"
+import {exceljs_inner_exec} from './utils/export_excel.js'
 export default {
     name: 'preview',  
     props:["grpId"],
@@ -135,6 +155,7 @@ export default {
   },  
   data () {
     return {
+        pdf_output_dialogVisible:false,
         preview_dialogVisible:false,
         previewFormParam:{},
         queryForm:{},
@@ -226,6 +247,22 @@ export default {
     tag_click(key,val){
       console.info(val.color); 
       this.show_type=key
+    },
+    export_excel(){
+       let _this=this
+       seriesLoadScripts('cdn/exceljs/exceljs.min.js',null,function (){
+          exceljs_inner_exec(_this.result)
+          })
+      
+    },
+    async export_pdf(){
+      let _this=this
+      let pdf_data=await get_pdf(this.result)
+       _this.pdf_output_dialogVisible=true
+       let datauri = URL.createObjectURL(pdf_data)
+      _this.$nextTick(()=>{
+        document.getElementById("pdf_output").data =datauri
+      }) 
     }
   },   
   destroyed(){

@@ -145,15 +145,38 @@ http {
 
 ```
 ## 缺省参数的重置
+报表参数的设置过程：
+报表设计时的缺省参数--->resetDefaultParam----->用户传过来的参数----->lastSetParam
 
 - 在《设置模板》中设置报表运行前的脚本（后端运行前脚本）添加代码：
  
 ~~~js
 function resetDefaultParam(name){
-	if(name=='branch_no')//如果参数名是branch_no ，那么缺省参数就是改wei xxxxx
+	if(name=='branch_no')//如果参数名是branch_no ，那么缺省参数就是改为 xxxxx
 		return 'xxxxx';
 }
 ~~~
+
+## 参数的最终重置
+
+~~~js
+function lastSetParam(name){
+	if(name=='branch_no')//如果参数名是branch_no ，那么最终参数就是改为 xxxxx,不管用户输入的是什么，都改
+		return 'xxxxx';
+}
+~~~
+
+## 定时刷新
+点报表设置，选 前端页面css和js脚本 ，添加内容，：
+
+<script>
+  _this.setTimeout_second=10
+  _this.setTimeout_function=function(p_this){
+       //p_this.queryForm._fresh_ds=JSON.stringify(['数据集:累计']) //只刷新: 数据集:累计，前面的数据集冒号不能省略
+       p_this.submit()
+      console.info("xxx")
+ }
+</script>
 
 ## 前端隔行变色和条件颜色的配置
 

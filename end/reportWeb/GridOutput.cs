@@ -174,6 +174,12 @@ namespace CellReport
                     default_value=lastSetParam(param_name);
                     this.addParam(param_name, default_value);
                 }
+                if (exprfaced.getVariableDefine("lastSetParam") != null)
+                {
+                    var t_val = exprfaced.calculate($"=lastSetParam('{param_name}')", reportDefine.getEnv().getDataSetResultMap())?.ToString();
+                    if (t_val != null)
+                        this.addParam(param_name, t_val);
+                }
                 //if (exprfaced.getVariableDefine("lastSetParam") != null)
                 //{
                 //    default_value = exprfaced.calculate($"=lastSetParam('{param_name}','{default_value}')")?.ToString();

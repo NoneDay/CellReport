@@ -7,18 +7,24 @@
         > 
         <div slot="title" class="dialog-footer">
           PDF导出和打印预览
+          <el-button @click="paper_setting_dialogVisible = true">页面设置</el-button>
           <el-button @click="pdf_output_dialogVisible = false">取 消</el-button>
           <el-button type="primary" @click="pdf_output_dialogVisible = false">确 定</el-button>
+          <el-button type="primary" @click="pdf_print">打印</el-button>
         </div>
-         <div id="wrapper" class="pure-u-1 pure-u-md-4-5" style="height: 100%;width: 100%;">
-            <!--<iframe id="output"></iframe>-->
+         <div id="pdf_wrapper" class="pure-u-1 pure-u-md-4-5" style="height: 100%;width: 100%;">
+            <iframe id="printIframe" style="display:none"></iframe>
             <object id="pdf_output" type="application/pdf" style="height: 100%;width: 100%;">
                 <p>It appears you don't have PDF support in this web browser. <a href="#" id="download-link">Click here to download the PDF</a>.</p>
             </object>
         </div>
 
     </el-dialog> 
-   
+
+    <paperSetting :target_obj="paperSetting" @submit="paperSetting_submit"
+    :visible.sync="paper_setting_dialogVisible" />
+        
+    
     <el-popover v-if="false && !crisMobile && isShow" style='position: fixed;z-index: 5;right: 40px;top: 100px;'
       placement="top-start" title="标题" width="200" trigger="hover" >
       <el-button slot="reference" style="background-color: rgb(229 200 200);width: 40px;height: 40px;
@@ -75,19 +81,22 @@
           </el-form-item>
           
            </div>
-            <el-form-item style="text-align: center;width: 264px;">
+            <el-form-item style="text-align: center;">
             <el-button type="primary" class='form_query_button' @click="submit">查询</el-button>
             <el-button type="primary" class='form_query_button' @click="export_excel">导出excel</el-button>
             <el-button type="primary" class='form_query_button' @click="export_pdf">PDF预览</el-button>
+            <el-button type="primary" class='form_query_button' @click="pdf_print">打印</el-button>
           </el-form-item>
       </el-form>
     </div>
     <div  ref="form" v-if=" crisMobile && isShow && result.defaultsetting['show_form']=='true'"> 
       <dyncTemplate :parentCompent="parentCompent" :self="{type:'pc_form',content:result.mobile_form,gridName:'pc_form'}" v-if="result.mobile_form">
       </dyncTemplate>
-      <form v-else > 
+      <form v-else >  <!--img/battle_2021.jpg-->
         <input hidden v-for="one in result.form.filter(x=>x.hide=='True')" :key="one.name" v-model="queryForm[one.name]"/>
-        <img src="img/battle_2021.jpg" style="height: 80px;width: 100%;" v-if="result.form.filter(x=>x.hide=='False').length<=1">
+        <img :src="mobile_img_for_less_one_param" style="height: 80px;width: 100%;" 
+        v-if="result.zb_var.mobile_img_for_less_one_param && result.form.filter(x=>x.hide=='False').length<=1">
+        
         <div v-for="one in result.form.filter(x=>x.hide=='False')" :key="one.name">
           
           <nut-textinput v-if="one.data_type=='string' && one.tagValueList.length==0" :label="one.prompt"
@@ -169,10 +178,11 @@ import {run_one,get_pdf} from "./api/report_api"
 import {convert_array_to_json,arrayToTree,seriesLoadScripts,load_css_file } from "./utils/util"
 import install_component from './install_component'
 import dyncTemplate from './element/dyncTemplate.vue'
+import paperSetting  from './paperSetting.vue'
 import {exceljs_inner_exec} from './utils/export_excel.js'
 export default {
   name: 'App', //CellReportFormDesign
-  components:{dyncTemplate,widgetForm},
+  components:{dyncTemplate,widgetForm,paperSetting},
   mounted(){    
     let _this=this
     window.onresize=this.refresh_layout
@@ -266,11 +276,27 @@ export default {
         allElementSet:new Set(),//所有有ID名称的集合
         in_exec_url:{stat:false,run_url:""},
         pdf_output_dialogVisible:false,
+        paper_setting_dialogVisible:false,
+        paperSetting:{pageSize_name:'A5'}
     }
   },
   watch:{
   },
   methods:{
+    pdf_print(){
+      let iframe_print=document.getElementById("printIframe");
+      iframe_print.setAttribute("src",document.getElementById("pdf_output").data)
+      //兼容谷歌，不兼容ie8，效果可以自己试下（谷歌浏览器推荐使用这种，效果会比较好）
+      setTimeout(() => {
+        $("#printIframe")[0].contentWindow.print(); 
+      },500);
+      
+    },
+    async paperSetting_submit(val){
+      let pdf_data=await get_pdf(this.result,val)
+      let datauri = URL.createObjectURL(pdf_data)
+      document.getElementById("pdf_output").data =datauri
+    },
     refresh_layout(ddd,_this){  
       if(_this==undefined)
         _this=this

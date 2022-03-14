@@ -24,6 +24,13 @@
         <el-checkbox v-model="cur_grid._is_large" true-label="1" false-label="0" label="is_large" border></el-checkbox>
     </el-form-item> 
     
+    
+      <el-button type='primary' @click="paper_setting_dialogVisible = true">打印设置</el-button>
+
+        <paperSetting :target_obj="paperSetting" @submit="paperSetting_submit"
+    :visible.sync="paper_setting_dialogVisible" />
+    
+    
       <cr_set_fresh :data="data" />
 
   </div>
@@ -31,13 +38,30 @@
 
 <script>
 import cr_set_fresh from "./cr_set_fresh.vue"
+import paperSetting  from '../paperSetting.vue'
 export default {
     name: 'config-report',
-    components: {cr_set_fresh},
+    components: {cr_set_fresh,paperSetting},
     inject: ["context"],
     props: ['data'],
+    data(){
+      return {
+        paper_setting_dialogVisible:false
+      }
+    },
+    methods:{
+      paperSetting_submit(val){
+        this.cur_grid.paperSetting=JSON.stringify(val)
+        let aaa=this.data.page_sizes
+        this.data.page_sizes="[]"
+        this.$nextTick(()=>this.data.page_sizes=aaa)        
+      }
+    },
     computed:{
-        cur_grid(){
+      paperSetting(){
+        return JSON.parse(this.cur_grid.paperSetting??"{}")
+      },
+      cur_grid(){
             let ret= this.context.report.AllGrids.grid.find(x=>x._name==this.data.gridName)
             if(ret._is_large==undefined){
               if(ret._idField!=undefined)
