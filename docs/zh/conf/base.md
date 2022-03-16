@@ -166,18 +166,6 @@ function lastSetParam(name){
 }
 ~~~
 
-## 定时刷新
-点报表设置，选 前端页面css和js脚本 ，添加内容，：
-
-<script>
-  _this.setTimeout_second=10
-  _this.setTimeout_function=function(p_this){
-       //p_this.queryForm._fresh_ds=JSON.stringify(['数据集:累计']) //只刷新: 数据集:累计，前面的数据集冒号不能省略
-       p_this.submit()
-      console.info("xxx")
- }
-</script>
-
 ## 前端隔行变色和条件颜色的配置
 
 全局缺省配置，在安装目录的template.xml的footer2中。可以视情况修改
@@ -286,6 +274,18 @@ console.info(_this) //d打印_this的内容到控制台。这仅仅是测试，�
 ::: warning
 如果在pc_form或mobile_form中也需要script，那么将form内的script改为dyn_script。否则正则匹配script将会匹配不正确从而导致脚本失效。
 :::
+
+### 定时刷新
+点报表设置，选 前端页面css和js脚本 ，添加内容，：
+
+<script>
+  _this.setTimeout_second=10 //刷新间隔10秒
+  _this.setTimeout_function=function(p_this){
+       //p_this.queryForm._fresh_ds=JSON.stringify(['数据集:累计']) //只刷新: 数据集:累计，前面的数据集冒号不能省略
+       p_this.submit()
+      console.info("xxx")
+ }
+</script>
 
 ## 前端动态模板
 - 在页面上添加的动态模板，内部脚本是经过简化的vue格式。主要区别是：script中定义的data、methods、computed会直接注入当前模板中，其他vue属性暂时不支持。

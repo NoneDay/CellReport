@@ -73,6 +73,9 @@ Data Source=E:\my_app\报表源码_2020\a_new_lib\test.db
 
 MySql 连接串 格式
 Database=dbname;Data Source=x.x.x.x;Port=3306;User Id=xxx;Password=****;Charset=utf8;TreatTinyAsBoolean=false;
+
+pgsql 连接串 格式
+server=ip地址;port=5432;uid=用户;pwd=口令;database=数据库;Pooling=true;
 ```
 
 配置完毕后，按F5 刷新页面，点报表目录，正常的话，这是应该能看到所有的测试报表了
@@ -86,6 +89,8 @@ Database=dbname;Data Source=x.x.x.x;Port=3306;User Id=xxx;Password=****;Charset=
 ## 捐赠名单
 **感谢各位大佬支持！**
 
+```
 庄鹏 70元
 补丁 66元
 C罗  66.6元
+```

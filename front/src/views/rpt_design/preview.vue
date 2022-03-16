@@ -1,6 +1,7 @@
 <template>
   <div style="width:100%;height:100%;overflow: hidden; "  >
-    
+       <paperSetting :target_obj="result.paperSetting" @submit="paperSetting_submit"  :visible.sync="paper_setting_dialogVisible" />
+
       <el-dialog v-draggable v-if="pdf_output_dialogVisible" style="text-align: left;" class="report_define"
         :visible.sync="pdf_output_dialogVisible" :title="'PDF导出和打印预览'" 
             :close-on-click-modal="false"   :fullscreen="true"
@@ -11,7 +12,7 @@
           <el-button @click="paper_setting_dialogVisible = true">页面设置</el-button>
           <el-button @click="pdf_output_dialogVisible = false">取 消</el-button>
           <el-button type="primary" @click="pdf_output_dialogVisible = false">确 定</el-button>
-          <el-button type="primary" @click="pdf_print">打印</el-button>
+         <!-- <el-button type="primary"  @click="pdf_print">打印</el-button> -->
         </div>
          <div id="pdf_wrapper" class="pure-u-1 pure-u-md-4-5" style="height: 100%;width: 100%;">
             <iframe id="printIframe" style="display:none"></iframe>
@@ -103,8 +104,8 @@
            </div>
             <el-form-item>
             <el-button type="primary"  class='form_query_button'  @click="submit">查询</el-button>
-            <el-button type="primary" class='form_query_button' @click="export_excel">导出excel</el-button>
-            <el-button type="primary" class='form_query_button' @click="export_pdf">PDF预览</el-button>
+            <el-button type="primary" v-if='Object.keys(result.data)!=0' class='form_query_button' @click="export_excel">导出excel</el-button>
+            <el-button type="primary" v-if='Object.keys(result.data)!=0' class='form_query_button' @click="export_pdf">PDF预览</el-button>
           </el-form-item>
       </el-form>
     </div>
@@ -122,13 +123,14 @@
 
 <script>
 import widgetForm from './WidgetForm'
-import {convert_array_to_json,arrayToTree} from './utils/util.js'
+import {convert_array_to_json,arrayToTree,seriesLoadScripts} from './utils/util.js'
 import {preview_one,get_pdf} from "./api/report_api"
 import {exceljs_inner_exec} from './utils/export_excel.js'
+import paperSetting  from './paperSetting.vue'
 export default {
     name: 'preview',  
     props:["grpId"],
-    components:{widgetForm },
+    components:{widgetForm,paperSetting },
     async mounted() {
         
         await preview_one(this,true,{})
@@ -155,6 +157,7 @@ export default {
   },  
   data () {
     return {
+        paper_setting_dialogVisible:false,
         pdf_output_dialogVisible:false,
         preview_dialogVisible:false,
         previewFormParam:{},
@@ -216,6 +219,11 @@ export default {
     },
   },
   methods: {
+    async paperSetting_submit(val){
+      let pdf_data=await get_pdf(this.result,val)
+      let datauri = URL.createObjectURL(pdf_data)
+      document.getElementById("pdf_output").data =datauri
+    },
     submit(){
       let _this=this
       _this.exec_log=""

@@ -47,7 +47,7 @@ function find_style(tbl,rowNo,colNo,cur_tbl_class_dict){
               ret['font']['name']=one_pair[1]
             break
           case "FONT-SIZE":
-              ret['font']['size']=one_pair[1].substring(0,one_pair[1].length-2)
+              ret['font']['size']=Number(one_pair[1].substring(0,one_pair[1].length-2)) //*72/96
             break
           case "font-weight":
             if(one_pair[1].trim()=='bold') ret['font']['bold']=true
@@ -117,8 +117,8 @@ export  async function exceljs_inner_exec(_this_result){
           let cur_table=_this_result.data[one]
           let cur_tbl_class_dict=parse_class(cur_table)
           if (cur_table.type== "common"){
-            if(cur_table.optimize=true &&
-              cur_table.columns.slice(-1)=="key")
+            //if(cur_table.optimize==true &&
+            //  cur_table.columns.slice(-1)=="key")
             //while(wb.SheetNames.includes(title)) //_worksheets[1].name
             //  title=title+one_obj.gridName
             ws =wb.addWorksheet(title,{pageSetup:{fitToPage: false} });

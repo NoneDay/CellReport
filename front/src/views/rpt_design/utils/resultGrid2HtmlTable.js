@@ -566,6 +566,7 @@ export default class ResultGrid2HtmlTable{
                 sb.append(` style='${this.calc_style(cell,max_width*this.ratio,max_height)};'`)
                 sb.append(` class=' ${cell.clazz} `)
                 let cell_sort=my_sort[`${rowNo}_${colNo}`]
+                let disp=(cell.m && cell.m.v)? cell.m.v : cell.m
                 if(this.optimize && cell_sort!=undefined){
                     sb.append(` cr-sort`)
                     if(this.sort_col.col==colNo){
@@ -575,12 +576,12 @@ export default class ResultGrid2HtmlTable{
                             sb.append(` cr-sort-asc`)
                    }
                    sb.append(`' data-c=${colNo} ><div class="cr-cell" style="max-height:${max_height-1}px;max-width:${max_width*this.ratio}px"> 
-                   <span>${cell.m??''}</span>
+                   <span>${disp??''}</span>
                    <span class="cr-sort-icon"></span>
                    </div></td>`)
                 }
                 else
-                    sb.append(`' data-c=${colNo}><div class="cr-cell" style="max-height:${max_height-1}px;max-width:${max_width*this.ratio}px"> ${cell.m??''}</div></td>`)
+                    sb.append(`' data-c=${colNo}><div class="cr-cell" style="max-height:${max_height-1}px;max-width:${max_width*this.ratio}px"> ${disp??''}</div></td>`)
             })
             if(gutter)
                 sb.append(`<td class="gutter"></td>`)

@@ -9,8 +9,8 @@
           PDF导出和打印预览
           <el-button @click="paper_setting_dialogVisible = true">页面设置</el-button>
           <el-button @click="pdf_output_dialogVisible = false">取 消</el-button>
-          <el-button type="primary" @click="pdf_output_dialogVisible = false">确 定</el-button>
-          <el-button type="primary" @click="pdf_print">打印</el-button>
+          <el-button type="primary" @click="pdf_output_dialogVisible = false">确 定</el-button>     
+          <el-button type="primary" @click="pdf_print">打印</el-button>     
         </div>
          <div id="pdf_wrapper" class="pure-u-1 pure-u-md-4-5" style="height: 100%;width: 100%;">
             <iframe id="printIframe" style="display:none"></iframe>
@@ -84,8 +84,7 @@
             <el-form-item style="text-align: center;">
             <el-button type="primary" class='form_query_button' @click="submit">查询</el-button>
             <el-button type="primary" class='form_query_button' @click="export_excel">导出excel</el-button>
-            <el-button type="primary" class='form_query_button' @click="export_pdf">PDF预览</el-button>
-            <el-button type="primary" class='form_query_button' @click="pdf_print">打印</el-button>
+            <el-button type="primary" class='form_query_button' @click="export_pdf">PDF预览</el-button>            
           </el-form-item>
       </el-form>
     </div>

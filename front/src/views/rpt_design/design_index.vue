@@ -81,6 +81,14 @@
                       <el-option label="无" value="none"></el-option>
                     </el-select>
                   </li>
+                  <li  style="display: flex;padding-bottom: 10px;" >
+                    <el-tag style="color:black" >格子类型</el-tag>
+                    <el-select v-model="cur_cell.cr._CELL_TYPE" placeholder="格子类型">
+                      <el-option label="原始" value=""></el-option>
+                      <el-option label="图片" value="img"></el-option>
+                      <el-option label="html" value="htm"></el-option>
+                    </el-select>
+                  </li>
                   <li v-for="item in [{display:'左顶格',val:'_leftHead',disabled:true},
                             {display:'上顶格',val:'_topHead',disabled:true},
                             {display:'文字颜色',val:'_color'},
@@ -90,6 +98,7 @@
                             {display:'显示值表达式',val:'_displayValueExpr'},
                              {display:'值表达式',val:'_valueExpr'},
                              {display:'加到style中',val:'_append'},
+                            
                              ]"  
                       style="display: flex;padding-bottom: 10px;" :key="item.display" >
                     
@@ -751,11 +760,10 @@ export default {
         return
       }
       let grid= this.report.AllGrids.grid.find(a=>a._name==this.sheet_window.gridName)
-      
-      this.setCellFromAPI = true;
-      try{
-        //删除被lucky添加的无用单元格
+      function add_rc(val){
+                //删除被lucky添加的无用单元格
         if("addRC"==val.type){
+          _this.cull_cell_cr={}
           let ctrlValue=val.ctrlValue
           //{"index": 8, "len": 1, "direction": "lefttop","rc": "c", "restore": false}
           if(ctrlValue && ctrlValue.rc=='r'){
@@ -764,10 +772,14 @@ export default {
                   for(let col=0  ;col<val.curData[row].length  ;col++){
                       console.info(row,col)
                       let cell=val.curData[row][col]
-                      if(cell.mc)
+                      if(cell.mc){
+                        delete cell.cr
                         continue
-                      else
+                      }
+                      else{
                         val.curData[row][col]=null
+                      }
+
                   }
                 }
             }else{
@@ -775,10 +787,14 @@ export default {
                   for(let col=0  ;col<val.curData[row].length  ;col++){
                       console.info(row,col)
                       let cell=val.curData[row][col]
-                      if(cell.mc)
+                      if(cell.mc){
+                        delete cell.cr
                         continue
-                      else
+                      }
+                      else{
                         val.curData[row][col]=null
+                      }
+
                   }
                 }
             }
@@ -789,10 +805,13 @@ export default {
                   for(let col=ctrlValue.index  ;col<ctrlValue.index  + ctrlValue.len  ;col++){
                       console.info(row,col)
                       let cell=val.curData[row][col]
-                      if(cell.mc)
+                      if(cell.mc){
+                        delete cell.cr
                         continue
-                      else
+                      }
+                      else{
                         val.curData[row][col]=null
+                      }
                   }
                 }
             }else{
@@ -800,16 +819,22 @@ export default {
                   for(let col=ctrlValue.index+1  ;col<=ctrlValue.index  + ctrlValue.len  ;col++){
                       console.info(row,col)
                       let cell=val.curData[row][col]
-                      if(cell.mc)
+                      if(cell.mc){
+                        delete cell.cr
                         continue
-                      else
+                      }
+                      else{
                         val.curData[row][col]=null
+                      }
                   }
                 }
             }
           }
         }
-        
+      }
+      this.setCellFromAPI = true;
+      try{
+        add_rc(val)
         if(["addRC","delRC"].includes( val.type)){
           for(let row=0;row<val.curData.length;row++){
             for(let col=0;col<val.curData[row].length;col++){
