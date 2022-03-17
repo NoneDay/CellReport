@@ -93,7 +93,7 @@
       </dyncTemplate>
       <form v-else >  <!--img/battle_2021.jpg-->
         <input hidden v-for="one in result.form.filter(x=>x.hide=='True')" :key="one.name" v-model="queryForm[one.name]"/>
-        <img :src="mobile_img_for_less_one_param" style="height: 80px;width: 100%;" 
+        <img :src="result.zb_var.mobile_img_for_less_one_param" style="height: 80px;width: 100%;" 
         v-if="result.zb_var.mobile_img_for_less_one_param && result.form.filter(x=>x.hide=='False').length<=1">
         
         <div v-for="one in result.form.filter(x=>x.hide=='False')" :key="one.name">

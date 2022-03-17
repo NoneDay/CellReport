@@ -567,6 +567,9 @@ export default class ResultGrid2HtmlTable{
                 sb.append(` class=' ${cell.clazz} `)
                 let cell_sort=my_sort[`${rowNo}_${colNo}`]
                 let disp=(cell.m && cell.m.v)? cell.m.v : cell.m
+                if(cell?.m?.t=='img'){
+                    disp=`<img style="width: 100%;height: 100%;" src='${disp}'>`
+                }
                 if(this.optimize && cell_sort!=undefined){
                     sb.append(` cr-sort`)
                     if(this.sort_col.col==colNo){

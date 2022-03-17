@@ -363,6 +363,7 @@ export default {
                 }
                 col++
             })
+            luckysheet.is_in_simapleGuid=true
             luckysheet.refresh()   
             this.$emit('update:visible', false)
         },

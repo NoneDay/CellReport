@@ -81,6 +81,7 @@
                       <el-option label="无" value="none"></el-option>
                     </el-select>
                   </li>
+                  <!--
                   <li  style="display: flex;padding-bottom: 10px;" >
                     <el-tag style="color:black" >格子类型</el-tag>
                     <el-select v-model="cur_cell.cr._CELL_TYPE" placeholder="格子类型">
@@ -88,7 +89,7 @@
                       <el-option label="图片" value="img"></el-option>
                       <el-option label="html" value="htm"></el-option>
                     </el-select>
-                  </li>
+                  </li> -->
                   <li v-for="item in [{display:'左顶格',val:'_leftHead',disabled:true},
                             {display:'上顶格',val:'_topHead',disabled:true},
                             {display:'文字颜色',val:'_color'},
@@ -761,6 +762,10 @@ export default {
       }
       let grid= this.report.AllGrids.grid.find(a=>a._name==this.sheet_window.gridName)
       function add_rc(val){
+        if(this.sheet_window.luckysheet.is_in_simapleGuid){
+          delete this.sheet_window.luckysheet.is_in_simapleGuid
+         return
+        }
                 //删除被lucky添加的无用单元格
         if("addRC"==val.type){
           _this.cull_cell_cr={}
