@@ -276,7 +276,13 @@ formatDatetime('2007-01-01')
       如： formatNumber(1234.567) 输出为 1234.57
       如要指定格式，在第二个参数写格式。
       如：formatNumber(1234,567,"#####.0000")输出为：1234.5670
-
+    </function>
+    <function  name="ByteArrToBase64String()" >
+      如果数据集字段是Blob等字节数组， 为了能通过网页传输，可以使用这个函数将字节数组转换为base64字符串形式。
+      如果是图片，我们可以使用类似以下的公式，将图片显示到网页上。
+      =iif(ds.img!=null,"\<img style='width:60px;height:60px' src='data:image/png;base64,"
+                        +ByteArrToBase64String(ds.img) +"'>"
+          ,'')
     </function>
   </catalogy>
 </functions>
