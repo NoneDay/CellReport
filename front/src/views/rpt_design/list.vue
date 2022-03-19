@@ -325,9 +325,14 @@ export default {
     height: calc(100% - 42px);
 }
 .el-dialog__body{
-    height: calc(100% - 180px);    padding: 10px;    
+    height: calc(100% - 180px);    padding: 10px;
 }
 .el-dialog__header{
-    padding: 10px;background-color: bisque;    cursor: move;
+    padding: 10px 10px 5px; cursor: move;
+    border-bottom: solid 1px silver;
 }
+/* .design-list .el-button{
+  padding:7px !important;
+} */
+
 </style>

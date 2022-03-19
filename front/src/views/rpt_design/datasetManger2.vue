@@ -101,7 +101,7 @@
              <codemirror  
                         ref="editor" 
                         v-model="action_target.__text" 
-                        style="height:100%"
+                        style="height:100%;border:solid 1px silver;margin-bottom:5px;"
                         :options="{tabSize: 4, mode: 'text/x-sql', lineNumbers: true,line: true,}"  
             /></el-col>
             </el-row>

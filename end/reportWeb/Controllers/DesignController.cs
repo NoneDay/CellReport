@@ -75,7 +75,7 @@ namespace reportWeb.Controllers
                 return null;
         }
         public async Task<IActionResult> Preview(String _content,String _ConnectionId,string reportName,
-            String _fresh_ds,String _fresh_params,bool _createFormParam,String _param_name)
+            String _fresh_ds,String _fresh_params,bool _createFormParam,String _param_name_)
         {
             List<String> calcDsNames = null;
             List<String> calcGridNames = null;
@@ -178,7 +178,7 @@ namespace reportWeb.Controllers
                 if (_createFormParam == true)
                 {
                     exprFaced.addVariable("_createFormParam_", _createFormParam);
-                    exprFaced.addVariable("_param_name_", _param_name);
+                    exprFaced.addVariable("_param_name_", _param_name_);
                 }
                 exprFaced.addVariable("__page__", HttpContext.Request);
                 Engine engine = new Engine(reportDefine);
@@ -215,12 +215,12 @@ namespace reportWeb.Controllers
                                 {
                                     reportWeb.Pages.ReportModel.output_expection(cur_exception, Report.getEnv().logger, Report.getEnv());
                                     StringBuilder sb = new StringBuilder();
-                                    while (cur_exception.InnerException != null)
+                                    do
                                     {
                                         sb.AppendLine(cur_exception.Message);
                                         cur_exception = cur_exception.InnerException;
-                                    }
-                                    jsonWriter.Write(",\"error\":");
+                                    } while (cur_exception != null);
+                                    jsonWriter.Write(",\"errcode\":1,\"message\":");
                                     jsonWriter.Write(JsonSerializer.Serialize(sb.ToString(), json_option));
                                 }
                                 

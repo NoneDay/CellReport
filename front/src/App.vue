@@ -21,6 +21,21 @@ export default {
   height: 100%;
   overflow: hidden;
 }
+.el-button{
+  padding: 5px 10px !important;
+}
+
+.el-button.is-circle{
+  padding:7px !important;
+}
+
+.el-dialog__headerbtn{
+  top:10px !important;
+}
+
+.el-tabs__item{
+  font-size: 12px !important;
+}
 .cr_run_title { line-height: 28px;    border-bottom: 1px solid gray;font-weight: 500; margin-bottom: 5px;   }
 .vue-codemirror{border: 1px solid black;}
 .el-table td, .el-table th {

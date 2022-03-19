@@ -8,7 +8,7 @@
     <span v-if="context.mode=='design' && (selectWidget == self || self.type=='luckySheetProxy')"  
     class="mover cr_item_title">
      <span> {{self.label}}</span>
-    <el-button title="克隆" style="margin-left: 0px;padding:0px;"
+    <el-button title="克隆" style="margin-left: 0px;padding:0px !important;"
                 @click.stop="handleWidgetClone(index)"
                 v-if="context.canDraggable " 
                 circle
@@ -17,7 +17,7 @@
                 type="danger">
       <i class="el-icon-copy-document"></i>
     </el-button>
-    <el-button title="删除" style="margin-left: 0px;padding:0px;"
+    <el-button title="删除" style="margin-left: 0px;padding:0px !important;"
                 @click.stop="handleWidgetDelete(index)"
                 v-if="context.canDraggable " 
                 circle

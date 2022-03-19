@@ -1,7 +1,7 @@
 <template>
   <el-tabs @tab-click="add_catlog"
     v-model="tab_value"
-    style="overflow: hidden; height: 100%; width: 100%"
+    style="overflow: hidden; height: 100%; width: 100%;margin:3px 3px 0px 3px;"
   >
     <el-tab-pane
       v-for="(field, index) in t_fields"

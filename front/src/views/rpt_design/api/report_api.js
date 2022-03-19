@@ -53,8 +53,6 @@ export function open_one(reportName,zb_dict,zb_param) {
     let arr=reportName.split(":")
     let grpId,reportFilePath
     let data=new FormData();
-    //let test_zb_data={"b": "{\"columns\":[\"机构名称\",\"报案件数\",\"发起探访件数\",\"完成探访件数\",\"结案件数\",\"结案金额\",\"机构号\"],\"index\":[0],\"data\":[[\"合计\",322,314,181,230,177166.11,\"合计\"]]}", "a": "{\"columns\":[\"机构名称\",\"报案件数\",\"发起探访件数\",\"完成探访件数\",\"结案件数\",\"结案金额\"],\"index\":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15],\"data\":[[\"开封\",12,3,4,27,15384.72],[\"洛阳\",61,64,48,44,14720.14],[\"平顶山\",27,26,35,21,14921.66],[\"安阳\",7,9,12,9,11029.37],[\"鹤壁\",18,25,11,8,8120.17],[\"新乡\",6,3,2,4,15728.18],[\"焦作\",26,29,31,35,16406.01],[\"濮阳\",27,17,8,11,12072.37],[\"许昌\",30,67,4,16,6619.2],[\"漯河\",1,0,0,1,687.82],[\"三门峡\",21,20,10,11,9123.22],[\"商丘\",21,11,2,8,11850.16],[\"周口\",7,1,4,5,6379.94],[\"驻马店\",3,0,0,0,0.0],[\"南阳\",32,36,8,15,20990.96],[\"信阳\",23,3,2,15,13132.19]]}"}
-    //let test_param={}
     if(zb_dict)
         data.append('zb_dict_str',JSON.stringify(zb_dict))
     if(zb_param)
@@ -184,7 +182,7 @@ export async function preview_one(_this,createFormParam=false,query_data={},para
         data.append("reportName", _this.context.report.reportName)
         data.append("_createFormParam", createFormParam??false)
         if(param_name!=null)
-            data.append("_param_name", param_name)
+            data.append("_param_name_", param_name)
         Object.entries(query_data).forEach(kv=>{
             data.append(kv[0], kv[1])    
         })
@@ -279,7 +277,7 @@ export async function preview_one(_this,createFormParam=false,query_data={},para
     })
 }
 const loading_conf={type: 'loading',options: {fullscreen: true,lock: true,text: '正在载入...',spinner: 'el-icon-loading',background: 'rgba(0, 0, 0, 0.8)'}}
-export function run_one(_this,reportFilePath,query,query_data={},_param_name=null) {
+export function run_one(_this,reportFilePath,query,query_data={},_param_name_=null) {
     let data=new FormData();
     Object.entries(query_data).forEach(kv=>{
         data.append(kv[0], kv[1])    
@@ -287,8 +285,8 @@ export function run_one(_this,reportFilePath,query,query_data={},_param_name=nul
     let _fresh_ds=query_data._fresh_ds
     loading.show(loading_conf)
     data.append("reportName", reportFilePath)
-    if(_param_name!=null)
-        data.append("_param_name_", _param_name)
+    if(_param_name_!=null)
+        data.append("_param_name_", _param_name_)
     let url
     if(window.location.pathname.endsWith("run.html"))
         _this.in_exec_url.run_url=`${baseUrl}/report5/run${_this.grpId==0?"":":"+_this.grpId}?`+query
@@ -323,7 +321,7 @@ export function run_one(_this,reportFilePath,query,query_data={},_param_name=nul
             _this.$set(_this.queryForm_show,ele.name,false)
         })
         
-        if(_param_name!=null){
+        if(_param_name_!=null){
             _this.result.dataSet=response_data.dataSet
             _this.result.form=response_data.form
             loading.hide(loading_conf)

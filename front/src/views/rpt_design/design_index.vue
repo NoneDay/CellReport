@@ -37,23 +37,26 @@
     <el-container class="form-designer">
      
       <el-container style="height: 100%; border: 1px solid #eee">
-          <el-header class="widget-container-header" style="height: 30px;" >
-            <el-button type='primary' round @click="save_report" >保存</el-button>
-            <el-button type='primary' round @click="preview_run" >预览</el-button>
-            <el-button type='primary' icon='el-icon-refresh'  round @click="layout_mode='';init(report.reportName)" >重载</el-button>
-            <el-button type='primary' round @click="paramMangerDrawerVisible=true" >参数</el-button>
-            <el-button type='primary' round @click="datamanger_dialogVisible=true" >数据</el-button>
-            <el-button type='primary' round @click="notebook_dialog_visible=true" >设置</el-button>
-            <el-button type='primary' round @click="simpleGuide_dialogVisible=true" >向导</el-button>
-            <el-button type='primary' round @click="widget_dialogVisible=!widget_dialogVisible" >组件</el-button>
-            <div style="display: inline-flex;width:110px"><el-select v-model="layout_mode" placeholder="请选择">
+          <el-header class="widget-container-header" style="height: 33px;border-bottom:solid 1px silver;padding:2px;" >
+            <!-- <el-button type='primary' size="mini"  @click="open_report" >打开</el-button>
+            <input type="file" id="openFile" @change="beforUpload"> -->            
+            <el-button type='primary' size="mini"  @click="save_report" >保存</el-button>
+            <el-button type='primary' size="mini"   @click="preview_run" >预览</el-button>
+            <el-button type='primary' size="mini"  icon='el-icon-refresh'  @click="layout_mode='';init(report.reportName)" >重载</el-button>
+            <el-button type='primary' size="mini"    @click="paramMangerDrawerVisible=true" >参数</el-button>
+            <el-button type='primary' size="mini"   @click="datamanger_dialogVisible=true" >数据</el-button>
+            <el-button type='primary' size="mini"   @click="notebook_dialog_visible=true" >设置</el-button>
+            <el-button type='primary' size="mini"   @click="simpleGuide_dialogVisible=true" >向导</el-button>
+            <el-button type='primary' size="mini"   @click="widget_dialogVisible=!widget_dialogVisible">组件</el-button>            
+            <!-- <el-link :href="baseUrl+'/run'+(report.reportName.split(':')[0]=='default'?'':(':'+report.reportName.split(':')[0]))+'?reportName='+report.reportName.split(':')[1]" target="_blank"> -->
+            <el-button type='primary' icon="el-icon-view" size="mini" @click="run_report(baseUrl+'/run'+(report.reportName.split(':')[0]=='default'?'':(':'+report.reportName.split(':')[0]))+'?reportName='+report.reportName.split(':')[1])" >运行</el-button>
+            <!-- </el-link> -->
+            <div style="display: inline-flex;width:110px;margin:0px;float:right;">
+              <el-select v-model="layout_mode" placeholder="请选择">
                 <el-option label="设计显示页" value="show"></el-option>
                 <el-option label="设计隐藏页" value="hidden"></el-option>
               </el-select>
-            </div>            
-            <el-link :href="baseUrl+'/run'+(report.reportName.split(':')[0]=='default'?'':(':'+report.reportName.split(':')[0]))+'?reportName='+report.reportName.split(':')[1]" target="_blank">
-            <el-button type='primary' icon="el-icon-view" round @click="save_report" >运行</el-button>
-            </el-link>
+            </div>
           </el-header>
           <!-- 中间主布局 -->
           <el-main  class="widget-container" :style="{color:report.defaultsetting['COLOR'],
@@ -72,9 +75,9 @@
       </el-container>
       <!-- 右侧配置 -->
       <el-aside class="widget-config-container" :width="rightWidth"> 
-              <ul v-if="cur_select_type=='cell'" ghost-class="ghost" style="padding-left: 10px;">
+              <ul v-if="cur_select_type=='cell'" ghost-class="ghost" style="padding-left: 10px;font-size:12px;">
                   <li  style="display: flex;padding-bottom: 10px;" >
-                    <el-tag style="color:black" >扩展方向</el-tag>
+                    <label style="width:100px;padding-top:5px;" >扩展方向</label>
                     <el-select v-model="cur_cell.cr._extendDirection" placeholder="扩展方向">
                       <el-option label="行" value="row"></el-option>
                       <el-option label="列" value="column"></el-option>
@@ -102,9 +105,8 @@
                             
                              ]"  
                       style="display: flex;padding-bottom: 10px;" :key="item.display" >
+                    <label style="width:120px;padding-top:5px;">{{item.display}}</label>
                     
-                    <el-tag style="color:black;width:100px">{{item.display}}
-                      </el-tag>
                     <span v-if="item.disabled==true" style="color:red;font-weight: 800;flex: 1;text-align: center;"> {{ cur_cell.cr[item.val] }}
                         </span>
                     <el-input :placeholder="'请输入内容:'+item.display" v-model="cur_cell.cr[item.val]" v-else>
@@ -760,10 +762,10 @@ export default {
       if(this.setCellFromAPI){
         return
       }
-      let grid= this.report.AllGrids.grid.find(a=>a._name==this.sheet_window.gridName)
+      let grid= this.report.AllGrids.grid.find(a=>a._name==_this.sheet_window.gridName)
       function add_rc(val){
-        if(this.sheet_window.luckysheet.is_in_simapleGuid){
-          delete this.sheet_window.luckysheet.is_in_simapleGuid
+        if(_this.sheet_window.luckysheet.is_in_simapleGuid){
+          delete _this.sheet_window.luckysheet.is_in_simapleGuid
          return
         }
                 //删除被lucky添加的无用单元格
@@ -836,7 +838,8 @@ export default {
             }
           }
         }
-      }
+      }//end function add_rc
+      
       this.setCellFromAPI = true;
       try{
         add_rc(val)
@@ -980,6 +983,19 @@ export default {
       this.save_fix()
       this.save_layout(this.layout_mode)
       save_one(this.report)
+      //console.info(x2jsone.js2xml({report:this.report}))
+    },
+    run_report(url){
+      // console.log(url)
+      this.save_fix()
+      this.save_layout(this.layout_mode)
+      save_one(this.report)
+      let newA = document.createElement('a');
+      newA.target = '_blank';
+      newA.href = url;
+      document.body.appendChild(newA);
+      newA.click();
+      document.body.removeChild(newA);
       //console.info(x2jsone.js2xml({report:this.report}))
     },
     refresh_setting(){

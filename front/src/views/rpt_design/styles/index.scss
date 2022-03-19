@@ -72,11 +72,7 @@ $primary-background-color: #ecf8ff;
   .form-designer {
     height: 100%;
     background: #fff;
-    outline: 1px solid #e4e7ed;
-
-
-    
-
+    //outline: 1px solid #e4e7ed;
     .fields-list {
       padding: 10px 0;
       width: 100%;
@@ -275,7 +271,7 @@ $primary-background-color: #ecf8ff;
           &__body {
             min-height: 20px;
             height: 100%;
-            outline: 1px dashed #ccc;
+            //outline: 1px dashed #ccc;
             outline-offset: -1px;
             overflow: hidden;
             padding-bottom: 1px;

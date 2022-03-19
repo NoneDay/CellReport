@@ -19,8 +19,8 @@
        
         <div style="width:calc(23% + 35px);height:100%;border: 1px dotted">
             多数据集是否合并<br>
-            <el-switch   v-model="col_union_chk"  active-text="合并到一个单元格"   inactive-text="竖排展开"></el-switch>
-            <el-switch   v-model="row_union_chk"  active-text="合并到一个单元格"   inactive-text="并排展开"></el-switch>
+            <el-switch   v-model="col_union_chk"  active-text="列分组合并到一个单元格"   inactive-text="列分组竖排展开"></el-switch>
+            <el-switch   v-model="row_union_chk"  active-text="行分组合并到一个单元格"   inactive-text="行分组并排展开"></el-switch>
         </div>
 
         <div style="width:35px;height:100%">
@@ -49,6 +49,7 @@
                         trigger="click">
                         <el-button @click="item.op='select'">无</el-button>
                         <el-button @click="item.op='group'">group</el-button>
+                        <el-button @click="item.op='select'">select</el-button>
                         <el-button slot="reference" style="padding: 0px;">{{item.op?item.op:"选择"}}</el-button>
                     </el-popover>                            
                     </li>
@@ -95,6 +96,7 @@
                                 trigger="click">
                                 <el-button @click="item.op='select'">无</el-button>
                                 <el-button @click="item.op='group'">group</el-button>
+                                <el-button @click="item.op='select'">select</el-button>
                                 <el-button slot="reference" style="padding: 0px;">{{item.op?item.op:"选择"}}</el-button>
                             </el-popover>                            
                             </li>
@@ -129,6 +131,9 @@
                                 trigger="click">
                                 <el-button @click="item.op=''">无</el-button>
                                 <el-button @click="item.op='sum'">sum</el-button>
+                                <el-button @click="item.op='max'">max</el-button>
+                                <el-button @click="item.op='min'">min</el-button>
+                                <el-button @click="item.op='avg'">avg</el-button>                                
                                 <el-button slot="reference" style="padding: 0px;">{{item.op?item.op:"选择"}}</el-button>
                             </el-popover>                            
                             </li>
@@ -239,8 +244,9 @@ export default {
             let expr=''
             let luckysheet=this.sheet_window.luckysheet
             
-            const {row_focus,column_focus}=luckysheet.getluckysheet_select_save()[0]    
-            luckysheet.insertColumn(column_focus,{number:this.detail_fields.length})
+            const {row_focus,column_focus}=luckysheet.getluckysheet_select_save()[0]
+            if(this.detail_fields.length>0)    
+                luckysheet.insertColumn(column_focus,{number:this.detail_fields.length})
             let data=luckysheet.getSheet(0).data
             if(this.col_union_chk) {
                 expr=''
@@ -254,18 +260,17 @@ export default {
                         expr = "=union_set(" + expr + ")"
                     else
                         expr = "=" + expr 
-                    let mc={"r": row_focus+row, //主单元格的行号
+                     let cell_val= {v:expr,m:expr,
+                            mc:{"r": row_focus+row, //主单元格的行号
                                 "c": column_focus+ rowsGroupCount + col, //主单元格的列号
                                 "rs": 1, //合并单元格占的行数
                                 "cs": this.detail_fields.length //合并单元格占的列数
-                                }
-                    if(this.detail_fields.length>1)
-                        mc==undefined
-                    data[row_focus+row][column_focus+ rowsGroupCount + col ]
-                        = {v:expr,m:expr,
-                            mc:mc,
+                                },
                             cr:{"_displayValueExpr":"=@value","_valueExpr":expr,"_extendDirection":"column"}}
-                    if(mc!=undefined){
+                    if(cell_val.mc.cs<=1)
+                        delete cell_val.mc
+                    data[row_focus+row][column_focus+ rowsGroupCount + col ]=cell_val
+                    if(cell_val.mc!=undefined){
                         luckysheet.getSheet(0).config.merge[`${row_focus+row}_${column_focus+ rowsGroupCount + col}`]=mc                    
                         for(let idx=1;idx < this.detail_fields.length ;idx++ ){
                             data[row_focus+row][column_focus+ rowsGroupCount + col + idx ]={ mc:{ "r": row_focus+row,"c": column_focus+ rowsGroupCount + col} }
@@ -277,19 +282,18 @@ export default {
                 expr=''
                 this.col_grp_fields.forEach(one_col=>{
                     expr = `=${one_col.ds}.group(${one_col.ds}["${one_col.field}"])`
-                    let mc={"r": row_focus+row, //主单元格的行号
+                    let cell_val={v:expr,m:expr,
+                        mc:{"r": row_focus+row, //主单元格的行号
                                 "c": column_focus+ rowsGroupCount + col, //主单元格的列号
                                 "rs": 1, //合并单元格占的行数
                                 "cs": this.detail_fields.length //合并单元格占的列数
-                                }
-                    if(this.detail_fields.length>1)
-                        mc==undefined
-                    data[row_focus+row][column_focus+ rowsGroupCount + col]
-                        ={v:expr,m:expr,
-                        mc:mc,
+                                },
                         cr:{"_displayValueExpr":"=@value","_valueExpr":expr,"_extendDirection":"column"}}
-                    if(mc!=undefined){
-                        luckysheet.getSheet(0).config.merge[`${row_focus+row}_${column_focus+ rowsGroupCount + col}`]=mc                    
+                    if(cell_val.mc.cs<=1)
+                        delete cell_val.mc
+                    data[row_focus+row][column_focus+ rowsGroupCount + col]=cell_val
+                    if(cell_val.mc!=undefined){
+                        luckysheet.getSheet(0).config.merge[`${row_focus+row}_${column_focus+ rowsGroupCount + col}`]=cell_val.mc                    
                         for(let idx=1;idx < this.detail_fields.length ;idx++ ){
                             data[row_focus+row][column_focus+ rowsGroupCount + col + idx ]={ mc:{ "r": row_focus+row,"c": column_focus+ rowsGroupCount + col} }
                         }
