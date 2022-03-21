@@ -578,13 +578,13 @@ export default class ResultGrid2HtmlTable{
                         if(this.sort_col.isAsc==1)
                             sb.append(` cr-sort-asc`)
                    }
-                   sb.append(`' data-c=${colNo} ><div class="cr-cell" style="max-height:${max_height-1}px;max-width:${max_width*this.ratio}px"> 
+                   sb.append(`' data-c=${colNo} ><div class="cr-cell" style="height:${max_height-1}px;width:${max_width*this.ratio}px"> 
                    <span>${disp??''}</span>
                    <span class="cr-sort-icon"></span>
                    </div></td>`)
                 }
                 else
-                    sb.append(`' data-c=${colNo}><div class="cr-cell" style="max-height:${max_height-1}px;max-width:${max_width*this.ratio}px"> ${disp??''}</div></td>`)
+                    sb.append(`' data-c=${colNo}><div class="cr-cell" style="height:${max_height-1}px;width:${max_width*this.ratio}px"> ${disp??''}</div></td>`)
             })
             if(gutter)
                 sb.append(`<td class="gutter"></td>`)

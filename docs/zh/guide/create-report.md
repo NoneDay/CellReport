@@ -19,17 +19,14 @@ A ：在你紧挨可扩展单元格下面那一行，就是你的汇总的行.�
 
 ## 如何定时刷新报表或数据集
  在报表的设置中，前端运行脚本中，录入类似以下内容。如果指定```_fresh_ds```,那么只刷新指定数据集。不设置这个参数，将刷新整个报表
- **2000 指的是2秒**
 ``` js
 <script>
-setTimeout(()=>{
-  if(_this.mode=="run"){
-     _this.queryForm._fresh_ds=JSON.stringify(['数据集:累计'])
-		_this.submit()
-  }
- console.info("xxx")
-},2000)
-
+  _this.setTimeout_second=10
+  _this.setTimeout_function=function(p_this){
+       //p_this.queryForm._fresh_ds=JSON.stringify(['数据集:累计'])
+       p_this.submit()
+      console.info("xxx")
+ }
 </script>
 ```
 ## 如何升级报表程序并使我以前的设置能保留

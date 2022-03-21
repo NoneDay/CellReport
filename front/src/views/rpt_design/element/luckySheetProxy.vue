@@ -450,7 +450,7 @@ export default {
                         screenshot: true, // '截图'
                         findAndReplace: false, // '查找替换'
                       protection:false, // '工作表保护'
-                      print:false, // '打印'
+                      print:true, // '打印'
                     }`
         }
         let showtoolbar=_this.context.mode=='design'
