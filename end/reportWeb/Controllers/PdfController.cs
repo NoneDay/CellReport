@@ -19,6 +19,9 @@ using System;
 using iText.Layout.Properties;
 using iText.Html2pdf;
 using iText.Layout.Font;
+using iText.Kernel.Pdf.Canvas;
+using iText.Layout.Layout;
+using iText.Kernel.Pdf.Xobject;
 
 namespace reportWeb.Controllers
 {
@@ -28,7 +31,7 @@ namespace reportWeb.Controllers
         [AllowAnonymous]
         public IActionResult Index(string report_obj, string paperSetting)
         {
-            
+
             PageSetup ps = null;
             if (!string.IsNullOrEmpty(paperSetting) && "undefined" != paperSetting)
                 ps = JsonSerializer.Deserialize<PageSetup>(paperSetting);
@@ -36,7 +39,7 @@ namespace reportWeb.Controllers
             return File(buildPdf(report_obj, ps), "application/pdf");
         }
 
-        public static byte[] buildPdf(string report_str, PageSetup ps)
+        public byte[] buildPdf(string report_str, PageSetup ps)
         {
             var json_root = JsonDocument.Parse(report_str).RootElement;
             var json_data = json_root.GetProperty("data");
@@ -64,11 +67,11 @@ namespace reportWeb.Controllers
 
             MemoryStream stream = new();
             PdfWriter writer = new(stream);
-            PdfDocument pdf = new(writer);
+            pdfDocument = new(writer);
             try
             {
-                var default_font=CellReport.running.Template.getTemplate("template.xml").Get("FONT").content;
-                default_font=json_root.GetProperty("defaultsetting").GetProperty("FONT").GetString();
+                default_font = CellReport.running.Template.getTemplate("template.xml").Get("FONT").content;
+                default_font = json_root.GetProperty("defaultsetting").GetProperty("FONT").GetString();
                 if (converterProperties == null)
                 {
                     FontProvider fontProvider = new FontProvider(default_font);
@@ -78,37 +81,39 @@ namespace reportWeb.Controllers
                     converterProperties.SetCharset("utf-8");
                     converterProperties.SetBaseUri("http://127.0.0.1:5000/");
                 }
-                Document pdf_doc = new(pdf, new PageSize(ps.pageSize_Width, ps.pageSize_Height)
+                Document pdf_doc = new(pdfDocument, new PageSize(ps.pageSize_Width, ps.pageSize_Height)
                     , false);
                 pdf_doc.SetMargins(ps.margin_top, ps.margin_right, ps.margin_bottom, ps.margin_left);
-                PdfFont sysFont = PdfFontFactory.CreateRegisteredFont(default_font, PdfEncodings.IDENTITY_H, PdfFontFactory.EmbeddingStrategy.PREFER_EMBEDDED, true);
+                sysFont = PdfFontFactory.CreateRegisteredFont(default_font, PdfEncodings.IDENTITY_H, PdfFontFactory.EmbeddingStrategy.PREFER_EMBEDDED, true);
                 pdf_doc.SetFont(sysFont).SetFontSize(11);//设置字体大小
-
                 bool is_first = true;
                 foreach (var item in json_data.EnumerateObject())
                 {
                     var rg = new ReportGridJSON(item.Value, ps);
-                    rg.output(pdf_doc,ref is_first, addTable);
+                    rg.output(pdf_doc, ref is_first, addTable);
                 }
-                add_header_footer(ps, pdf, pdf_doc);
+                add_header_footer(ps, pdfDocument, pdf_doc);
 
                 //*/
                 pdf_doc.Flush();
             }
             finally
             {
-                pdf.Close();//记得关闭PdfDocument和PdfWriter
+                pdfDocument.Close();//记得关闭PdfDocument和PdfWriter
                 writer.Close();
             }
             return stream.ToArray();
         }
-
+        PdfDocument pdfDocument;
+        PdfFont sysFont;
         private static ConverterProperties converterProperties = null;
+
+        public string default_font { get; private set; }
 
         private static Paragraph convert_html_to_paragraph(string html)
         {
             var retpp = new Paragraph();
-            var t_list=HtmlConverter.ConvertToElements(html, converterProperties);
+            var t_list = HtmlConverter.ConvertToElements(html, converterProperties);
             foreach (var one_ele in t_list)
             {
                 retpp.Add(one_ele as IBlockElement);
@@ -124,7 +129,7 @@ namespace reportWeb.Controllers
                 ;
             return convert_html_to_paragraph(t);
         }
-        private static void add_header_footer(PageSetup ps, PdfDocument pdf, Document pdf_doc)
+        private void add_header_footer(PageSetup ps, PdfDocument pdf, Document pdf_doc)
         {
             var pp = new Paragraph();
             int n = pdf.GetNumberOfPages();
@@ -181,7 +186,7 @@ namespace reportWeb.Controllers
             }
         }
 
-        private static Table addTable(ReportGridJSON rg, List<int> row_list, List<int> col_list)
+        private Table addTable(ReportGridJSON rg, List<int> row_list, List<int> col_list)
         {
             List<BitArray> tableBitFlag = new();
             for (int i = 0; i < rg.tableData.Length; i++)
@@ -199,12 +204,31 @@ namespace reportWeb.Controllers
                 tbl_height += rg.GetRowHeight(one);
             }
             var pdf_table = new Table(cols.ToArray())// 设置表格列数
-                .SetTextAlignment(iText.Layout.Properties.TextAlignment.CENTER);
+                .SetTextAlignment(iText.Layout.Properties.TextAlignment.CENTER)
+                .SetPadding(0).SetMargin(0)//.SetMaxWidth(cols.Sum()).SetMaxHeight(tbl_height)
+                ;
+            pdf_table.StartNewRow();
+            foreach (var colNo in col_list)
+            {
+                var pdf_cell = new Cell()
+                            .SetMinWidth(rg.columnlenArr[colNo]).SetMaxWidth(rg.columnlenArr[colNo])
+                            .SetMinHeight(0).SetMaxHeight(0).SetBorder(Border.NO_BORDER)
+                            .SetPadding(0);// 不设置为0 ，将导致高度和设置的不同 缺省padding =2
 
+
+                pdf_table.AddCell(pdf_cell);
+            }
             foreach (var rowNo in row_list)
             {
                 var row = rg.tableData[rowNo];
                 pdf_table.StartNewRow();
+                Cell pdf_cell;
+                //pdf_cell = new Cell()
+                //            .SetWidth(0).SetMaxWidth(0)
+                //            .SetHeight(rg.GetRowHeight(rowNo)).SetBorder(Border.NO_BORDER)
+                //            .SetPadding(0);// 不设置为0 ，将导致高度和设置的不同 缺省padding =2
+                //pdf_table.AddCell(pdf_cell);
+
                 foreach (var colNo in col_list)
                 {
                     if (colNo >= row.Length)
@@ -224,7 +248,7 @@ namespace reportWeb.Controllers
                     var max_width = rg.columnlenArr[colNo];
                     var r_c = rg.find_config_merge(rowNo, colNo);
                     int rowSpan = 1, colSpan = 1;
-                    Cell pdf_cell;
+
                     bool is_lastcol_split_cell = false;
                     bool is_lastrow_split_cell = false;
                     if (r_c == null)
@@ -248,12 +272,12 @@ namespace reportWeb.Controllers
                             rg.insert_merge(rowNo + rowSpan, colNo, r_c.rs - rowSpan, colSpan);
                         }
                         pdf_cell = new Cell(rowSpan, colSpan);
-                        max_width = 0;
+                        max_width = 0;// -(colSpan-1)*10f* rg.border_width;
                         for (var ci = 0; ci < colSpan; ci++)
                         {
                             max_width += rg.columnlenArr[colNo + ci];
                         }
-                        max_height = 0;
+                        max_height = 0;// -(rowSpan - 1) * 10f * rg.border_width;
                         for (var ri = 0; ri < rowSpan; ri++)
                         {
                             max_height += rg.GetRowHeight(rowNo + ri);
@@ -350,14 +374,27 @@ namespace reportWeb.Controllers
                     var cur_str = cell_value == null ? "" : cell_value.ToString();
                     if (cur_str.StartsWith("<"))
                     {
-                        var t_list = HtmlConverter.ConvertToElements($"<div style='width:{max_width}pt;height:{max_height}pt'>{cur_str}</div>", converterProperties);
+                        var t_str = cur_str.Replace("width:100%", $"width:{max_width}pt").Replace("height:100%", $"height:{max_height}pt");
+                        var t_list = HtmlConverter.ConvertToElements($"<div style='width:{max_width}pt;height:{max_height}pt'>{t_str}</div>", converterProperties);
                         if (t_list.Count == 1 && t_list[0] is IBlockElement)
-                            cur_pp = t_list[0] as IBlockElement;
+                        {
+                            cur_pp = (t_list[0] as iText.Layout.Element.Div).SetFont(sysFont).SetFontSize(11);
+                            //(t_list[0] as iText.Layout.Element.Div).SetFontFamily(default_font).SetFontSize(11).GetRenderer();
+                            //cur_pp.SetProperty(Property.AUTO_SCALE,)
+                            //cur_pp.SetProperty(Property.HEIGHT, max_height);
+                            //cur_pp.SetProperty(Property.WIDTH, max_width);
+                        }
                         else
                             cur_pp = new Paragraph(cur_str);
                     }
                     else
                     {
+                        if (rowNo == 0 && colNo == 0)
+                        {
+                            //max_width = 0;
+                            //    var new_font_size=shrinkFontSize(cur_str, max_width, max_height);
+                            //    pdf_cell.SetFontSize(new_font_size);
+                        }
                         cur_pp = new Paragraph(cur_str);
                     }
                     pdf_cell.Add(cur_pp)
@@ -365,7 +402,7 @@ namespace reportWeb.Controllers
                             .SetMinWidth(max_width - deta).SetMaxWidth(max_width - deta)
                             .SetMinHeight(max_height - deta).SetMaxHeight(max_height - deta)
                             .SetPadding(0)// 不设置为0 ，将导致高度和设置的不同 缺省padding =2
-                                          //.SetMargin(2)
+                                          .SetMargin(0)
 
                             ;
 
@@ -374,6 +411,51 @@ namespace reportWeb.Controllers
             }
 
             return pdf_table;
+        }
+
+        private float shrinkFontSize(string content, float width, float height)
+        {
+            Text lineTxt = new Text(content);
+
+            iText.Kernel.Geom.Rectangle lineTxtRect = new iText.Kernel.Geom.Rectangle(1, 1, width, height);
+
+            Div lineDiv = new Div();
+            lineDiv.SetVerticalAlignment(VerticalAlignment.MIDDLE);
+            lineDiv.SetBorder(Border.NO_BORDER);
+
+            Paragraph linePara = new Paragraph().Add(lineTxt)
+                .SetTextAlignment(iText.Layout.Properties.TextAlignment.CENTER)
+                .SetBorder(new DottedBorder(1)).SetFont(sysFont)
+                .SetMultipliedLeading(0.0f) //行间距
+                .SetFixedLeading(0.0f)
+                ;
+            lineDiv.Add(linePara);
+
+            float fontSizeL = 1; // 1 is the font size that is definitely small enough to draw all the text 
+            float fontSizeR = 20; // 20 is the maximum value of the font size you want to use
+            PdfFormXObject aaa = new PdfFormXObject(lineTxtRect);
+            Canvas canvas = new Canvas(new PdfFormXObject(lineTxtRect), pdfDocument);
+            //Canvas canvas = new Canvas(new PdfCanvas(pdfDocument.AddNewPage()), lineTxtRect);
+
+            // Binary search on the font size
+            while (Math.Abs(fontSizeL - fontSizeR) > 1e-1)
+            {
+                float curFontSize = (fontSizeL + fontSizeR) / 2;
+                lineDiv.SetFontSize(curFontSize);
+                // It is important to set parent for the current element renderer to a root renderer
+                var renderer = lineDiv.CreateRendererSubTree().SetParent(canvas.GetRenderer());
+                var context = new LayoutContext(new LayoutArea(1, lineTxtRect));
+                if (renderer.Layout(context).GetStatus() == LayoutResult.FULL)
+                {
+                    // we can fit all the text with curFontSize
+                    fontSizeL = curFontSize;
+                }
+                else
+                {
+                    fontSizeR = curFontSize;
+                }
+            }
+            return fontSizeL;
         }
     }
 }

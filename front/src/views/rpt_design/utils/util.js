@@ -668,7 +668,7 @@ function designGrid2LuckySheet(grid,setting,DefaultCssSetting){
         }
 
         celldata.push(one)
-        if(pos.hasOwnProperty("cs")){
+        if(pos.hasOwnProperty("cs")&& !(pos.cs<=1 && pos.rs<=1)){
             one.v.mc=Object.assign({},pos)
             for(let idx_r=0;idx_r<pos.rs;idx_r++){
                 for(let idx_c=0;idx_c<pos.cs;idx_c++){
