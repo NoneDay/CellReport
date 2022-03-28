@@ -253,7 +253,7 @@ formatDatetime('2007-01-01')
   </catalogy>
   <catalogy name="字符串函数">
     <function  name="replaceStr(,,)" >
-      query(源字符串,被替换字符串,替换字符串)
+      replaceStr(源字符串,被替换字符串,替换字符串)
     </function>
     <function  name="substring(,,)" >
       substring(源字符串,开始位置,结束位置)
@@ -269,7 +269,10 @@ formatDatetime('2007-01-01')
       如果目标为NULL返回true
       如果不是字符串,做toString()后作为字符串判断
       如果是字符串，且等于"",返回true
-    </function>   
+    </function>  
+    <function  name="split(,)" >
+      split(源字符串,分割符)
+    </function> 
     <function  name="formatNumber()" >
       格式化数字。
       缺省格式：###########0.##
