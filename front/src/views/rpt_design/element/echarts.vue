@@ -79,7 +79,9 @@ export default {
             setTimeout(function(){
                 try{
                     eval("option=(function(myChart,build_chart_data){"+option+"\n return option})(_myChart,this.build_chart_data)")
-                    _myChart.clear()
+                    if(_this.context.mode=='design' ){
+                        _myChart.clear()
+                    }
                     _myChart.setOption(option);
                     _myChart.off('click')
                     _myChart.on('click', function (params) {

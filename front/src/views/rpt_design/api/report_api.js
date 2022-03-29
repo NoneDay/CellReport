@@ -71,7 +71,8 @@ export function test_expr(expr) {
     return request({
         method: 'post',data,
         url: `${baseUrl}/design/test_expr`,       
-        withCredentials: true
+        withCredentials: true,
+        noloading:true
   })
 }
 
@@ -82,7 +83,8 @@ export function grid_range_level(report) {
         method: 'post',
         data,
         url: `${baseUrl}/design/grid_range_level` ,       
-        withCredentials: true
+        withCredentials: true,
+        noloading:true
     })
 }
 
