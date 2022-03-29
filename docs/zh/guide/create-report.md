@@ -23,8 +23,8 @@ A ：在你紧挨可扩展单元格下面那一行，就是你的汇总的行.�
 <script>
   _this.setTimeout_second=10
   _this.setTimeout_function=function(p_this){
-       //p_this.queryForm._fresh_ds=JSON.stringify(['数据集:累计'])
-       p_this.submit()
+       //p_this.queryForm._fresh_ds=JSON.stringify(['数据集:累计','表格:main']) //只刷新: 数据集:累计，前面的数据集冒号不能省略
+       p_this.submit({noloading:true})
       console.info("xxx")
  }
 </script>

@@ -82,6 +82,14 @@ var lj_sum=0;
 for(var i=0;i<10;i++){
     lj_sum=lj_sum+i;
 }
+//对数组循环
+foreach(var one in [1,2,3]){
+
+}
+// ds是数据集的名称
+foreach(var one in ds){
+    __env__.logger.Info(ds.xxx);
+}
 ~~~
 
 - 函数定义

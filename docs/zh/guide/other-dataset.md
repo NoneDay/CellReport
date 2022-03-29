@@ -25,7 +25,7 @@ FROM 类别;
 web_request({
 'url':"API网址"  //用你的地址替换这里
 ,'method':'post'  //可用方法: get ,post
-,'data':{'branch_no':'410000'}  //使用form提交,不需要的话，用null替换冒号后的内容
+,'data':{'branch_no':'410000','aaa':param.aaa}  //使用form提交,不需要的话，用null替换冒号后的内容,param.aaa 是你定义的参数。这样不能用 $aaa$
 ,'json':null      //使用json提交，json 和data 不能同时有值，至少有一个是null
 ,'headers':null   
 });// 语句必须以逗号结束

@@ -342,8 +342,8 @@ export default {
       return dateToString(val)
     }, 
 
-    submit(){
-      run_one(this,this.reportName,this.queryPara,this.queryForm)
+    submit(loading_conf=null){
+      run_one(this,this.reportName,this.queryPara,this.queryForm,null,loading_conf)
     },
     change_param(param_name){
       let _this=this

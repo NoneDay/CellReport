@@ -59,7 +59,7 @@ CellReport 诞生的初衷是为了解决日常快速制作统计报表的需要
  
  当前预安装的数据库驱动程序有:sqlServer、sqlite、Mysql、Pgsql、odbc。需要其他驱动的自行下载安装。
 
-
+![](https://atts.w3cschool.cn/attachments/image/20211125/1637815124338385.png)
 
 ```
 sql server 连接串格式
