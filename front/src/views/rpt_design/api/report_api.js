@@ -529,3 +529,14 @@ export function save_config(login_script) {
         withCredentials: true
     })
 }
+
+export function test_zcm(zcm) {
+    let data=new FormData();
+    data.append("zcm", zcm)
+    return request({
+        method: 'post',
+        url: `${baseUrl}/user/test_zcm/` ,    
+        data,    
+        withCredentials: true
+    })
+}

@@ -334,7 +334,8 @@ export default class ResultGrid2HtmlTable{
         this.total_rows=Object.keys(this.param_grid.rowlenArr).length
         this.fix_rows=1
         this.fix_cols=parseInt( param_grid.fix_cols||param_grid.fixCols||0 )
-        if(this.fix_cols==undefined || this.fix_cols<1) this.fix_cols=1
+        if(this.param_grid.optimize &&(this.fix_cols==undefined || this.fix_cols<1)) this.fix_cols=1
+
         this.fix_rows=parseInt( param_grid.fix_rows||Math.max(this.fix_rows,this.param_grid.colName_lines[1]+1) )
 
         
@@ -624,9 +625,11 @@ export default class ResultGrid2HtmlTable{
         let height=0
         let min_width,head_height=0,footer_obj,foot_height=0
         let background_color=this.defaultsetting['BACKGROUND-COLOR']
-        if(this.param_grid.optimize){
+        if(this.param_grid.optimize || this.fix_rows>=0)
+        {
+            if(this.param_grid.optimize) this.fix_rows=this.param_grid.extend_lines[0]
             // header
-            table_obj=this._inner_table(start_row,this.param_grid.extend_lines[0], col_arr,true)
+            table_obj=this._inner_table(start_row,this.fix_rows, col_arr,true)
             min_width=Math.min(this.el.clientWidth-this.ScrollBarWidth-2,table_obj.table_width+(this.ratio==1?0:this.ScrollBarWidth))
             sb.append(`<div id='reportDiv${this.param_grid.name}Top' class='cr-table__header-wrapper'  style='background-color:${background_color};width:${min_width+this.ScrollBarWidth+2}px'>\n
             <table class='cr-table__header reportDefaultCss' height=${table_obj.table_height} width=${table_obj.table_width+2}  `)
@@ -639,14 +642,15 @@ export default class ResultGrid2HtmlTable{
                 footer_obj=this._inner_table(this.param_grid.extend_lines[1]+1,this.total_rows, col_arr)
                 foot_height=footer_obj.table_height
             }
-        }else{
-            this.param_grid.extend_lines[0]=0
+        }
+        else{
+            this.fix_rows=0
         }
         // body 
-        table_obj=this._inner_table(this.param_grid.extend_lines[0] +(cur_page-1)*page_size
+        table_obj=this._inner_table(this.fix_rows +(cur_page-1)*page_size
             ,this.param_grid.need_footer?
-                Math.min(this.param_grid.extend_lines[0] +cur_page*page_size ,this.param_grid.extend_lines[1]+1 )
-                : this.param_grid.extend_lines[0] +cur_page*page_size 
+                Math.min(this.fix_rows +cur_page*page_size ,this.param_grid.extend_lines[1]+1 )
+                : this.fix_rows +cur_page*page_size 
             ,  col_arr)
         min_width=Math.min(this.el.clientWidth-this.ScrollBarWidth-2, table_obj.table_width+(this.ratio==1?0:this.ScrollBarWidth))
         sb.append(`<div id='reportDiv${this.param_grid.name}' class="cr-table__body-wrapper is-scrolling-middle" 
@@ -663,9 +667,10 @@ export default class ResultGrid2HtmlTable{
             sb.append(footer_obj.sb.toString(''))
             height=height+footer_obj.table_height
         }
-        if(this.param_grid.optimize){
+        if(this.param_grid.optimize || this.fix_cols>=0)
+        {
             // 固定列，header
-            table_obj=this._inner_table(start_row,this.param_grid.extend_lines[0],  build_col_arr(0,this.fix_cols))
+            table_obj=this._inner_table(start_row,this.fix_rows,  build_col_arr(0,this.fix_cols))
             sb.append(`<div class="cr-table__fixed" style="width: ${table_obj.table_width+1}px; height:calc(100% - ${this.ScrollBarWidth}px);">`)
             
             sb.append(`<div class='cr-table__fixed-header-wrapper'  style='background-color:${background_color};' >\n
@@ -673,10 +678,10 @@ export default class ResultGrid2HtmlTable{
             add_other()
             sb.append(table_obj.sb.toString(''))
             // 固定列，body
-            table_obj=this._inner_table(this.param_grid.extend_lines[0] +(cur_page-1)*page_size,
+            table_obj=this._inner_table(this.fix_rows +(cur_page-1)*page_size,
                     this.param_grid.need_footer?
-                    Math.min(this.param_grid.extend_lines[0] +cur_page*page_size ,this.param_grid.extend_lines[1]+1 )
-                    : this.param_grid.extend_lines[0] +cur_page*page_size ,
+                    Math.min(this.fix_rows +cur_page*page_size ,this.param_grid.extend_lines[1]+1 )
+                    : this.fix_rows +cur_page*page_size ,
                     build_col_arr(0,this.fix_cols))
             sb.append(`<div id='reportDiv${this.param_grid.name}Left' class="cr-table__fixed-body-wrapper" 
             style='background-color:${background_color};top: ${head_height+0.5}px;height: calc(100% - ${head_height+foot_height}px)'>\n

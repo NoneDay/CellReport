@@ -839,7 +839,7 @@ export default {
           }
         }
       }//end function add_rc
-      
+
       this.setCellFromAPI = true;
       try{
         add_rc(val)
@@ -903,7 +903,8 @@ export default {
                 if(cell.fs) cell.cr['_FONT-SIZE']=cell.fs
                 if(cell.ff) cell.cr['_FONT']=cell.ff
                 if(cell.bl!=undefined) cell.cr['_BOLD']=(cell?.bl==1?"True":"False")
-                cell.cr['_text-align']=(cell.ht==0?"center":(cell.ht==1?"left":'right'))
+                cell.cr['_text-align']=(cell.ht=='0'?"center":(cell.ht=='1'?"left":'right'))
+                cell.cr['_vertical-align']=(cell.ht=='0'?"middle":(cell.vt=='1'?"top":'bottom'))
                 if(cell.it!=undefined) cell.cr['_ITALIC']=cell.it==1 ?"True" :"False"
                 if(cell.cl!=undefined) cell.cr['_UNDERLINE']=cell.cl==1 ?"True" :"False"
                 if(cell.f &&  cell.f.startsWith("=")) //

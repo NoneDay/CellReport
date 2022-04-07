@@ -4,11 +4,11 @@
         <avue-crud :data="data.grp_register" :option="option_grp()" v-model="grp_obj"
             @row-save="grp_rowSave"  @row-update="grp_rowUpdate" @row-del="grp_rowDelete"
         >
-        <template slot="db_connection_listForm" slot-scope="scope">
+        <template slot="db_connection_listForm">
             <avue-crud :option="db_connection_listOption()" :data="grp_obj.db_connection_list"  v-model="conn_obj"
                 @row-save="conn_rowSave"  @row-update="conn_rowUpdate" @row-del="conn_rowDelete"
             >
-            <template slot-scope="conn_scope" slot="menuForm">
+            <template  slot="menuForm">
                 <el-button type="primary" icon="el-icon-check" size="small" plain @click.stop="test_link(conn_obj)">测试连接</el-button>
             </template>
             <template slot-scope="conn_scope" slot="menu">
@@ -40,11 +40,36 @@
         </div>
         </div>
     </el-tab-pane>
+    <el-tab-pane label="注册" name="third" v-if="userInfo.username=='admin'" style=" height: 100%; width: 100%" >
+        <div style="display:flex;height:400px;flex-direction: column;">
+        <span class="demonstration">
+        机器码:  {{ data.machine_key }}
+        </span>
+        <span class="demonstration">
+          {{ data.is_zc?'已注册为专业版':'未注册' }}
+        </span>
+        <span class="demonstration">
+         当前引擎版本: {{ data.version }}
+        </span>
+        <span class="demonstration">
+         注册码：
+        </span>
+        <codemirror  ref="editor"  v-if='tab_value=="third"'
+                        v-model="data.zcm" 
+                        style="flex:1" @ready="editor_ready"
+                        :options="{tabSize: 4, mode: 'text/javascript', lineNumbers: true,line: true,}"  
+            />
+        
+        <div>     
+        <el-button type="danger" @click="test_zcm">注册测试</el-button>
+        </div>
+        </div>
+    </el-tab-pane>
   </el-tabs>
 </template>
 
 <script>
-import {grp_list,grp_save,grp_delete,test_connection,test_login,save_config} from "./api/report_api"
+import {grp_list,grp_save,grp_delete,test_connection,test_login,save_config,test_zcm} from "./api/report_api"
 import  codemirror  from './element/vue-codemirror.vue'
 import { mapGetters } from "vuex";
 export default {
@@ -73,6 +98,11 @@ export default {
             let ret=await test_login(this.data.login_script,this.test_user,this.test_password)
             this.$alert(JSON.stringify(ret.result))
         },
+        async test_zcm(){
+            let ret=await test_zcm(this.data.zcm)
+            this.$alert(JSON.stringify(ret.message))
+        },
+
         editor_ready(){
             this.$refs.editor.codemirror.setSize('auto','350px')
         },
@@ -94,6 +124,9 @@ export default {
                         return
                     }
                     let saveObj={...JSON.parse( JSON.stringify(row)),...{id:value}}
+                    saveObj.db_connection_list?.forEach(one=>{one.grp_id=null;one.id=0})
+                    console.info(saveObj)
+                    debugger
                     let result=await this.grp_rowSave(saveObj)
                     
                 }).catch(error=>error)

@@ -488,7 +488,7 @@ export default {
                       },
                     ${append}
               })
-              $("#luckysheet-cell-main").append("<div id='luckysheet_paper_width' style='position: absolute;left: ${paperSetting.pageSize_Width-paperSetting.margin_left-paperSetting.margin_right}pt;top: 0;bottom: 0px;border: 1px solid gray;z-index: 100002;'></div>");
+              $("#luckysheet-cell-main").append("<div id='luckysheet_paper_width' style='position: absolute;left: ${paperSetting.pageSize_Width-paperSetting.margin_left-paperSetting.margin_right}pt;top: 0;bottom: 0px;border: 1px solid green;z-index: 100002;'></div>");
               //$("#luckysheet-cell-main").append("<div id='luckysheet_background_img' style='position: absolute;left:0pt;top: 0;z-index: 3;'><img src='img/38_1610456500965.jpg' style='opacity:0.4;position:absolute;width:950px;height:683px;left:0px;top:0px;' ></div>");
             }
             insertScript("cdn/luckysheet/plugins/js/plugin.js",function(){insertScript("cdn/luckysheet/luckysheet.umd.js",buildReport)})

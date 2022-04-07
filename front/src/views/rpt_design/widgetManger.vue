@@ -94,7 +94,7 @@
           <el-row style="height: 50%">
             <el-col span="24">
             <avue-form ref="form" v-model="edit_item" :option="form_option" >
-                <template slot-scope="scope" slot="component">
+                <template  slot="component">
                     <el-select v-model="edit_item.component" placeholder="这里是自定的表单">
                         <el-option label='使用类vue模式开发模板' value='dync-template'/>
                         <el-option label='echarts图表' value='echarts'/>

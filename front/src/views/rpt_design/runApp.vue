@@ -174,7 +174,7 @@
 import widgetForm from './WidgetForm'
 import {dateToString} from './utils/resultGrid2HtmlTable.js'
 import {run_one,get_pdf} from "./api/report_api"
-import {convert_array_to_json,arrayToTree,seriesLoadScripts,load_css_file } from "./utils/util"
+import {convert_array_to_json,arrayToTree,seriesLoadScripts,load_css_file,watermark } from "./utils/util"
 import install_component from './install_component'
 import dyncTemplate from './element/dyncTemplate.vue'
 import paperSetting  from './paperSetting.vue'
@@ -184,7 +184,7 @@ export default {
   components:{dyncTemplate,widgetForm,paperSetting},
   mounted(){    
     let _this=this
-    window.onresize=this.refresh_layout
+    window.onresize=this.refresh_layout 
   },
   created() {
     
@@ -229,6 +229,7 @@ export default {
       else
         inner_exec()
     }
+
   }, 
   provide() {
     return {
@@ -352,6 +353,9 @@ export default {
           run_one(_this,_this.reportName,_this.queryPara,_this.queryForm,param_name)
         })        
       }
+    },
+    watermark(cfg){
+      watermark(cfg)
     },
     export_excel(){
        let _this=this
