@@ -68,5 +68,7 @@ namespace reportWeb
         [Key]
         public int Id { get; set; }
         public string login_script { get; set; }
+
+        public string zcm { get; set; }
     }
 }

@@ -12,7 +12,6 @@
 
   <ItemGroup>
     <PackageReference Include="Antlr3.Runtime" Version="3.5.2-rc1" />
-    <PackageReference Include="CellReport" Version="1.0.6" />
     <PackageReference Include="CSRedisCore" Version="3.6.6" />
     <PackageReference Include="itext7" Version="7.2.1" />
     <PackageReference Include="itext7.pdfhtml" Version="4.0.1" />
@@ -53,6 +52,12 @@
 
   <ItemGroup>
     <Folder Include="Logs\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="CellReport">
+      <HintPath>..\..\..\报表源码_2020\CellReport_stand\bin\Release\net6.0\CellReport.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
   <ProjectExtensions><VisualStudio><UserProperties appsettings_1json__JsonSchema="https://gitlab.com/-/snippets/2062623/raw/master/foundryvtt_template_schema.json" /></VisualStudio></ProjectExtensions>

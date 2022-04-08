@@ -42,7 +42,7 @@ using Serilog;
 
 namespace reportWeb
 {
-    public class Startup
+     public class Startup
     {
         public Startup(IConfiguration configuration)
         {
@@ -50,16 +50,11 @@ namespace reportWeb
         }
 
         public IConfiguration Configuration { get; }
-
+        
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            try
-            {//奇怪，会报错，但不影响
-                iText.Kernel.Font.PdfFontFactory.RegisterSystemDirectories();
-            }
-            catch { 
-            }
+            iText.Kernel.Font.PdfFontFactory.RegisterSystemDirectories();
             //services.AddSingleton(HtmlEncoder.Create(System.Text.Unicode.UnicodeRanges.All));
             CellReport.core.expr.ExprHelper.buildFuncMap();
             //CellReport.core.expr.ExprHelper.AddFunc(typeof(CellReport.function.Func_md5));
@@ -71,7 +66,6 @@ namespace reportWeb
                 //var dataAppSetting = Configuration.GetSection("ConnectionSetting").Get<ConnectionSetting>();
                 optionsBuilder.UseSqlite($"Data Source=report.db");
             });
-
             //添加身份认证方案
             var jwtConfig = Configuration.GetSection("Jwt").Get<JwtConfig>();
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -86,16 +80,16 @@ namespace reportWeb
            })*/
            .AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, option =>
            {
-               option.SaveToken = true;
+               option.SaveToken = true;              
                option.Events = new JwtBearerEvents()
                {
                    OnMessageReceived = context =>
                    {
-                       if (context.Request.Headers["Authorization"].ToString() == "" && context.Request.Cookies["access_token"] != null)
-                           context.Token = context.Request.Cookies["access_token"];
+                       if(context.Request.Headers["Authorization"].ToString()=="" && context.Request.Cookies["access_token"]!=null)
+                            context.Token = context.Request.Cookies["access_token"];
                        return Task.CompletedTask;
                    },
-                   OnChallenge = context =>
+                   OnChallenge= context =>
                    {
                        context.HandleResponse();
                        context.Response.WriteAsJsonAsync(new { code = -1, message = "token过期" });
@@ -103,7 +97,7 @@ namespace reportWeb
                    },
                    OnAuthenticationFailed = context =>
                    {
-
+                       
                        //ASP.NET Core Web Api之JWT刷新Token(三)
                        //https://blog.csdn.net/weixin_30483013/article/details/99642627?utm_medium=distribute.pc_relevant_download.none-task-blog-baidujs-1.nonecase&depth_1-utm_source=distribute.pc_relevant_download.none-task-blog-baidujs-1.nonecase
                        // 如果过期，则把<是否过期>添加到，返回头信息中
@@ -145,14 +139,14 @@ namespace reportWeb
                {
                    ValidIssuer = jwtConfig.Issuer,
                    ValidAudience = jwtConfig.Audience,
-                   ValidateAudience = false,
-                   ValidateIssuer = false,
+                   ValidateAudience=false,
+                   ValidateIssuer = false,                   
                    ValidateLifetime = true,//jwtConfig.ValidateLifetime,
                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtConfig.SigningKey)),
                    //缓冲过期时间，总的有效时间等于这个时间加上jwt的过期时间
                    ClockSkew = TimeSpan.FromSeconds(0)
                };
-           });
+           }); 
             //================================
             // If using Kestrel:
             services.Configure<KestrelServerOptions>(options =>
@@ -161,7 +155,7 @@ namespace reportWeb
             });
             services.AddScoped<ScopedObj>();
             services.AddSingleton<JwtConfig>(jwtConfig);
-
+            
             // If using IIS:
             services.Configure<IISServerOptions>(options =>
             {
@@ -179,10 +173,10 @@ namespace reportWeb
             services.AddCors(op => {
                 op.AddPolicy("CorsTest",
                     set => {
-                        set.SetIsOriginAllowed(origin => true)
-                                       .AllowAnyHeader()
-                                       .AllowAnyMethod()
-                                       .AllowCredentials();//这是是重要的，没有他就会有跨域问题
+                    set.SetIsOriginAllowed(origin => true)
+                                   .AllowAnyHeader()
+                                   .AllowAnyMethod()
+                                   .AllowCredentials();//这是是重要的，没有他就会有跨域问题
                     });
             });
             services.AddSignalR();
@@ -196,29 +190,30 @@ namespace reportWeb
             services.AddDataProtection().PersistKeysToFileSystem(new DirectoryInfo(Directory.GetCurrentDirectory() + Path.DirectorySeparatorChar + "DataProtection"));
 
             CellReport.Redis_Cache.redis_str = Configuration["redis_str"];
-            if (!String.IsNullOrEmpty(CellReport.Redis_Cache.redis_str))
+            if(!String.IsNullOrEmpty( CellReport.Redis_Cache.redis_str ))
             {
                 CSRedisClient redisClient = new CSRedisClient(CellReport.Redis_Cache.redis_str);
                 RedisHelper.Initialization(redisClient);
             }
             DbProviderFactories.RegisterFactory("Microsoft.Data.Sqlite", SqliteFactory.Instance);
-            foreach (var one in Configuration.GetSection("DbProviderFactories").Get<DbProviderCfg[]>())
+            foreach(var one in Configuration.GetSection("DbProviderFactories").Get<DbProviderCfg[]>())
             {
-                var ass = System.Reflection.Assembly.Load(one.DllName);
+                var ass = System.Reflection.Assembly.Load( one.DllName);
                 DbProviderFactory f = ass.GetType(one.FactoryClass).GetField(one.InstanceName).GetValue(null) as DbProviderFactory;
-                DbProviderFactories.RegisterFactory(one.Name, f);
-
+                DbProviderFactories.RegisterFactory(one.Name, f );
+                
             }
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ReportDbContext _reportDbContext)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env,ReportDbContext _reportDbContext)
         {
-
+            
             _reportDbContext.Database.EnsureCreated();//数据库不存在的话，会自动创建
             if (_reportDbContext.Rpt_group.Count() == 0)
             {
-                var main_path = new DirectoryInfo(Path.Combine(env.ContentRootPath, "..", "reportdefine_root", "default")).FullName;
+                var main_path = new DirectoryInfo(Path.Combine(env.ContentRootPath, "..", "reportdefine_root", "default")).FullName; 
                 _reportDbContext.Rpt_group.Add(new Rpt_group()
                 {
                     Id = "default",
@@ -237,8 +232,8 @@ namespace reportWeb
                     default_page = "default",
                     name = "例子",
                     report_path = main_path,
-                    db_connection_list = new List<Rpt_db_connection>()
-                    {
+                    db_connection_list=new List<Rpt_db_connection>()
+                    { 
                         new Rpt_db_connection() { conn_str=$"Data Source={main_path}/test.db", db_type="Microsoft.Data.Sqlite", name="testsqlite"},
                     }
                 });
@@ -252,7 +247,31 @@ namespace reportWeb
                 });
                 _reportDbContext.SaveChanges();
             }
+            using (var report_db = SqliteFactory.Instance.CreateConnection())
+            {
+                report_db.ConnectionString = "Data Source=report.db";
+                report_db.Open();
+                using var cmd = report_db.CreateCommand();
+                cmd.CommandText = $"PRAGMA TABLE_INFO(Rpt_config)";
+                using var sr = cmd.ExecuteReader();
+                bool has_license_txt = false;
+                while (sr.Read())
+                {
+                    if (sr[1].ToString() == "zcm")
+                    {
+                        has_license_txt = true;
+                    }
+                }
+                using var cmd2 = report_db.CreateCommand();
+                if (has_license_txt == false)
+                {
+                    cmd2.CommandText = $"alter table Rpt_config add zcm TEXT";
+                    cmd2.ExecuteNonQuery();
+                }
 
+            }
+            var rpt_config=_reportDbContext.Rpt_config.First();
+            CellReport.util.KeyAndPassword.yan_zheng_zcm(rpt_config.zcm);
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
@@ -298,7 +317,7 @@ namespace reportWeb
             });
             //app.UseHttpsRedirection();
             app.UseStaticFiles();
-
+            
             app.Use(next => context =>
             {
                 var cur_path = context.Request.Path.Value;
@@ -312,19 +331,19 @@ namespace reportWeb
                 }
                 var seg_arr = cur_path.Split(":");
                 string grp = "default";
-                if (seg_arr.Length >= 2)
+                if (seg_arr.Length>=2)
                 {
-                    grp = seg_arr[1];
+                    grp=seg_arr[1];
                 }
-
+                
                 var scopedObj = context.RequestServices.GetService<ScopedObj>();
                 //scopedObj.rpt_group = context.RequestServices.GetService<ReportDb>().findGroupById(grp);
-                scopedObj.rpt_group = context.RequestServices.GetService<ReportDbContext>().Rpt_group.AsNoTracking()
-                .Include(x => x.db_connection_list)
+                scopedObj.rpt_group = context.RequestServices.GetService <ReportDbContext>().Rpt_group.AsNoTracking()
+                .Include(x=>x.db_connection_list)
                 .Where(i => i.Id == grp)
                 .FirstOrDefault();
                 scopedObj.WebHostEnvironment = env;
-
+                
                 context.Request.Path = seg_arr[0];
                 if (context.Request.Path == "/run")
                 {
@@ -334,7 +353,7 @@ namespace reportWeb
                         context.Response.ContentType = "application/json";
                         return context.Response.WriteAsync("{ \"errcode\":1, \"message\":\"grp没有定义\" }");
                     }
-                    var rn = context.Request.Query["reportName"];
+                    var rn=context.Request.Query["reportName"];
                     if (rn.Count == 1)
                     {
                         context.Request.Path = "/" + scopedObj.rpt_group.getPageNameByReportName(rn[0]);
@@ -352,13 +371,13 @@ namespace reportWeb
             app.UseAuthentication();//认证(Authentication)  
             app.UseAuthorization(); //授权 (Authorization)
 
-            app.UseSession();
+            app.UseSession(); 
 
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapRazorPages();
                 endpoints.MapHub<ChatHub>("/chathub");
-                endpoints.MapControllerRoute(name: "default", pattern: "{controller=user}/{action=Index}/{id?}");
+                endpoints.MapControllerRoute(name: "default",pattern: "{controller=user}/{action=Index}/{id?}");
                 //endpoints.MapDynamicPageRoute<GrpRouteTransformer>("{page}/{**grp}");
                 //endpoints.MapDynamicControllerRoute<GrpRouteTransformer>("{area}/{controller=Home}/{action=Index}/{id:int?}");
                 //endpoints.Map(RoutePatternFactory.Parse("/run/{act}/{grp}/{a0}/{a1}"), rpt_execute);
@@ -371,8 +390,8 @@ namespace reportWeb
                     try
                     {
                         var m = MessageQueueBlock<DemoMessage>.Take();//Client(m.ConnectionId)
-                        if (m.ConnectionId != null)
-                            await m.hubContext.Clients.Client(m.ConnectionId)?.SendAsync("ReceiveMessage", m.ConnectionId, m.Body);
+                        if(m.ConnectionId!=null)
+                            await m.hubContext.Clients.Client(m.ConnectionId)?.SendAsync("ReceiveMessage",m.ConnectionId,m.Body);                    
                     }
                     catch (Exception ex)
                     {

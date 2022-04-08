@@ -301,7 +301,10 @@ namespace reportWeb.Controllers
                 exprFaced.addVariable("_rpt_group_", rpt_group);
 
                 var exec_result = exprFaced.calculate("{\n" + expr + "\n}", null);
-                
+                if(exec_result is Exception ex)
+                {
+                    throw ex;
+                }
                 return Json(new { errcode = 0, message = "",result= exec_result }, json_option);
             }
             catch (Exception ex)
@@ -709,6 +712,13 @@ namespace reportWeb.Controllers
             var userid = HttpContext.User.Claims.FirstOrDefault(x => x.Type == "userid").Value;
             var file_path = Path.Combine(Environment.CurrentDirectory, "widgets", userid + ".json");
             System.IO.File.WriteAllText(file_path, txt, encoding: Encoding.UTF8);
+            return Json(new { errcode = 0, message = "" });
+        }
+        public IActionResult getKeyAndLicese()
+        {
+            //var tMachine_key = CellReport.util.KeyAndPassword.getMachine_key();
+            //var ccc = CellReport.util.EncryptHelper.AES_Encrypt(tMachine_key, "CellReport");
+
             return Json(new { errcode = 0, message = "" });
         }
     }

@@ -317,7 +317,7 @@ export function run_one(_this,reportFilePath,query,query_data={},_param_name_=nu
         }
         if(response_data.zb_var.watermark){
             $(".mask_div").remove()
-            _this.watermark({"watermark_txt":response_data.zb_var.watermark});
+            _this.watermark(response_data.zb_var.watermark);
         }
         response_data.form.forEach(ele=>{
             let val=ele.value

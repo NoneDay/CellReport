@@ -1125,6 +1125,7 @@ export function js_getDPI() {
 }
 
 function watermark(settings) {
+    
     //默认设置
     let defaultSettings = {
         watermark_txt: "text",
@@ -1138,8 +1139,8 @@ function watermark(settings) {
         watermark_alpha: 0.4, //水印透明度
         watermark_fontsize: '15px', //水印字体大小
         watermark_font: '微软雅黑', //水印字体
-        watermark_width: 210, //水印宽度
-        watermark_height: 80, //水印长度
+        watermark_width: 110, //水印宽度
+        watermark_height: 40, //水印长度
         watermark_angle: 20 //水印倾斜度数
     };
     if (arguments.length === 1 && typeof arguments[0] === "object") {

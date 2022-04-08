@@ -207,6 +207,10 @@ window.luckysheet_alternateformat_save='{"cellrange":{"row":[0,8],"column":[-1,-
 如果运行时需要数据集的数据，但没有被传给前台，请在后端运行前设置中，加代码：`var _need_dataset_=true; `
 :::
 
+``` tip
+水印设置，请在后端运行前设置中，加代码`_zb_var_.watermark="abcdr"; //设置水印,可以动态赋值，方便设置工号姓名之类的动态水印`
+```
+
 ## 前端动态模板数据设置
 ### 动态模板中可能会用到的数据转换
 | 表达式 | 解释  |
@@ -259,7 +263,9 @@ style标签包起来的部分，将会在报表展现前注入当前页面的样
 - 可以访问变量_this来动态修改里面的内容。如果不知道结构，我们可以在这个里面加入console.infp(_this)，查看控制台就可以了解内部结构。
 - _this.result 代表的就是报表查询结果。
 - _this.result.pc_form 如果定义了该变量，那么pc端显示的form将会使用这个定义来显示
-- - _this.result.mobile_form 如果定义了该变量，那么移动端显示的form将会使用这个定义来显示
+- _this.result.mobile_form 如果定义了该变量，那么移动端显示的form将会使用这个定义来显示
+- _this.result.pager_template 如果定义了该变量，报表的分页器将使用模板
+- 
 ```
 <script> 
 function after_show_report_hook(){

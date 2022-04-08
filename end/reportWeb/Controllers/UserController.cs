@@ -63,6 +63,17 @@ namespace reportWeb.Controllers
                 ret.Close();
             return Json(new { errcode = 0, message = "测试连接成功" });
         }
+        public IActionResult test_zcm(String zcm)
+        {
+            if (String.IsNullOrEmpty(CellReport.util.KeyAndPassword.yan_zheng_zcm(zcm)))
+            {
+                return Json(new { errcode = 1, message = "验证失败"}, json_option);
+            }
+            reportDbContext.Rpt_config.First().zcm = zcm;
+            reportDbContext.SaveChanges();
+            return Json(new { errcode = 0, message = "验证成功"}, json_option);
+        }
+
         public IActionResult test_login(String login_script,string test_user, string test_password)
         {
             

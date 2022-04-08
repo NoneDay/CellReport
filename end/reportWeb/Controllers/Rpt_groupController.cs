@@ -30,11 +30,16 @@ namespace reportWeb.Controllers
         public async Task<ActionResult<IEnumerable<Rpt_group>>> GetRpt_group()
         {
             var grp_register = await _context.Rpt_group.Include(x => x.db_connection_list).ToListAsync();
+            var rpt_config=_context.Rpt_config.FirstOrDefault();
             if (cur_userid != "admin")
                 grp_register = grp_register.FindAll(x => x.owner == cur_userid);
             return new JsonResult ( new {
                 grp_register,
-                login_script= _context.Rpt_config.FirstOrDefault()?.login_script,
+                login_script= rpt_config?.login_script,
+                machine_key = CellReport.util.KeyAndPassword.getMachine_key(),
+                is_zc=!String.IsNullOrEmpty(CellReport.util.KeyAndPassword.yan_zheng_zcm(rpt_config?.zcm)),
+                zcm= rpt_config?.zcm,
+                version= CellReport.util.KeyAndPassword.getVersion(),
                 link_type =DbProviderFactories.GetProviderInvariantNames()
         } );
         }
@@ -62,6 +67,10 @@ namespace reportWeb.Controllers
             {
                 return BadRequest();
             }
+            rpt_group?.db_connection_list.ForEach(one =>
+            {
+                one.grp_id = rpt_group.Id;
+            });
             if (cur_userid != "admin" && rpt_group.owner!= cur_userid)
             {
                 throw new Exception("非管理员不能修改管理员信息。如果需要，请通知管理员修改。");

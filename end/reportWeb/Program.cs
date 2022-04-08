@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net.NetworkInformation;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -17,8 +18,10 @@ namespace reportWeb
         
         public static void Main(string[] args)
         {
-            //https://www.jianshu.com/p/20b1db2154a2  StackExchange.Redis TimeOut ¼ÇÂ¼
-            //System.Threading.ThreadPool.SetMinThreads(200, 200);
+            Console.WriteLine(CellReport.util.KeyAndPassword.getMachine_key());
+             
+
+            System.Threading.ThreadPool.SetMinThreads(200, 200);
             int worker = 0;
             int io = 0;
             ThreadPool.GetAvailableThreads(out worker, out io);

@@ -355,7 +355,12 @@ export default {
       }
     },
     watermark(cfg){
-      watermark(cfg)
+      if(typeof cfg=="string"){
+        watermark({"watermark_txt":cfg})
+      }else{
+        watermark(cfg)
+      }
+      
     },
     export_excel(){
        let _this=this
