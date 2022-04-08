@@ -1,17 +1,24 @@
 <template>
   <div :style="{width:'100%',height:height||'100%','display':'flex','flex-direction': 'column'}">
-    <template v-if="context.mode!='design' && useHtml && gridType=='common'">
-      <div  :style="{'flex-grow':1,width:'100%','height':'20px'}" v-html="html_table" ref="htmTalbe">
-          
+    <template v-if="context.report_result.pager_template!=undefined && context.mode!='design' && useHtml && gridType=='common'">
+        <div  :style="{'flex-grow':1,width:'100%','height':'20px'}" v-html="html_table" ref="htmTalbe">        
       </div>
-      <el-pagination  v-if="__TABLEOBJ!=undefined" 
+      <div :style="{width:'100%','height':'20px'}">
+       <dyncTemplate :parentCompent="parentCompent" :self="{content:context.report_result.pager_template}" >
+        </dyncTemplate>
+      </div>
+    </template>
+    <template v-else-if="context.report_result.pager_template==undefined && context.mode!='design' && useHtml && gridType=='common'">
+      <div  :style="{'flex-grow':1,width:'100%','height':'20px'}" v-html="html_table" ref="htmTalbe">        
+      </div>
+      <el-pagination  v-if="TABLEOBJ!=null" 
         :current-page.sync="cur_page"
         :page-size.sync="self.page_size" 
         :page-sizes="JSON.parse(self.page_sizes)"
         :layout="context.crisMobile?'total, sizes, prev, next':'total, sizes, prev, pager, next, jumper'" 
         
         hide-on-single-page
-        :total="__TABLEOBJ.total()">
+        :total="TABLEOBJ.total()">
       </el-pagination>
     </template>
     <div v-else-if="context.mode!='design' && useHtml && gridType=='large'" 
@@ -24,14 +31,14 @@
 <script>
 let arrow_right_img=undefined
 let arrow_down_img=undefined
-
+import dyncTemplate from './dyncTemplate.vue'
 import {designGrid2LuckySheet,numToString,getRangeByText,resultGrid2LuckySheet,output_largeGrid,convert_array_to_json} from '../utils/util.js'
 import   ResultGrid2HtmlTable2   from '../utils/resultGrid2HtmlTable.js'
 import mixins from "./mixins"
 export default {
  name: "luckySheetProxy",
   mixins:[mixins],
-  components: {},
+  components: {dyncTemplate},
   props: {gridName:String,height:String},
   data(){
     return {
@@ -41,13 +48,14 @@ export default {
       cur_page:1,
       scrollLeft:0,
       scrollTop:0,
-      __TABLEOBJ:undefined,
+      TABLEOBJ:null,
       scriptArr:[],pager_height:0,
       gridType:"common",
       delayShowType:"none", // or block
     }
   },
   computed:{
+    parentCompent(){ return this},
     cur_grid(){
       return this.context.report.AllGrids?.grid?.find(a=>a._name==this.gridName)
     },
@@ -155,7 +163,7 @@ export default {
       
     },
     sortFunc(evt){
-      this.__TABLEOBJ.sort(evt.currentTarget.dataset['c'])
+      this.TABLEOBJ.sort(evt.currentTarget.dataset['c'])
       this.grid_sort_action(evt.currentTarget.dataset['c'])
     }, 
     grid_sort_action(){
@@ -168,10 +176,10 @@ export default {
             if(sortArr.length>0)
               sortArr?.off('click',this.sortFunc)
           }
-          if(this.__TABLEOBJ==undefined)
-            this.$set(this,'__TABLEOBJ',new ResultGrid2HtmlTable2(cur_grid,this.$el,this.self,_this.context.report_result.footer2,_this.context.report_result.defaultsetting))
-          this.pager_height=this.__TABLEOBJ!=undefined && (parseInt(this.self.page_size)<=this.__TABLEOBJ.total() )?32:0
-          this.html_table=this.__TABLEOBJ.show(this.cur_page,this.self.page_size)
+          if(this.TABLEOBJ==null)
+            this.$set(this,'TABLEOBJ',new ResultGrid2HtmlTable2(cur_grid,this.$el,this.self,_this.context.report_result.footer2,_this.context.report_result.defaultsetting))
+          this.pager_height=this.TABLEOBJ!=undefined && (parseInt(this.self.page_size)<=this.TABLEOBJ.total() )?32:0
+          this.html_table=this.TABLEOBJ.show(this.cur_page,this.self.page_size)
           
     
           //test.show(1,20)
@@ -196,12 +204,12 @@ export default {
                 $(`#reportDiv${_this.gridName} .cr-table__body tr`).unbind()
                 $(`#reportDiv${_this.gridName} .cr-table__body tr`).bind('click',
                 function(evt){
-                  let cur_row=_this.__TABLEOBJ.param_grid.tableData[$(evt.currentTarget).data("n")]
+                  let cur_row=_this.TABLEOBJ.param_grid.tableData[$(evt.currentTarget).data("n")]
                   let ret={"KEY":cur_row[cur_row.length-1]}
                   for(let idx=0;idx<cur_row.length-1;idx++){
                     ret[numToString(idx+1)]=cur_row[idx]
                   }                  
-                  ret=convert_array_to_json([_this.__TABLEOBJ.param_grid.columns,cur_row])[0]
+                  ret=convert_array_to_json([_this.TABLEOBJ.param_grid.columns,cur_row])[0]
                   console.info(ret) 
                   _this.$set(_this.context.clickedEle,_this.self.gridName,{data:ret,cell:null,column:null,self:_this.self})
                   _this.click_fresh(_this.context.clickedEle[_this.self.gridName])
@@ -230,15 +238,15 @@ export default {
       if(_this.context.mode=='run' ||( _this.context.mode!='design' && this.useHtml)){
         this.gridType=this.context.report_result.data[_this.gridName].type
         if(this.gridType=='common'){
-          this.__TABLEOBJ=undefined
+          this.TABLEOBJ=null
            this.grid_sort_action()
         }
         else{//large
           output_largeGrid(this,this.context.report_result.data[_this.gridName],this.onclickrow) 
           return;
         }
-        let cur_row=_this.__TABLEOBJ.param_grid.tableData[_this.__TABLEOBJ.param_grid.extend_lines[0]]
-        let ret=convert_array_to_json([_this.__TABLEOBJ.param_grid.columns,cur_row])[0]
+        let cur_row=_this.TABLEOBJ.param_grid.tableData[_this.TABLEOBJ.param_grid.extend_lines[0]]
+        let ret=convert_array_to_json([_this.TABLEOBJ.param_grid.columns,cur_row])[0]
         this.$set(this.context.clickedEle,this.self.gridName,{data:ret,cell:null,column:null,self:_this.self})
         return
       }

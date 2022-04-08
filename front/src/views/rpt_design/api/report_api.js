@@ -315,8 +315,10 @@ export function run_one(_this,reportFilePath,query,query_data={},_param_name_=nu
         _this.$notify({title: '提示',message: response_data.message,duration: 0});
         return;
         }
-        
-        
+        if(response_data.zb_var.watermark){
+            $(".mask_div").remove()
+            _this.watermark({"watermark_txt":response_data.zb_var.watermark});
+        }
         response_data.form.forEach(ele=>{
             let val=ele.value
             if(ele.data_type=='date')

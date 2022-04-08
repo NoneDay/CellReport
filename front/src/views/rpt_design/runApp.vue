@@ -245,8 +245,8 @@ export default {
           allElementSet:this.allElementSet,
           //不放到这里，会导致动态runtime-template重算，如果是有滚动行的，会每次都重新跑到顶部
           in_exec_url:this.in_exec_url,
-          defaultsetting:this.result.defaultsetting
-          
+          defaultsetting:this.result.defaultsetting,
+          rpt_this:this,
       },   fresh_ele:this.fresh_ele,   
 
     }
