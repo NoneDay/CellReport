@@ -79,6 +79,12 @@ export default {
 
         this.$refs.iframe?.contentWindow.jQuery("#luckysheet_paper_width").css('left',
         `${paperSetting.pageSize_Width - paperSetting.margin_left - paperSetting.margin_right}pt`)
+        if(paperSetting.print_template_background){
+          this.$refs.iframe?.contentWindow.jQuery("#luckysheet_background_img").show()
+          this.$refs.iframe?.contentWindow.jQuery("#luckysheet_background_img img").attr("src",paperSetting.print_template_background)
+        }
+        else
+          this.$refs.iframe?.contentWindow.jQuery("#luckysheet_background_img").hide()
       }
     },
     cur_page(){
@@ -201,21 +207,50 @@ export default {
                 $(`#reportDiv${_this.gridName}Top .gutter`).width(target.offsetWidth - target.clientWidth)
                 target.scrollLeft=_this.scrollLeft
                 target.scrollTop=_this.scrollTop
+                
                 $(`#reportDiv${_this.gridName} .cr-table__body tr`).unbind()
                 $(`#reportDiv${_this.gridName} .cr-table__body tr`).bind('click',
-                function(evt){
-                  let cur_row=_this.TABLEOBJ.param_grid.tableData[$(evt.currentTarget).data("n")]
-                  let ret={"KEY":cur_row[cur_row.length-1]}
-                  for(let idx=0;idx<cur_row.length-1;idx++){
-                    ret[numToString(idx+1)]=cur_row[idx]
-                  }                  
-                  ret=convert_array_to_json([_this.TABLEOBJ.param_grid.columns,cur_row])[0]
-                  console.info(ret) 
-                  _this.$set(_this.context.clickedEle,_this.self.gridName,{data:ret,cell:null,column:null,self:_this.self})
-                  _this.click_fresh(_this.context.clickedEle[_this.self.gridName])
-
-                }
+                  function(evt){
+                    let cur_row=_this.TABLEOBJ.param_grid.tableData[$(evt.currentTarget).data("n")]
+                    let ret={"KEY":cur_row[cur_row.length-1]}
+                    for(let idx=0;idx<cur_row.length-1;idx++){
+                      ret[numToString(idx+1)]=cur_row[idx]
+                    }                  
+                    ret=convert_array_to_json([_this.TABLEOBJ.param_grid.columns,cur_row])[0]
+                    console.info(ret) 
+                    _this.$set(_this.context.clickedEle,_this.self.gridName,{data:ret,cell:null,column:null,self:_this.self})
+                    _this.click_fresh(_this.context.clickedEle[_this.self.gridName])
+                  }
                 )
+                //树折叠展开
+                $(`#reportDiv${_this.gridName} span.cr_tree_node`).unbind()
+                $(`#reportDiv${_this.gridName} span.cr_tree_node`).click(
+                function(evt){
+                  let click_tr=$(this).closest("tr")
+                  let click_td=$(this).closest("td")
+                  let end=[]
+                  for(let i=0;i<=click_tr.data("pr");i++){
+                    end.push(`tr[data-pr=${i}]`)
+                  }
+                  //console.info(end.join(','))
+                  let trs=click_tr.nextUntil(end.join(','))
+                  if($(this).hasClass("el-table__expand-icon--expanded")){//动作：隐藏
+                    trs.not(`tr[data-pr=${click_tr.data("pr")+1}]`).each(function(_,one){ $(one).data('old',  $(one).css('display')) })
+                    trs.hide()
+                    $(click_td).attr('rowSpan',  1)
+                    $(this).removeClass("el-table__expand-icon--expanded")
+                  }
+                  else{//动作：展开
+                    trs.show()
+                    trs.not(`tr[data-pr=${click_tr.data("pr")+1}]`).each(function(_,one){ 
+                      $(one).css('display',$(one).data('old')||'table-row') 
+                      
+                    })
+                    $(click_td).attr('rowSpan',  $(click_td).data('oldrs'))
+                    $(this).addClass("el-table__expand-icon--expanded")
+                  }
+                  //trs.slideToggle(100)
+                })
                 _this.scrollFunc({currentTarget:target})
             })
           })
@@ -497,7 +532,9 @@ export default {
                     ${append}
               })
               $("#luckysheet-cell-main").append("<div id='luckysheet_paper_width' style='position: absolute;left: ${paperSetting.pageSize_Width-paperSetting.margin_left-paperSetting.margin_right}pt;top: 0;bottom: 0px;border: 1px solid green;z-index: 100002;'></div>");
-              //$("#luckysheet-cell-main").append("<div id='luckysheet_background_img' style='position: absolute;left:0pt;top: 0;z-index: 3;'><img src='img/38_1610456500965.jpg' style='opacity:0.4;position:absolute;width:950px;height:683px;left:0px;top:0px;' ></div>");
+              $("#luckysheet-cell-main").append("<div id='luckysheet_background_img' style='position: absolute;left:0pt;top: 0;z-index: 100002;'><img src='${paperSetting.print_template_background}' style='opacity:0.4;position:absolute;width:950px;height:683px;left:0px;top:0px;' ></div>");
+              if(jQuery("#luckysheet_background_img").attr("src")==undefined)
+                jQuery("#luckysheet_background_img").hide()
             }
             insertScript("cdn/luckysheet/plugins/js/plugin.js",function(){insertScript("cdn/luckysheet/luckysheet.umd.js",buildReport)})
           `

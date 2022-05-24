@@ -1,6 +1,8 @@
 <template>
-	<div :id="'cr_dyn_id_'+context.mode+'_'+id_name" style="width:100%;height:100%"  v-if="old_content==cut_script_css_content" >
-		<RuntimeTemplateCompiler :template="cut_script_css_content" :parent="real_parentCompent"/>
+	<div :id="'cr_dyn_id_'+context.mode+'_'+id_name" 
+  style="width:100%;height:100%;display:flex; flex: 1;" 
+   v-if="old_content==cut_script_css_content" >
+		<RuntimeTemplateCompiler style="width:100%;height:100%; flex: 1;"  :template="cut_script_css_content" :parent="real_parentCompent"/>
 	</div>
 </template>
 

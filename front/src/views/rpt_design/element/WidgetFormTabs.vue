@@ -37,7 +37,8 @@ export default {
           
           if(element.gridName  && element.gridName!="_random_"){
             this.context?.allElementSet.add(element.gridName)  
-            this.context.report_result.name_lable_map[element.gridName]=element
+            if(this.context.report_result.name_lable_map[this.self.gridName]==undefined)
+              this.context.report_result.name_lable_map[element.gridName]=element
           }
       });
   },

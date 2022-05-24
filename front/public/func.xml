@@ -160,6 +160,109 @@ col()
     <function  name="ceiling()" >
       取带小数点的数字的天板值
       ceiling(3.5)=3</function>
+    <function  name="abs()" >
+      绝对值
+      abs(-3)=3</function>
+    <function  name="qr_code()" >
+      二维码： qr_code("文本内容")
+      条形码：qr_code("文本内容","CODE_128")
+      第二个参数是条码标准，第三个参数是宽，第四个是高。
+      二维码缺省宽高是250px
+      其他类型缺省宽是300px ，高是30px。
+      条码标准可用值为：
+        //
+        // 摘要:
+        //     Aztec 2D barcode format.
+        AZTEC = 0x1,
+        //
+        // 摘要:
+        //     CODABAR 1D format.
+        CODABAR = 0x2,
+        //
+        // 摘要:
+        //     Code 39 1D format.
+        CODE_39 = 0x4,
+        //
+        // 摘要:
+        //     Code 93 1D format.
+        CODE_93 = 0x8,
+        //
+        // 摘要:
+        //     Code 128 1D format.
+        CODE_128 = 0x10,
+        //
+        // 摘要:
+        //     Data Matrix 2D barcode format.
+        DATA_MATRIX = 0x20,
+        //
+        // 摘要:
+        //     EAN-8 1D format.
+        EAN_8 = 0x40,
+        //
+        // 摘要:
+        //     EAN-13 1D format.
+        EAN_13 = 0x80,
+        //
+        // 摘要:
+        //     ITF (Interleaved Two of Five) 1D format.
+        ITF = 0x100,
+        //
+        // 摘要:
+        //     MaxiCode 2D barcode format.
+        MAXICODE = 0x200,
+        //
+        // 摘要:
+        //     PDF417 format.
+        PDF_417 = 0x400,
+        //
+        // 摘要:
+        //     QR Code 2D barcode format.
+        QR_CODE = 0x800,
+        //
+        // 摘要:
+        //     RSS 14
+        RSS_14 = 0x1000,
+        //
+        // 摘要:
+        //     RSS EXPANDED
+        RSS_EXPANDED = 0x2000,
+        //
+        // 摘要:
+        //     UPC-A 1D format.
+        UPC_A = 0x4000,
+        //
+        // 摘要:
+        //     UPC-E 1D format.
+        UPC_E = 0x8000,
+        //
+        // 摘要:
+        //     UPC/EAN extension format. Not a stand-alone format.
+        UPC_EAN_EXTENSION = 0x10000,
+        //
+        // 摘要:
+        //     MSI
+        MSI = 0x20000,
+        //
+        // 摘要:
+        //     Plessey
+        PLESSEY = 0x40000,
+        //
+        // 摘要:
+        //     Intelligent Mail barcode
+        IMB = 0x80000,
+        //
+        // 摘要:
+        //     Pharmacode format.
+        PHARMA_CODE = 0x100000,
+        //
+        // 摘要:
+        //     UPC_A | UPC_E | EAN_13 | EAN_8 | CODABAR | CODE_39 | CODE_93 | CODE_128 | ITF
+        //     | RSS_14 | RSS_EXPANDED without MSI (to many false-positives) and IMB (not enough
+        //     tested, and it looks more like a 2D)
+        All_1D = 0xF1DE
+
+      </function>
+        
   </catalogy>
   <catalogy name="集合函数">
     <function  name="union_set()" >
@@ -286,6 +389,18 @@ formatDatetime('2007-01-01')
       =iif(ds.img!=null,"\<img style='width:60px;height:60px' src='data:image/png;base64,"
                         +ByteArrToBase64String(ds.img) +"'>"
           ,'')
+    </function>
+    <function  name="replicate(,)" >
+      将目标字符串重复指定次数
+      =replicate("abc",3)
+    </function>
+    <function  name="left(,)" >
+      将目标字符串重复指定次数
+      =left("123456789",3) //返回123
+    </function>
+    <function  name="right(,)" >
+      将目标字符串重复指定次数
+      =right("123456789",3)// 返回789
     </function>
   </catalogy>
 </functions>

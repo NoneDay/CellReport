@@ -14,7 +14,7 @@
     </el-dialog> 
 
     <widgetDialog v-if="widget_dialogVisible" :visible.sync="widget_dialogVisible" 
-      :action_target="ref_gridlayout()"  @submit="refresh_setting">
+      :action_target="ref_gridlayout()" >
     </widgetDialog>
 
     <datasetManger2 v-if="datamanger_dialogVisible"  :grpId="grpId"
@@ -47,26 +47,33 @@
             <el-button type='primary' size="mini"   @click="datamanger_dialogVisible=true" >数据</el-button>
             <el-button type='primary' size="mini"   @click="notebook_dialog_visible=true" >设置</el-button>
             <el-button type='primary' size="mini"   @click="simpleGuide_dialogVisible=true" >向导</el-button>
-            <el-button type='primary' size="mini"   @click="widget_dialogVisible=!widget_dialogVisible">组件</el-button>            
+            <el-button type='primary' size="mini"   @click="widget_dialogVisible=!widget_dialogVisible">组件</el-button>   
+                     
             <!-- <el-link :href="baseUrl+'/run'+(report.reportName.split(':')[0]=='default'?'':(':'+report.reportName.split(':')[0]))+'?reportName='+report.reportName.split(':')[1]" target="_blank"> -->
             <el-button type='primary' icon="el-icon-view" size="mini" @click="run_report(baseUrl+'/run'+(report.reportName.split(':')[0]=='default'?'':(':'+report.reportName.split(':')[0]))+'?reportName='+report.reportName.split(':')[1])" >运行</el-button>
             <!-- </el-link> -->
-            <div style="display: inline-flex;width:110px;margin:0px;float:right;">
+            
+            <div style="display: inline-flex;width:120px;margin:0px;float:right;">
               <el-select v-model="layout_mode" placeholder="请选择">
                 <el-option label="设计显示页" value="show"></el-option>
                 <el-option label="设计隐藏页" value="hidden"></el-option>
               </el-select>
             </div>
+           <!-- <div style="display: inline-flex;width:120px;margin:0px;float:left;">
+              <widgetDialog 
+                    :action_target="ref_gridlayout()" >
+                  </widgetDialog>
+              </div> -->
           </el-header>
           <!-- 中间主布局 -->
-          <el-main  class="widget-container" :style="{color:report.defaultsetting['COLOR'],
+          <el-main  class="widget-container" ref="grid_layout_form" style="overflow: auto;"  :style="{color:report.defaultsetting['COLOR'],
           background: formIsEmpty ? `url(${widgetEmpty}) no-repeat 50%`: report.defaultsetting['BACKGROUND-COLOR']}"
-          v-if="widgetForm!=null"
+          
           >
-               <grid-layout-form v-if="formType=='gridLayout'" ref="gridlayout"
+               <grid-layout-form v-if="widgetForm!=null && formType=='gridLayout'" ref="gridlayout"
                :layout.sync="widgetForm" 
                :select.sync="selectWidget"
-                
+               :big_screen_scale="big_screen_scale"
                 @change="handleHistoryChange(widgetForm)"
                 >
               </grid-layout-form>          
@@ -75,51 +82,55 @@
       </el-container>
       <!-- 右侧配置 -->
       <el-aside class="widget-config-container" :width="rightWidth"> 
-              <ul v-if="cur_select_type=='cell'" ghost-class="ghost" style="padding-left: 10px;font-size:12px;">
-                  <li  style="display: flex;padding-bottom: 10px;" >
-                    <label style="width:100px;padding-top:5px;" >扩展方向</label>
-                    <el-select v-model="cur_cell.cr._extendDirection" placeholder="扩展方向">
-                      <el-option label="行" value="row"></el-option>
-                      <el-option label="列" value="column"></el-option>
-                      <el-option label="无" value="none"></el-option>
-                    </el-select>
-                  </li>
-                  <!--
-                  <li  style="display: flex;padding-bottom: 10px;" >
-                    <el-tag style="color:black" >格子类型</el-tag>
-                    <el-select v-model="cur_cell.cr._CELL_TYPE" placeholder="格子类型">
-                      <el-option label="原始" value=""></el-option>
-                      <el-option label="图片" value="img"></el-option>
-                      <el-option label="html" value="htm"></el-option>
-                    </el-select>
-                  </li> -->
-                  <li v-for="item in [{display:'左顶格',val:'_leftHead',disabled:true},
-                            {display:'上顶格',val:'_topHead',disabled:true},
-                            {display:'文字颜色',val:'_color'},
-                            {display:'背景色',val:'_background-color'},
-                            //{display:'字体大小',val:'_FONT-SIZE',disabled:true},
-                            {display:'链接',val:'_link'},                            
-                            {display:'显示值表达式',val:'_displayValueExpr'},
-                             {display:'值表达式',val:'_valueExpr'},
-                             {display:'加到style中',val:'_append'},
-                            
-                             ]"  
-                      style="display: flex;padding-bottom: 10px;" :key="item.display" >
-                    <label style="width:120px;padding-top:5px;">{{item.display}}</label>
-                    
-                    <span v-if="item.disabled==true" style="color:red;font-weight: 800;flex: 1;text-align: center;"> {{ cur_cell.cr[item.val] }}
-                        </span>
-                    <el-input :placeholder="'请输入内容:'+item.display" v-model="cur_cell.cr[item.val]" v-else>
-                    </el-input>
-                      <el-button  @click="expr_edit(cur_cell.cr,item)" v-if="['_calcLevel'].includes(item.val)==false"
-                                circle  :type="item.val=='_valueExpr'?'danger': 'success'" size="mini" icon="el-icon-edit"
-                                style="padding: 4px;margin-left: 5px;">
-                      </el-button>
-                  </li>
-                </ul>
-        <widget-config  v-else 
+        <div style="display:flex;height:100%">
+         <el-slider v-if="report.defaultsetting.big_screen=='1'" v-model="big_screen_scale" vertical style="align-self:flex-end;margin: 0;width: 10px;height: 200px;" ></el-slider>
+        <ul v-if="cur_select_type=='cell'" ghost-class="ghost" style="padding-left: 10px;font-size:12px;">
+            <li  style="display: flex;padding-bottom: 10px;" >
+              <label style="width:100px;padding-top:5px;" >扩展方向</label>
+              <el-select v-model="cur_cell.cr._extendDirection" placeholder="扩展方向">
+                <el-option label="行" value="row"></el-option>
+                <el-option label="列" value="column"></el-option>
+                <el-option label="无" value="none"></el-option>
+              </el-select>
+            </li>
+            <!--
+            <li  style="display: flex;padding-bottom: 10px;" >
+              <el-tag style="color:black" >格子类型</el-tag>
+              <el-select v-model="cur_cell.cr._CELL_TYPE" placeholder="格子类型">
+                <el-option label="原始" value=""></el-option>
+                <el-option label="图片" value="img"></el-option>
+                <el-option label="html" value="htm"></el-option>
+              </el-select>
+            </li> -->
+            <li v-for="item in [{display:'左顶格',val:'_leftHead',disabled:true},
+                      {display:'上顶格',val:'_topHead',disabled:true},
+                      {display:'文字颜色',val:'_color'},
+                      {display:'背景色',val:'_background-color'},
+                      //{display:'字体大小',val:'_FONT-SIZE',disabled:true},
+                      {display:'链接',val:'_link'},                            
+                      {display:'显示值表达式',val:'_displayValueExpr'},
+                      {display:'值表达式',val:'_valueExpr'},
+                      {display:'加到style中',val:'_append'},
+                      {display:'pdf输出时，单元格行后分页(true)',val:'_row_page_break'},
+                    ]"  
+                style="display: flex;padding-bottom: 10px;" :key="item.display" >
+              <label style="width:120px;padding-top:5px;">{{item.display}}</label>
+              
+              <span v-if="item.disabled==true" style="color:red;font-weight: 800;flex: 1;text-align: center;"> {{ cur_cell.cr[item.val] }}
+                  </span>
+              <el-input :placeholder="'请输入内容:'+item.display" v-model="cur_cell.cr[item.val]" v-else>
+              </el-input>
+                <el-button  @click="expr_edit(cur_cell.cr,item)" v-if="['_calcLevel'].includes(item.val)==false"
+                          circle  :type="item.val=='_valueExpr'?'danger': 'success'" size="mini" icon="el-icon-edit"
+                          style="padding: 4px;margin-left: 5px;    width: 30px;height: 30px;">
+                </el-button>
+            </li>
+        </ul>
+        <widget-config  v-else style="flex:1"
           :data="selectWidget" 
+          :layout_config="cur_layout_item"
         ></widget-config>
+        </div>
       </el-aside>
     </el-container>
 
@@ -141,7 +152,7 @@ import { mapGetters, mapState } from "vuex";
 import {widget_div_layout,widget_row_col_layout} from './fieldsConfig.js'
 import history from './mixins/history'
 import {luckySheet2ReportGrid,loadFile,deepClone,build_layout,get_signalR_connection,getObjType,getRangeByText,numToString} from './utils/util.js'
-import {open_one,save_one,grid_range_level,preview_one} from "./api/report_api"
+import {open_one,save_one,grid_range_level,getAllWidget} from "./api/report_api"
 import Preview from './preview.vue'
 import simpleGuide from './simpleGuide.vue'
 import Config from './config'
@@ -150,8 +161,16 @@ import  codemirror  from './element/vue-codemirror.vue'
 import templateManger from "./templateManger.vue"
 import widgetDialog from "./widgetDialog.vue"
 import x2js from 'x2js' 
+
 const x2jsone=new x2js(); //实例
 const report_cache={}
+
+if(window.cr_allWidget==undefined){
+  getAllWidget('design_rpt').then(data=>{
+      window.cr_allWidget=data
+  });    
+}
+
 export default {
   name: "FormDesign",
   mixins: [history],
@@ -217,7 +236,7 @@ export default {
     Vue.use(Config)
     Vue.use(install_component)
     Vue.component('widgetDialog', widgetDialog);
-    Vue.component('draggable', draggable);
+    //Vue.component('draggable', draggable);
     let url_arr=window.location.href.split('?')
     if(url_arr.length>0){
       let cs = url_arr[1];                //获取?之后的参数字符串
@@ -323,7 +342,7 @@ export default {
           },//报表运行后的结果
         in_exec_url:{stat:false},//当前是否已经在点击后取数
         preview_dialogVisible:false,
-       
+        big_screen_scale:100,
         simpleGuide_dialogVisible:false,
         widget_dialogVisible:false,
         datamanger_dialogVisible:false,
@@ -342,10 +361,10 @@ export default {
 "_calcLevel":"","_FONT-SIZE":"","_text-align":"",}},
         cur_sheet:null,
         sheet_window:null,
-        
+        cur_layout_item:null,
         can_watch_cell:false,//因为第一次切换单元格后就会执行update cell ，用他来避免首次更新不必要的计算
         layout_mode:"show",
-        cur_select_type:'cell',
+        cur_select_type:'Acell',
         fields,
         widgetEmpty, 
         canDraggable:true,
@@ -355,7 +374,7 @@ export default {
               dataSets:{dataSet:[]}
               ,params:{param:[]}
               ,AllGrids:{HtmlText:[],grid:[]}
-              ,reportName:""
+              ,reportName:"",defaultsetting:{}
           },
         widgetForm: widget_row_col_layout(),//布局显示
        
@@ -384,14 +403,19 @@ export default {
         updated:this.lucky_updated,
         rangePasteBefore:this.rangePasteBefore,
         design:true,
-        selectWidget:this.selectWidget,
+        selectWidget:this.selectWidget,        
         clickedEle:this.clickedEle,
         in_exec_url:this.in_exec_url,
         mode:"design",
         allElementSet:this.allElementSet,
         all_sheet_windows:this.all_sheet_windows,
         parent_defaultsetting:this.report.parent_defaultsetting,
-        fields:this.fields
+        fields:this.fields   ,
+        templateGuide:`以等号开始的是公式，如：=cur_ds?cur_ds[1][4]:14<br/>
+      cur_ds是指定的依赖数据集的数据，为一个二维数组，第一行是列名，第二行开始是数据。计数是从0开始。
+      <br/>也就是说cur_ds[1]就是数据集的第一行数据
+      <br/>非等号开始为普通字符串
+      <br/>如果这里不能满足复杂需要，可以直接点击上面的编辑模板进行编辑`,    
       }, 
       fresh_ele:this.fresh_ele,
       clickedEle:this.clickedEle,
@@ -412,7 +436,7 @@ export default {
       Object.keys(this.report_result).forEach(key=>{
         delete this.report_result[key]
       })
-      
+          
       let signalR_connection=get_signalR_connection()
       let _this=this
       let _report
@@ -457,16 +481,16 @@ export default {
             Object.entries(zb_dict).forEach( kv=>{
               if(_this.report_result.dataSet==undefined){
                 _this.report_result.dataSet={}
-                 _this.report_result.zb_var={}
-                 _this.report.zb_var={}
+                 _this.report_result._zb_var_={}
+                 _this.report._zb_var_={}
               }
               if(typeof kv[1]=="string" && kv[1].startsWith("{")){
                 let one=JSON.parse( kv[1])
                 _this.report_result.dataSet[kv[0]]=[[one.columns].concat(one.data)]
               }
               else{
-                _this.report_result.zb_var[kv[0]]=kv[1]
-                _this.report.zb_var[kv[0]]=kv[1]
+                _this.report_result._zb_var_[kv[0]]=kv[1]
+                _this.report._zb_var_[kv[0]]=kv[1]
               }
             })
             
@@ -483,8 +507,8 @@ export default {
       let _report=x2jsone.xml2js(response_data.report_content).report
       if(_report.notebook==undefined)
         _report.notebook=""
-      if(_report.zb_var){
-        this.report_result.zb_var=JSON.parse(_report.zb_var)
+      if(_report._zb_var_){
+        this.report_result._zb_var_=JSON.parse(_report._zb_var_)
       }
       if(typeof _report.dataSets.dataSet=="string")
         _report.dataSets.dataSet=[]
@@ -524,7 +548,7 @@ export default {
 
       this.report.layout=undefined
       this.report.AllGrids={HtmlText:[],grid:[]}
-      delete this.report.zb_var
+      delete this.report._zb_var_
       Object.assign(this.report,_report)
       this.report.conn_list=response_data.conn_list
       this.report.range_level=response_data.range_level
@@ -561,9 +585,28 @@ export default {
             element._fields="[]"
           }
       });
+      //this.selectWidget={}
+      if(this.report.defaultsetting.big_screen=='1'){
+        this.big_screen_scale=
+        Math.floor(
+        Math.min(
+        100*this.$refs.grid_layout_form.$el.clientHeight/parseInt(this.report.defaultsetting.screen_height)
+        ,100*this.$refs.grid_layout_form.$el.clientWidth/parseInt(this.report.defaultsetting.screen_width)
+        ))
+        
+      }
+      this.setSelectWidgetForLayout();
     },
     notebook_handleSubmit(){
       this.notebook_dialog_visible=false
+    },
+    setSelectWidgetForLayout(){
+      this.$nextTick(() => {
+        this.cur_select_type="Acell"
+        this.selectWidget={type:'layout',config:this.report.defaultsetting}
+        if(this.selectWidget.config.border_option==undefined)
+            this.$set(this.selectWidget.config,'border_option',{color:["#83bff6","#00CED1"]})
+      });
     },
     change_layout(){
        if (Array.isArray(this.widgetForm))//gridLayout=>divLayout
@@ -904,7 +947,7 @@ export default {
                 if(cell.ff) cell.cr['_FONT']=cell.ff
                 if(cell.bl!=undefined) cell.cr['_BOLD']=(cell?.bl==1?"True":"False")
                 cell.cr['_text-align']=(cell.ht=='0'?"center":(cell.ht=='1'?"left":'right'))
-                cell.cr['_vertical-align']=(cell.ht=='0'?"middle":(cell.vt=='1'?"top":'bottom'))
+                cell.cr['_vertical-align']=(cell.vt=='0'?"middle":(cell.vt=='1'?"top":'bottom'))
                 if(cell.it!=undefined) cell.cr['_ITALIC']=cell.it==1 ?"True" :"False"
                 if(cell.cl!=undefined) cell.cr['_UNDERLINE']=cell.cl==1 ?"True" :"False"
                 if(cell.f &&  cell.f.startsWith("=")) //
@@ -937,10 +980,7 @@ export default {
       setTimeout(async () => {
           let grid= _this.report.AllGrids.grid.find(a=>a._name==_this.sheet_window.gridName)
           let aaa=luckySheet2ReportGrid( _this.sheet_window,_this.report.defaultsetting)
-          let grid_setting=_this.findGridInWidgeForm(_this.widgetForm,_this.sheet_window.gridName)
-          grid_setting.conditionformat_save=JSON.stringify(_this.sheet_window.luckysheet.getAllSheets()[0].luckysheet_conditionformat_save)
-          grid_setting.alternateformat_save_modelCustom=JSON.stringify(_this.sheet_window.luckysheet.getAllSheets()[0].luckysheet_alternateformat_save_modelCustom)
-          grid_setting.alternateformat_save=JSON.stringify(_this.sheet_window.luckysheet.getAllSheets()[0].luckysheet_alternateformat_save)
+          
           $.extend(grid,aaa.grid);  
           try{
             _this.setCellFromAPI = true;
@@ -983,6 +1023,37 @@ export default {
     save_report(){
       this.save_fix()
       this.save_layout(this.layout_mode)
+      let _this=this
+      if(this.report.reportName.split(":")[1].startsWith("大屏/")){
+        this.setSelectWidgetForLayout();
+        setTimeout(()=>{
+          html2canvas(document.getElementById('cr_gridLayout'), {
+            width: _this.report.defaultsetting.screen_width*_this.big_screen_scale/100, // canvas宽度
+            height: _this.report.defaultsetting.screen_height*_this.big_screen_scale/100, // canvas高度
+            //scale:2,
+            //dpi:300,
+            foreignObjectRendering: true, // 是否在浏览器支持的情况下使用ForeignObject渲染
+            useCORS: true, // 是否尝试使用CORS从服务器加载图像
+            async: false, // 是否异步解析和呈现元素
+              backgroundColor: null,
+            
+            }).then(canvas => {
+              function dataURLtoFile (dataurl, filename) {
+                var arr = dataurl.split(','),
+                  mime = arr[0].match(/:(.*?);/)[1],
+                  bstr = atob(arr[1]),
+                  n = bstr.length,
+                  u8arr = new Uint8Array(n);
+                while (n--) {
+                  u8arr[n] = bstr.charCodeAt(n);
+                }
+                return new File([u8arr], filename, { type: mime });
+              }
+              var file = dataURLtoFile(canvas.toDataURL('image/jpeg', 0.1), new Date().getTime()  + '.jpg');
+              save_one({reportName:this.report.reportName},null,file)
+            })
+        },50)
+      }
       save_one(this.report)
       //console.info(x2jsone.js2xml({report:this.report}))
     },
@@ -1003,7 +1074,7 @@ export default {
       let _this=this
       let old_widgetForm=_this.widgetForm
       _this.selectWidget={}
-      _this.widgetForm=[]
+      _this.widgetForm=null
       setTimeout(()=>{
         _this.widgetForm=old_widgetForm
       })
@@ -1026,8 +1097,32 @@ export default {
       })
     },
     selectWidget (newVal,oldval) {
+      this.cur_layout_item=null
       if(JSON.stringify(this.selectWidget)=='{"prop":"--"}')
         return
+      let _this=this
+      function find_item(item){
+            if(_this.selectWidget.type=='layout_item' && item.i==_this.selectWidget.item_i)
+                return true;
+            if(item==_this.selectWidget || item.element==_this.selectWidget)
+                return true;
+            if(item?.element?.children?.column){
+                for(let one in item.element.children.column){
+                    if(find_item(item.element.children.column[one]))
+                        return true;
+                }
+            }
+            return false;
+        }
+      
+      for(let idx=0;idx<this.widgetForm.length;idx++){        
+        if(find_item(this.widgetForm[idx])){
+          this.cur_layout_item={type:'layout_item',config:this.widgetForm[idx].bg}             
+          break
+        }
+      }
+      if(this.cur_layout_item==null)
+        this.$set(this,'cur_layout_item',{type:'layout',config:this.report.defaultsetting})
       this.cur_select_type='widget'
     },
 //======================
@@ -1087,4 +1182,13 @@ export default {
 <style lang="scss">
 @import './styles/index.scss';
 .cr_icon{height:15px;width:15px}
+.widget-config-container .el-slider.is-vertical .el-slider__runway {
+     margin: 0;
+}
+.el-menu--horizontal>.el-submenu .el-submenu__title {
+    height: 25px;
+    line-height: 25px;
+    border-bottom: 2px solid transparent;
+    color: #909399;
+}
 </style>

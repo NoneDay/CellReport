@@ -1,7 +1,11 @@
 <template>
+<div class='build'>
+  <imglist ref="imglist" @change="handleSetimg"></imglist>
+  <el-tabs type="border-card"  v-model="tab_val" >    
+  <el-tab-pane v-if="!data.type.startsWith('layout')" label="配置" name="0">
   <div class="widget-config" style="height:100%;overflow-y:auto;overflow-x:hidden;font-size:11px">
-    <el-form label-suffix="："
-             v-if="this.data && Object.keys(this.data).length > 0"
+    <el-form v-if="this.data && Object.keys(this.data).length > 0"
+            label-suffix="："
              labelPosition="left"
              labelWidth="100px"
              size="mini">
@@ -22,7 +26,7 @@
               </el-option-group>
             </el-select>
           </el-form-item>
-          <el-form-item label="运行时标题">
+          <el-form-item label="显示标题">
             <el-switch
               v-model="data.show_title"
               active-text="显示"
@@ -37,7 +41,7 @@
                       placeholder="标题"></el-input>
             </div>
           </el-form-item>        
-          <el-form-item label="ID">
+          <el-form-item label="标识ID">
             <el-button @click="update_name" type="primary">{{data.gridName}}</el-button>
           </el-form-item>   
           <el-form-item label="表单栅格"
@@ -49,7 +53,7 @@
                              :min="4"
                              :max="24"></el-input-number>
           </el-form-item>
-          <el-form-item label="高度"
+          <el-form-item label="缺省高度"
                         v-if="!data.subfield && !['group'].includes(data.type)">
             <el-input style="width:100%;"
                              v-model="data.style.height"
@@ -58,33 +62,165 @@
                              ></el-input>
           </el-form-item>
           <component :is="getComponent"    :data="data"></component>
-    </el-form> 
+          <config-text  :data="data" v-if="data.type=='text'"/>
+          <template  v-if="VisualDesign&& VisualDesign.content.trim()!=''">
+            <el-form-item label="在线文档">
+              <a  v-for="one in VisualDesign.helpurl||[]" :key="one" :href="one" target="_blank">点击查看</a>
+            </el-form-item>
+          <dyncTemplate :parentCompent="parentCompent" 
+            :self="{type:'pc_form',content:VisualDesign.content,gridName:'pc_form'}" 
+            >
+            </dyncTemplate>
+            </template>
     
+   
+    </el-form>     
   </div>
+  </el-tab-pane>
+  <el-tab-pane v-if="layout_config && layout_config.type.startsWith('layout')" label="背景" name="1"> 
+    <el-form label-suffix="："
+             labelPosition="left"
+             labelWidth="100px"
+             size="mini">
+          <el-form-item label="作为大屏" v-if="layout_config.type=='layout'">
+            <el-switch  v-model="layout_config.config['big_screen']" active-value='1' inactive-value='0'
+             active-color="#13ce66"  inactive-color="#ff4949"></el-switch>
+          </el-form-item>   
+          <el-form-item label="大屏宽度" v-if="layout_config.type=='layout'" >
+            <el-input-number v-model="layout_config.config['screen_width']"></el-input-number>
+          </el-form-item>
+             
+          <el-form-item label="大屏高度" v-if="layout_config.type=='layout'">
+            <el-input-number v-model="layout_config.config['screen_height']"></el-input-number>
+          </el-form-item>
+
+          <el-form-item label="背景颜色">
+            <avue-input-color v-model="layout_config.config['BACKGROUND-COLOR']"></avue-input-color>
+          </el-form-item>
+          <el-form-item label="开启旋转">
+            <el-switch  v-model="layout_config.config['is_rotate']"  active-color="#13ce66"  inactive-color="#ff4949"></el-switch>
+          </el-form-item>
+          <el-form-item label="旋转时间">
+            <el-input-number v-model="layout_config.config['rotate_second']" @change="handleChange" :min="1" :max="10" label="描述文字"></el-input-number>
+          </el-form-item>
+          
+          <el-form-item label="背景图片">
+             <img :src="layout_config.config.backgroundImage==''?'img/bg/bg.png' 
+             :layout_config.config.backgroundImage"
+                  @click="handleOpenImg('layout_config.config.backgroundImage','background')"
+                  alt=""
+                  width="100%" />
+            <el-input v-model="layout_config.config.backgroundImage">
+              <div @click="handleOpenImg('layout_config.config.backgroundImage')" slot="append">
+                <i class="iconfont icon-img">xx</i>
+              </div>
+            </el-input>
+            <i class="el-icon-delete" style="cursor: pointer" 
+                v-if="layout_config.config['backgroundImage'] !== 'static/background/bg.png'" 
+                title="移除背景" 
+                @click="layout_config.config['backgroundImage'] = 'static/background/bg.png'">
+            </i>
+          </el-form-item>
+          <el-form-item label="z-index">
+              <avue-input-number placeholder="z-index" v-model="layout_config.config.z_index"></avue-input-number>
+            </el-form-item>
+          <el-form-item label="边框样式">
+            <el-select v-model="layout_config.config.border_box" placeholder="请选择边框样式">
+                <el-option :label="无边框" value=""></el-option>
+                <el-option :label="'dv-border-box-'+i" :key="i" v-for="i in 13" :value="'dv-border-box-'+i"></el-option>
+            </el-select>
+        </el-form-item>
+        <template v-if="layout_config.config.border_box!='div'">
+          <!-- 颜色设置 -->
+            <el-form-item label="边框主颜色">
+              <avue-input-color placeholder="请选择颜色" v-model="layout_config.config.border_option.color[0]">
+              </avue-input-color>
+            </el-form-item>
+            <el-form-item label="边框副颜色">
+              <avue-input-color placeholder="请选择颜色" v-model="layout_config.config.border_option.color[1]"></avue-input-color>
+            </el-form-item>
+
+            <el-form-item label="翻转"  v-if="['dv-border-box-4','dv-border-box-5','dv-border-box-8',].includes(layout_config.config.border_box)">
+              <avue-switch v-model="layout_config.config.border_option.reverse"></avue-switch>
+            </el-form-item>
+            <el-form-item label="动画时长(秒)" v-if="layout_config.config.border_box === 'dv-border-box-8'">
+              <avue-input-number v-model="layout_config.config.border_option.dur"></avue-input-number>
+            </el-form-item>
+            <!-- 提示语设置  -->
+            <template v-if="layout_config.config.border_box === 'dv-border-box-11'">
+              <el-form-item label="边框标题">
+                <avue-input v-model="layout_config.config.border_option.title"></avue-input>
+              </el-form-item>
+              <el-form-item label="标题宽度">
+                <avue-input-number v-model="layout_config.config.border_option.titleWidth"></avue-input-number>
+              </el-form-item>
+            </template>       
+          </template>  
+    </el-form> 
+
+  </el-tab-pane>
+  <el-tab-pane v-if="getComponent=='config-echart'"  label="事件" name="2">
+    <el-form label-suffix="："
+             labelPosition="left"
+             labelWidth="100px"
+             size="mini">
+    <crSetFresh v-if="getComponent=='config-echart'" :data="data"> </crSetFresh>
+    </el-form> 
+  </el-tab-pane>
+  <el-tab-pane v-if="getComponent=='config-echart'" label="echart" name="3">
+    <el-form label-suffix="："
+             labelPosition="left"
+             labelWidth="100px"
+             size="mini">
+    <echart-main :data="data"> </echart-main>
+    </el-form> 
+  </el-tab-pane>
+  
+  <!--
+  <el-tab-pane label="角色管理">角色管理</el-tab-pane> -->
+</el-tabs>
+</div>
 </template>
 
 <script>
 import fields from './fieldsConfig.js'
-
-const dateArr = [
-  'year', 'month', 'week', 'date', 'datetime', 'time', 'daterange', 'timerange', 'datetimerange', 'dates'
-]
-
+import imglist from './config/imglist.vue'
+import crSetFresh from "./config/cr_set_fresh.vue";
+import echartMain from "./config/echarts/main.vue"; 
 export default {
   name: 'widget-config',
-  props: ['data'],
+  props: ['data','layout_config'],
   inject: ["context"],
+  components:{imglist, crSetFresh ,echartMain,},
+  mounted(){
+    
+    
+  },
   computed: {
+    parentCompent(){return this},
+    VisualDesign(){
+      //if(this.data.component=="echarts")
+      //  return
+      this.edit_item=this.data
+      let arr=(window.cr_allWidget.admin_json.visual_design_arr||[]).concat(window.cr_allWidget.self_json.visual_design_arr||[])
+      let ret= Enumerable.from(arr).firstOrDefault(x=>x.type==this.data.type)
+      return ret
+    },
     getComponent() {
+      this.tab_val=!this.data.type.startsWith('layout')?'0':'1'
+      if(this.layout_config && this.layout_config.config.border_option==undefined)
+        this.$set(this.layout_config.config,'border_option',{color:["#83bff6","#00CED1"]})
       const prefix = 'config-'
       const { type, component } = this.data
-      if ((!type || component) && ! ['html-text','ueditor','echart','dync-template','ele-grid','luckySheetProxy'].includes(type)
-      && component!='dync-template'
+      if ((!type || component) && ! ['text','html-text','ueditor','echart','scroll-ranking-board','scroll-board',
+      'dync-template','ele-grid','luckySheetProxy','bar','line','pie','radar',
+      'gauge','scatter','funnel','map','airBubbleMap'].includes(type)
+      && component!='dync-template' && component!="echarts" 
       )
         return prefix + 'custom'
       let result = 'input'
       
-      if ([,'ele-grid', 'echart'].includes(type)) result = 'echart'
+      if (component=="echarts" || ['ele-grid', 'echart','bar','line','pie','radar','gauge','scatter','funnel','map','airBubbleMap'].includes(type)) result = 'echart'
       else if (['dync-template', 'html-text'].includes(component)) result = 'html-text'
       else if ("luckySheetProxy"==type)  result = 'report'
       else result = type
@@ -93,21 +229,46 @@ export default {
     }
   },
   watch:{
-    data(){
-      if(this.data.style==undefined)
-        this.data.style={}
-      if(this.data.style.height==undefined){
-        this.data.style.height="100%"
-      }
-    }
+    //data(){
+    //  if(this.data.style==undefined)
+    //    this.data.style={}
+    //  if(this.data.style.height==undefined){
+    //    this.data.style.height="100%"
+    //  }
+    //  if(this.data.style.height==undefined){
+    //    this.data.style.height="100%"
+    //  }
+    //}
   },
   data() {
     return {
       fields,
-      collapse: "1"
+      collapse: "1",
+      edit_item:{},
+      tab_val:"0",
+      templateGuide:`以等号开始的是公式，如：=cur_ds?cur_ds[1][4]:14<br/>
+      cur_ds是指定的依赖数据集的数据，为一个二维数组，第一行是列名，第二行开始是数据。计数是从0开始。
+      <br/>也就是说cur_ds[1]就是数据集的第一行数据
+      <br/>非等号开始为普通字符串
+      <br/>如果这里不能满足复杂需要，可以直接点击上面的编辑模板进行编辑`,
     }
   },
   methods: {
+    clickGuide(one){
+      window.open(one,'_blank')
+    },
+     //打开图库
+    handleOpenImg (item, type) {
+      if(this.layout_config.type=='layout')
+        this.$refs.imglist.openImg(item, 'background');
+      else
+        this.$refs.imglist.openImg(item, 'border');
+    },
+    //图库框回调赋值
+    handleSetimg (val, type) {
+      eval("this."+type+"='" +val+"'")
+      //this.layout_config.config['backgroundImage'] = val;
+    },
       has_name(name){
         if(this.context.allElementSet.has(name)){
           this.$alert("名字不能重复");
@@ -188,4 +349,5 @@ export default {
     font-size: 11px;
     display: inline-block;
 }
+.guide{background-color: yellow;}
 </style>

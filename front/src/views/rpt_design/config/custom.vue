@@ -3,7 +3,7 @@
     <div class="el-form-item el-form-item--small el-form--label-top">
       <label class="el-form-item__label"
              style="padding: 0;">自定义属性：</label>
-      <div class="el-form-item__content">
+      <div >
           <codemirror     v-model="params" 
               :options="{tabSize: 4, mode: 'text/javascript', styleActiveLine: true,lineWrapping: true,
               theme: 'cobalt',showCursorWhenSelecting: true, cursorBlinkRate:0 }" 
@@ -19,7 +19,7 @@
     <div class="el-form-item el-form-item--small el-form--label-top">
       <label class="el-form-item__label"
              style="padding: 0;">自定义事件：</label>
-      <div class="el-form-item__content">
+      <div>
         <codemirror    v-model="event"  :keyIndex="data.prop"
               :options="{tabSize: 4, mode: 'text/javascript', styleActiveLine: true,lineWrapping: true,
               theme: 'cobalt',showCursorWhenSelecting: true, cursorBlinkRate:0 }" 

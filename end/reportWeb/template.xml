@@ -3,8 +3,9 @@
 <template>
 	<FIXTOP_BACKCOLOR></FIXTOP_BACKCOLOR>
 	<FIXTOP_COLOR></FIXTOP_COLOR>
-	<BACKGROUND-COLOR>white</BACKGROUND-COLOR>
-	<COLOR>black</COLOR>
+	<BACKGROUND-COLOR>#ffffff</BACKGROUND-COLOR>
+	<backgroundImage></backgroundImage>
+	<COLOR>#000000</COLOR>
 	<FONT>微软雅黑</FONT>
 	<FONT-SIZE>11</FONT-SIZE>
 	<border_box>div</border_box>
@@ -15,11 +16,14 @@
 	<layout_margin>10</layout_margin>
 	<layout_pan_height>100%</layout_pan_height>
 	<row_col_gutter>10</row_col_gutter>
-	
+	<big_screen>0</big_screen>
+	<screen_height>1080</screen_height>
+	<screen_width>1920</screen_width>
 	<BORDER_STYLE><![CDATA[0.5pt solid #000;]]></BORDER_STYLE>
-	<out_keys>BACKGROUND-COLOR,COLOR,FONT,FONT-SIZE,border_box,layout_mode,show_form,layout_row_height,layout_colNum,layout_margin,layout_pan_height,row_col_gutter</out_keys>
+	<out_keys>BACKGROUND-COLOR,COLOR,FONT,FONT-SIZE,border_box,layout_mode,show_form,layout_row_height,layout_colNum,layout_margin,layout_pan_height,row_col_gutter,backgroundImage,big_screen,screen_width,screen_height</out_keys>
 
 	<TABLE_APPEND><![CDATA[ x:str cellSpacing=0 cellPadding=0  style="TABLE-LAYOUT: fixed; MARGIN: 0px; FONT-SIZE: 11px; Z-INDEX: -5;  BORDER-COLLAPSE: collapse;"]]></TABLE_APPEND>
+	<sql_max_rows>500000</sql_max_rows>
 	<footer2>
 <![CDATA[
 <script>

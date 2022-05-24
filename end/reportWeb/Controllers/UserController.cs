@@ -65,13 +65,14 @@ namespace reportWeb.Controllers
         }
         public IActionResult test_zcm(String zcm)
         {
-            if (String.IsNullOrEmpty(CellReport.util.KeyAndPassword.yan_zheng_zcm(zcm)))
+            var zc_dict = CellReport.util.KeyAndPassword.yan_zheng_zcm(zcm);
+            if (null== zc_dict)
             {
                 return Json(new { errcode = 1, message = "验证失败"}, json_option);
             }
             reportDbContext.Rpt_config.First().zcm = zcm;
             reportDbContext.SaveChanges();
-            return Json(new { errcode = 0, message = "验证成功"}, json_option);
+            return Json(new { errcode = 0, message = "验证成功", zc_dict = zc_dict }, json_option);
         }
 
         public IActionResult test_login(String login_script,string test_user, string test_password)

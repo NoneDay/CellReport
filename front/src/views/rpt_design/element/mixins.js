@@ -1,6 +1,7 @@
 import {request} from 'axios'
 import x2js from 'x2js' 
 import {baseUrl} from '../api/report_api'
+import {test_data} from "../utils/util" 
 export default {
     props: {
       depth:{
@@ -31,7 +32,10 @@ export default {
           default: () => {
             return {}
           }
-        }
+        },
+        theme: {
+          type: String
+        },
     },
     inject: ["fresh_ele","context"],
     data () {
@@ -48,7 +52,7 @@ export default {
           handler (val) {
               this.$emit('update:select', val)
           },
-          deep: true
+          deep: false
         },
         'self.gridName'(newVal,oldVal){
           delete this.context.clickedEle[oldVal]
@@ -106,7 +110,12 @@ export default {
       }, 
     },
     computed: {
-      
+        defaultsetting(){
+            if(this.context.mode=='design')
+                return this.context.report.defaultsetting
+            else
+                return this.context.report_result.defaultsetting
+        },
     },
     methods:{
       dataset(ds_name,from=0,to=Number.MAX_VALUE){
@@ -118,21 +127,7 @@ export default {
             ds=ds[0]            
         }
         else
-          ds=[
-            ['product', '2015', '2016', '2017'],
-            ['苹果', 43.3, 85.8, 93.7],
-            ['柚子', 23.1, 73.4, 55.1],
-            ['香蕉', 36.4, 65.2, 82.5],
-            ['菠萝', 42.4, 53.9, 39.1],
-            ['枇杷', 53.3, 85.8, 93.7],
-            ['草莓', 63.1, 73.4, 55.1],
-            ['柠檬', 76.4, 65.2, 82.5],
-            ['红枣', 72.4, 53.9, 39.1],
-            ['葡萄', 48.3, 85.8, 93.7],
-            ['芒果', 88.1, 73.4, 55.1],
-            ['山竹', 88.4, 65.2, 82.5],
-            ['桂圆', 78.4, 53.9, 39.1]                        
-        ]
+          ds=test_data
           return ds.slice(from,to)
       },
       /**

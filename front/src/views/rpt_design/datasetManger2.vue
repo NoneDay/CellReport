@@ -258,7 +258,7 @@ export default {
                         ret=convert_array_to_json(ret)                    
                     return ret
                 }
-                if(this.action_target._type=="from" && this.action_target._dataSource!="" && this.action_target.__text!="")
+                else if(this.action_target._type=="from" && this.action_target._dataSource!="" && this.action_target.__text!="")
                 {
                     let cur_ds=this.all_dataSet.find(a=>a._name==this.action_target._dataSource)
                     if(cur_ds._type=='api'){
@@ -284,7 +284,7 @@ export default {
                     }
                         
                 }
-                if( ['memory','sql','userDefine'].includes(this.action_target._type) )
+                else if( ['memory','sql','userDefine'].includes(this.action_target._type) )
                 {
                     if(this.context.report_result?.dataSet && this.action_target._name)
                     {
@@ -297,19 +297,23 @@ export default {
                         }
                     }
                 }
-                if(this.action_target._type=="cr"  && this.action_target.get){
+                else if(this.action_target._type=="cr"  && this.action_target.get){
                     ret= this.choose_cr_ds(this.action_target.report_result,this.action_target.get)
                     return ret
                 }
-                if(this.action_target._type=="api"  && this.action_target.get){
+                else if(this.action_target._type=="api"  && this.action_target.get){
                     if(this.action_target.__text.indexOf("from_zb")>=0){
                         if(this.action_target.report_result==undefined)
                              return []
                         let data=JSON.parse( this.action_target.report_result.ds_dict[this.action_target.get])
                         ret=convert_array_to_json(data.data,0,-1,data.columns)
                     }
-                    else if(this.action_target.report_result)
+                    else if(this.action_target.report_result){
                         ret= json_by_path(this.action_target.report_result,this.action_target.get)
+                        if(Array.isArray(ret[0])){
+                            ret=convert_array_to_json(ret,0,-1)
+                        }
+                    }
                     return ret
                 }
                 return []

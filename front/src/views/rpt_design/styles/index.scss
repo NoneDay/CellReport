@@ -220,7 +220,7 @@ $primary-background-color: #ecf8ff;
           margin: 0;
           position: relative;
           border-left: 5px solid transparent;
-          border: 1px dotted;
+          
           &.required {
             .el-form-item__label::before {
               content: "*";

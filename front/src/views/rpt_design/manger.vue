@@ -40,30 +40,31 @@
         </div>
         </div>
     </el-tab-pane>
-    <el-tab-pane label="注册" name="third" v-if="userInfo.username=='admin'" style=" height: 100%; width: 100%" >
-        <div style="display:flex;height:400px;flex-direction: column;">
-        <span class="demonstration">
-        机器码:  {{ data.machine_key }}
-        </span>
-        <span class="demonstration">
-          {{ data.is_zc?'已注册为专业版':'未注册' }}
-        </span>
-        <span class="demonstration">
-         当前引擎版本: {{ data.version }}
-        </span>
-        <span class="demonstration">
-         注册码：
-        </span>
-        <codemirror  ref="editor"  v-if='tab_value=="third"'
-                        v-model="data.zcm" 
-                        style="flex:1" @ready="editor_ready"
-                        :options="{tabSize: 4, mode: 'text/javascript', lineNumbers: true,line: true,}"  
-            />
+    <el-tab-pane label="注册" name="third" v-if="userInfo.username=='admin'" style="    overflow: auto; height: 100%; width: 100%" >
+        <el-form label-suffix="："
+             labelPosition="left"
+             labelWidth="100px"
+             size="mini">
+        <el-form-item label="机器码">{{ data.machine_key }}</el-form-item>
+        <template v-if="data.zc_dict">
+        <el-form-item :label="one" v-for="one in Object.keys(data.zc_dict)" :key="one">
+        {{ data.zc_dict[one] }}</el-form-item>  
+        </template>    
+        <el-form-item e-else label="专业版">{{ data.zc_dict?'已注册':'未注册' }}</el-form-item>  
+        <el-form-item label="当前引擎版本">{{ data.version }}</el-form-item>  
+        <el-form-item label="注册码"><el-input
+            type="textarea"
+            :rows="4"
+            placeholder="请输入内容"
+            v-model="data.zcm">
+        </el-input>
+        </el-form-item>  
+        </el-form>
         
         <div>     
         <el-button type="danger" @click="test_zcm">注册测试</el-button>
         </div>
-        </div>
+        
     </el-tab-pane>
   </el-tabs>
 </template>
@@ -100,7 +101,13 @@ export default {
         },
         async test_zcm(){
             let ret=await test_zcm(this.data.zcm)
-            this.$alert(JSON.stringify(ret.message))
+            if(ret.errcode==1)
+                this.$alert(ret.message)
+            else{
+                if(ret.zc_dict["合法注册码"]=="合法")
+                    this.data.zc_dict=ret.zc_dict
+                this.$alert(JSON.stringify(ret.zc_dict))
+            }
         },
 
         editor_ready(){

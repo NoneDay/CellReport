@@ -23,7 +23,7 @@
             :span="7"
             v-for="(item, index) in field.list"
             :key="index"
-            style="height: 140px; border: 1px solid; margin: 10px"
+            style="height: 140px; border: 1px solid; margin: 10px;display: flex; flex-direction: column;"
           >
             <div class="cr_run_title">
               <span> {{ item.label }}</span>
@@ -34,9 +34,14 @@
               >添加</el-button>
             </div>
             <div
-              style="padding: 4px; height: 100px; width: 100%; overflow: auto"
+              style="padding: 4px; flex:1; width: 100%; overflow: hidden"
+          :style="{'background-color':context.report.defaultsetting['BACKGROUND-COLOR'],
+          'color':context.report.defaultsetting['COLOR'],
+          'font-family':context.report.defaultsetting['FONT'],
+          'font-size':context.report.defaultsetting['FONT-SIZE']
+          }"
             >
-              <widget-form-item
+              <widget-form-item  style="height: 400px; width: 400px; transform-origin:0 0;transform:scale(0.4, 0.25)"
                 v-if="
                   tab_value == field.title &&
                   field.title != '核心元素' &&
@@ -72,8 +77,11 @@ export default {
   props: ["visible", "action_target"],
   inject: ["context","has_name"],
   async mounted() {
-    let t_fields=await getAllWidget('design_rpt');    
-    this.t_fields=eval("(function(){\nreturn "+t_fields.txt+"\n})()")
+     if(window.cr_allWidget==undefined)
+      window.cr_allWidget=await getAllWidget('design_rpt');
+    
+    this.t_fields=[].concat(window.cr_allWidget.admin_json.fields||[]).concat(window.cr_allWidget.self_json.fields||[])
+
     this.dialogVisible = true;
   },
   data() {

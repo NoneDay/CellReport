@@ -36,12 +36,12 @@
             </el-col>
                 <el-col :span="6">
             <el-form-item label="文字颜色">
-                <el-color-picker size="medium"  v-model="tmp_css['COLOR']"></el-color-picker>
+                <avue-input-color size="medium"  v-model="tmp_css['COLOR']"></avue-input-color>
             </el-form-item>
             </el-col>
                 <el-col :span="6">
             <el-form-item label="背景色">
-                <el-color-picker size="medium"  v-model="tmp_css['BACKGROUND-COLOR']"></el-color-picker>
+                <avue-input-color size="medium"  v-model="tmp_css['BACKGROUND-COLOR']"></avue-input-color>
             </el-form-item>
             </el-col>
              </el-row>
@@ -69,7 +69,7 @@
             </el-form-item>
             </el-col>
                 <el-col :span="6">
-             <el-form-item label="布局中列数">
+             <el-form-item label="布局中列数"> 
                 <el-input  v-model="tmp_css['layout_colNum']"></el-input>
             </el-form-item>
             </el-col>
@@ -128,6 +128,7 @@ export default {
             one.val=this.action_target[one.name]??""
         });
         Object.keys(this.tmp_css).forEach(x=>{
+            this.copy_prop(this.tmp_css,this.parent_defaultsetting,x)
             this.copy_prop(this.tmp_css,this.action_target,x)
         })
         let _this=this
@@ -189,6 +190,7 @@ export default {
                 })               
             }
             Object.keys(this.tmp_css).forEach(x=>{
+                console.info(this.parent_defaultsetting[x],this.tmp_css[x])
                 if(this.parent_defaultsetting[x]==this.tmp_css[x])
                     delete this.action_target[x]
                 else

@@ -40,8 +40,11 @@ export default {
         'data.fresh_ds'(){
             if(this.data.fresh_params==undefined)
                 this.data.fresh_params=[]
-            if(this.data.fresh_ds.length==0){
-                this.data.fresh_params.splice(0)
+            if(this.data.fresh_ds.length==0 )
+            {
+                if(this.data.fresh_params.length>0){
+                    this.data.fresh_params.splice(0)
+                }
             }else{
                 if(this.data.fresh_params.length==0){
                     let conf=this.data

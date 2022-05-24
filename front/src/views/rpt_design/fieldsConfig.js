@@ -52,22 +52,67 @@ export default [
             gridName:'_random_',
            datasource:"示例",fresh_ds:[],fresh_params:[],
             fields:[],style:{height:'100%'},
-            content:`<div style="width:100%;height:100%" v-if="tableData.length>0"> 
-            <el-table stripe border height="calc(100% - 28px)"  @cell-click="cell_click"
-              :data="tableData.slice((currentPage - 1) * self.pageSize, currentPage*self.pageSize)" 
-            >
-                <el-table-column v-for="(one,idx) in Object.keys(tableData[0])"  sortable
-                  :key="one+idx" :prop="one" :label="one"> 
-                </el-table-column>
-            </el-table>
-            <el-pagination  
-                :current-page.sync="currentPage"
-                :page-sizes="[2, 5, 10, 20]"
-                :page-size.sync="self.pageSize" 
-                layout="total, sizes, prev, pager, next, jumper"
-                :total.sync="tableData.length">
-            </el-pagination>
-            </div> `
+            content:`<template>
+            <div style="width:100%;height:calc(100% - 120px);display: flex;" ref="main" v-if="cr_init">
+                <avue-crud :defaults.sync="defaults" ref="crud" :option="option" 
+                :data="tableData.slice((page.currentPage - 1) * page.pageSize, page.currentPage*page.pageSize)"
+                :page.sync="page"
+                >
+                  <template slot="menuLeft" slot-scope="{size}">
+                    <el-button @click="saveOption" type="danger" :size="size">保存配置</el-button> 
+                  </template> 
+                </avue-crud>
+            </div>
+            </template>
+            <script>
+              let key = _this.self.gridName;
+              export default {
+                data() {
+                  let column=_this.self.fields.filter(x=>x.selected).map(x=> { return {"label":x.label,"prop":x.key}; })
+                  let ret= {
+                    defaults: {},
+                    page: {
+                      currentPage: 1,
+                      total: 0,
+                      //layout: "total,pager,prev, next",
+                      background:false,
+                      pageSize: 20
+                    },
+                    option: {
+                      addBtn: false,
+                      menu: false,
+                      border: true,
+                      height:_this.selfHeight-120,
+                      align: 'center',
+                      column: column
+                    }
+                  }      
+                  return ret;
+                },
+                methods: {  
+                  saveOption() { 
+                    localStorage.setItem(key, JSON.stringify(this.defaults))
+                    this.$message.success('配置保存成功')
+                  },
+                },
+                computed:{
+                    tableData(){
+                        let {__valid_data__,valid_fileds,real_data}=tool.build_chart_data(this.self.datasource,this.context.report_result,[],this.self.fields)
+                        let tableData = tool.convert_array_to_json(__valid_data__)
+                        this.page.total=tableData.length
+                          return tableData;
+                    },
+                    cr_init(){
+                        if(this.context.mode=='design' && this.self.datasource!='示例')
+                            return true
+                        this.$nextTick(() => {
+                          this.defaults = JSON.parse(localStorage.getItem(key) || '')
+                        })
+                        return true
+                    }
+                }
+              }
+            </script> `
         ,
             'component':'ele-grid'},
 
@@ -84,7 +129,34 @@ export default [
                 column: []
               }
             },
-                            
+            
+            {
+                "type": "text",
+                "label": "文字",
+                "h": 4,
+                "span": 6,
+                "component": "dync-template",
+                "gridName": "_random_",
+                "icon": "icon-table",
+                "style": {
+                    "height": "100%"
+                },
+                "titleOption": {
+                    "scroll": false,
+                    "step": 0.5,
+                    "speed": 70,
+                    "textAlign": "center",
+                    "fontSize": 22,
+                    "fontWeight": "normal",
+                    "color": "",
+                    "textShadowX": 1,
+                    "textShadowY": 1,
+                    "textShadowZ": 1
+                },
+                "color": "#fff",
+                "display": true,
+                "content": "<eleText value=\"\" :self=\"self\"></eleText>"
+            }            
             ]
     },
 ]

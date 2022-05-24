@@ -46,6 +46,14 @@ module.exports = {
                     "^/report5": ""
                 }
             },
+            "/static": {
+              target: "http://127.0.0.1:5000/static",
+              changeOrigin: true,
+              ws: true,
+              pathRewrite: {
+                  "^/static": ""
+              }
+          },
             "/aps": {
                 target: "http://127.0.0.1:5050/",
                 changeOrigin: true,
@@ -53,8 +61,7 @@ module.exports = {
                 pathRewrite: {
                     "^/aps": ""
                 }
-            },
-
+            }
         }
     },//*
     pages: {

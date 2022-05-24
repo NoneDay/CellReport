@@ -37,6 +37,7 @@ namespace reportWeb.Controllers
         Rpt_group rpt_group;
         ReportDbContext reportDb;
         JsonSerializerOptions json_option;
+        ScopedObj reportGrp;
         public DesignController(IConfiguration configuration,
             IHubContext<ChatHub> hubContext, ReportDbContext reportDb,
             ScopedObj reportGrp)
@@ -45,7 +46,7 @@ namespace reportWeb.Controllers
             this.hubContext = hubContext;
             this.rpt_group = reportGrp.rpt_group;
             this.reportDb = reportDb;
-            
+            this.reportGrp = reportGrp;
             json_option = new JsonSerializerOptions()
             {
                 DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull,
@@ -375,7 +376,17 @@ namespace reportWeb.Controllers
                     Directory.CreateDirectory(from_path);
                     return Json(new { errcode = 0, message = "OK" });
                 }
-                new FileInfo(from_path).Delete();
+                //new FileInfo(from_path).Delete();
+            }
+            else if (cmd == "getImg")
+            {
+                if (!System.IO.File.Exists(from_path + ".jpg"))
+                {
+                    return Json(new { errcode = 0, message = "文件不存在" });
+                }
+                return Json(new { errcode = 0, message = "文件存在" ,
+                    data= Convert.ToBase64String(System.IO.File.ReadAllBytes(from_path+".jpg"))
+                });                
             }
             else
             {
@@ -400,7 +411,7 @@ namespace reportWeb.Controllers
                 //var ret = XmlReport.reportToXmlDocumnt(XmlReport.loadReport(file_path), false).OuterXml;
                 //var report_content = await System.IO.File.ReadAllTextAsync(file_path, System.Text.Encoding.UTF8);
                 var conn_list =from x in this.rpt_group.db_connection_list select x.name;
-                var ttt = range_level(xmlDoc.OuterXml);
+                var ttt = range_level(xmlDoc.OuterXml, reportName);
                 return Json(new
                 {
                     report_content = xmlDoc.OuterXml,
@@ -536,7 +547,7 @@ namespace reportWeb.Controllers
             xmlDoc.Save(file_path);
 
         }
-        public async Task<IActionResult> Save(String reportName, String content, string zb_dict_str, string zb_param)
+        public async Task<IActionResult> Save(String reportName, String content, string zb_dict_str, string zb_param, IFormFile imgFile)
         {
             if (reportName.StartsWith("/"))
                 reportName = reportName.Substring(1);
@@ -547,9 +558,21 @@ namespace reportWeb.Controllers
                 var fileInfo = new FileInfo(file_path);
                 if (!Directory.Exists(fileInfo.DirectoryName))
                     Directory.CreateDirectory(fileInfo.DirectoryName);
+                if (imgFile != null)
+                {
+                    using (var stream = System.IO.File.Create(file_path+".jpg"))
+                    {
+                        await imgFile.CopyToAsync(stream);
+                    }
+                    return Json(new { errcode = 0, message = "保存图片成功" }); ;
+                }
                 if (!fileInfo.Exists || (fileInfo.Exists && String.IsNullOrEmpty(zb_dict_str)))
                 {
-                    await System.IO.File.WriteAllTextAsync(file_path, content.Replace("><",">\n<"), System.Text.Encoding.UTF8);
+                    content=content.Replace("><", ">\n<");
+                    //content = Regex.Replace(content, @"<defaultsetting>.*?</defaultsetting>", "");
+                    //content = Regex.Replace(content, @"<parsererror>.*?</parsererror>", "");
+                    //content = Regex.Replace(content, @"<parent_defaultsetting>.*?</parent_defaultsetting>", "");
+                    await System.IO.File.WriteAllTextAsync(file_path, content, System.Text.Encoding.UTF8);
                 }
                 if (!String.IsNullOrEmpty(zb_dict_str))
                 {
@@ -572,7 +595,7 @@ namespace reportWeb.Controllers
                 path = path + "/template.xml";
             var file_path = Path.Combine(this.rpt_group.report_path, path);
             Env parent_env = new Env();
-            XmlReport.templateValue2Env(this.rpt_group.report_path, path, parent_env);
+            XmlReport.templateValue2Env(this.rpt_group.report_path, path, parent_env,true);
 
             if (file_path.StartsWith(this.rpt_group.report_path) && System.IO.File.Exists(file_path))
             {
@@ -599,11 +622,11 @@ namespace reportWeb.Controllers
             }
             return Json(new { errcode = 1, message = "路径错误" });
         }
-        private (System.Collections.IEnumerable range_level, object defaultsetting) range_level(String content)
+        private (System.Collections.IEnumerable range_level, object defaultsetting) range_level(String content,string reportName)
         {
             System.Xml.XmlDocument xmlDoc = new System.Xml.XmlDocument();
             xmlDoc.LoadXml(content);
-            var report = XmlReport.loadReportFromXmlDoc(xmlDoc, this.rpt_group.report_path, "temp.cr");
+            var report = XmlReport.loadReportFromXmlDoc(xmlDoc, this.rpt_group.report_path, reportName??"temp.cr");
             Engine engine = new Engine(report);
             engine.buildRelation();
             engine.prepareCalcLevelForCell();
@@ -628,12 +651,17 @@ namespace reportWeb.Controllers
             );  
         }
         
-        public IActionResult grid_range_level(String content)
+        public IActionResult grid_range_level(String content,string reportName)
         {
-            return Json(range_level(content).range_level);
+            return Json(range_level(content, reportName).range_level);
         }
         class MyFileInfo
         {
+            public MyFileInfo(String local_name)
+            {
+                this.local_name = local_name;
+            }
+            private string local_name;
             public String FileName { get; set; }
             public String Directory { get; set; }
             public String FullPathFileName { get; set; }
@@ -641,6 +669,13 @@ namespace reportWeb.Controllers
             public String LastAccessTime { get; set; }
             public String LastWriteTime { get; set; }
             public long Length { get; set; }
+            public string Img { get {
+                    if (isFile == true && new FileInfo(local_name + ".jpg").Exists)
+                        return Convert.ToBase64String(System.IO.File.ReadAllBytes(local_name + ".jpg"));
+                    else
+                        return "";
+                } }
+            public bool _menu { get; set; } = false;
             public List<MyFileInfo> children { get; set; }
         }
         public IActionResult List(String loc_path=".")
@@ -652,7 +687,7 @@ namespace reportWeb.Controllers
             //List<MyFileInfo> ret = new List<MyFileInfo>();
             DirectoryInfo parent = new DirectoryInfo(loc_path);
             int len = this.rpt_group.report_path.Length;
-            var ret = new MyFileInfo();
+            var ret = new MyFileInfo(loc_path);
             ret.Directory = parent.FullName.Substring(len);
             ret.children = new List<MyFileInfo>();
             if(!parent.Exists)
@@ -660,7 +695,7 @@ namespace reportWeb.Controllers
             //遍历文件夹
             foreach (DirectoryInfo NextFolder in parent.GetDirectories())
             {
-                ret.children.Add(new MyFileInfo()
+                ret.children.Add(new MyFileInfo( NextFolder.FullName)
                 {
                     FileName = NextFolder.Name,
                     FullPathFileName = NextFolder.FullName.Substring(len + 1).Replace("\\","/"),
@@ -669,14 +704,14 @@ namespace reportWeb.Controllers
             }
             //遍历文件
             foreach (FileInfo NextFile in parent.GetFiles("*.cr"))
-                ret.children.Add(new MyFileInfo()
+                ret.children.Add(new MyFileInfo(NextFile.FullName)
                 {
                     FileName = NextFile.Name,
                     FullPathFileName = NextFile.FullName.Substring(len + 1).Replace("\\", "/"),
                     LastAccessTime = NextFile.LastAccessTime.ToString("s"),
                     LastWriteTime = NextFile.LastWriteTime.ToString("s"),
                     Length=NextFile.Length,
-                    isFile = true
+                    isFile = true, 
                 });
             var options = new JsonSerializerOptions();
             options.DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull;
@@ -716,10 +751,11 @@ namespace reportWeb.Controllers
         }
         public IActionResult getKeyAndLicese()
         {
-            //var tMachine_key = CellReport.util.KeyAndPassword.getMachine_key();
+            //var tMachine_key = CellReport.util.KeyAndPassword.getMachine_key(); WebHostEnvironment.WebRootPath
             //var ccc = CellReport.util.EncryptHelper.AES_Encrypt(tMachine_key, "CellReport");
 
             return Json(new { errcode = 0, message = "" });
         }
+
     }
 }

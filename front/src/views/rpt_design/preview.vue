@@ -110,7 +110,7 @@
       </el-form>
     </div>
     <div ref="report_pane" :style="{height:'90%',overflow: 'auto',color:result.defaultsetting['COLOR'],background:result.defaultsetting['BACKGROUND-COLOR']}">
-        <grid-layout-form v-if="layoutType=='gridLayout'" :layout="layout" >
+        <grid-layout-form v-if="layoutType=='gridLayout'" :layout="layout" :big_screen_scale="big_screen_scale">
         </grid-layout-form>          
         <widget-form v-else   :data="layout"   
         ></widget-form>
@@ -145,6 +145,7 @@ export default {
           report_result:this.result,
           mode:"preview",
           event:{},
+          queryForm:this.queryForm,
           allElementSet:this.context.allElementSet,
           clickedEle:this.clickedEle,
           //不放到这里，会导致动态runtime-template重算，如果是有滚动行的，会每次都重新跑到顶部
@@ -178,6 +179,7 @@ export default {
         pageSize:20,
         fresh_ele:[],
         in_exec_url:{stat:false},
+        big_screen_scale:70
     }
   },
   watch:{
@@ -187,11 +189,17 @@ export default {
         setTimeout(() => {
             _this.$nextTick(x=>{
                 let form_h=_this.$refs.form.clientHeight-4
-                _this.$refs.report_pane.style.height=`calc(100% - ${form_h}px)`                
+                _this.$refs.report_pane.style.height=`calc(100% - ${form_h}px)`
+                if(_this.result.defaultsetting.big_screen=='1'){
+                  _this.big_screen_scale=(Math.min(
+                  100*_this.$refs.report_pane.clientHeight/parseInt(_this.result.defaultsetting.screen_height)
+                  ,100*_this.$refs.report_pane.clientWidth/parseInt(_this.result.defaultsetting.screen_width)
+                  ))
+                }
             })    
         });
       }
-    }
+    },
   },
   computed: {
     tableData(){
@@ -230,7 +238,7 @@ export default {
       _this.showLog=true
       _this.executed = false
       setTimeout(async function(){
-        await preview_one(_this,false,_this.queryForm)
+        await preview_one(_this,false)
       })
       
     },
@@ -239,7 +247,7 @@ export default {
       if(this.context.report_result.param_liandong.includes(param_name)){
         console.info(_this.queryForm)
         setTimeout(async function(){
-          await preview_one(_this,true,_this.queryForm,param_name)
+          await preview_one(_this,true,param_name)
         })        
       }
     },

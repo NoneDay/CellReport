@@ -22,7 +22,16 @@ CellReport 诞生的初衷是为了解决日常快速制作统计报表的需要
 - 页面元素丰富。预定义有报表组件、echart组件、数据展现组件等
 - 灵活的报表元素间的数据引用，局部报表刷新设置方便
 - 组件报表引用、以及对其他报表软件制作的报表引用（专业版提供）
-![](http://noneday.gitee.io/CellReport/img/1640587117162.gif)
+
+## 部分例图
+![输入图片说明](https://images.gitee.com/uploads/images/2022/0516/113514_8063b9ad_7350733.png "QQ图片20220516113317.png")
+![输入图片说明](https://images.gitee.com/uploads/images/2022/0516/121447_d7475aa4_7350733.png "QQ图片20220516113330.png")
+![输入图片说明](https://images.gitee.com/uploads/images/2022/0516/113557_015ad967_7350733.png "QQ图片20220516113324.png")
+![输入图片说明](https://images.gitee.com/uploads/images/2022/0516/113609_25672a60_7350733.png "QQ图片20220516113336.png")
+![输入图片说明](https://images.gitee.com/uploads/images/2022/0516/122035_68d7950a_7350733.png "9CT0`{C74VV6ZCO4QCEDKHJ.png")
+![输入图片说明](https://images.gitee.com/uploads/images/2022/0516/122101_983e4a82_7350733.png "N@SXYYVDN]UZEALFC[6GT$J.png")
+
+![输入图片说明](http://noneday.gitee.io/CellReport/img/1640587117162.gif)
 
  
 ## 技术实现
@@ -94,6 +103,7 @@ CellReport使用Apache License 2.0 开源协议
 **感谢各位大佬支持！**
 
 ```
+宝宝书 71元
 庄鹏 70元
 补丁 66元
 C罗  66.6元

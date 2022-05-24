@@ -1,5 +1,5 @@
 <template>
- <el-tabs v-model="grp_id" style="height:100%">
+ <el-tabs v-model="grp_id" style="height: calc(100% - 12px);">
      
     <el-tab-pane style="height:calc(100% - 42px)" v-for="grp in rptgrps" :key="grp.Id" :label="grp.name+'('+grp.Id+')'" :name="grp.Id">
   <div style="height:100%"> 
@@ -20,7 +20,54 @@
         </div> 
           </el-col>
     </el-row>
-    <el-table  :data="grp.tableData.children"
+    <div  v-if="(grp.loc_path.length>0 && grp.loc_path[0]=='大屏')" style="height: calc(100% - 12px);overflow: auto;"
+        class="list_content">
+        <div class="list_content__box">
+         <div v-for="(item, index) in grp.tableData.children"
+          :key="index"
+          @mouseover="item._menu=true"
+           @mouseout="item._menu=false"
+          class="list_content__item"
+        >
+        <div class="list_content__info">
+            <div class="list_content__menu" v-show="item._menu">
+                <div class="list_content__btn"
+                     @click="handleViews(item)" > 运行<i class="el-icon-view"></i>
+                </div>
+                <div class="list_content__btn"
+                     @click="row_click(item)" >  开发<i class="el-icon-setting"></i>
+                </div>                
+            </div>
+
+            <div   @click="row_click(item)" style="flex:1;height:100%;  width: 100%; overflow: auto;background-color:#012545;color:#fff">
+            <img style="height:calc(100% - 4px);  width: 100%;" :src="'data:image/jpg;base64,'+ item.Img"/>
+          </div>
+        </div>
+        <div class="list_content__main">
+          
+            <span> {{ item.FileName }}</span>
+            <div style="float: right; padding: 3px 0">
+             <template >
+                <el-tooltip class="item" effect="dark" content="克隆" placement="top-start"><i  class="el-icon-copy-document"  @click="handleClick('克隆',item)"></i>
+                </el-tooltip><el-tooltip class="item" effect="dark" content="复制" placement="top-start"><i  class="el-icon-copy-document"  @click="handleClick('复制',item)"></i>
+                </el-tooltip><el-tooltip class="item" effect="dark" content="剪切" placement="top-start"><i class="el-icon-scissors"  @click="handleClick('剪切',item)"></i>
+                </el-tooltip><el-tooltip class="item" effect="dark" content="重命名" placement="top-start"><i class="el-icon-edit"  @click="handleClick('rename',item)"></i>
+                </el-tooltip>
+                <el-tooltip class="item" effect="dark" content="删除" placement="top-start">
+                    <i class="el-icon-delete" @click="handleClick('删除',item)"></i>
+                </el-tooltip>
+                <el-tooltip class="item" effect="dark" content="运行" placement="top-start">
+                    <el-link :href="baseUrl+'/run'+(grp.Id=='default'?'':(':'+grp.Id))+'?reportName='+item.FullPathFileName" target="_blank">
+                    <i class="el-icon-view" circle></i> </el-link>
+                </el-tooltip>
+            </template>
+            
+            </div>
+          </div>
+          </div>
+        </div>
+    </div>
+    <el-table v-else :data="grp.tableData.children"
         style="width: 100%;margin-bottom: 20px;"
         row-key="FullPathFileName" :height="'90%'"
         border @cell-click="row_click"
@@ -35,11 +82,11 @@
         </el-table-column>
         <el-table-column  label="操作" :width="250">
             <template slot-scope="scope" v-if="scope.row.LastAccessTime">
-                <el-tooltip class="item" effect="dark" content="克隆" placement="top-start"><el-button type="primary" icon="el-icon-document-copy" circle @click="handleClick('克隆',scope.row)"></el-button>
-                </el-tooltip><el-tooltip class="item" effect="dark" content="复制" placement="top-start"><el-button type="success" icon="el-icon-copy-document" circle @click="handleClick('复制',scope.row)"></el-button>
-                </el-tooltip><el-tooltip class="item" effect="dark" content="剪切" placement="top-start"><el-button type="info" icon="el-icon-scissors" circle @click="handleClick('剪切',scope.row)"></el-button>
-                </el-tooltip><el-tooltip class="item" effect="dark" content="重命名" placement="top-start"><el-button type="warning" icon="el-icon-edit" circle @click="handleClick('rename',scope.row)"></el-button>
-                </el-tooltip><el-tooltip class="item" effect="dark" content="删除" placement="top-start"><el-button type="danger" icon="el-icon-delete" circle @click="handleClick('删除',scope.row)"></el-button>
+                <el-tooltip class="item" effect="dark" content="克隆" placement="top-start"><el-button type="primary" icon="el-icon-document-copy" circle @click.stop="handleClick('克隆',scope.row)"></el-button>
+                </el-tooltip><el-tooltip class="item" effect="dark" content="复制" placement="top-start"><el-button type="success" icon="el-icon-copy-document" circle @click.stop="handleClick('复制',scope.row)"></el-button>
+                </el-tooltip><el-tooltip class="item" effect="dark" content="剪切" placement="top-start"><el-button type="info" icon="el-icon-scissors" circle @click.stop="handleClick('剪切',scope.row)"></el-button>
+                </el-tooltip><el-tooltip class="item" effect="dark" content="重命名" placement="top-start"><el-button type="warning" icon="el-icon-edit" circle @click.stop="handleClick('rename',scope.row)"></el-button>
+                </el-tooltip><el-tooltip class="item" effect="dark" content="删除" placement="top-start"><el-button type="danger" icon="el-icon-delete" circle @click.stop="handleClick('删除',scope.row)"></el-button>
                 </el-tooltip><el-tooltip class="item" effect="dark" content="运行" placement="top-start">
                     <el-link :href="baseUrl+'/run'+(grp.Id=='default'?'':(':'+grp.Id))+'?reportName='+scope.row.FullPathFileName" target="_blank">
                     <el-button type="danger" icon="el-icon-view" circle></el-button> </el-link>
@@ -50,7 +97,7 @@
         <el-table-column  prop="LastWriteTime" sortable label="LastWriteTime" :width="150"/>
         <el-table-column  prop="Length" sortable label="Length" :width="100"/>
 
-        </el-table>
+    </el-table>
   </div>
   </el-tab-pane>
   <templateManger v-if="template_dialog_visible" @submit="template_handleSubmit"
@@ -114,6 +161,10 @@ export default {
 
     },
     methods:{
+        handleViews (item) {
+            window.open(  baseUrl+'/run'+(this.grp_id=='default'?'':(':'+this.grp_id))+'?reportName='+item.FullPathFileName, '_blank');
+        },
+      
         async handleClick(command,row){
             let _this=this
             if(command=="复制"){
@@ -248,11 +299,39 @@ export default {
                         return
                     }
                     let reportName=this.grp_id+":"+this.cur_grp.loc_path.join("/")+"/"+value
-                    save_one({reportName:reportName,
+                    if(this.cur_grp.loc_path.length==1 && this.cur_grp.loc_path[0]=='大屏'){
+                        save_one({reportName:reportName,
+                                    dataSets:{dataSet:[]}
+                                    ,params:{param:[]}
+                                    ,AllGrids:{grid:[]}
+                                    ,layout:"[]"
+                                    ,template:{
+                                        "BACKGROUND-COLOR": "#012545",
+                                        "COLOR": "#FFFFFF",
+                                        "FONT": "微软雅黑",
+                                        "FONT-SIZE": "11",
+                                        "border_box": "div",
+                                        "layout_mode": "",
+                                        "show_form": "true",
+                                        "layout_row_height": "2",
+                                        "layout_colNum": "240",
+                                        "layout_margin": "2",
+                                        "layout_pan_height": "100%",
+                                        "row_col_gutter": "10",
+                                        "backgroundImage": "",
+                                        "big_screen": "1",
+                                        "screen_width": "1920",
+                                        "screen_height": "1080"
+                                    }
+                            })
+                    }
+                    else{
+                        save_one({reportName:reportName,
                                     dataSets:{dataSet:[]}
                                     ,params:{param:[]}
                                     ,AllGrids:{grid:[{_name:"main",_title:"main" }]}
                             })
+                    }
                     //this.cur_grp.loc_path.push(row.FileName)
                     rptList(this.grp_id,this.cur_grp.loc_path.join("/")).then(response_data => {
                         _this.$set(_this.cur_grp,"tableData",response_data)
@@ -298,8 +377,8 @@ export default {
                 }).catch(error=>error)
         },
         row_click(row, column,evt){
-            if(column["property"]==undefined && row['isFile']==true)
-                return
+            //if(column["property"]==undefined && row['isFile']==true)
+            //    return
             if (row.LastAccessTime){
                 let filename=this.cur_grp.loc_path.join("/")+"/"+row.FileName
                 this.$router.push({
@@ -334,5 +413,114 @@ export default {
 /* .design-list .el-button{
   padding:7px !important;
 } */
+.list_content {
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    -ms-flex-wrap: wrap;
+    flex-wrap: wrap
+}
 
+.list_content__header {
+    padding-left: 40px;
+    width: 100%;
+    height: 150px !important
+}
+
+.list_content__box {
+    width: 100%;
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    -ms-flex-wrap: wrap;
+    flex-wrap: wrap
+}
+.list_content__info {
+    position: relative;
+    height: calc(100% - 36px)
+}
+.list_content__item {
+    position: relative;
+    margin: 16px;
+    -webkit-box-orient: vertical;
+    -webkit-box-direction: normal;
+    -ms-flex-direction: column;
+    flex-direction: column;
+    width: 266px;
+    height: 184px;
+    border: 1px solid #3a4659;
+    -webkit-box-sizing: border-box;
+    box-sizing: border-box;
+    overflow: hidden
+}
+
+.list_content__item:hover {
+    -webkit-box-shadow: 0 0 20px 0 #000;
+    box-shadow: 0 0 20px 0 #000;
+    border: 1px solid #00baff
+}
+.list_content__main {
+    font-size: 12px;
+    width: 100%;
+    height: 36px;
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-box-align: center;
+    -ms-flex-align: center;
+    align-items: center;
+    position: absolute;
+    bottom: 0;
+    -webkit-box-pack: justify;
+    -ms-flex-pack: justify;
+    justify-content: space-between;
+    background: #1d262e;
+    -webkit-box-sizing: border-box;
+    box-sizing: border-box;
+    padding: 0 10px;
+    color: #bcc9d4
+}
+.list_content__menu {
+    position: absolute;
+    top: 0;
+    left: 0;
+    background-color: rgba(29, 38, 46, .8);
+    width: 100%;
+    height: 100%;
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-box-align: center;
+    -ms-flex-align: center;
+    align-items: center;
+    -webkit-box-pack: center;
+    -ms-flex-pack: center;
+    justify-content: center;
+    -webkit-box-orient: vertical;
+    -webkit-box-direction: normal;
+    -ms-flex-direction: column;
+    flex-direction: column
+}
+
+.list_content__btn {
+    margin: 5px 0;
+    display: inline-block;
+    vertical-align: middle;
+    height: 34px;
+    line-height: 34px;
+    padding: 0 40px;
+    -webkit-box-sizing: border-box;
+    box-sizing: border-box;
+    outline: 0;
+    text-align: center;
+    font-size: 14px;
+    background-image: linear-gradient(-225deg, #00d3f1, #12b3ff);
+    background-color: #2681ff;
+    border-color: #2681ff;
+    color: #fff;
+    border: none;
+    -webkit-transition: .3s ease;
+    transition: .3s ease;
+    cursor: pointer
+}
 </style>

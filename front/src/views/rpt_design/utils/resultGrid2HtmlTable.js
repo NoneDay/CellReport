@@ -235,7 +235,7 @@ function getScrollBarWidth() {
 const BitArray = require("./bits");
 import {cellFromatCompute} from "./cellFromatCompute"
 const luckysheet_CFiconsImg = new Image();
-//luckysheet_CFiconsImg.src = "data:image/png;base64,";
+luckysheet_CFiconsImg.src = "cdn/luckysheet/plugins/images/CFicons.png"
 const icon_arr=[]
 function cut_icon_image(l,t){
     if(icon_arr[l] && icon_arr[l][t] )
@@ -280,8 +280,14 @@ export default class ResultGrid2HtmlTable{
         this.ScrollBarWidth=getScrollBarWidth()
         this.cell_cf={}
         let cdf_arr=[]
-        
-        
+        let _this=this
+        this.tree_row_set={};
+        this.tree_node_set=new Set();
+        (this.param_grid.tree_row_list||[]).forEach( one => {
+            this.tree_row_set[one[0]]=one
+            this.tree_node_set.add(one[3])
+        })
+            
         if(!setting.no_use_parent_css)
         {
             let cond=[]
@@ -306,11 +312,19 @@ export default class ResultGrid2HtmlTable{
                 })
         }
         
-        JSON.parse(setting.conditionformat_save??"[]").forEach(x=>{
-            x.cellrange.forEach(xcr=>{
-                xcr.row=[extend_lines[0], extend_lines[1]]
+        JSON.parse(this.param_grid.conditionformat_save??"[]").forEach(item=>{            
+            item.cellrange.forEach(xcr=>{
+                for(let vx=xcr.row[0];vx<=xcr.row[1];vx++ ){
+                    for(let vy=xcr.column[0];vy<=xcr.column[1];vy++ ){
+                        let new_x=JSON.parse(JSON.stringify(item))                        
+                        new_x.cellrange=[]
+                        Enumerable.from( _this.param_grid.abs_to_design).where(one=>one.d== ''+vx+'_'+vy).forEach(one_c_r=>{
+                            new_x.cellrange.push({row:one_c_r.row,column:one_c_r.col})
+                        })
+                        cdf_arr.push(new_x)
+                    }
+                }                
             })
-            cdf_arr.push(x)
         })
         this.cur_page=1
         this.page_size=setting.page_size??20
@@ -411,14 +425,14 @@ export default class ResultGrid2HtmlTable{
                 if(bar.valueType=='minus'){
                     cur_cell.style+=`background-image: linear-gradient(to left, #ffffff , #ff0000);
                     background-repeat: no-repeat;
-                    background-size: calc(${bar.minusLen*bar.valueLen*100}% - 0px);
-                    background-position: calc(${bar.minusLen*(1-bar.valueLen)*width}px );`
+                    background-size: calc(${bar.minusLen*bar.valueLen*100}% - 0px) calc(100% - 4px);
+                    background-position: calc(${isNaN((bar.minusLen*(1-bar.valueLen)*width))?0:(bar.minusLen*(1-bar.valueLen)*width)}px ) 2px;`
                 }//用百分比会错位，没找到好的用百分比的方法
                 if(bar.valueType=='plus'){
                     cur_cell.style+=`background-image: linear-gradient(to left, ${bar.format[0]} , ${bar.format.length>1?bar.format[1]:bar.format[0]});
                     background-repeat: no-repeat;
-                    background-size: calc(${bar.plusLen*bar.valueLen*100}% - 0px);
-                    background-position:calc(${(bar.minusLen*width)}px);`
+                    background-size: calc(${bar.plusLen*bar.valueLen*100}% - 0px) calc(100% - 4px);
+                    background-position:calc(${isNaN(bar.minusLen*width)?0:(bar.minusLen*width)}px) 2px;`
                 }                        
             }
             if(local_style.icons){
@@ -520,8 +534,11 @@ export default class ResultGrid2HtmlTable{
         //this.t_tableData.slice(s_row,e_row).forEach((rowData,row_idx)=>{
             let rowNo=s_row+row_idx
             let row_type=''
-            if(extend_lines[0]<=rowNo && extend_lines[1]>=rowNo)
-                row_type='detail'
+            let row_pr
+            if(extend_lines[0]<=rowNo && extend_lines[1]>=rowNo){
+                row_pr=(this.tree_row_set[rowNo]? this.tree_row_set[rowNo][2] :0)
+                row_type='detail' +' data-pr=' + row_pr
+            }
             else  if(rowNo<colName_lines[0])
                 row_type='isHead'
             else  if(rowNo<=colName_lines[1])
@@ -530,7 +547,8 @@ export default class ResultGrid2HtmlTable{
                 row_type='isComment'
             else
                 row_type='isComment isAfterExtend'
-            sb.append(`<tr ${row_type} data-n=${rowNo} style='height:${rowlenArr[rowNo]??rowlenArr["default"]}px' >`)
+            sb.append(`<tr ${row_type} data-n=${rowNo} data-old="${row_pr&& row_pr!=0?'none':'table-row'}"
+            style='display:${row_pr&& row_pr!=0?'none':'table-row'}; height:${rowlenArr[rowNo]??rowlenArr["default"]}px' >`)
             
             rowData.forEach((cell,colNo)=>{
                 if(false== col_arr.includes(colNo)){
@@ -549,7 +567,7 @@ export default class ResultGrid2HtmlTable{
                 if(r_c){
                     let {r, c, rs, cs}={...r_c}
                     if(rs>1)
-                        sb.append(` rowspan=${rs}`)
+                        sb.append(`data-oldrs=${rs} rowspan=${ this.param_grid.tree_row_list==undefined?rs:(row_pr&& row_pr!=0?rs:1)}`) 
                     if(cs>1)
                         sb.append(` colspan=${cs}`)
                     max_width=0
@@ -568,9 +586,13 @@ export default class ResultGrid2HtmlTable{
                 sb.append(` class=' ${cell.clazz} `)
                 let cell_sort=my_sort[`${rowNo}_${colNo}`]
                 let disp=(cell.m && cell.m.v)? cell.m.v : cell.m
+                
+                if(this.tree_node_set.has(`${rowNo}_${colNo}`))
+                  disp=`<span class='cr_tree_node  '><i class='el-icon-arrow-right'></i></span>` + disp 
                 if(cell?.m?.t=='img'){
                     disp=`<img style="width: 100%;height: 100%;" src='${disp}'>`
                 }
+                let style=`style="max-height:${max_height-1}px;max-width:${max_width*this.ratio}px;height:${max_height-1}px;width:${max_width*this.ratio}px"`
                 if(this.optimize && cell_sort!=undefined){
                     sb.append(` cr-sort`)
                     if(this.sort_col.col==colNo){
@@ -579,13 +601,13 @@ export default class ResultGrid2HtmlTable{
                         if(this.sort_col.isAsc==1)
                             sb.append(` cr-sort-asc`)
                    }//不加 max- 会撑破cell和不能居中
-                   sb.append(`' data-c=${colNo} ><div class="cr-cell" style="max-height:${max_height-1}px;max-width:${max_width*this.ratio}px"> 
+                   sb.append(`' data-c=${colNo} ><div class="cr-cell" ${style}> 
                    <span>${disp??''}</span>
                    <span class="cr-sort-icon"></span>
                    </div></td>`)
                 }
                 else
-                    sb.append(`' data-c=${colNo}><div class="cr-cell" style="max-height:${max_height-1}px;max-width:${max_width*this.ratio}px"> ${disp??''}</div></td>`)
+                    sb.append(`' data-c=${colNo}><div class="cr-cell" ${style}> ${disp??''}</div></td>`)
             })
             if(gutter)
                 sb.append(`<td class="gutter"></td>`)
@@ -655,7 +677,7 @@ export default class ResultGrid2HtmlTable{
         min_width=Math.min(this.el.clientWidth-this.ScrollBarWidth-2, table_obj.table_width+(this.ratio==1?0:this.ScrollBarWidth))
         sb.append(`<div id='reportDiv${this.param_grid.name}' class="cr-table__body-wrapper is-scrolling-middle" 
         style='background-color:${background_color};height: calc(100% - ${head_height+foot_height}px);width:${min_width+this.ScrollBarWidth+3}px'>\n
-        <table class='cr-table__body  reportDefaultCss' height=${table_obj.table_height} width=${table_obj.table_width} `)
+        <table class='cr-table__body  reportDefaultCss'  width=${table_obj.table_width} `)  //height=${table_obj.table_height}
         add_other()
         sb.append(table_obj.sb.toString(''))
         height=height+table_obj.table_height
@@ -674,7 +696,7 @@ export default class ResultGrid2HtmlTable{
             sb.append(`<div class="cr-table__fixed" style="width: ${table_obj.table_width+1}px; height:calc(100% - ${this.ScrollBarWidth}px);">`)
             
             sb.append(`<div class='cr-table__fixed-header-wrapper'  style='background-color:${background_color};' >\n
-            <table class='cr-table__header reportDefaultCss' height=${table_obj.table_height} width=${table_obj.table_width}  `)
+            <table class='cr-table__header reportDefaultCss' width=${table_obj.table_width}  `)  //height=${table_obj.table_height}
             add_other()
             sb.append(table_obj.sb.toString(''))
             // 固定列，body
@@ -685,7 +707,7 @@ export default class ResultGrid2HtmlTable{
                     build_col_arr(0,this.fix_cols))
             sb.append(`<div id='reportDiv${this.param_grid.name}Left' class="cr-table__fixed-body-wrapper" 
             style='background-color:${background_color};top: ${head_height+0.5}px;height: calc(100% - ${head_height+foot_height}px)'>\n
-            <table class='cr-table__body  reportDefaultCss' height=${table_obj.table_height} width=${table_obj.table_width}  `)
+            <table class='cr-table__body  reportDefaultCss'  width=${table_obj.table_width}  `)  //height=${table_obj.table_height}
             add_other()
             sb.append(table_obj.sb.toString(''))
 
@@ -713,21 +735,33 @@ export default class ResultGrid2HtmlTable{
             }
             }catch{}
         }
-        sb.append(`<style type="text/css">`)
-        alter_format_arr=alter_format_arr.concat(JSON.parse(this.setting.alternateformat_save??'[]'))
-        alter_format_arr.forEach(x=>{
-            let {head,one,two,foot}= {...x.format}
-            let [s_col,e_col]=[...x.cellrange.column]
-            for(let idx=s_col;idx<=e_col;idx++){
-                if(alter_format_arr.length==1)
-                sb.append(`tr[isHead]  td {background-color:${head.bc};color:${head.fc};}`)
-                sb.append(`
+        function inner_append_css(idx,head,foot,one,two){
+            sb.append(`
                     tr[isColumn]  td[data-c${idx>=0?'="'+idx+'"':''}] {background-color:${head.bc};color:${head.fc}; border: 1px solid #bdbcbc;}
                     tr[isComment]:not([isAfterExtend] ) td[data-c${idx>=0?'="'+idx+'"':''}] {background-color:${foot.bc};border: 1px solid #bdbcbc;}
                     tr:nth-child(odd)[Detail]  td[data-c${idx>=0?'="'+idx+'"':''}] {background-color:${one.bc}; color:${one.fc};   border: 1px solid #bdbcbc;}
                     tr:nth-child(even)[Detail] td[data-c${idx>=0?'="'+idx+'"':''}] {background-color:${two.bc}; color:${two.fc};border: 1px solid #bdbcbc;}
                     .form_query_button {background-color:${head.bc};color:${head.fc};}
                     `)
+        }
+        sb.append(`<style type="text/css">`)
+        alter_format_arr=alter_format_arr.concat(JSON.parse(this.param_grid.alternateformat_save??'[]'))
+        alter_format_arr.forEach(x=>{
+            let {head,one,two,foot}= {...x.format}
+            for(let idx=x.cellrange.column[0];idx<=x.cellrange.column[1];idx++){
+                if(alter_format_arr.length==1)
+                    sb.append(`tr[isHead]  td {background-color:${head.bc};color:${head.fc};}`)
+                if(idx<0)
+                    inner_append_css(idx,head,foot,one,two)
+                else
+                {
+                    for(let vx=x.cellrange.row[0];vx<=x.cellrange.row[1];vx++ ){
+                        Enumerable.from( this.param_grid.abs_to_design).where(one=>one.d== ''+vx+'_'+idx).forEach(one_c_r=>{
+                            for(let vy=one_c_r.col[0];vy<=one_c_r.col[1];vy++)
+                            inner_append_css(vy,head,foot,one,two)  
+                        })
+                    }
+                }  
             }
             
         })
@@ -757,6 +791,9 @@ export default class ResultGrid2HtmlTable{
                 display: inline;
                 padding: 0 13px 0 0;
                 background: url(img/datagrid_icons.png) no-repeat -16px center;
+            }
+            .cr_tree_node {
+                display: inline-block;
             }
             `)
         sb.append("</style>")      

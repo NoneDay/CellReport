@@ -1,117 +1,112 @@
 <template>
-    <div  v-if="context.mode=='design'"
+    <div  v-if="true" @click.prevent="click_layout"
         class="widget-form-container gridLayout" ref='content' 
-        style="height:1000px;width:100%;flex: 1;overflow: auto;">
-        <grid-layout :layout.sync="layout" ref="gridLayout"
+        :style="context.mode=='design'&&defaultsetting.big_screen=='1'?`position: relative;    width: 5000px;    height: 3000px;
+    background: url(https://img.alicdn.com/tfs/TB184VLcPfguuRjSspkXXXchpXa-14-14.png) repeat;flex: 1;overflow: auto;`
+    :'position: relative; width: 100%;height: 100%'"
+>
+        <grid-layout :layout.sync="layout" ref="gridLayout"  id="cr_gridLayout"
                      :col-num="colNum" 
                      :row-height="row_height"
                      :margin="[margin, margin]"
                      :is-draggable="context.canDraggable"
                      :is-resizable="context.canDraggable"
-                     :vertical-compact="true"
+                     :vertical-compact="defaultsetting.big_screen!='1'"
                      :use-css-transforms="false"
-                     style="height:100%;width:100%"
+                     :responsive="context.mode!='design' && context.crisMobile"
+                     :force-absolute="defaultsetting.big_screen=='1'"
                      
-                    @layout-ready="layoutUpdatedEvent"
-        >
+                     style=""
+                     :style="{ 
+                         width:defaultsetting.big_screen=='1'?defaultsetting.screen_width+'px':'100%',
+                        height:defaultsetting.big_screen=='1'?defaultsetting.screen_height+'px':'100%',
+                        transform:defaultsetting.big_screen=='1'?'scale('+big_screen_scale/100+')':'scale(1)',
+                        'transform-origin': '0 0',
+                        'background': 'no-repeat url('+defaultsetting.backgroundImage+')  0% 0% / 100% 100% '+defaultsetting['BACKGROUND-COLOR']                        
+                        ,'background-color':defaultsetting['BACKGROUND-COLOR'],
+                        'color':defaultsetting['COLOR'],
+                        'font-family':defaultsetting['FONT'],
+                        'font-size':defaultsetting['FONT-SIZE']
+                        }"
+                     :transformScale="defaultsetting.big_screen=='1'?big_screen_scale/100:1"
+                    @layout-ready="layoutReady"
+        ><!--  -->
             <grid-item v-for="(item,groupIndex) in layout"
                        :static="item.static" :key="item.i"
                        :x="item.x"
                        :y="item.y"
                        :w="item.w"
                        :h="item.h"
-                       :i="item.i" @resized="resizedEvent"
-                       drag-allow-from=".draggable-handle"
-                       drag-ignore-from=".no-drag"
+                       :i="item.i" @resized="resizedEvent" 
+                       :style="{'z-index':item.bg?item.bg.z_index:0}"
+                       :class="find_item(item)?'vue-grid-item-cur':''"
+                       
             >
-            <component v-if="isShow && item.show" class="no-drag" :ref="'border_box'+item.i" :is="item.border_box?item.border_box:'div'" style="width:100%;height:100%">
-                   
-                    <widget-form-group class="widget-form-list" 
-                        :self="item.element" :border_size="calc_item_border_size(item.border_box)"
-                        :parent="layout" :index="groupIndex" :ref="'item_'+item.i"
-                        v-if="item.element.component=='widget-form-group'"
-                        :select.sync="selectWidget"  :depth="1"
-                        >
-                    </widget-form-group>
-                    <widget-form-tabs class="widget-form-list" 
-                        :self="item.element" 
-                        :parent="layout" :index="groupIndex" :ref="'item_'+item.i"
-                        v-else-if="item.element.component=='widget-form-tabs'"
-                        :select.sync="selectWidget"  :depth="1"
-                        >
-                    </widget-form-tabs>
-                    <widget-form-item class="widget-form-list" 
-                        :self="item.element"  
-                        :parent="layout" :index="groupIndex" :ref="'item_'+item.i"
-                        v-else  :depth="1"
-                        :select.sync="selectWidget"
-                        >
-                    </widget-form-item>
+            <!-- drag-allow-from=".draggable-handle"  
+                       drag-ignore-from=".no-drag"  
+                       -->
+            <component @mouseenter="mouseEnter_func(item)" @mouseleave="mouseOver_func(item)" 
+             v-if="isShow && item.show" class="no-drag" :ref="'border_box'+item.i" :is="item.bg && item.bg.border_box?item.bg.border_box:'div'" 
+             style="width:100%;height:100%"
+             v-bind="Object.assign({}, (item.bg.border_box && item.bg.border_box!='div')?deepClone(item.bg.border_option):{} )"
+             >
+                <div :style="{ 'height':'100%','width':'100%',
+                transform: item.bg.is_rotate?'rotate(360deg)':'',
+                animation: item.bg.is_rotate?item.bg.rotate_second+'s linear 0s infinite normal none running rotation':'',
+                'background-repeat': 'no-repeat','background': 'url('+item.bg.backgroundImage+')  0% 0% / 100% 100% '+item.bg['BACKGROUND-COLOR']}"
+                style="position:absolute;top:0px;left:0px;z-index:-1">
+                </div>
+                <widget-form-group class="widget-form-list" 
+                    :self="item.element" :border_size="calc_item_border_size(item)"
+                    :parent="layout" :index="groupIndex" :ref="'item_'+item.i"
+                    v-if="item.element.component=='widget-form-group'"
+                    :select.sync="selectWidget"  :depth="1"
+                    >
+                </widget-form-group>
+                <widget-form-tabs class="widget-form-list" 
+                    :self="item.element" 
+                    :parent="layout" :index="groupIndex" :ref="'item_'+item.i"
+                    v-else-if="item.element.component=='widget-form-tabs'"
+                    :select.sync="selectWidget"  :depth="1"
+                    >
+                </widget-form-tabs>
+                <widget-form-item class="widget-form-list" 
+                    :self="item.element"  
+                    :parent="layout" :index="groupIndex" :ref="'item_'+item.i"
+                    v-else  :depth="1"
+                    :select.sync="selectWidget"                     
+                    >
+                </widget-form-item>
 
                 
             </component>
-                <div style="position: absolute;right: 2px;top: 0;display:flex;height:18px" >
-                    <el-tooltip class="item" effect="dark" content="在本grid格子中添加新组件" placement="top-start">
-                        <div  style=" cursor: pointer;color:black;background:#fff;"  @click="call_widget_dialog(item)"><img src="img/add.png"></div> 
+                <div v-if="context.mode=='design' && (find_item(item) || mouseover_item==item)" style="z-index:-1;position: absolute;left: -1px;top: -1px; right:-1px;bottom:-1px;background-color: rgba(115,170,229,0.5);" >
+                </div>
+                
+                <div v-if="context.mode=='design' && find_item(item)" style="position: absolute;right: 2px;top: 0;display:flex;height:18px" >
+                    <!-- <el-tooltip class="item" effect="dark" content="在本grid格子中添加新组件" placement="top-start">
+                        <div  style=" cursor: pointer;color:black;background:#fff;"  @click.stop="call_widget_dialog(item)"><img src="img/add.png"></div> 
                         </el-tooltip>
+                       
                     <el-tooltip class="item" effect="dark" content="设置本格子的配置" placement="top-start">
-                        <div  style="cursor: pointer;color:black;background:#fff;" @click="settingItem(item.i)"><img src="img/setting.png"></div>
+                        <div  style="cursor: pointer;color:black;background:#fff;" @click.stop="settingItem(item.i)"><img src="img/setting.png"></div>
                         </el-tooltip>
 
                     <el-tooltip class="item" effect="dark" content="鼠标左键点住我不松手拖动，调整格子的位置" placement="top-start">
                         <div  style="cursor: move;color:black;background:#fff;" class="draggable-handle"  ><img src="img/move.png"></div>
                         </el-tooltip>
+-->
 
+                    <el-tooltip class="item" effect="dark" content="克隆本格子" placement="top-start">
+                        <div style="cursor: pointer;color:black;background:#fff;" @click.stop="cloneItem(item)"><img src="img/add.png"></div>
+                    </el-tooltip>
                     <el-tooltip class="item" effect="dark" content="删除本格子" placement="top-start">
-                        <div style="cursor: pointer;color:black;background:#fff;" @click="removeItem(item.i)"><img src="img/delete.png"></div>
-                        </el-tooltip>
+                        <div style="cursor: pointer;color:black;background:#fff;" @click.stop="removeItem(item.i)"><img src="img/delete.png"></div>
+                    </el-tooltip>
                 </div>
             </grid-item>
             <widgetDialog v-if="widget_dialogVisible" :visible.sync="widget_dialogVisible" :action_target="ref_item">
-            </widgetDialog>  
-          <el-dialog  v-draggable style="text-align: left;" v-if="dialogVisible"
-            :visible.sync="dialogVisible" title="布局和当前条目设置" 
-                :close-on-click-modal="false"  @close="close" 
-                direction="btt" append-to-body  
-            > 
-            <el-container style="height: 500px; border: 1px solid #eee">
-                <el-aside width="200px" style="background-color: rgb(238, 241, 246)">
-                    <el-form ref="form" :model="form" label-width="80px">
-                        <el-form-item label="边框样式">
-                            <el-select v-model="form.border_box" placeholder="请选择边框样式">
-                                <el-option :label="无边框" value="div"></el-option>
-                                <el-option :label="'dv-border-Box-'+i" :key="i" v-for="i in 13" :value="'dv-border-Box-'+i"></el-option>
-                            </el-select>
-                        </el-form-item>
-                        <el-form-item label="背景色">
-                            <el-color-picker v-model="backgroundColor"></el-color-picker>
-                        </el-form-item>
-                        <el-form-item label="主色">
-                            <el-color-picker v-model="color1"></el-color-picker>
-                        </el-form-item>
-                        <el-form-item label="副色">
-                            <el-color-picker v-model="color2"></el-color-picker>
-                        </el-form-item>
-                    </el-form>
-                </el-aside>
-                <el-container>
-                    <el-header style="text-align: right; font-size: 12px">
-                        演示
-                    </el-header>
-                    <el-main style=" height: 300px;   padding: 30px!important;;    overflow: hidden;    box-sizing: border-box;    background-color: #282c34;">
-                        <component :is="form.border_box" >
-                            {{ form.border_box }}
-                        </component>
-                        
-                    </el-main>
-                </el-container>
-            </el-container>
-
-            <span slot="footer" class="dialog-footer">
-                <el-button @click="dialogVisible = false">取 消</el-button>
-                <el-button type="primary" @click="dialogSubmit(form.idx)">确 定</el-button>
-            </span>
-        </el-dialog>      
+            </widgetDialog>            
         </grid-layout>
     </div>
     <div v-else class="widget-form-container">
@@ -125,7 +120,7 @@
                      :use-css-transforms="false"
                      :responsive="context.crisMobile"
                      :style="{'height':'100%','width':'100%'}"
-                    @layout-ready="layoutUpdatedEvent"
+                    @layout-ready="layoutReady"
         >
             <grid-item v-for="(item,groupIndex) in layout"
                        :static="item.static" :key="item.i"
@@ -138,7 +133,7 @@
             >
                <component v-if="isShow" :is="item.border_box?item.border_box:'div'" style="width:100%;height:100%">
                     <widget-form-group class="widget-form-list" 
-                        :self="item.element" :border_size="calc_item_border_size(item.border_box)"
+                        :self="item.element" :border_size="calc_item_border_size(item)"
                         :parent="layout" :index="groupIndex"  :depth="1"
                         v-if="item.element.component=='widget-form-group'"
                         :select.sync="selectWidget"
@@ -173,20 +168,15 @@ import mixins from "./element/mixins"
 export default {
     name: "gridLayoutForm",
     mixins: [history,mixins],
+    inject:["has_name"],
     components: {
         GridLayout,GridItem
     },
-    props:['layout'],
+    props:['layout','big_screen_scale'],
     data() {
         return { 
-            form: {
-                idx:-1,
-                name: '',
-                border_box: '',
-                backgroundColor:"",
-                color1:'',
-                color1:'',
-            },
+            mouseover_item:null,
+            scale:0.5,
             widget_dialogVisible:false,
             tmp_layout:[],
             isShow:false,
@@ -198,8 +188,7 @@ export default {
             row_height:30,
             colNum:24,
             margin:10,
-            pan_height:"100%",
-            dialogVisible:false,
+            pan_height:"100%",            
             call_item:-1,
         }
     },
@@ -207,11 +196,15 @@ export default {
         let _this=this
         this.isShow=false
         this.showGridLayout=false
+        if(_this.defaultsetting.height==undefined){
+            _this.defaultsetting.screen_height=1080
+            _this.defaultsetting.screen_width=1920
+        }
         function defaultSetting(prop){
             if(_this.context.mode=='design')
-                return _this.context.report.defaultsetting[prop]
+                return _this.defaultsetting[prop]
             else
-                return _this.context.report_result.defaultsetting[prop]
+                return _this.defaultsetting[prop]
         }
         
         this.row_height=isNaN(parseInt(defaultSetting('layout_row_height')))?30:parseInt(defaultSetting('layout_row_height')) 
@@ -223,8 +216,11 @@ export default {
         let one_line_rows=0
         this.layout.forEach(element => {
             this.$set(element,'show',true)
+            if(element.bg==undefined){
+                element.bg={backgroundImage:'','BACKGROUND-COLOR':'','border_box':'div',border_option:{color:["#83bff6","#00CED1"]}}
+            }
         })
-        if(this.context.mode!='design'){
+        if(this.defaultsetting.big_screen!='1' && this.context.mode!='design'){
             let idx=0
             let max_row_element=0
             this.layout.forEach(element => {
@@ -239,10 +235,17 @@ export default {
             });
             //这时候当前组件还没高度，所以要间接计算。 没有-1 滚动条会闪烁 ，-1.5 倍是为了避免form 如果是多行，当前pane 会撑破页面
             let {x,y,w,h}={...max_row_element}
-            _this.pan_height=_this.$parent.$el.clientHeight-1-(this.context.crisMobile?1:1)* _this.$parent.$el.children[0].clientHeight
+            _this.pan_height=_this.$parent.$el.clientHeight-1-
+                (_this.$parent.$el.children.length==1?0:(this.context.crisMobile?1:1)* _this.$parent.$el.children[0].clientHeight)
             let last_top =Math.round(_this.row_height * y + (y + 1) * _this.margin)
             let last_height= h === Infinity ? h : Math.round(_this.row_height * h + Math.max(0, h - 1) * _this.margin)
-            if(last_top+last_height < _this.pan_height)
+            let layout_mode=this.context.report_result?.defaultsetting?.layout_mode
+            if(layout_mode=="" && last_top+last_height < _this.pan_height)
+            {
+                _this.row_height=Math.round((_this.pan_height - Math.max(0, h - 1) * _this.margin - (y + 1) * _this.margin)/(y+h))
+                console.info( _this.row_height)
+            }
+            if(layout_mode=="2")
             {
                 _this.row_height=Math.round((_this.pan_height - Math.max(0, h - 1) * _this.margin - (y + 1) * _this.margin)/(y+h))
                 console.info( _this.row_height)
@@ -256,54 +259,8 @@ export default {
             setTimeout(() => {
                 _this.showGridLayout=true
             });
-            
-            load_css_js(`<style>
-            .remove {
-        color:${_this.context.report_result.defaultsetting['COLOR']};
-}
-.setting {
-    color:${_this.context.report_result.defaultsetting['COLOR']};
-}
-.vue-grid-layout {
-    background-color: ${_this.context.report_result.defaultsetting['BACKGROUND-COLOR']};
-}
-.vue-grid-item:not(.vue-grid-placeholder) {
-    background-color: ${_this.context.report_result.defaultsetting['BACKGROUND-COLOR']};
-    color: ${_this.context.report_result.defaultsetting['COLOR']};
-    
-    
-}
-.vue-grid-item>.vue-resizable-handle{
-background:url("data:image/svg+xml;utf8,<svg t='1641536477492' class='icon' viewBox='0 0 1024 1024' version='1.1' xmlns='http://www.w3.org/2000/svg' p-id='6325' width='16' height='16'><path d='M903.68 949.76H92.16c-26.624 0-48.64-22.016-48.64-48.64s22.016-48.64 48.64-48.64h762.88v-762.88c0-26.624 22.016-48.64 48.64-48.64s48.64 22.016 48.64 48.64V901.12c0 26.624-22.016 48.64-48.64 48.64z' p-id='6326' fill='${_this.context.report_result.defaultsetting['COLOR'].replace('#','%23')}'></path></svg>") no-repeat;
-}
-</style>
-</style>
-`,"layout_css_run")
-        }else{
-            $("#layout_css_run").remove()
-            load_css_js(`<style>
-            .remove {
-        color:${_this.context.report.defaultsetting['COLOR']};
-}
-.setting {
-    color:${_this.context.report.defaultsetting['COLOR']};
-}
-.vue-grid-layout {
-    background-color: ${_this.context.report.defaultsetting['BACKGROUND-COLOR']};
-}
-.vue-grid-item:not(.vue-grid-placeholder) {
-    background-color: ${_this.context.report.defaultsetting['BACKGROUND-COLOR']};
-    color: ${_this.context.report.defaultsetting['COLOR']};
-   
-    
-}
-.vue-grid-item>.vue-resizable-handle{
-background:url("data:image/svg+xml;utf8,<svg t='1641536477492' class='icon' viewBox='0 0 1024 1024' version='1.1' xmlns='http://www.w3.org/2000/svg' p-id='6325' width='16' height='16'><path d='M903.68 949.76H92.16c-26.624 0-48.64-22.016-48.64-48.64s22.016-48.64 48.64-48.64h762.88v-762.88c0-26.624 22.016-48.64 48.64-48.64s48.64 22.016 48.64 48.64V901.12c0 26.624-22.016 48.64-48.64 48.64z' p-id='6326' fill='${_this.context.report.defaultsetting['COLOR'].replace('#','%23')}'></path></svg>") no-repeat;
-}
-</style>
-`,"layout_css")
         }
-        
+        this.reset_css()
     },
     watch: { 
         "context.selectWidget":{
@@ -311,6 +268,14 @@ background:url("data:image/svg+xml;utf8,<svg t='1641536477492' class='icon' view
                   console.info(val)
             },deep:false
         }, 
+        "context.report.defaultsetting":{
+            handler(val,oldVal){
+                if(!this.context.report.template)
+                    this.context.report.template={}
+                Object.assign(this.context.report.template,val)
+                this.reset_css()
+        },deep:true
+        }
     },
     computed:{
         ref_item(){
@@ -318,11 +283,59 @@ background:url("data:image/svg+xml;utf8,<svg t='1641536477492' class='icon' view
         }
     },
     methods: { 
+        mouseEnter_func(item){
+            this.mouseover_item=item
+        },
+        mouseOver_func(item){
+            this.mouseover_item=null
+        },
+        reset_css(){
+            let _this=this
+                load_css_js(`<style>
+                    .remove {
+                        color:${_this.defaultsetting['COLOR']};
+                    }
+                    .setting {
+                        color:${_this.defaultsetting['COLOR']};
+                    }
+                    .vue-grid-layout {
+                        background-color: transparent;
+                    }
+                    .vue-grid-item:not(.vue-grid-placeholder) {
+                        background-color: transparent;
+                        color: ${_this.defaultsetting['COLOR']};
+                    }
+                    .vue-grid-item-cur>.vue-resizable-handle{
+background:url("data:image/svg+xml;utf8,<svg t='1641536477492' class='icon' viewBox='0 0 1024 1024' version='1.1' xmlns='http://www.w3.org/2000/svg' p-id='6325' width='16' height='16'><path d='M903.68 949.76H92.16c-26.624 0-48.64-22.016-48.64-48.64s22.016-48.64 48.64-48.64h762.88v-762.88c0-26.624 22.016-48.64 48.64-48.64s48.64 22.016 48.64 48.64V901.12c0 26.624-22.016 48.64-48.64 48.64z' p-id='6326' fill='${_this.defaultsetting['COLOR'].replace('#','%23')}'></path></svg>") no-repeat;
+}
+                    </style>
+                    `,"layout_css_run")
+            
+        },
+        
+        find_item(item){
+            if(this.context.mode!='design' || this.selectWidget.type=='layout')
+                return false;
+            if(this.selectWidget.type=='layout_item' && item.i==this.selectWidget.item_i)
+                return true;
+            if(item==this.selectWidget || item.element==this.selectWidget)
+                return true;
+            if(item?.element?.children?.column){
+                if(item.element.children.column.length==0)
+                    return true;
+                for(let one in item.element.children.column){
+                    if(this.find_item(item.element.children.column[one]))
+                        return true;
+                }
+            }
+            return false;
+        },
         call_widget_dialog(item){
             this.call_item=item.i
             this.widget_dialogVisible=true
         },
-        calc_item_border_size(border_type){
+        calc_item_border_size(item){
+            let border_type=item.bg.border_box||item.border_box
             if(border_type ==undefined || ['','div'].includes(border_type) )
                 return 0;
             else {
@@ -347,8 +360,11 @@ background:url("data:image/svg+xml;utf8,<svg t='1641536477492' class='icon' view
             //this.selectWidget = data
             
         },
-        layoutUpdatedEvent: function(newLayout){
+        layoutReady:function(newLayout){
             this.isShow=true
+        },
+        layoutUpdatedEvent: function(newLayout){
+         
         },
          resizedEvent: function(i, newH, newW, newHPx, newWPx){
             //this.$refs['border_box'+i].initWH(newHPx, newWPx)
@@ -365,7 +381,9 @@ background:url("data:image/svg+xml;utf8,<svg t='1641536477492' class='icon' view
         },
         addItem: function (item) {
             // Add a new item. It must have a unique key!
-            let x=0,w=item.span??6,   h=item.h??10,y=0             
+            let x=0,w=item.span??6,   h=item.h??10,y=0   
+            w=this.defaultsetting.layout_colNum/24*w
+            h=20/this.defaultsetting.layout_row_height*h
             while(true){
                 let all_correct=true
                 this.layout.forEach(element => {
@@ -390,17 +408,17 @@ background:url("data:image/svg+xml;utf8,<svg t='1641536477492' class='icon' view
                 element.i=idx
                 idx=idx+1;
             })
-            this.layout.push({x,y,w,h,i: this.gridLayoutIndex,element:widget_div_layout(item),show:true,border_box:this.context.report.defaultsetting.border_box });
-            // Increment the counter to ensure key is always unique.
+            if(this.defaultsetting.big_screen=='1')
+                x=y=0;
+            while(Enumerable.from(this.layout).where(x=>x.i==this.gridLayoutIndex).toArray().length>0){
+                this.gridLayoutIndex++
+            }
+            this.mouseover_item={x,y,w,h,i: this.gridLayoutIndex,element:widget_div_layout(item),show:true,border_box:this.defaultsetting.border_box ,
+                            bg:{backgroundImage:'','BACKGROUND-COLOR':'',border_box:'div'}
+                        }
+            this.layout.push(this.mouseover_item);
             this.gridLayoutIndex++;
-            this.$set(this,'layout',this.layout)
-            let _this=this
-            setTimeout(() => {
-            //_this.$refs.gridLayout.layoutUpdate()
-            _this.$refs.gridLayout.dragEvent('dragend', _this.gridLayoutIndex-1, x,y,h,w);
-            });
-            
-            //this.$refs.gridLayout.layoutUpdatedEvent(this.layout);
+            this.selectWidget=item
         },
         setDelateFlagForElement(ele){
             ele.isDelete=true
@@ -409,6 +427,30 @@ background:url("data:image/svg+xml;utf8,<svg t='1641536477492' class='icon' view
                     this.setDelateFlagForElement(one)
                 });
             }
+        },
+        cloneItem: function (item) {
+            let _this=this
+            item=JSON.parse(JSON.stringify(item))
+
+            if(item?.element?.children?.column){
+                if(item.element.children.column.length!=1)
+                    return;
+                let data=item.element.children.column[0]
+                let name_prefix=data.type
+                if(name_prefix=="luckySheetProxy")
+                    name_prefix="report"
+                let gridName
+                do{
+                    gridName =name_prefix.replace(/-/, "_") +"_" + Math.ceil(Math.random() * 999);
+                }while(this.has_name(gridName));                
+                data.gridName=gridName                
+            }
+            this.mouseover_item=item
+            while(Enumerable.from(this.layout).where(x=>x.i==this.gridLayoutIndex).toArray().length>0){
+                this.gridLayoutIndex++
+            }
+            item.i=this.gridLayoutIndex            
+            this.layout.push(item);
         },
         removeItem: function (val) {
             let _this=this
@@ -420,7 +462,7 @@ background:url("data:image/svg+xml;utf8,<svg t='1641536477492' class='icon' view
                 const index = this.layout.map(item => item.i).indexOf(val);
                 this.setDelateFlagForElement(this.layout[index].element)
                 this.layout.splice(index, 1);
-                this.selectWidget = {prop:'--'}
+                this.click_layout();
                 this.$message({
                     type: 'success',
                     message: '删除成功!'
@@ -433,16 +475,12 @@ background:url("data:image/svg+xml;utf8,<svg t='1641536477492' class='icon' view
             });
 
         },
-        settingItem: function (val) {
-            
-            const index = this.layout.map(item => item.i).indexOf(val);
-            this.form.idx=index
-            this.dialogVisible=true
-        },
-        dialogSubmit:function () {
-            this.$set(this.layout[this.form.idx],'border_box',this.form.border_box)
-            this.dialogVisible=false
-        },
+        click_layout(){
+            this.mouseover_item=null;
+            this.selectWidget={type:'layout',config:this.defaultsetting}
+            if(this.selectWidget.config.border_option==undefined)
+                this.$set(this.selectWidget.config,'border_option',{color:["#83bff6","#00CED1"]})
+        }
     }
 }
 </script>
@@ -494,6 +532,9 @@ background:url("data:image/svg+xml;utf8,<svg t='1641536477492' class='icon' view
 .vue-grid-item .add {
     cursor: pointer;
 }
+.vue-grid-item>.vue-resizable-handle{
+    background:"";
+}
 .vue-draggable-handle {
     position: absolute;
     width: 20px;
@@ -508,5 +549,8 @@ background:url("data:image/svg+xml;utf8,<svg t='1641536477492' class='icon' view
     box-sizing: border-box;
     cursor: pointer;
 }
-
+@-webkit-keyframes rotation{
+    from {-webkit-transform: rotate(0deg);}
+    to {-webkit-transform: rotate(360deg);}
+}
 </style>

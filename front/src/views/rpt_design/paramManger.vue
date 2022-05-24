@@ -194,8 +194,9 @@ export default {
                 item._canUsedValueFrom=item._defaultValueFrom
         },
         has_name(name){
-            if(this.report.params.param==undefined)
-                this.report.params.param=[]
+            if(this.report.params.param==undefined){
+                this.report.params={param:[]}
+            }
           let has=this.report.params.param.filter(x=>x._name==name).length 
           if(has>0|| name=="reportName"){
             this.$alert("名字不能重复");

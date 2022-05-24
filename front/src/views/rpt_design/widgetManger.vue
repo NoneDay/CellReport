@@ -14,7 +14,7 @@
       <el-row :gutter="12" >
         <el-col
           :span="7"
-          style="height: 140px; border: 1px solid; margin: 10px"
+          style="height: 240px; border: 1px solid; margin: 10px"
         >
           <div class="cr_run_title">
             <span> 创建新组件</span>
@@ -29,7 +29,7 @@
           :span="7"
           v-for="(item, index) in field.list"
           :key="index"
-          style="height: 140px; border: 1px solid; margin: 10px"
+          style="height: 240px; border: 1px solid; margin: 10px; display: flex; flex-direction: column;"
         >
           <div class="cr_run_title">
             <span> {{ item.label }}</span>
@@ -54,7 +54,7 @@
               >
             </div>
           </div>
-          <div style="padding: 4px; height: 100px; width: 100%; overflow: auto">
+          <div style="flex:1;padding: 4px;  width: 100%; overflow: auto;background-color:#012545;color:#fff">
             <widget-form-item
               v-if="
                 tab_value == field.title &&
@@ -89,7 +89,9 @@
       direction="btt"
       append-to-body
     >
-      <el-row style="height: 100%">
+     <el-tabs v-model="edit_tab_value" value="组件内容" style="overflow: hidden; height: 100%; width: 100%;margin:3px 3px 0px 3px;">
+      <el-tab-pane label="组件内容" name="组件内容" style="overflow: hidden; height: 100%; width: 100%;margin:3px 3px 0px 3px;">
+      <el-row style="height: calc(100% - 15px)">
         <el-col span="12" style="height: 100%">
           <el-row style="height: 50%">
             <el-col span="24">
@@ -101,24 +103,27 @@
                     </el-select>
                 </template>
             </avue-form>
+            
             </el-col>
           </el-row>
+          
           <el-row style="height: 50%">
-            <el-col span="24" style="height: 100%;border:1px solid gray">
-              <widget-form-item
+            <el-col span="24" style="height:100%;border:1px solid gray;background-color:#012545;color:#fff">
+              <widget-form-item v-if="edit_tab_value=='组件内容'"
                 class="widget-form-list"
                 :self="edit_item"
                 :index="0"
-                :depth="1"
+                :depth="1" 
               >
               </widget-form-item>
+              
             </el-col>
           </el-row>
+          
         </el-col>
         <el-col span="12" style="height: 100%">
           <codemirror
-            ref="editor"
-            style="height: 100%"
+            ref="editor" @ready="editor_ready()" style="height: 100%"
             v-model="edit_item.content"
             :options="{
               tabSize: 4,
@@ -129,10 +134,46 @@
               showCursorWhenSelecting: true,
               cursorBlinkRate: 0,
             }"
-            @ready="editor_ready()"
+            
           />
         </el-col>
       </el-row>
+      </el-tab-pane>
+      <el-tab-pane label="可视化配置器" name="可视化配置器" style="overflow: hidden; height: 100%; width: 100%;margin:3px 3px 0px 3px;">
+        <el-row style="height: calc(100% - 15px)">
+        <el-col span="12" style="height: 100%">
+          <el-form label-suffix="：" labelPosition="left"
+             labelWidth="100px" size="mini">
+             <el-form-item label="帮助文档地址">
+              <avue-array v-model="edit_visual_design.helpurl">
+              </avue-array> 
+            </el-form-item>
+            <dyncTemplate :parentCompent="parentCompent" 
+            :self="{type:'pc_form',content:edit_visual_design.content,gridName:'pc_form',data:edit_item}" 
+            >
+            </dyncTemplate>
+            {{edit_item.option}}
+          </el-form>
+          
+        </el-col>
+        <el-col span="12" style="height: 100%">
+          <codemirror
+            ref="editor2" @ready="editor_ready2()" style="height: 100%"
+            v-model="edit_visual_design.content"
+            :options="{
+              tabSize: 4,
+              mode: 'javascript',
+              styleActiveLine: true,
+              lineWrapping: true,
+              theme: 'cobalt',
+              showCursorWhenSelecting: true,
+              cursorBlinkRate: 0,
+            }"
+          />
+        </el-col>
+      </el-row>
+      </el-tab-pane>
+      </el-tabs>
       <span slot="footer" class="dialog-footer">
         <el-button @click="dialogVisible = false">取 消</el-button>
         <el-button type="primary" @click="editSubmit">确 定</el-button>
@@ -142,17 +183,22 @@
 </template>
 
 <script>
-import fields from "./fieldsConfig";
 import codemirror from "./element/vue-codemirror.vue";
 import { getAllWidget, saveWidget } from "./api/report_api";
-
+import dyncTemplate from './element/dyncTemplate.vue'
 export default {
   name: "widgetManager",
-  components: { codemirror },
+  components: { codemirror ,dyncTemplate},
   async mounted() {
-    let t_fields = await getAllWidget();
-    this.t_fields = eval("(function(){\nreturn " + t_fields.txt + "\n})()");
-    if (this.t_fields.length > 0) this.tab_value = this.t_fields[0].title;
+    if(window.cr_allWidget==undefined)
+      window.cr_allWidget=await getAllWidget('design_rpt');
+    this.t_fields=window.cr_allWidget.self_json.fields
+    this.visual_design_arr=window.cr_allWidget.self_json.visual_design_arr
+    if (this.t_fields==undefined)
+      this.t_fields=[]
+    if (this.visual_design_arr==undefined)
+      this.visual_design_arr=[]
+    if (this.t_fields?.length > 0) this.tab_value = this.t_fields[0].title;
   },
   provide() {
     return {
@@ -160,35 +206,46 @@ export default {
         all_sheet_windows: [],
         canDraggable: false,
         crisMobile: false,
-        report: {},
+        report: {defaultsetting: {'BACKGROUND-COLOR':'#012545','COLOR':'#fff'},},
         report_result: {},
-        mode: "preview",
-
+        mode: "design",        
         clickedEle: {},
         allElementSet: {},
         //不放到这里，会导致动态runtime-template重算，如果是有滚动行的，会每次都重新跑到顶部
         in_exec_url: false,
-        defaultsetting: {},
+        defaultsetting: {'BACKGROUND-COLOR':'#012545','COLOR':'#fff'},
+        templateGuide:`以等号开始的是公式，如：=cur_ds?cur_ds[1][4]:14<br/>
+      cur_ds是指定的依赖数据集的数据，为一个二维数组，第一行是列名，第二行开始是数据。计数是从0开始。
+      <br/>也就是说cur_ds[1]就是数据集的第一行数据
+      <br/>非等号开始为普通字符串
+      <br/>如果这里不能满足复杂需要，可以直接点击上面的编辑模板进行编辑`, 
       },
       fresh_ele: [],
+      
     };
   },
   data() {
     return {
       tab_value: "核心元素",
+      edit_tab_value:'组件内容',
       dialogVisible: false,
       t_fields: [],
       edit_item: {},
       cur_item: {},
-      cur_field:[],      
+      cur_field:[],    
+      visual_design_arr:[],  
+      edit_visual_design:{},
+      templateGuide:'这是一段内容',
     };
   },
-  computed:{      
+  computed:{    
+    parentCompent(){ return this},  
+    
     form_option(){
         return {
             column: [
                 {
-                type: 'input',label: '名称',span: 12,display: true,prop: 'type',required: true,
+                type: 'input',label: '类型',span: 12,display: true,prop: 'type',required: true,
                 rules: [{required: true,message: '名称必须填写'}]
                 },
                 {
@@ -206,12 +263,12 @@ export default {
                 rules: [{required: true,message: '宽度必须填写'}],
                 required: true
                 },
-                {label: '类型',span: 12,display: true,prop: 'component',formslot:true,},
+                {label: '模板类型',span: 12,display: true,prop: 'component',formslot:true,},
                 {label: 'gridName',span: 12,display: false,prop: 'gridName',value:'_random_'},
                 {label: 'icon',span: 12,display: false,prop: 'icon',value: 'icon-table'},
                 {
                 type: 'textarea',label: 'style',span: 24,display: true,prop: 'style',value: '{height:100%;}',required: true,
-                rules: [{required: true,message: 'style必须填写'}]
+                  rules: [{required: true,message: 'style必须填写'}]
                 }
             ],
             labelPosition: 'left',labelSuffix: '：',labelWidth: 80,gutter: 10,menuBtn: false
@@ -219,6 +276,12 @@ export default {
     },
   },
   methods: {
+    has_catlog_name(value,field){
+       if(this.t_fields.filter(x=>x.title==value && x!=field).length>0 || window.cr_allWidget.admin_json.fields.filter(x=>x.title==value && x!=field).length>0)
+        return true
+      else
+        return false
+    },
     tab_edit(field){
         this.$prompt(`请输入新的名称`, '名称', 
             {
@@ -227,14 +290,14 @@ export default {
                 inputValue:field.title
             })
             .then(async ({ value }) => { 
-                if(this.t_fields.filter(x=>x.title==value && x!=field).length>0){
+                if(this.has_catlog_name(value,field)){
                      this.$message.error(`已经存在这个名称[${value}]`);
                         return
                 }
                 field.title=value
                 this.tab_value=value
-                let resp = await saveWidget(JSON.stringify(this.t_fields, null, 4));
-            }).catch(() => {
+                let resp = await saveWidget(JSON.stringify({visual_design_arr:this.visual_design_arr,fields:this.t_fields}, null, 4));
+            }).catch((ex) => {
           this.$message({
             type: "info",
             message: "已取消",
@@ -251,20 +314,28 @@ export default {
                 inputValue:"新分类"
             })
             .then(async ({ value }) => { 
-                if(this.t_fields.filter(x=>x.title==value).length>0){
+                if(this.has_catlog_name(value)){
                      this.$message.error(`已经存在这个名称[${value}]`);
                         return
                 }
                 this.cur_field=[]
                 this.tab_value = value
                 this.t_fields.push({title:value,list:this.cur_field})
-                let resp = await saveWidget(JSON.stringify(this.t_fields, null, 4));
-            }).catch(() => {
+                let resp = await saveWidget(JSON.stringify({visual_design_arr:this.visual_design_arr,fields:this.t_fields}, null, 4));
+            }).catch((ex) => {
           this.$message({
             type: "info",
             message: "已取消",
           });
         });
+    },
+    has_name(value){
+       if(Enumerable.from(this.t_fields).any(one=> Enumerable.from(one.list).any(x=>x!=this.cur_item && x.type==this.edit_item.type))
+        ||Enumerable.from(window.cr_allWidget.admin_json.fields).any(one=> Enumerable.from(one.list).any(x=>x!=this.cur_item && x.type==this.edit_item.type))
+         )
+        return true
+      else
+        return false
     },
     async editSubmit() {
         let is_new=false
@@ -272,11 +343,24 @@ export default {
             is_new=true
             this.cur_item={}
         }
+        if(this.has_name(this.cur_item))
+        {
+          this.$message({
+              message: "类型重复",
+              type: "error"
+            });
+            return;
+        }
         Object.assign(this.cur_item, this.edit_item);
         this.cur_item.style = JSON.parse(this.edit_item.style);
-        if(is_new)
+        this.edit_visual_design.type=this.edit_item.type
+        if(is_new){
             this.cur_field.list.push(this.cur_item)
-        let resp = await saveWidget(JSON.stringify(this.t_fields, null, 4));
+        }
+        if(Enumerable.from(this.visual_design_arr).firstOrDefault(x=>x.type==this.edit_item.type)==undefined){
+          this.visual_design_arr.push(this.edit_visual_design)
+        }
+        let resp = await saveWidget(JSON.stringify({visual_design_arr:this.visual_design_arr,fields:this.t_fields}, null, 4));
         console.info(resp);
         this.dialogVisible = false;
     },
@@ -284,8 +368,8 @@ export default {
         this.cur_field=field
         this.cur_item=undefined
         this.edit_item = {
-                "type": "装饰1",
-                "label": "装饰1",
+                "type": "name",
+                "label": "label",
                 "gridName": "_random_",
                 "h": 4,
                 "span": 6,
@@ -296,8 +380,14 @@ export default {
                 "style": {
                     "height": "100%"
                 },
+                "fresh_ds": [],
+                "fresh_params": [],
+                "fields": [],
+                "datasource": "示例",
+                "data": [],
                 "content": "<div style=\"width:100%;height:100%;\" ></div>"
             };
+        this.edit_visual_design={type:this.edit_item.type,content:"",helpurl:[]}
         this.edit_item.style = JSON.stringify(this.edit_item.style);
         this.dialogVisible = true;
     },
@@ -305,6 +395,11 @@ export default {
         this.cur_item = item;
         this.edit_item = JSON.parse(JSON.stringify(item));
         this.edit_item.style = JSON.stringify(item.style);
+        this.edit_visual_design=Enumerable.from(this.visual_design_arr).firstOrDefault(x=>x.type==this.edit_item.type)
+        if(this.edit_visual_design==undefined)
+          this.edit_visual_design={type:this.edit_item.type,content:"",helpurl:[]}
+        if(this.edit_visual_design.helpurl==undefined)  
+          this.edit_visual_design.helpurl=[]
         this.dialogVisible = true;
     },
     click_delete(field, item, index) {
@@ -342,7 +437,17 @@ export default {
         _this.$refs["editor"].codemirror.setSize("100%", "100%");
       });
     },
+    editor_ready2() {
+      let _this = this;
+      setTimeout(() => {
+        _this.$refs["editor2"].codemirror.setSize("100%", "100%");
+      });
+    },
   },
+  watch:{
+
+
+  }
 };
 </script>
 

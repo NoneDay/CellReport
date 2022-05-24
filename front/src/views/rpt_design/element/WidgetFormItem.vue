@@ -5,9 +5,9 @@
       :class="{active: selectWidget.prop == self.prop, 'required': self.required }"
       @click.stop="handleSelectWidget(index)"> 
 
-    <span v-if="context.mode=='design' && (selectWidget == self || self.type=='luckySheetProxy')"  
+    <span v-if="context.mode=='design' && ( self.type=='luckySheetProxy')"  
     class="mover cr_item_title">
-     <span> {{self.label}}</span>
+     <div style="    display: inline;" v-html="self.label"> </div>
     <el-button title="克隆" style="margin-left: 0px;padding:0px !important;"
                 @click.stop="handleWidgetClone(index)"
                 v-if="context.canDraggable " 
@@ -29,14 +29,14 @@
     </span>
     <div v-if="(self.show_title && self.label)"  class="cr_run_title">
       <img :src="self.icon" v-if="self.icon!=''" style="width: 20px;height: 20px;vertical-align:middle;">
-      <span>  {{self.label}}</span>
+      <div style="display: inline;" v-html="self.label"> </div>
     </div>
-    <div :style="{width:'100%','flex-grow':1,height:`20px`}">
+    <div :style="{width:'100%',height:'100%','flex-grow':1,display:`flex`}">
     <component draggable=".item" v-if="context.mode=='design'"
                :is="getComponent(self.type, self.component)"
                :self="self" :parent="parent" 
                :select.sync="selectWidget"  :depth="depth+1"
-               v-bind="Object.assign(this.deepClone(self), self.params, {content:undefined,___depth:depth,depth:depth+1, size:self.size || 'mini' })"
+               v-bind="Object.assign(this.deepClone(self),{style:Object.assign({},self.style,{height:'100%', flex:'1'} )}, self.params, {content:undefined,___depth:depth,depth:depth+1, size:self.size || 'mini' })"
                
                @change="$emit('change')">
 
@@ -47,7 +47,7 @@
                :is="getComponent(self.type, self.component)"
                :self="self" :parent="parent" 
                :select.sync="selectWidget"  :depth="depth+1"
-               v-bind="Object.assign(this.deepClone(self), self.params, {content:undefined,___depth:depth,depth:depth+1, size:self.size || 'mini' })"
+               v-bind="Object.assign(this.deepClone(self),{style:Object.assign({},self.style,{height:'100%', flex:'1'} )}, self.params, {content:undefined,___depth:depth,depth:depth+1, size:self.size || 'mini'})"
                
                @change="$emit('change')">
 
@@ -66,7 +66,8 @@ export default {
   mounted(){
     if(this.context.report_result.name_lable_map==undefined)
       this.context.report_result.name_lable_map={}
-    this.context.report_result.name_lable_map[this.self.gridName]=this.self
+    if(this.context.report_result.name_lable_map[this.self.gridName]==undefined)
+      this.context.report_result.name_lable_map[this.self.gridName]=this.self
     if(this.self.icon==undefined)
       this.$set(this.self,'icon',"img/m_pm.png")
   },
@@ -108,7 +109,8 @@ export default {
       else return `请输入 ${label}`;
     },
     handleSelectWidget (index) {
-        this.selectWidget = this.self
+      if(this.context.mode=="design")
+          this.selectWidget = this.self
     },
     handleWidgetDelete (index) {
       let _this=this

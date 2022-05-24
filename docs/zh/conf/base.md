@@ -295,11 +295,12 @@ console.info(_this) //d打印_this的内容到控制台。这仅仅是测试，�
 
 ## 前端动态模板
 - 在页面上添加的动态模板，内部脚本是经过简化的vue格式。主要区别是：script中定义的data、methods、computed会直接注入当前模板中，其他vue属性暂时不支持。
-- 由于是内置脚本模式，所以不支持import语句，不支持data使用函数返回（但和data函数的作用是一样的，都是只对实例模式，定义的属性不会被共享）。
+- 由于是内置脚本模式，所以不支持import语句，支持data使用函数返回。
 - style 将是scoped的，style的处理是将每个css前动态加上 了id名称，所以对模板外的其他网页部分没有影响。
 - 为避免data、methods中的名字和系统内部定义的名字冲突，最好将data、methods中的名字加上一个固定前缀，如： my_ 。
-- export default  用return替代
 - 如果设置依赖数据集名称（this.self.dataSource），this.cur_ds 表示的将是这个数据集对应的二维数组json，第一行是列名，其他行是数据
+- template中可使用`<t>text</t>` 代替配置中self.option.text中输入的公式(以等号开始的字符串将被认为是公式)。例如self.option.text的内容为：=cur_ds?cur_ds[1][4]:14 ，等号后面的内容将会插入到占位符中。通常这种输入是在可视化配置中配置（暗红色字体通常就是可输入模板公式的属性）。
+
 ``` vue
 <template>
 <div class="cr-data-box">
@@ -347,3 +348,63 @@ console.info(_this) //d打印_this的内容到控制台。这仅仅是测试，�
 }
 </style>
 ```
+## 自定义组件设计
+
+在模块组件管理中，我们可以修改或自定义新的供报表使用的组件。
+在编辑组件总，有两个tab页：组件内容、可视化配置器。组件内容将会在将该组件插入到报表时复制到报表中；可视化配置器是为了辅助内容输入而提供的快捷内容录入组件。管理的选项内容通常配置在option中。《组件内容》使用self.option.xxx来引用属性xxx，《可视化配置器》中使用edit_item.option.xxx来引用属性xxx。
+可视化配置器的格式通常如下：
+``` js
+<template>
+  <div v-if="hasOption">   
+    <el-form-item label="名称颜色">
+      <avue-input-color v-model="edit_item.option.color1">
+      </avue-input-color> 
+    </el-form-item>
+  </div>    
+</template> 
+<script>
+  
+  export default {
+    computed:{
+      hasOption(){
+        if(this.edit_item.option==undefined)
+          this.edit_item.option={}
+        return true
+      }
+    }
+  }
+</script>
+```
+hasOption 是为了动态初始化option，他总是返回true。
+在这里缺省组件使用的通常都是avue组件构造的录入界面。
+
+为了标记可做公式替换的字段，我们通常使用以下方式构造录入选项：
+``` js
+    <el-form-item label="文字">
+      <template slot="label">
+        <el-tooltip placement="top">
+          <div slot="content"><div v-html="context.templateGuide"/></div>
+          <el-button  style="color: darkred;">文字<span class="guide">
+         <i class="el-icon-warning-outline" title="查看文档"></i>
+        </span></el-button>
+        </el-tooltip>        
+      </template>       
+      <avue-input v-model="edit_item.option.text">
+      </avue-input> 
+    </el-form-item>
+```
+组件内容通常格式：
+``` js
+<dv-decoration-11 style="width:100%;height:100%;" v-bind="styleArr" >
+  {{ <t>text</t> }}
+</dv-decoration-11>
+```  
+或：
+``` js
+<dv-water-level-pond :config=" {data: [<t>value</t>]}" style="width:100%;height:100%;" />
+
+```          
+::: tips
+1、标签间的模板一定要用{{  }} 包起来
+2、标签属性中使用模板，一定使用双引号。因为在做模板替换的时候，字符串将会用单引号。
+:::

@@ -1,5 +1,5 @@
 <template>
-  <div id="report_app"> 
+  <div id="report_app" :style="{'overflow':result.defaultsetting.big_screen=='1'?'hidden':''}"> 
     <el-dialog v-draggable v-if="pdf_output_dialogVisible" style="text-align: left;" class="report_define"
         :visible.sync="pdf_output_dialogVisible" :title="'PDF导出和打印预览'" 
             :close-on-click-modal="false"   :fullscreen="true"
@@ -37,10 +37,10 @@
       </div>
     </el-popover>
 
-    <div ref="form" v-if="!crisMobile && isShow && result.defaultsetting['show_form']=='true'"> 
+    <div ref="form" v-if="!crisMobile && isShow && result.defaultsetting.big_screen!='1' && result.defaultsetting['show_form']=='true'"> 
       <dyncTemplate :parentCompent="parentCompent" :self="{type:'pc_form',content:result.pc_form,gridName:'pc_form'}"  v-if="result.pc_form">
       </dyncTemplate>
-      <el-form :inline="true" v-else label-position="right" label-width="80px" >
+      <el-form :inline="true" v-else label-position="right"  >
         <input hidden v-for="one in result.form.filter(x=>x.hide=='True')" :key="one.name" v-model="queryForm[one.name]"/>
         <div style="display:inline;max-width:100px" v-for="one in result.form.filter(x=>x.hide=='False')" :key="one.name">
           <el-form-item :label="one.prompt">
@@ -88,13 +88,13 @@
           </el-form-item>
       </el-form>
     </div>
-    <div  ref="form" v-if=" crisMobile && isShow && result.defaultsetting['show_form']=='true'"> 
+    <div  ref="form" v-if=" crisMobile && isShow && result.defaultsetting.big_screen!='1' && result.defaultsetting['show_form']=='true'"> 
       <dyncTemplate :parentCompent="parentCompent" :self="{type:'pc_form',content:result.mobile_form,gridName:'pc_form'}" v-if="result.mobile_form">
       </dyncTemplate>
       <form v-else >  <!--img/battle_2021.jpg-->
         <input hidden v-for="one in result.form.filter(x=>x.hide=='True')" :key="one.name" v-model="queryForm[one.name]"/>
-        <img :src="result.zb_var.mobile_img_for_less_one_param" style="height: 80px;width: 100%;" 
-        v-if="result.zb_var.mobile_img_for_less_one_param && result.form.filter(x=>x.hide=='False').length<=1">
+        <img :src="result._zb_var_.mobile_img_for_less_one_param" style="height: 80px;width: 100%;" 
+        v-if="result._zb_var_.mobile_img_for_less_one_param && result.form.filter(x=>x.hide=='False').length<=1">
         
         <div v-for="one in result.form.filter(x=>x.hide=='False')" :key="one.name">
           
@@ -162,7 +162,7 @@
       </form>
     </div>
     <div ref="report_pane" class="report_define" v-if="isShow" :style="{'flex-grow': 1,color:result.defaultsetting['COLOR'],background:result.defaultsetting['BACKGROUND-COLOR']}">
-        <grid-layout-form v-if="layoutType=='gridLayout'" :layout="layout" >
+        <grid-layout-form v-if="layoutType=='gridLayout'" :layout="layout"  :big_screen_scale="big_screen_scale">
         </grid-layout-form>          
         <widget-form v-else   :data="layout"   
         ></widget-form>
@@ -221,6 +221,7 @@ export default {
           //run_one(_this,_this.reportName,_this.queryPara)
         else
           _this.$notify({title: '提示',message: '没有提供参数：reportName',type: 'error'});
+        //_this.refresh_layout(null,_this)
       }
       if(this.crisMobile && window.nutui==undefined){
         load_css_file("cdn/nutui@2.2.15/nutui.min.css")
@@ -241,6 +242,7 @@ export default {
           report_result:this.result,
           mode:'run',
           event:{},
+          queryForm:this.queryForm,
           clickedEle:this.clickedEle,
           allElementSet:this.allElementSet,
           //不放到这里，会导致动态runtime-template重算，如果是有滚动行的，会每次都重新跑到顶部
@@ -260,7 +262,7 @@ export default {
         queryForm:{},
         queryForm_show:{},
         exec_log:"",
-        result:{form:[],dataSet:{},data:{}},
+        result:{form:[],dataSet:{},data:{},defaultsetting:{big_screen:0}},
         mode:'run',
         clickedEle:{},
         executed:false,
@@ -277,7 +279,8 @@ export default {
         in_exec_url:{stat:false,run_url:""},
         pdf_output_dialogVisible:false,
         paper_setting_dialogVisible:false,
-        paperSetting:{pageSize_name:'A5'}
+        big_screen_scale:100,
+        paperSetting:{pageSize_name:'A5',}
     }
   },
   watch:{
@@ -307,7 +310,13 @@ export default {
                   _this.$nextTick(x=>{
                       let form_h=_this.$refs.form?_this.$refs.form.clientHeight:0
                       _this.$refs.report_pane.style.height=`calc(100% - ${form_h}px)`
-                      document.title = _this.result.data[Object.keys(_this.result.data)[0]].title
+                      if(_this.result.defaultsetting.big_screen=='1'){
+                        _this.big_screen_scale=(Math.min(
+                        100.0*_this.$refs.report_pane.clientHeight/parseInt(_this.result.defaultsetting.screen_height)
+                        ,100.0*_this.$refs.report_pane.clientWidth/parseInt(_this.result.defaultsetting.screen_width)
+                        ))
+                      }
+                      document.title = (_this.result.data[Object.keys(_this.result.data)[0]]?.title)   || 'CellReport'
                   })
               });
           });
@@ -344,13 +353,13 @@ export default {
     }, 
 
     submit(loading_conf=null){
-      run_one(this,this.reportName,this.queryPara,this.queryForm,null,loading_conf)
+      run_one(this,this.reportName,null,loading_conf)
     },
     change_param(param_name){
       let _this=this
       if(this.result.param_liandong.includes(param_name)){
         setTimeout(async function(){
-          run_one(_this,_this.reportName,_this.queryPara,_this.queryForm,param_name)
+          run_one(_this,_this.reportName,param_name)
         })        
       }
     },

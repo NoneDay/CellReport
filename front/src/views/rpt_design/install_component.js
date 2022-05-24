@@ -8,6 +8,9 @@ import htmlText from './element/HtmlText'
 import luckySheetProxy from './element/luckySheetProxy'
 import dyncTemplate from './element/dyncTemplate'
 import eleGrid from './element/eleGrid'
+import text from './element/text'
+import datetime from './element/datetime'
+import flop from './element/flop'
 import {deepClone} from './utils/util'
 export default {
   install (Vue) {
@@ -21,6 +24,9 @@ export default {
     
     Vue.component('echarts', echarts);
     Vue.component('htmlText', htmlText);
+    Vue.component('eleText', text);
+    Vue.component('eleDateTime', datetime);
+    Vue.component('eleFlop', flop);
     Vue.component('dyncTemplate', dyncTemplate);    
     Vue.component('luckySheetProxy', luckySheetProxy);
     Vue.component('eleGrid', eleGrid);

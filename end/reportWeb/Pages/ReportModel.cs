@@ -104,20 +104,10 @@ namespace reportWeb.Pages
             }
             else
             {
-                
-                var file_path=Path.Combine(this.WebHostEnvironment.WebRootPath,"run.html");
-                var report_content = await System.IO.File.ReadAllTextAsync(file_path, System.Text.Encoding.UTF8);
                 string Referer = Request.Headers["Referer"];
                 string Authorization = Request.Headers["Authorization"];
-                report_content=report_content.Replace("<head>", $"<head><script>var __real_referer='{Referer}';__Authorization='{Authorization}'</script>");
-                if (isPhone)
-                {
-                    await Response.WriteAsync(report_content);//.Replace("<script src=\"cdn/xlsx/dist/xlsx.full.min.js\"></script>", "")
-                }
-                else
-                {
-                    await Response.WriteAsync(report_content);
-                }                
+                var report_content=await CellReport.running.XmlReport.getIndexHtml(this.WebHostEnvironment.WebRootPath, Referer, Authorization);
+                await Response.WriteAsync(report_content);
                 return;
             }
             try
@@ -149,7 +139,7 @@ namespace reportWeb.Pages
                 exprFaced.addVariable("isPhone", isPhone);
                 int grid_cnt=reportDefineForWeb.CurrentReportDefine.getGridList().FindAll(x=>x.XmlElementName=="grid").Count;
                 exprFaced.addVariable("use_luckysheet", 1);
-                
+                exprFaced.addVariable("__grid_dict_", reportDefineForWeb.CurrentReportDefine.getGridList().ToDictionary(x => x.Name));
                 exprFaced.getVariableDefine("_zb_url_").value = configuration["zb_url"];
                 exprFaced.getVariableDefine("_zb_user_").value = rpt_group.zb_user;
                 exprFaced.getVariableDefine("_zb_password_").value = rpt_group.zb_password;
@@ -254,7 +244,7 @@ namespace reportWeb.Pages
                 return;
             if(!Request.Form.TryGetValue("_fresh_ds",out var _fresh_ds))
                 return;
-            
+            //ds.getSqlParamSet()   
             List<String> calcDsNames = null;
             List<String> calcGridNames = null;
 
@@ -320,7 +310,19 @@ namespace reportWeb.Pages
                             var exprFaced = report_env.getExprFaced();
                             this.reportDefineForWeb.CurrentReportDefine.calcGridNames = new String[] { };
                             exprFaced.addVariable("_createFormParam_", true);
-                            exprFaced.addVariable("_param_name_", Request.Form["_param_name_"].ToString());
+                            var param_name=Request.Form["_param_name_"].ToString();
+                            exprFaced.addVariable("_param_name_", param_name);
+                            foreach (var ds in report_env.getDataSetList())
+                            {
+                                if (ds.getSqlParamSet().Count==1 && ds.getSqlParamSet().Contains(param_name))
+                                {
+                                    if (reportDefineForWeb.CurrentReportDefine.calcDsNames == null)
+                                    {
+                                        reportDefineForWeb.CurrentReportDefine.calcDsNames = new ();
+                                    }
+                                    reportDefineForWeb.CurrentReportDefine.calcDsNames.Add(ds.Name);
+                                };
+                            }
                         }
                         if(Request.HasFormContentType && (Request.Form.ContainsKey("__updated") ||
                             Request.Form.ContainsKey("__inserted") || Request.Form.ContainsKey("__deleted") ))

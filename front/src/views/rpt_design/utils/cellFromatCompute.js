@@ -1,14 +1,14 @@
 import {getObjType} from './util.js'
 const getcolorGradation= function(color1, color2, value1, value2, value){
     let rgb1 = color1.split(',');
-    let r1 = parseInt(rgb1[0].split('(')[1]);
-    let g1 = parseInt(rgb1[1]);
-    let b1 = parseInt(rgb1[2].split(')')[0]);
+    let r1 = my_parseInt(rgb1[0].split('(')[1]);
+    let g1 = my_parseInt(rgb1[1]);
+    let b1 = my_parseInt(rgb1[2].split(')')[0]);
 
     let rgb2 = color2.split(',');
-    let r2 = parseInt(rgb2[0].split('(')[1]);
-    let g2 = parseInt(rgb2[1]);
-    let b2 = parseInt(rgb2[2].split(')')[0]);
+    let r2 = my_parseInt(rgb2[0].split('(')[1]);
+    let g2 = my_parseInt(rgb2[1]);
+    let b2 = my_parseInt(rgb2[2].split(')')[0]);
 
     let r = Math.round(r1 - (r1 - r2) / (value1 - value2) * (value1 - value));
     let g = Math.round(g1 - (g1 - g2) / (value1 - value2) * (value1 - value));
@@ -16,6 +16,10 @@ const getcolorGradation= function(color1, color2, value1, value2, value){
 
     return "rgb("+ r +", "+ g +", "+ b +")";
 } 
+function my_parseInt(val){
+    let ret=parseInt(val)
+    return isNaN(ret)?0:ret
+}
 export  const cellFromatCompute=function(ruleArr, d){
     if(ruleArr == null){
         ruleArr = [];
@@ -42,12 +46,12 @@ export  const cellFromatCompute=function(ruleArr, d){
                             let cell = d[r][c];
 
                             if(cell != null){
-                                if(max == null || parseInt(cell) > max){
-                                    max = parseInt(cell);
+                                if(max == null || my_parseInt(cell) > max){
+                                    max = my_parseInt(cell);
                                 }
 
-                                if(min == null || parseInt(cell) < min){
-                                    min = parseInt(cell);
+                                if(min == null || my_parseInt(cell) < min){
+                                    min = my_parseInt(cell);
                                 }
                             }
                         }
@@ -69,8 +73,8 @@ export  const cellFromatCompute=function(ruleArr, d){
                                     let cell = d[r][c];
 
                                     if(cell != null){
-                                        if(parseInt(cell) < 0){ //负数
-                                            let valueLen = Math.round(Math.abs(parseInt(cell)) / Math.abs(min) * 100) / 100;
+                                        if(my_parseInt(cell) < 0){ //负数
+                                            let valueLen = Math.round(Math.abs(my_parseInt(cell)) / Math.abs(min) * 100) / 100;
 
                                             if((r + "_" + c) in computeMap){
                                                 computeMap[r + "_" + c]["dataBar"] = { "valueType": "minus", "minusLen": minusLen, "valueLen": valueLen, "format": format };
@@ -80,8 +84,8 @@ export  const cellFromatCompute=function(ruleArr, d){
                                             }
                                         }
 
-                                        if(parseInt(cell) > 0){ //正数
-                                            let valueLen = Math.round(parseInt(cell) / max * 100) / 100;
+                                        if(my_parseInt(cell) > 0){ //正数
+                                            let valueLen = Math.round(my_parseInt(cell) / max * 100) / 100;
 
                                             if((r + "_" + c) in computeMap){
                                                 computeMap[r + "_" + c]["dataBar"] = { "valueType": "plus", "plusLen": plusLen, "minusLen": minusLen, "valueLen": valueLen, "format": format };
@@ -113,7 +117,7 @@ export  const cellFromatCompute=function(ruleArr, d){
                                             valueLen = 1;
                                         }
                                         else{
-                                            valueLen = Math.round(parseInt(cell) / max * 100) / 100;
+                                            valueLen = Math.round(my_parseInt(cell) / max * 100) / 100;
                                         }
 
                                         if((r + "_" + c) in computeMap){
@@ -143,14 +147,14 @@ export  const cellFromatCompute=function(ruleArr, d){
 
                             if(cell != null){
                                 count++;
-                                sum += parseInt(cell);
+                                sum += my_parseInt(cell);
 
-                                if(max == null || parseInt(cell) > max){
-                                    max = parseInt(cell);
+                                if(max == null || my_parseInt(cell) > max){
+                                    max = my_parseInt(cell);
                                 }
 
-                                if(min == null || parseInt(cell) < min){
-                                    min = parseInt(cell);
+                                if(min == null || my_parseInt(cell) < min){
+                                    min = my_parseInt(cell);
                                 }
                             }
                         }
@@ -169,9 +173,9 @@ export  const cellFromatCompute=function(ruleArr, d){
                                     }
 
                                     let cell = d[r][c];
-
+                                    
                                     if(cell != null){
-                                        if(parseInt(cell) == min){
+                                        if(my_parseInt(cell) == min){
                                             if((r + "_" + c) in computeMap){
                                                 computeMap[r + "_" + c]["cellColor"] = format[2];
                                             }
@@ -179,15 +183,15 @@ export  const cellFromatCompute=function(ruleArr, d){
                                                 computeMap[r + "_" + c] = { "cellColor": format[2] };
                                             }
                                         }
-                                        else if(parseInt(cell) > min && parseInt(cell) < avg){
+                                        else if(my_parseInt(cell) > min && my_parseInt(cell) < avg){
                                             if((r + "_" + c) in computeMap){
-                                                computeMap[r + "_" + c]["cellColor"] = getcolorGradation(format[2], format[1], min, avg, parseInt(cell));
+                                                computeMap[r + "_" + c]["cellColor"] = getcolorGradation(format[2], format[1], min, avg, my_parseInt(cell));
                                             }
                                             else{
-                                                computeMap[r + "_" + c] = { "cellColor": getcolorGradation(format[2], format[1], min, avg, parseInt(cell)) };
+                                                computeMap[r + "_" + c] = { "cellColor": getcolorGradation(format[2], format[1], min, avg, my_parseInt(cell)) };
                                             }
                                         }
-                                        else if(parseInt(cell) == avg){
+                                        else if(my_parseInt(cell) == avg){
                                             if((r + "_" + c) in computeMap){
                                                 computeMap[r + "_" + c]["cellColor"] = format[1];
                                             }
@@ -195,15 +199,15 @@ export  const cellFromatCompute=function(ruleArr, d){
                                                 computeMap[r + "_" + c] = { "cellColor": format[1] };
                                             }
                                         }
-                                        else if(parseInt(cell) > avg && parseInt(cell) < max){
+                                        else if(my_parseInt(cell) > avg && my_parseInt(cell) < max){
                                             if((r + "_" + c) in computeMap){
-                                                computeMap[r + "_" + c]["cellColor"] = getcolorGradation(format[1], format[0], avg, max, parseInt(cell));
+                                                computeMap[r + "_" + c]["cellColor"] = getcolorGradation(format[1], format[0], avg, max, my_parseInt(cell));
                                             }
                                             else{
-                                                computeMap[r + "_" + c] = { "cellColor": getcolorGradation(format[1], format[0], avg, max, parseInt(cell)) };
+                                                computeMap[r + "_" + c] = { "cellColor": getcolorGradation(format[1], format[0], avg, max, my_parseInt(cell)) };
                                             }
                                         }
-                                        else if(parseInt(cell) == max){
+                                        else if(my_parseInt(cell) == max){
                                             if((r + "_" + c) in computeMap){
                                                 computeMap[r + "_" + c]["cellColor"] = format[0];
                                             }
@@ -227,7 +231,7 @@ export  const cellFromatCompute=function(ruleArr, d){
                                     let cell = d[r][c];
 
                                     if(cell != null){
-                                        if(parseInt(cell) == min){
+                                        if(my_parseInt(cell) == min){
                                             if((r + "_" + c) in computeMap){
                                                 computeMap[r + "_" + c]["cellColor"] = format[1];
                                             }
@@ -235,15 +239,15 @@ export  const cellFromatCompute=function(ruleArr, d){
                                                 computeMap[r + "_" + c] = { "cellColor": format[1] };
                                             }
                                         }
-                                        else if(parseInt(cell) > min && parseInt(cell) < max){
+                                        else if(my_parseInt(cell) > min && my_parseInt(cell) < max){
                                             if((r + "_" + c) in computeMap){
-                                                computeMap[r + "_" + c]["cellColor"] = getcolorGradation(format[1], format[0], min, max, parseInt(cell));
+                                                computeMap[r + "_" + c]["cellColor"] = getcolorGradation(format[1], format[0], min, max, my_parseInt(cell));
                                             }
                                             else{
-                                                computeMap[r + "_" + c] = { "cellColor": getcolorGradation(format[1], format[0], min, max, parseInt(cell)) };
+                                                computeMap[r + "_" + c] = { "cellColor": getcolorGradation(format[1], format[0], min, max, my_parseInt(cell)) };
                                             }
                                         }
-                                        else if(parseInt(cell) == max){
+                                        else if(my_parseInt(cell) == max){
                                             if((r + "_" + c) in computeMap){
                                                 computeMap[r + "_" + c]["cellColor"] = format[0];
                                             }
@@ -259,9 +263,9 @@ export  const cellFromatCompute=function(ruleArr, d){
                 }
             }
             else if(type == "icons"){ //图标集
-                let len = parseInt(format["len"]);
-                let leftMin = parseInt(format["leftMin"]);
-                let top = parseInt(format["top"]);
+                let len = my_parseInt(format["len"]);
+                let leftMin = my_parseInt(format["leftMin"]);
+                let top = my_parseInt(format["top"]);
 
                 let max = null, min = null;
 
@@ -275,12 +279,12 @@ export  const cellFromatCompute=function(ruleArr, d){
                             let cell = d[r][c];
 
                             if(cell != null){
-                                if(max == null || parseInt(cell) > max){
-                                    max = parseInt(cell);
+                                if(max == null || my_parseInt(cell) > max){
+                                    max = my_parseInt(cell);
                                 }
 
-                                if(min == null || parseInt(cell) < min){
-                                    min = parseInt(cell);
+                                if(min == null || my_parseInt(cell) < min){
+                                    min = my_parseInt(cell);
                                 }
                             }
                         }
@@ -314,7 +318,7 @@ export  const cellFromatCompute=function(ruleArr, d){
                                     let cell = d[r][c];
 
                                     if(cell != null){
-                                        if(parseInt(cell) >= v1[0] && parseInt(cell) <= v1[1]){
+                                        if(my_parseInt(cell) >= v1[0] && my_parseInt(cell) <= v1[1]){
                                             if((r + "_" + c) in computeMap){
                                                 computeMap[r + "_" + c]["icons"] = {"left": leftMin + 2, "top": top};
                                             }
@@ -322,7 +326,7 @@ export  const cellFromatCompute=function(ruleArr, d){
                                                 computeMap[r + "_" + c] = { "icons": {"left": leftMin + 2, "top": top} };
                                             }
                                         }
-                                        else if(parseInt(cell) >= v2[0] && parseInt(cell) <= v2[1]){
+                                        else if(my_parseInt(cell) >= v2[0] && my_parseInt(cell) <= v2[1]){
                                             if((r + "_" + c) in computeMap){
                                                 computeMap[r + "_" + c]["icons"] = {"left": leftMin + 1, "top": top};
                                             }
@@ -330,7 +334,7 @@ export  const cellFromatCompute=function(ruleArr, d){
                                                 computeMap[r + "_" + c] = { "icons": {"left": leftMin + 1, "top": top} };
                                             }
                                         }
-                                        else if(parseInt(cell) >= v3[0] && parseInt(cell) <= v3[1]){
+                                        else if(my_parseInt(cell) >= v3[0] && my_parseInt(cell) <= v3[1]){
                                             if((r + "_" + c) in computeMap){
                                                 computeMap[r + "_" + c]["icons"] = {"left": leftMin, "top": top};
                                             }
@@ -374,7 +378,7 @@ export  const cellFromatCompute=function(ruleArr, d){
                                     let cell = d[r][c];
 
                                     if(cell != null){
-                                        if(parseInt(cell) >= v1[0] && parseInt(cell) <= v1[1]){
+                                        if(my_parseInt(cell) >= v1[0] && my_parseInt(cell) <= v1[1]){
                                             if((r + "_" + c) in computeMap){
                                                 computeMap[r + "_" + c]["icons"] = {"left": leftMin + 3, "top": top};
                                             }
@@ -382,7 +386,7 @@ export  const cellFromatCompute=function(ruleArr, d){
                                                 computeMap[r + "_" + c] = { "icons": {"left": leftMin + 3, "top": top} };
                                             }
                                         }
-                                        else if(parseInt(cell) >= v2[0] && parseInt(cell) <= v2[1]){
+                                        else if(my_parseInt(cell) >= v2[0] && my_parseInt(cell) <= v2[1]){
                                             if((r + "_" + c) in computeMap){
                                                 computeMap[r + "_" + c]["icons"] = {"left": leftMin + 2, "top": top};
                                             }
@@ -390,7 +394,7 @@ export  const cellFromatCompute=function(ruleArr, d){
                                                 computeMap[r + "_" + c] = { "icons": {"left": leftMin + 2, "top": top} };
                                             }
                                         }
-                                        else if(parseInt(cell) >= v3[0] && parseInt(cell) <= v3[1]){
+                                        else if(my_parseInt(cell) >= v3[0] && my_parseInt(cell) <= v3[1]){
                                             if((r + "_" + c) in computeMap){
                                                 computeMap[r + "_" + c]["icons"] = {"left": leftMin + 1, "top": top};
                                             }
@@ -398,7 +402,7 @@ export  const cellFromatCompute=function(ruleArr, d){
                                                 computeMap[r + "_" + c] = { "icons": {"left": leftMin + 1, "top": top} };
                                             }
                                         }
-                                        else if(parseInt(cell) >= v4[0] && parseInt(cell) <= v4[1]){
+                                        else if(my_parseInt(cell) >= v4[0] && my_parseInt(cell) <= v4[1]){
                                             if((r + "_" + c) in computeMap){
                                                 computeMap[r + "_" + c]["icons"] = {"left": leftMin, "top": top};
                                             }
@@ -452,7 +456,7 @@ export  const cellFromatCompute=function(ruleArr, d){
                                     let cell = d[r][c];
 
                                     if(cell != null){
-                                        if(parseInt(cell) >= v1[0] && parseInt(cell) <= v1[1]){
+                                        if(my_parseInt(cell) >= v1[0] && my_parseInt(cell) <= v1[1]){
                                             if((r + "_" + c) in computeMap){
                                                 computeMap[r + "_" + c]["icons"] = {"left": leftMin + 4, "top": top};
                                             }
@@ -460,7 +464,7 @@ export  const cellFromatCompute=function(ruleArr, d){
                                                 computeMap[r + "_" + c] = { "icons": {"left": leftMin + 4, "top": top} };
                                             }
                                         }
-                                        else if(parseInt(cell) >= v2[0] && parseInt(cell) <= v2[1]){
+                                        else if(my_parseInt(cell) >= v2[0] && my_parseInt(cell) <= v2[1]){
                                             if((r + "_" + c) in computeMap){
                                                 computeMap[r + "_" + c]["icons"] = {"left": leftMin + 3, "top": top};
                                             }
@@ -468,7 +472,7 @@ export  const cellFromatCompute=function(ruleArr, d){
                                                 computeMap[r + "_" + c] = { "icons": {"left": leftMin + 3, "top": top} };
                                             }
                                         }
-                                        else if(parseInt(cell) >= v3[0] && parseInt(cell) <= v3[1]){
+                                        else if(my_parseInt(cell) >= v3[0] && my_parseInt(cell) <= v3[1]){
                                             if((r + "_" + c) in computeMap){
                                                 computeMap[r + "_" + c]["icons"] = {"left": leftMin + 2, "top": top};
                                             }
@@ -476,7 +480,7 @@ export  const cellFromatCompute=function(ruleArr, d){
                                                 computeMap[r + "_" + c] = { "icons": {"left": leftMin + 2, "top": top} };
                                             }
                                         }
-                                        else if(parseInt(cell) >= v4[0] && parseInt(cell) <= v4[1]){
+                                        else if(my_parseInt(cell) >= v4[0] && my_parseInt(cell) <= v4[1]){
                                             if((r + "_" + c) in computeMap){
                                                 computeMap[r + "_" + c]["icons"] = {"left": leftMin + 1, "top": top};
                                             }
@@ -484,7 +488,7 @@ export  const cellFromatCompute=function(ruleArr, d){
                                                 computeMap[r + "_" + c] = { "icons": {"left": leftMin + 1, "top": top} };
                                             }
                                         }
-                                        else if(parseInt(cell) >= v5[0] && parseInt(cell) <= v5[1]){
+                                        else if(my_parseInt(cell) >= v5[0] && my_parseInt(cell) <= v5[1]){
                                             if((r + "_" + c) in computeMap){
                                                 computeMap[r + "_" + c]["icons"] = {"left": leftMin, "top": top};
                                             }

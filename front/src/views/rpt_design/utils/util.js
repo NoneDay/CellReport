@@ -171,18 +171,31 @@ export const build_layout=function(AllGrids){
         }
     } //*/
 }
-
-export const build_chart_data=function (ds_name_source,context,fields) {
-    let report_result=context.report_result
+export const test_data=[
+    ['product', '2015', '2016', '2017'],
+    ['苹果', 43.3, 85.8, 93.7],
+    ['柚子', 23.1, 73.4, 55.1],
+    ['香蕉', 36.4, 65.2, 82.5],
+    ['菠萝', 42.4, 53.9, 39.1],
+    ['枇杷', 53.3, 85.8, 93.7],
+    ['草莓', 63.1, 73.4, 55.1],
+    ['柠檬', 76.4, 65.2, 82.5],
+    ['红枣', 72.4, 53.9, 39.1],
+    ['葡萄', 48.3, 85.8, 93.7],
+    ['芒果', 88.1, 73.4, 55.1],
+    ['山竹', 88.4, 65.2, 82.5],
+    ['桂圆', 78.4, 53.9, 39.1] 
+]
+export const build_chart_data=function (ds_name_source,report_result,clickedEle_data,fields) {
     let ds_name=ds_name_source.split(":")
-    let real_data
     ds_name=ds_name.length>1?ds_name[1]:ds_name[0]
+    let real_data
     if(ds_name_source.startsWith("数据集")){
         real_data= JSON.parse(JSON.stringify(report_result.dataSet[ds_name][0]))
     } 
     else if(ds_name_source.startsWith("元素")){
         let cur_grid=report_result.data[ds_name]
-        real_data=context.clickedEle[ds_name].data
+        real_data=clickedEle_data
         if(real_data){
             if(!Array.isArray(real_data))
             {
@@ -199,14 +212,17 @@ export const build_chart_data=function (ds_name_source,context,fields) {
     }
     else if(ds_name_source.startsWith('表格'))
     {
+        if(report_result.data==undefined  || report_result.data[ds_name]==undefined)
+            return
         let cur_grid=report_result.data[ds_name]
         real_data=[cur_grid.columns]
         if(ds_name_source.startsWith('表格明细数据'))
         {
-            for (let index = cur_grid.extend_lines[0]; index <= cur_grid.extend_lines[1]; index++) 
-            {
-                real_data.push(cur_grid.tableData[index])
-            }
+            real_data=real_data.concat(cur_grid.tableData.slice(cur_grid.extend_lines[0],cur_grid.extend_lines[1]+1) )
+            //for (let index = cur_grid.extend_lines[0]; index <= cur_grid.extend_lines[1]; index++) 
+            //{
+            //    real_data.push(cur_grid.tableData[index])
+            //}
         }
         else if(ds_name_source.startsWith('表格汇总数据')){
             for (let index = cur_grid.colName_lines[1]+1; index < cur_grid.tableData.length; index++) 
@@ -219,21 +235,7 @@ export const build_chart_data=function (ds_name_source,context,fields) {
         }        
     }else
     {
-        real_data= [
-                ['product', '2015', '2016', '2017'],
-                ['苹果', 43.3, 85.8, 93.7],
-                ['柚子', 23.1, 73.4, 55.1],
-                ['香蕉', 36.4, 65.2, 82.5],
-                ['菠萝', 42.4, 53.9, 39.1],
-                ['枇杷', 53.3, 85.8, 93.7],
-                ['草莓', 63.1, 73.4, 55.1],
-                ['柠檬', 76.4, 65.2, 82.5],
-                ['红枣', 72.4, 53.9, 39.1],
-                ['葡萄', 48.3, 85.8, 93.7],
-                ['芒果', 88.1, 73.4, 55.1],
-                ['山竹', 88.4, 65.2, 82.5],
-                ['桂圆', 78.4, 53.9, 39.1] 
-            ]
+        real_data= test_data
     }
     let valid_fileds=[]  
     if(!fields || fields.length==0)
@@ -595,6 +597,9 @@ function luckySheet2ReportGrid(sheet_window,DefaultCssSetting){
         delete aaa.grid.columns.column
     if(aaa.grid.rows.row.length==0)
         delete aaa.grid.rows.row
+    aaa.grid.conditionformat_save=JSON.stringify(sheet_window.luckysheet.getAllSheets()[0].luckysheet_conditionformat_save)
+    aaa.grid.alternateformat_save_modelCustom=JSON.stringify(sheet_window.luckysheet.getAllSheets()[0].luckysheet_alternateformat_save_modelCustom)
+    aaa.grid.alternateformat_save=JSON.stringify(sheet_window.luckysheet.getAllSheets()[0].luckysheet_alternateformat_save)
     return aaa      
 }
 
@@ -733,9 +738,9 @@ function designGrid2LuckySheet(grid,setting,DefaultCssSetting){
 		sheetFormulaBar:false,
         "scrollLeft": 0, //左右滚动条位置
         "scrollTop": 0, //上下滚动条位置
-        "luckysheet_alternateformat_save":  JSON.parse( setting.alternateformat_save??'[]'), //交替颜色
+        "luckysheet_alternateformat_save":  JSON.parse( grid.alternateformat_save??'[]'), //交替颜色
         //"luckysheet_alternateformat_save_modelCustom":  JSON.parse( setting.alternateformat_save_modelCustom??'[]'), //自定义交替颜色	
-        "luckysheet_conditionformat_save": JSON.parse( setting.conditionformat_save??'[]'),//条件格式
+        "luckysheet_conditionformat_save": JSON.parse( grid.conditionformat_save??'[]'),//条件格式
         "frozen": frozen, //冻结行列配置
         "chart": [], //图表配置
         "allowEdit": true, //是否允许编辑
@@ -1205,7 +1210,32 @@ function watermark(settings) {
     };
     document.body.appendChild(oTemp);
 }
+export function formatTime(date, fmt) {
+    if (/(y+)/.test(fmt)) {
+        fmt = fmt.replace(RegExp.$1, (date.getFullYear() + '').substring(4 - RegExp.$1.length));
+    }    
+    let o = {
+    'M+': date.getMonth() + 1,
+    'd+': date.getDate(),
+    'h+': date.getHours(),
+    'm+': date.getMinutes(),
+    's+': date.getSeconds()
+    };
+    
+    for (let k in o) {
+        if (new RegExp(`(${k})`).test(fmt)) {
+            let str = o[k] + '';    
+            fmt = fmt.replace(RegExp.$1, (RegExp.$1.length === 1) ? str : padLeftZero(str));    
+        }        
+    }
+    
+    return fmt;
 
+};
+    
+function padLeftZero(str) {
+    return ('00' + str).substring(str.length);
+}
 function getNow() {
     let d = new Date();
     let year = d.getFullYear();
@@ -1225,7 +1255,12 @@ function getNow() {
     let time = year + '年' + month + '月' + day + '日 ' + hour + '时' + minute + '分' + second + '秒';
     return time;
 }
-
+export function randomRgbColor() { //随机生成RGB颜色
+    const r = Math.floor(Math.random() * 256); //随机生成256以内r值
+    const g = Math.floor(Math.random() * 256); //随机生成256以内g值
+    const b = Math.floor(Math.random() * 256); //随机生成256以内b值
+    return `rgb(${r},${g},${b})`; //返回rgb(r,g,b)格式颜色
+  }
 export {
     designGrid2LuckySheet,luckySheet2ReportGrid,resultGrid2LuckySheet,
     loadFile,watermark

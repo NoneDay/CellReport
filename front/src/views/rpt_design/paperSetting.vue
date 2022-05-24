@@ -91,7 +91,9 @@
         </el-form>
     </el-tab-pane>
     <el-tab-pane label="工作表" name="fourth">
-        
+        <el-form-item label="套打背景图">
+                <el-input v-model="form.print_template_background"></el-input>
+            </el-form-item>
     </el-tab-pane>
   </el-tabs>
     <div slot="footer" class="dialog-footer">
@@ -133,6 +135,7 @@ export default {
                 page_footer_left:'',
                 page_footer_center:'',
                 page_footer_right:'',
+                print_template_background:''
             },
             dialogVisible:false,
             pageSize_list:[
