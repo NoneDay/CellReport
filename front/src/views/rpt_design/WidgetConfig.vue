@@ -2,7 +2,7 @@
 <div class='build'>
   <imglist ref="imglist" @change="handleSetimg"></imglist>
   <el-tabs type="border-card"  v-model="tab_val" >    
-  <el-tab-pane v-if="!data.type.startsWith('layout')" label="配置" name="0">
+  <el-tab-pane v-if="data.type && !data.type.startsWith('layout')" label="配置" name="0">
   <div class="widget-config" style="height:100%;overflow-y:auto;overflow-x:hidden;font-size:11px">
     <el-form v-if="this.data && Object.keys(this.data).length > 0"
             label-suffix="："
@@ -26,6 +26,7 @@
               </el-option-group>
             </el-select>
           </el-form-item>
+          <!--
           <el-form-item label="显示标题">
             <el-switch
               v-model="data.show_title"
@@ -40,31 +41,55 @@
                       clearable
                       placeholder="标题"></el-input>
             </div>
-          </el-form-item>        
+          </el-form-item>  
+          -->      
           <el-form-item label="标识ID">
             <el-button @click="update_name" type="primary">{{data.gridName}}</el-button>
           </el-form-item>   
-          <el-form-item label="表单栅格"
-                        v-if="!data.subfield && !['group'].includes(data.type)">
-            <el-input-number style="width:100%;"
-                             v-model="data.span"
-                             controls-position="right"
-                             placeholder="表单栅格"
-                             :min="4"
-                             :max="24"></el-input-number>
-          </el-form-item>
-          <el-form-item label="缺省高度"
-                        v-if="!data.subfield && !['group'].includes(data.type)">
-            <el-input style="width:100%;"
+          <el-form-item label="缺省高度"  >
+            <avue-input style="width:100%;"
                              v-model="data.style.height"
                              controls-position="right"
                              placeholder="高度"
-                             ></el-input>
+                             ></avue-input>
           </el-form-item>
+          <el-form-item label="缺省宽度" >
+            <avue-input style="width:100%;" 
+                             v-model="data.style.width"
+                             controls-position="right"
+                             placeholder="宽度"
+                             ></avue-input>
+          </el-form-item>
+          <el-form-item label="必要时动态收缩"  v-if="data['flex-shrink']!=undefined">
+            <avue-input-number style="width:100%;" 
+                             v-model="data['flex-shrink']"
+                             controls-position="right"
+                             placeholder="宽度"
+                             ></avue-input-number>
+          </el-form-item>
+          <el-form-item label="必要时动态扩大"  v-if="data['flex-grow']!=undefined" >
+            <avue-input-number style="width:100%;"
+                             v-model="data['flex-grow']"
+                             controls-position="right"
+                             placeholder="宽度"
+                             ></avue-input-number>
+          </el-form-item>
+          <el-form-item label="对齐方式"  v-if="data['align-self']!=undefined" >
+          <avue-select v-model="data['align-self']"
+                       :dic="[
+                       { label: '拉伸以适合容器', value: 'stretch' }, 
+                       { label: '顶', value: 'flex-start' },
+                       { label: '底', value: 'flex-end' },
+                       { label: '居中', value: 'center' },
+                       { label: '基线对齐', value: 'baseline' },
+                       ]">
+          </avue-select>                             
+          </el-form-item>
+          
           <component :is="getComponent"    :data="data"></component>
           <config-text  :data="data" v-if="data.type=='text'"/>
           <template  v-if="VisualDesign&& VisualDesign.content.trim()!=''">
-            <el-form-item label="在线文档">
+            <el-form-item label="在线文档" v-if="!validatenull(VisualDesign.helpurl)">
               <a  v-for="one in VisualDesign.helpurl||[]" :key="one" :href="one" target="_blank">点击查看</a>
             </el-form-item>
           <dyncTemplate :parentCompent="parentCompent" 
@@ -82,80 +107,110 @@
              labelPosition="left"
              labelWidth="100px"
              size="mini">
-          <el-form-item label="作为大屏" v-if="layout_config.type=='layout'">
+        <template  v-if="layout_config.type=='layout'">
+          <el-form-item label="作为大屏">
             <el-switch  v-model="layout_config.config['big_screen']" active-value='1' inactive-value='0'
              active-color="#13ce66"  inactive-color="#ff4949"></el-switch>
           </el-form-item>   
-          <el-form-item label="大屏宽度" v-if="layout_config.type=='layout'" >
+          <el-form-item label="屏幕宽度" >
             <el-input-number v-model="layout_config.config['screen_width']"></el-input-number>
           </el-form-item>
              
-          <el-form-item label="大屏高度" v-if="layout_config.type=='layout'">
+          <el-form-item label="屏幕高度">
             <el-input-number v-model="layout_config.config['screen_height']"></el-input-number>
           </el-form-item>
-
-          <el-form-item label="背景颜色">
-            <avue-input-color v-model="layout_config.config['BACKGROUND-COLOR']"></avue-input-color>
-          </el-form-item>
-          <el-form-item label="开启旋转">
-            <el-switch  v-model="layout_config.config['is_rotate']"  active-color="#13ce66"  inactive-color="#ff4949"></el-switch>
-          </el-form-item>
-          <el-form-item label="旋转时间">
-            <el-input-number v-model="layout_config.config['rotate_second']" @change="handleChange" :min="1" :max="10" label="描述文字"></el-input-number>
-          </el-form-item>
-          
-          <el-form-item label="背景图片">
-             <img :src="layout_config.config.backgroundImage==''?'img/bg/bg.png' 
-             :layout_config.config.backgroundImage"
-                  @click="handleOpenImg('layout_config.config.backgroundImage','background')"
-                  alt=""
-                  width="100%" />
-            <el-input v-model="layout_config.config.backgroundImage">
-              <div @click="handleOpenImg('layout_config.config.backgroundImage')" slot="append">
-                <i class="iconfont icon-img">xx</i>
-              </div>
-            </el-input>
-            <i class="el-icon-delete" style="cursor: pointer" 
-                v-if="layout_config.config['backgroundImage'] !== 'static/background/bg.png'" 
-                title="移除背景" 
-                @click="layout_config.config['backgroundImage'] = 'static/background/bg.png'">
-            </i>
-          </el-form-item>
-          <el-form-item label="z-index">
-              <avue-input-number placeholder="z-index" v-model="layout_config.config.z_index"></avue-input-number>
+        </template>
+       
+            <el-form-item label="背景颜色">
+              <avue-input-color v-model="layout_config.config['BACKGROUND-COLOR']"></avue-input-color>
             </el-form-item>
-          <el-form-item label="边框样式">
-            <el-select v-model="layout_config.config.border_box" placeholder="请选择边框样式">
-                <el-option :label="无边框" value=""></el-option>
-                <el-option :label="'dv-border-box-'+i" :key="i" v-for="i in 13" :value="'dv-border-box-'+i"></el-option>
-            </el-select>
-        </el-form-item>
-        <template v-if="layout_config.config.border_box!='div'">
-          <!-- 颜色设置 -->
-            <el-form-item label="边框主颜色">
-              <avue-input-color placeholder="请选择颜色" v-model="layout_config.config.border_option.color[0]">
-              </avue-input-color>
+            <el-form-item label="开启旋转">
+              <el-switch  v-model="layout_config.config['is_rotate']"  active-color="#13ce66"  inactive-color="#ff4949"></el-switch>
             </el-form-item>
-            <el-form-item label="边框副颜色">
-              <avue-input-color placeholder="请选择颜色" v-model="layout_config.config.border_option.color[1]"></avue-input-color>
+            <el-form-item label="旋转方向" v-if="layout_config.config['is_rotate']">
+              <el-switch  v-model="layout_config.config['rotate_direction']"  active-value="rotation" inactive-value="rotation2"></el-switch>
             </el-form-item>
-
-            <el-form-item label="翻转"  v-if="['dv-border-box-4','dv-border-box-5','dv-border-box-8',].includes(layout_config.config.border_box)">
-              <avue-switch v-model="layout_config.config.border_option.reverse"></avue-switch>
+            <el-form-item label="旋转时间" v-if="layout_config.config['is_rotate']">
+              <el-input-number v-model="layout_config.config['rotate_second']" @change="handleChange" :min="1" :max="10" label="描述文字"></el-input-number>
             </el-form-item>
-            <el-form-item label="动画时长(秒)" v-if="layout_config.config.border_box === 'dv-border-box-8'">
-              <avue-input-number v-model="layout_config.config.border_option.dur"></avue-input-number>
+            <!--
+            {{layout_config.layout_item.x}}-{{layout_config.layout_item.y}}-{{layout_config.layout_item.h}}-{{layout_config.layout_item.w}}
+            -->
+            <el-form-item label="背景图片">
+              <img :src="layout_config.config.backgroundImage==''?'img/bg/bg.png' 
+              :layout_config.config.backgroundImage"
+                    @click="handleOpenImg('layout_config.config.backgroundImage','background')"
+                    alt=""
+                    width="100%" />
+              <el-input v-model="layout_config.config.backgroundImage">
+                <div @click="handleOpenImg('layout_config.config.backgroundImage')" slot="append">
+                  <i class="iconfont icon-img">xx</i>
+                </div>
+              </el-input>
+              <i class="el-icon-delete" style="cursor: pointer" 
+                  v-if="layout_config.config['backgroundImage'] !== 'static/background/bg.png'" 
+                  title="移除背景" 
+                  @click="layout_config.config['backgroundImage'] = 'static/background/bg.png'">
+              </i>
             </el-form-item>
-            <!-- 提示语设置  -->
-            <template v-if="layout_config.config.border_box === 'dv-border-box-11'">
-              <el-form-item label="边框标题">
-                <avue-input v-model="layout_config.config.border_option.title"></avue-input>
+            <el-form-item label="z-index">
+                <avue-input-number placeholder="z-index" v-model="layout_config.config.z_index"></avue-input-number>
               </el-form-item>
-              <el-form-item label="标题宽度">
-                <avue-input-number v-model="layout_config.config.border_option.titleWidth"></avue-input-number>
+            <el-form-item label="边框样式">
+              <el-select v-model="layout_config.config.border_box" placeholder="请选择边框样式">
+                  <el-option :label="无边框" value=""></el-option>
+                  <el-option :label="'dv-border-box-'+i" :key="i" v-for="i in 13" :value="'dv-border-box-'+i"></el-option>
+              </el-select>
+          </el-form-item>
+          <template v-if="layout_config.config.border_box!='div'">
+            <!-- 颜色设置 -->
+              <el-form-item label="边框主颜色">
+                <avue-input-color placeholder="请选择颜色" v-model="layout_config.config.border_option.color[0]">
+                </avue-input-color>
               </el-form-item>
-            </template>       
-          </template>  
+              <el-form-item label="边框副颜色">
+                <avue-input-color placeholder="请选择颜色" v-model="layout_config.config.border_option.color[1]"></avue-input-color>
+              </el-form-item>
+
+              <el-form-item label="翻转"  v-if="['dv-border-box-4','dv-border-box-5','dv-border-box-8',].includes(layout_config.config.border_box)">
+                <avue-switch v-model="layout_config.config.border_option.reverse"></avue-switch>
+              </el-form-item>
+              <el-form-item label="动画时长(秒)" v-if="layout_config.config.border_box === 'dv-border-box-8'">
+                <avue-input-number v-model="layout_config.config.border_option.dur"></avue-input-number>
+              </el-form-item>
+              <!-- 提示语设置  -->
+              <template v-if="layout_config.config.border_box === 'dv-border-box-11'">
+                <el-form-item label="边框标题">
+                  <avue-input v-model="layout_config.config.border_option.title"></avue-input>
+                </el-form-item>
+                <el-form-item label="标题宽度">
+                  <avue-input-number v-model="layout_config.config.border_option.titleWidth"></avue-input-number>
+                </el-form-item>
+              </template>       
+            </template>  
+          <el-collapse>
+          <el-collapse-item title="组件设置" name="2" v-if="data['flex-grow']!=undefined">
+            <el-form-item label="背景颜色">
+              <avue-input-color v-model="data.style['background-color']">
+              </avue-input-color> 
+            </el-form-item>
+
+            <el-form-item label="边框">
+              <avue-input v-model="data.style['border']">
+              </avue-input> 
+            </el-form-item>
+            <el-form-item label="外边距">
+              <avue-input v-model="data.style['margin']">
+              </avue-input> 
+            </el-form-item>
+            <el-form-item label="内边距">
+              <avue-input v-model="data.style['padding']">
+              </avue-input> 
+            </el-form-item>
+
+          </el-collapse-item>
+        </el-collapse>
+        
     </el-form> 
 
   </el-tab-pane>
@@ -207,20 +262,26 @@ export default {
       return ret
     },
     getComponent() {
+      
+
       this.tab_val=!this.data.type.startsWith('layout')?'0':'1'
       if(this.layout_config && this.layout_config.config.border_option==undefined)
         this.$set(this.layout_config.config,'border_option',{color:["#83bff6","#00CED1"]})
       const prefix = 'config-'
       const { type, component } = this.data
-      if ((!type || component) && ! ['text','html-text','ueditor','echart','scroll-ranking-board','scroll-board',
-      'dync-template','ele-grid','luckySheetProxy','bar','line','pie','radar',
-      'gauge','scatter','funnel','map','airBubbleMap'].includes(type)
-      && component!='dync-template' && component!="echarts" 
-      )
-        return prefix + 'custom'
+      if(this.data.type.startsWith("flex_span"))
+        return prefix + 'cr-span'
+      //if ((!type || component) && ! ['text','html-text','ueditor','echart','scroll-ranking-board','scroll-board','dv_scroll_ranking_board',
+      //'dync-template','ele-grid','luckySheetProxy','bar','line','pie','radar',
+      //'gauge','scatter','funnel','map','airBubbleMap'].includes(type)
+      //&& component!='dync-template' && component!="echarts" 
+      //)
+      //  return prefix + 'custom'
       let result = 'input'
       
-      if (component=="echarts" || ['ele-grid', 'echart','bar','line','pie','radar','gauge','scatter','funnel','map','airBubbleMap'].includes(type)) result = 'echart'
+      if (component=="echarts" || ['dv_scroll_ranking_board','锥形柱图','胶囊柱图','dv_scroll_board','ele-grid', 
+      'echart','bar','line','pie','radar','gauge','scatter','funnel','map','airBubbleMap'].includes(type)) 
+      result = 'echart'
       else if (['dync-template', 'html-text'].includes(component)) result = 'html-text'
       else if ("luckySheetProxy"==type)  result = 'report'
       else result = type

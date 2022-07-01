@@ -404,7 +404,7 @@ export default {
     height: calc(100% - 42px);
 }
 .el-dialog__body{
-    height: calc(100% - 180px);    padding: 10px;
+    height: calc(100% - 120px);    padding: 10px;
 }
 .el-dialog__header{
     padding: 10px 10px 5px; cursor: move;

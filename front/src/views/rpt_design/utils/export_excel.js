@@ -106,12 +106,12 @@ function find_style(tbl,rowNo,colNo,cur_tbl_class_dict){
     })
     return cur_tbl_class_dict
   }
-export  async function exceljs_inner_exec(_this_result){
+export  async function exceljs_inner_exec(_this_result,name_lable_map){
     const wb = new ExcelJS.Workbook();
     let ws ,title,one_obj
-    Object.keys( _this_result?.name_lable_map).forEach(one => {
+    Object.keys( name_lable_map).forEach(one => {
       
-        one_obj=_this_result?.name_lable_map[one]
+        one_obj=name_lable_map[one]
         if(one_obj.component=="luckySheetProxy"){
           title=one_obj.label??one
           let cur_table=_this_result.data[one]
@@ -175,3 +175,72 @@ export  async function exceljs_inner_exec(_this_result){
     const buffer = await wb.xlsx.writeBuffer();
     saveAs(new Blob([buffer], { type: "application/octet-stream"}), "这里是下载的文件名" + ".xlsx");
   }
+  function s2ab(s) {
+    if (typeof ArrayBuffer !== 'undefined') {
+        var buf = new ArrayBuffer(s.length);
+        var view = new Uint8Array(buf);
+        for (var i = 0; i != s.length; ++i) view[i] = s.charCodeAt(i) & 0xFF;
+        return buf;
+    } else {
+        var buf = new Array(s.length);
+        for (var i = 0; i != s.length; ++i) buf[i] = s.charCodeAt(i) & 0xFF;
+        return buf;
+    }
+}
+  export function xlsxjs_inner_exec(_this,name_lable_map){
+      const wb = XLSX.utils.book_new()
+      
+      let ws ,title,one_obj
+      Object.keys( name_lable_map).forEach(one => {
+          one_obj=name_lable_map[one]
+          if(one_obj.component=="ele-grid"){
+            let {__valid_data__,valid_fileds,real_data}=build_chart_data(one_obj.datasource,{report_result:_this.result,clickedEle:_this.clickedEle,
+                allElementSet:_this.allElementSet,},one_obj.fields)
+            //let tableData = convert_array_to_json(__valid_data__)
+            ws= XLSX.utils.aoa_to_sheet(__valid_data__)
+            Object.entries(ws).forEach(([k,cell])=>{
+              if(k=="!ref")
+                return
+              cell.s = {									//为某个单元格设置单独样式
+                font: {
+                  name: '宋体',
+                  sz: 24,
+                  bold: true,
+                  color: { rgb: "red" }
+                },
+                alignment: { horizontal: "center", vertical: "center", wrap_text: true },
+                fill: { bgcolor: { rgb: 'ffff00' } }
+              }
+            })
+            title=one_obj.label??one
+          }
+          else if(one_obj.component=="luckySheetProxy"){
+            if (_this.result.data[one].type== "common"){
+              ws= XLSX.utils.aoa_to_sheet(_this.result.data[one].tableData)
+              ws['!merges']=[]
+              Object.keys( _this.result.data[one].config_merge).forEach(ele_m=>{
+                let m=_this.result.data[one].config_merge[ele_m]
+                ws['!merges'].push({s:{c:m.c,r:m.r},e:{c:m.c+m.cs-1,r:m.r+m.rs-1}})
+                              
+              })
+              title=one_obj.label??one
+            }
+            if (_this.result.data[one].type== "large"){
+              ws= XLSX.utils.aoa_to_sheet(_this.result.data[one].tableData)
+              let header_len=_this.result.data[one].tableData.length
+              XLSX.utils.sheet_add_json (ws,_this.result.data[one].data, { origin: { r: header_len, c: 0 }})
+              title=one_obj.label??one
+            }
+          }
+          if(ws==undefined)
+            return
+          while(wb.SheetNames.includes(title))
+            title=title+one_obj.gridName
+          XLSX.utils.book_append_sheet(wb, ws, title.replace(/[\\|/|?|*|\[|\]]/,'_'))
+          ws=undefined
+      });
+      const wopts = { bookType: 'xlsx', bookSST: true, type: 'binary' };//这里的数据是用来定义导出的格式类型 
+      saveAs(new Blob([s2ab(XLSX.write(wb, wopts))], { type: "application/octet-stream"}), 
+      "这里是下载的文件名" + ".xlsx");
+
+    }

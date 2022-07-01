@@ -1,5 +1,5 @@
 <template>
- <div ref="main_parent" style="width:100%;height:100%;" >
+ <div ref="main_parent" style="width:100%;height:100%;display:flex; flex: 1;" >
      <div ref="main" style="width:100%;height:100%;"></div>
   </div>
 </template>
@@ -7,7 +7,7 @@
 <script>
 import { validatenull } from '@/util/validate'
 import mixins from "./mixins"
-import {convert_csv_to_json,convert_array_to_json,build_chart_data,seriesLoadScripts ,randomRgbColor} from "../utils/util"
+import {convert_csv_to_json,convert_array_to_json,build_chart_data,seriesLoadScripts ,randomRgbColor,test_data,select_field_data} from "../utils/util"
 import elementResizeDetectorMaker from 'element-resize-detector'
 //下边这两行尤为重要，数据才能正常渲染
 
@@ -39,7 +39,9 @@ export default {
             need_clear:this.context.mode=='design',
             myChart:{}, 
             zoomData: 1,
-            geoCoordMap:{}
+            
+            geoCoordMap:{},
+            map_url:"",
         }
     },
     computed:{
@@ -80,15 +82,26 @@ export default {
             inner_func()
     },
     methods:{
+        real_map_url(){
+          if(this.validatenull(this.map_url))
+            return this.self.option.mapData
+          return this.map_url
+        },
+        has_self_color(){
+          let field_color=Enumerable.from(this.self.fields).skip(1).where(x=>x.selected && x.color).toArray()
+          return !this.validatenull(this.self.option.barColor) || !this.validatenull(field_color)
+        },
         // 下面俩都是chart的公共的方法,就放这里面共用
         getColor (index, first) {
-            const barColor = this.self.option.barColor || [];
-            if (barColor[index]) {
-            const color1 = barColor[index].color1;
-            const color2 = barColor[index].color2;
+            let opt_color=Enumerable.from(this.self.fields).skip(1).where(x=>x.selected).toArray()[index]?.color
+            const opt_barColor = this.self.option.barColor || [];
+            let barColor=opt_color?{color1:opt_color}:opt_barColor[index]
+            if (barColor) {
+            const color1 = barColor.color1;
+            const color2 = barColor.color2;
             if (first) return color1;
             if (color2) {
-                let postion = (barColor[index].postion || 0.9) * 0.01;
+                let postion = (barColor.postion || 0.9) * 0.01;
                 if (postion > 1) {
                 postion = 1;
                 } else if (postion < 0) {
@@ -133,10 +146,14 @@ export default {
             let datasource=this.self.datasource
             let __valid_data__,valid_fileds,real_data
             
-            if(this.self?.dataType=="0"){
-                __valid_data__=this.self.optionData    
+            if(this.self.datasource=='静态数据'){
+                if(this.self.optionData==undefined){
+                  this.self.optionData=JSON.parse(JSON.stringify( test_data))
+                  this.self.fields=[]
+                }
+                __valid_data__=select_field_data(this.self.optionData,this.self.fields)
                 valid_fileds=__valid_data__[0]
-                this.real_data=convert_array_to_json(__valid_data__)             
+                this.real_data=convert_array_to_json(__valid_data__ )             
             }else{
                 try{
                     let clickedEle_data=datasource.startsWith("元素")?clickedEle[datasource.split(":")[1]].data:null
@@ -146,7 +163,8 @@ export default {
                     real_data=ret.real_data
                     this.real_data=convert_array_to_json(real_data)
                 }catch{
-                    __valid_data__=this.self.optionData   
+                    __valid_data__=JSON.parse(JSON.stringify( test_data))   
+                    __valid_data__[0]=Enumerable.from(this.self.fields).where(x=>x.selected).select(x=>x.key).toArray()
                     this.real_data=convert_array_to_json(__valid_data__) 
                 }
             }
@@ -207,16 +225,24 @@ export default {
                     if(_this.self.type=='map'){
                         option=map_option(_this.self,_this,__valid_data__)
                     }
-                    eval("option=(function(option,myChart,build_chart_data){"+_this.self.content+"\n return option})(option,_myChart,this.build_chart_data)")                    
+                   _myChart.off('click')
+                   //_myChart.getZr().off('click')
+                    eval("option=(function(option,myChart,_this){"+_this.self.content+"\n return option})(option,_myChart,_this)")                    
                     
                     _myChart.setOption(option,true);
                     if(_this.context.mode=='design')
                         return;
-                    _myChart.off('click')
-                    _myChart.on('click', function (params) {
+                    
+                    let func_click=function (params) {
+                      let cur_data=_this.real_data[params.dataIndex]
                         if(_this.self.type=='map')
                         {
+                            let click_data=Enumerable.from(__valid_data__).skip(1).where(x=>x[0]==params.name).toArray();
+                            if(click_data.length==0)
+                            return
+                            
                             let data={'name':params.name,'componentType':params.componentType,'data':params.data}
+                            
                             if(params.componentType=="geo"){
                                 data.componentType=params.componentType
                                 data.name=params.name
@@ -225,33 +251,19 @@ export default {
                             if(params.componentType=="series"){
                                 
                             }
-                            _this.$set(_this.context.clickedEle,_this.self.gridName,{data:data,cell:null,column:null,self:null})//
+                            _this.$set(_this.context.clickedEle,_this.self.gridName,{data:cur_data,cell:null,column:null,self:null,map_data:params})//
 
                         }else{
                             //因为有可选列，所以不能直接用row，要按row 找到真正的原始数据
-                            let row=convert_array_to_json([__valid_data__[0],params.data])[0]
-                            let cur_data=_this.real_data.filter(x=>{
-                                for(let key in row){
-                                    if(key.startsWith("__"))
-                                        continue
-                                    if(row[key]!=x[key])
-                                    {
-                                        return false
-                                    }
-                                }
-                                return true
-                            } )
-                            
-                            if(cur_data.length){ 
-                                _this.$set(_this.context.clickedEle,_this.self.gridName,{data:cur_data[0],cell:cur_data[0][params.seriesName],column:params.seriesName,self:_this.self})
-                            }
+                            _this.$set(_this.context.clickedEle,_this.self.gridName,{data:cur_data,cell:cur_data[params.seriesName],column:params.seriesName,self:_this.self})
                         }
                         _this.click_fresh(_this.context.clickedEle[_this.self.gridName])
                         console.info(_this.context.clickedEle[_this.self.gridName])
                         //dimensionNames
                         //data
                         //seriesName
-                    }) //*/
+                    }
+                    _myChart.on('click', func_click) //*/
                 }catch(e){
                     console.info(e)
                     console.info("this.self.chart_option不正确")
@@ -648,7 +660,7 @@ function line_option (self,_this,__valid_data__) {
             lineStyle: {
               width: self.option.lineWidth || 1
             },
-            itemStyle: _this.ishasprop(!_this.switchTheme, {
+            itemStyle: (!_this.has_self_color())?undefined:_this.ishasprop(!_this.switchTheme, {
               color: _this.getColor(index)
             }, {}),
             label: {
@@ -708,12 +720,7 @@ function pie_option (self,_this,__valid_data__) {
           }
         );
       })(),
-      grid: {
-        left: self.option.gridX || 20,
-        top: self.option.gridY || 60,
-        right: _this.x2,
-        bottom: self.option.gridY2 || 60
-      },
+     
       legend: {
         show: _this.vaildData(self.option.legend, false),
         orient: self.option.legendOrient || "vertical",
@@ -735,7 +742,10 @@ function pie_option (self,_this,__valid_data__) {
             type: "pie",
             roseType: self.option.roseType ? "radius" : "",
             radius: self.option.radius ? ["40%", "55%"] : "50%",
-            center: ["50%", "60%"],
+            left: self.option.gridX || 20,
+            top: self.option.gridY || 20,
+            right: self.option.gridX2 || 20,
+            bottom: self.option.gridY2 || 20,
             animationType: "scale",
             animationEasing: "elasticOut",
             animationDelay: function (idx) {
@@ -766,7 +776,8 @@ function pie_option (self,_this,__valid_data__) {
             //  }
             //  return list;
             //})(),
-            itemStyle: _this.ishasprop(!_this.switchTheme, {
+            itemStyle:(!_this.has_self_color())?undefined:
+             _this.ishasprop(!_this.switchTheme, {
               color: params => _this.getColor(params.dataIndex)
             }, {
               shadowBlur: 10,
@@ -1213,7 +1224,7 @@ function map_option (self,_this,__valid_data__) {
               return {};
             })(),
             {
-              map: self.option.mapData,
+              map: _this.real_map_url(),
               label: {
                 emphasis: {
                   show: false
@@ -1250,7 +1261,7 @@ function map_option (self,_this,__valid_data__) {
         series: [
             {
                 type: self.option.mapSerieType=="airBubble"?"effectScatter":self.option.mapSerieType,
-                //mapType: self.option.mapSerieType=="map"?self.option.mapData:undefined,   // 自定义扩展图表类型  airBubble 'effectScatter' },
+                //mapType: self.option.mapSerieType=="map"?_this.real_map_url():undefined,   // 自定义扩展图表类型  airBubble 'effectScatter' },
                 
                 coordinateSystem: "geo",
                 showEffectOn: "emphasis",
@@ -1343,12 +1354,12 @@ function map_option (self,_this,__valid_data__) {
         
         return option
     }
-    if(window.echarts.getMap(self.option.mapData))
+    if(window.echarts.getMap(_this.real_map_url()))
         return map_inner_exec()
     else
     {
-        $.get(self.option.mapData,function(result){
-            window.echarts.registerMap(self.option.mapData, result);
+        $.get(_this.real_map_url(),function(result){
+            window.echarts.registerMap(_this.real_map_url(), result);
             let option=map_inner_exec()
             _this.myChart.setOption(option,true);
         

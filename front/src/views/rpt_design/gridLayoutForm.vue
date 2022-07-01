@@ -15,12 +15,10 @@
                      :use-css-transforms="false"
                      :responsive="context.mode!='design' && context.crisMobile"
                      :force-absolute="defaultsetting.big_screen=='1'"
-                     
-                     style=""
                      :style="{ 
                          width:defaultsetting.big_screen=='1'?defaultsetting.screen_width+'px':'100%',
                         height:defaultsetting.big_screen=='1'?defaultsetting.screen_height+'px':'100%',
-                        transform:defaultsetting.big_screen=='1'?'scale('+big_screen_scale/100+')':'scale(1)',
+                        transform:defaultsetting.big_screen=='1'?`scale(${(context.mode=='design'?big_screen_scale:big_screen_scale_x)/100},${(context.mode=='design'?big_screen_scale:big_screen_scale_y)/100})`:'scale(1)',
                         'transform-origin': '0 0',
                         'background': 'no-repeat url('+defaultsetting.backgroundImage+')  0% 0% / 100% 100% '+defaultsetting['BACKGROUND-COLOR']                        
                         ,'background-color':defaultsetting['BACKGROUND-COLOR'],
@@ -36,41 +34,41 @@
                        :x="item.x"
                        :y="item.y"
                        :w="item.w"
-                       :h="item.h"
+                       :h="item.h" 
                        :i="item.i" @resized="resizedEvent" 
                        :style="{'z-index':item.bg?item.bg.z_index:0}"
                        :class="find_item(item)?'vue-grid-item-cur':''"
-                       
+                       drag-ignore-from=".mover"  
             >
             <!-- drag-allow-from=".draggable-handle"  
-                       drag-ignore-from=".no-drag"  
+                       
                        -->
             <component @mouseenter="mouseEnter_func(item)" @mouseleave="mouseOver_func(item)" 
-             v-if="isShow && item.show" class="no-drag" :ref="'border_box'+item.i" :is="item.bg && item.bg.border_box?item.bg.border_box:'div'" 
+             v-if="isShow && item.show" class="no-drag widget-form-list" :ref="'border_box'+item.i" :is="item.bg && item.bg.border_box?item.bg.border_box:'div'" 
              style="width:100%;height:100%"
              v-bind="Object.assign({}, (item.bg.border_box && item.bg.border_box!='div')?deepClone(item.bg.border_option):{} )"
              >
                 <div :style="{ 'height':'100%','width':'100%',
                 transform: item.bg.is_rotate?'rotate(360deg)':'',
-                animation: item.bg.is_rotate?item.bg.rotate_second+'s linear 0s infinite normal none running rotation':'',
+                animation: item.bg.is_rotate?item.bg.rotate_second+'s linear 0s infinite normal none running '+(item.bg.rotate_direction||'rotation'):'',
                 'background-repeat': 'no-repeat','background': 'url('+item.bg.backgroundImage+')  0% 0% / 100% 100% '+item.bg['BACKGROUND-COLOR']}"
                 style="position:absolute;top:0px;left:0px;z-index:-1">
                 </div>
-                <widget-form-group class="widget-form-list" 
+                <widget-form-group 
                     :self="item.element" :border_size="calc_item_border_size(item)"
                     :parent="layout" :index="groupIndex" :ref="'item_'+item.i"
                     v-if="item.element.component=='widget-form-group'"
                     :select.sync="selectWidget"  :depth="1"
                     >
                 </widget-form-group>
-                <widget-form-tabs class="widget-form-list" 
+                <widget-form-tabs  :border_size="calc_item_border_size(item)"
                     :self="item.element" 
                     :parent="layout" :index="groupIndex" :ref="'item_'+item.i"
                     v-else-if="item.element.component=='widget-form-tabs'"
                     :select.sync="selectWidget"  :depth="1"
                     >
                 </widget-form-tabs>
-                <widget-form-item class="widget-form-list" 
+                <widget-form-item  :border_size="calc_item_border_size(item)"
                     :self="item.element"  
                     :parent="layout" :index="groupIndex" :ref="'item_'+item.i"
                     v-else  :depth="1"
@@ -81,22 +79,12 @@
                 
             </component>
                 <div v-if="context.mode=='design' && (find_item(item) || mouseover_item==item)" style="z-index:-1;position: absolute;left: -1px;top: -1px; right:-1px;bottom:-1px;background-color: rgba(115,170,229,0.5);" >
-                </div>
-                
+                </div>                
                 <div v-if="context.mode=='design' && find_item(item)" style="position: absolute;right: 2px;top: 0;display:flex;height:18px" >
                     <!-- <el-tooltip class="item" effect="dark" content="在本grid格子中添加新组件" placement="top-start">
                         <div  style=" cursor: pointer;color:black;background:#fff;"  @click.stop="call_widget_dialog(item)"><img src="img/add.png"></div> 
                         </el-tooltip>
-                       
-                    <el-tooltip class="item" effect="dark" content="设置本格子的配置" placement="top-start">
-                        <div  style="cursor: pointer;color:black;background:#fff;" @click.stop="settingItem(item.i)"><img src="img/setting.png"></div>
-                        </el-tooltip>
-
-                    <el-tooltip class="item" effect="dark" content="鼠标左键点住我不松手拖动，调整格子的位置" placement="top-start">
-                        <div  style="cursor: move;color:black;background:#fff;" class="draggable-handle"  ><img src="img/move.png"></div>
-                        </el-tooltip>
 -->
-
                     <el-tooltip class="item" effect="dark" content="克隆本格子" placement="top-start">
                         <div style="cursor: pointer;color:black;background:#fff;" @click.stop="cloneItem(item)"><img src="img/add.png"></div>
                     </el-tooltip>
@@ -107,55 +95,6 @@
             </grid-item>
             <widgetDialog v-if="widget_dialogVisible" :visible.sync="widget_dialogVisible" :action_target="ref_item">
             </widgetDialog>            
-        </grid-layout>
-    </div>
-    <div v-else class="widget-form-container">
-        <grid-layout :layout.sync="layout" ref="gridLayout"
-                     :col-num="colNum" 
-                     :row-height="row_height"
-                     :margin="[margin, margin]"
-                     :is-draggable="context.canDraggable"
-                     :is-resizable="context.canDraggable"
-                     :vertical-compact="true" v-if="showGridLayout"
-                     :use-css-transforms="false"
-                     :responsive="context.crisMobile"
-                     :style="{'height':'100%','width':'100%'}"
-                    @layout-ready="layoutReady"
-        >
-            <grid-item v-for="(item,groupIndex) in layout"
-                       :static="item.static" :key="item.i"
-                       :x="item.x"
-                       :y="item.y"
-                       :w="item.w"
-                       :h="item.h"
-                       :i="item.i" drag-allow-from=".draggable-handle"
-                       drag-ignore-from=".no-drag"
-            >
-               <component v-if="isShow" :is="item.border_box?item.border_box:'div'" style="width:100%;height:100%">
-                    <widget-form-group class="widget-form-list" 
-                        :self="item.element" :border_size="calc_item_border_size(item)"
-                        :parent="layout" :index="groupIndex"  :depth="1"
-                        v-if="item.element.component=='widget-form-group'"
-                        :select.sync="selectWidget"
-                        >
-                    </widget-form-group>
-                    <widget-form-tabs class="widget-form-list" 
-                        :self="item.element"  :depth="1"
-                        :parent="layout" :index="groupIndex"
-                        v-else-if="item.element.component=='widget-form-tabs'"
-                        :select.sync="selectWidget"
-                        >
-                    </widget-form-tabs>
-                    <widget-form-item class="widget-form-list" 
-                        :self="item.element" 
-                        :parent="layout" :index="groupIndex"
-                        v-else
-                        :select.sync="selectWidget"  :depth="1"
-                        >
-                    </widget-form-item>
-               </component>
-            </grid-item>
-        
         </grid-layout>
     </div>
 </template>
@@ -172,7 +111,7 @@ export default {
     components: {
         GridLayout,GridItem
     },
-    props:['layout','big_screen_scale'],
+    props:['layout','big_screen_scale','big_screen_scale_x','big_screen_scale_y'],
     data() {
         return { 
             mouseover_item:null,
@@ -185,7 +124,7 @@ export default {
             resizable: true,
             newX:0,
             newY:0,
-            row_height:30,
+            row_height:20,
             colNum:24,
             margin:10,
             pan_height:"100%",            
@@ -317,17 +256,24 @@ background:url("data:image/svg+xml;utf8,<svg t='1641536477492' class='icon' view
             if(this.context.mode!='design' || this.selectWidget.type=='layout')
                 return false;
             if(this.selectWidget.type=='layout_item' && item.i==this.selectWidget.item_i)
+            {
                 return true;
-            if(item==this.selectWidget || item.element==this.selectWidget)
-                return true;
-            if(item?.element?.children?.column){
-                if(item.element.children.column.length==0)
-                    return true;
-                for(let one in item.element.children.column){
-                    if(this.find_item(item.element.children.column[one]))
-                        return true;
-                }
             }
+            if(item==this.selectWidget || item.element==this.selectWidget)
+            {
+                return true;
+            }
+            let children=item.element?.children?.column || item.children?.column
+            if(children)
+            {
+                for(let one in children){
+                    let in_child=this.find_item(children[one])
+                    if(in_child)
+                    {
+                        return true;
+                    }
+                }
+            }        
             return false;
         },
         call_widget_dialog(item){
@@ -339,7 +285,7 @@ background:url("data:image/svg+xml;utf8,<svg t='1641536477492' class='icon' view
             if(border_type ==undefined || ['','div'].includes(border_type) )
                 return 0;
             else {
-                return 40;
+                return {'dv-border-box-13':40}[border_type]??20;
             }
         },
         handleWidgetGroupAdd (evt) {
@@ -413,7 +359,8 @@ background:url("data:image/svg+xml;utf8,<svg t='1641536477492' class='icon' view
             while(Enumerable.from(this.layout).where(x=>x.i==this.gridLayoutIndex).toArray().length>0){
                 this.gridLayoutIndex++
             }
-            this.mouseover_item={x,y,w,h,i: this.gridLayoutIndex,element:widget_div_layout(item),show:true,border_box:this.defaultsetting.border_box ,
+            this.mouseover_item={x,y,w,h,i: this.gridLayoutIndex,element:(item) //widget_div_layout
+                        ,show:true,border_box:this.defaultsetting.border_box ,
                             bg:{backgroundImage:'','BACKGROUND-COLOR':'',border_box:'div'}
                         }
             this.layout.push(this.mouseover_item);
@@ -429,28 +376,32 @@ background:url("data:image/svg+xml;utf8,<svg t='1641536477492' class='icon' view
             }
         },
         cloneItem: function (item) {
-            let _this=this
-            item=JSON.parse(JSON.stringify(item))
-
-            if(item?.element?.children?.column){
-                if(item.element.children.column.length!=1)
-                    return;
-                let data=item.element.children.column[0]
-                let name_prefix=data.type
+            function deepSetName(one){
+                let name_prefix=one.type
                 if(name_prefix=="luckySheetProxy")
                     name_prefix="report"
                 let gridName
                 do{
                     gridName =name_prefix.replace(/-/, "_") +"_" + Math.ceil(Math.random() * 999);
-                }while(this.has_name(gridName));                
-                data.gridName=gridName                
+                }while(_this.has_name(gridName));                
+                one.gridName=gridName 
+                _this.context.allElementSet?.add(gridName)
+
+                if(one.children?.column){
+                    one.children.column.forEach(x=>{
+                        deepSetName(x)
+                    })
+                }
             }
-            this.mouseover_item=item
+            let _this=this
+            let new_item=JSON.parse(JSON.stringify(item))
+            deepSetName(new_item.element)
+            this.mouseover_item=new_item
             while(Enumerable.from(this.layout).where(x=>x.i==this.gridLayoutIndex).toArray().length>0){
                 this.gridLayoutIndex++
             }
-            item.i=this.gridLayoutIndex            
-            this.layout.push(item);
+            new_item.i=this.gridLayoutIndex            
+            this.layout.push(new_item);
         },
         removeItem: function (val) {
             let _this=this
@@ -549,8 +500,13 @@ background:url("data:image/svg+xml;utf8,<svg t='1641536477492' class='icon' view
     box-sizing: border-box;
     cursor: pointer;
 }
+
 @-webkit-keyframes rotation{
     from {-webkit-transform: rotate(0deg);}
     to {-webkit-transform: rotate(360deg);}
+}
+@-webkit-keyframes rotation2{
+    from {-webkit-transform: rotate(360deg);}
+    to {-webkit-transform: rotate(0deg);}
 }
 </style>

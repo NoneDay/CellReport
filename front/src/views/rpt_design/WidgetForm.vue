@@ -17,9 +17,7 @@
 </template>
 
 <script>
-
-
-import {widget_div_layout} from './fieldsConfig'
+// 老报表只有报表，用这个组件显示
 import mixins from "./element/mixins"
 export default {
   name: 'widget-form',  

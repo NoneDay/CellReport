@@ -73,7 +73,7 @@
                <grid-layout-form v-if="widgetForm!=null && formType=='gridLayout'" ref="gridlayout"
                :layout.sync="widgetForm" 
                :select.sync="selectWidget"
-               :big_screen_scale="big_screen_scale"
+               :big_screen_scale="big_screen_scale" :big_screen_scale_x="big_screen_scale_x" :big_screen_scale_y="big_screen_scale_y"
                 @change="handleHistoryChange(widgetForm)"
                 >
               </grid-layout-form>          
@@ -343,6 +343,8 @@ export default {
         in_exec_url:{stat:false},//当前是否已经在点击后取数
         preview_dialogVisible:false,
         big_screen_scale:100,
+        big_screen_scale_x:100,
+        big_screen_scale_y:100,
         simpleGuide_dialogVisible:false,
         widget_dialogVisible:false,
         datamanger_dialogVisible:false,
@@ -377,7 +379,7 @@ export default {
               ,reportName:"",defaultsetting:{}
           },
         widgetForm: widget_row_col_layout(),//布局显示
-       
+       queryForm:{},
       }
   },
   methods:{
@@ -397,6 +399,7 @@ export default {
       context:{
         report_result:this.report_result,
         report:this.report,
+        queryForm:this.queryForm,
         canDraggable:this.canDraggable,
         selectChange:this.selectChange,    
         cellUpdateBefore:this.cellUpdateBefore,    
@@ -563,7 +566,7 @@ export default {
           if (!Array.isArray(this.widgetForm))
           this.change_layout()  
       }
-      else{
+      else{// 将没有layout 的老报表转换为有layout
         this.widgetForm=build_layout(this.report.AllGrids)    
         this.change_layout()  
       }
@@ -587,13 +590,10 @@ export default {
       });
       //this.selectWidget={}
       if(this.report.defaultsetting.big_screen=='1'){
-        this.big_screen_scale=
-        Math.floor(
-        Math.min(
-        100*this.$refs.grid_layout_form.$el.clientHeight/parseInt(this.report.defaultsetting.screen_height)
-        ,100*this.$refs.grid_layout_form.$el.clientWidth/parseInt(this.report.defaultsetting.screen_width)
-        ))
-        
+        this.big_screen_scale_y=100*this.$refs.grid_layout_form.$el.clientHeight/parseInt(this.report.defaultsetting.screen_height)
+        this.big_screen_scale_x=100*this.$refs.grid_layout_form.$el.clientWidth/parseInt(this.report.defaultsetting.screen_width)
+        this.big_screen_scale=Math.min(this.big_screen_scale_x,this.big_screen_scale_y)  
+        this.big_screen_scale_x=this.big_screen_scale_y=this.big_screen_scale_x              
       }
       this.setSelectWidgetForLayout();
     },
@@ -609,7 +609,7 @@ export default {
       });
     },
     change_layout(){
-       if (Array.isArray(this.widgetForm))//gridLayout=>divLayout
+       if (Array.isArray(this.widgetForm))//gridLayout=>divLayout 更旧的格式
        {
           let children=this.widgetForm
           this.widgetForm=widget_div_layout()
@@ -625,17 +625,23 @@ export default {
       }
       else// divLayout=>gridLayout
       {
-        let children=this.widgetForm.children.column
-        this.widgetForm=[]
-        children.forEach(ele=>{
-          this.gridLayoutAddItem(ele,children.length==1?24:ele.span,10);//10 是新建报表时的缺省高度
-        });
+        if(this.widgetForm.children?.column){//旧格式
+          let children=this.widgetForm.children.column
+          this.widgetForm=[]
+          children.forEach(ele=>{
+            this.gridLayoutAddItem(ele,children.length==1?24:ele.span,10);//10 是新建报表时的缺省高度
+          });
+        }else{
+          let child=this.widgetForm // 现在直接用组件作为layout 的element 
+          this.widgetForm=[]
+          this.gridLayoutAddItem(child,24,10);//10 是新建报表时的缺省高度
+        }
         this.report.layout = JSON.stringify(this.widgetForm)
       }
       
     },
     gridLayoutAddItem(item,p_w,p_h){
-        let insert_item=widget_div_layout(item)
+        let insert_item=item//widget_div_layout(item)
         let x=0,w=p_w||2,   h=p_h||2,y=0             
         while(true){
             let all_correct=true
@@ -1117,7 +1123,10 @@ export default {
       
       for(let idx=0;idx<this.widgetForm.length;idx++){        
         if(find_item(this.widgetForm[idx])){
-          this.cur_layout_item={type:'layout_item',config:this.widgetForm[idx].bg}             
+          this.cur_layout_item={type:'layout_item',config:this.widgetForm[idx].bg,
+          layout_item:this.widgetForm[idx]
+          
+          }             
           break
         }
       }

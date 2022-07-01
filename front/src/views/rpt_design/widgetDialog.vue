@@ -33,15 +33,14 @@
                 @click="add(item)"
               >添加</el-button>
             </div>
-            <div
-              style="padding: 4px; flex:1; width: 100%; overflow: hidden"
+            <div style="left-padding: 4px; flex:1; width: 100%; overflow: hidden"
           :style="{'background-color':context.report.defaultsetting['BACKGROUND-COLOR'],
           'color':context.report.defaultsetting['COLOR'],
           'font-family':context.report.defaultsetting['FONT'],
           'font-size':context.report.defaultsetting['FONT-SIZE']
           }"
             >
-              <widget-form-item  style="height: 400px; width: 400px; transform-origin:0 0;transform:scale(0.4, 0.25)"
+              <widget-form-item  style="height: 400%; width: 300%; transform-origin:0 0;transform:scale(0.4, 0.25)"
                 v-if="
                   tab_value == field.title &&
                   field.title != '核心元素' &&

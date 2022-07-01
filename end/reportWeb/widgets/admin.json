@@ -2973,7 +2973,7 @@
                         "empAreaColor": "rgba(35, 183, 229, 0.42)",
                         "empColor": "#fff",
                         "index": "894edc1d-d2f0-4616-962c-8e61083ada71",
-                        "mapData": "https://geo.datav.aliyun.com/areas_v3/bound/100000_full.json",
+                        "mapData": "static/GeoJSON/100000_full.json",
                         "color": "rgba(13, 255, 255, 1)"
                     },
                     "content": "//console.info(option)"

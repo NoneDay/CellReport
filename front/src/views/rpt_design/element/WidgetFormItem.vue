@@ -1,16 +1,34 @@
 <template>
-  <div class="widget-form-item" style="height: 100%;display: flex;flex-direction: column;"  :depth="depth+1"
+  <div class="widget-form-item" style="position: relative;height: 100%;width: 100%;display: flex;flex-direction: column;"  :depth="depth+1"
       :prop="self.prop" :id="'cr_id_'+self.gridName"
-      v-bind="Object.assign({style:Object.assign({},self.style,{height:'100%'} )}, self.params)"
-      :class="{active: selectWidget.prop == self.prop, 'required': self.required }"
+      v-bind="self.params"
+      :class="{active: selectWidget == self, 'required': self.required }"
+      
       @click.stop="handleSelectWidget(index)"> 
-
-    <span v-if="context.mode=='design' && ( self.type=='luckySheetProxy')"  
-    class="mover cr_item_title">
+<!--self.type=='luckySheetProxy' || -->
+    <span v-if="context.mode=='design' && ( self.type=='luckySheetProxy' ||  selectWidget == self)"  class="mover cr_item_title">
      <div style="    display: inline;" v-html="self.label"> </div>
+    <el-button title="添加" style="margin-left: 0px;padding:0px !important;"
+                @click.stop="handleWidgetAdd()"
+                v-if=" self.type.startsWith('flex_span')" 
+                circle
+                plain
+                size="mini"
+                type="danger">
+      <i class="el-icon-circle-plus-outline"></i>
+    </el-button>
+    <el-button title="选择父容器" style="margin-left: 0px;padding:0px !important;"
+                @click.stop="selectWidget=parent"
+                v-if="parent!=null && parent.type!=null && parent.type.startsWith('flex_span')  && selectWidget == self "
+                circle
+                plain
+                size="mini"
+                type="danger">
+      <i class="el-icon-upload2"></i>
+    </el-button>
     <el-button title="克隆" style="margin-left: 0px;padding:0px !important;"
                 @click.stop="handleWidgetClone(index)"
-                v-if="context.canDraggable " 
+                v-if="parent!=null && parent.type!=null && parent.type.startsWith('flex_span') && selectWidget == self &&  self.type!='luckySheetProxy' "
                 circle
                 plain
                 size="mini"
@@ -19,7 +37,7 @@
     </el-button>
     <el-button title="删除" style="margin-left: 0px;padding:0px !important;"
                 @click.stop="handleWidgetDelete(index)"
-                v-if="context.canDraggable " 
+                v-if="parent!=null && parent.type!=null && parent.type.startsWith('flex_span') && selectWidget == self "
                 circle
                 plain
                 size="mini"
@@ -31,12 +49,15 @@
       <img :src="self.icon" v-if="self.icon!=''" style="width: 20px;height: 20px;vertical-align:middle;">
       <div style="display: inline;" v-html="self.label"> </div>
     </div>
-    <div :style="{width:'100%',height:'100%','flex-grow':1,display:`flex`}">
+    <div :style="{width:'100%',height:'100%','flex-grow':1,display:`flex`}" 
+    
+    >
+    
     <component draggable=".item" v-if="context.mode=='design'"
                :is="getComponent(self.type, self.component)"
                :self="self" :parent="parent" 
                :select.sync="selectWidget"  :depth="depth+1"
-               v-bind="Object.assign(this.deepClone(self),{style:Object.assign({},self.style,{height:'100%', flex:'1'} )}, self.params, {content:undefined,___depth:depth,depth:depth+1, size:self.size || 'mini' })"
+               v-bind="Object.assign(this.deepClone(self),{style:Object.assign({},self.style,{height:'100%',width:'100%', flex:'1'} )}, self.params, {content:undefined,___depth:depth,depth:depth+1, size:self.size || 'mini' })"
                
                @change="$emit('change')">
 
@@ -47,7 +68,7 @@
                :is="getComponent(self.type, self.component)"
                :self="self" :parent="parent" 
                :select.sync="selectWidget"  :depth="depth+1"
-               v-bind="Object.assign(this.deepClone(self),{style:Object.assign({},self.style,{height:'100%', flex:'1'} )}, self.params, {content:undefined,___depth:depth,depth:depth+1, size:self.size || 'mini'})"
+               v-bind="Object.assign(this.deepClone(self),{style:Object.assign({},self.style,{height:'100%',width:'100%', flex:'1'} )}, self.params, {content:undefined,___depth:depth,depth:depth+1, size:self.size || 'mini'})"
                
                @change="$emit('change')">
 
@@ -56,25 +77,30 @@
     </component>
 
     </div>
+     <widgetDialog v-if="widget_dialogVisible" :visible.sync="widget_dialogVisible" >
+    </widgetDialog>
   </div>
 </template>
 <script>
 import mixins from "./mixins"
 export default {
   mixins:[mixins],
-
+  inject:["has_name"],
   mounted(){
-    if(this.context.report_result.name_lable_map==undefined)
-      this.context.report_result.name_lable_map={}
-    if(this.context.report_result.name_lable_map[this.self.gridName]==undefined)
-      this.context.report_result.name_lable_map[this.self.gridName]=this.self
+    if(this.context.mode!='design'){
+      if(this.context.name_lable_map==undefined)
+        this.context.name_lable_map={}
+      if(this.context.name_lable_map[this.self.gridName]==undefined)
+        this.context.name_lable_map[this.self.gridName]=this.self
+    }
     if(this.self.icon==undefined)
       this.$set(this.self,'icon',"img/m_pm.png")
   },
   name: 'widget-form-item',
   data () {
     return {
-        form: {}
+      widget_dialogVisible:false,
+      form: {}
     }
   },
   methods: {
@@ -112,6 +138,7 @@ export default {
       if(this.context.mode=="design")
           this.selectWidget = this.self
     },
+    
     handleWidgetDelete (index) {
       let _this=this
       this.$confirm('此操作将永久删除该组件, 是否继续?', '提示', {
@@ -124,34 +151,67 @@ export default {
         let children=_this.parent.children?.column??_this.parent
           _this.$nextTick(() => {
             children.splice(index, 1)
-            if(_this.parent.children.column.length==1){
-              _this.parent.type="layout_div"
-            }
-            else{
-              _this.parent.type="layout_row_col"
-            }
+            //if(_this.parent.children.column.length==1){
+            //  _this.parent.type="layout_div"
+            //}
+            //else{
+            //  _this.parent.type="layout_row_col"
+            //}
             _this.selectWidget = {prop:'--'}
             _this.$emit("change")
           })
         })
       
     },
+    handleWidgetAdd () {
+      this.widget_dialogVisible=true
+    },
+    handleWidgetGroupAdd (evt) {
+      let newIndex = evt.newIndex;
+      const item = evt.item;
+
+      if (newIndex == 1 && newIndex > this.self.children.column.length - 1) newIndex = 0
+
+      const data = this.deepClone(this.self.children.column[newIndex]);
+      if (!data.prop) data.prop = Date.now() + '_' + Math.ceil(Math.random() * 999)
+      if(this.self.type=="flex_span_col"){
+        data.style.width="100%"
+        data.style.height="100%"
+      }
+      if(this.self.type=="flex_span_row"){
+        data.style.width="100%"
+        data.style.height="100%"
+      }
+      data['flex-shrink']=1
+      data['flex-grow']=1
+      data['align-self']='auto'
+      data['flex-margin']='5'
+      this.$set(this.self.children.column, newIndex, { ...data })
+      
+      this.selectWidget = this.self.children.column[newIndex]
+      this.$emit("change")
+    },
     handleWidgetClone (index) {
       this.selectWidget = this.self
       console.table(this.self)
       let cloneData = this.deepClone(this.parent.children.column[index])
       cloneData.prop = Date.now() + '_' + Math.ceil(Math.random() * 99999)
+      let name_prefix=cloneData.type
+      if(name_prefix=="luckySheetProxy")
+          name_prefix="report"
       if(cloneData.hasOwnProperty("gridName")){
-        cloneData.gridName=cloneData.type.replace(/-/,"_") + Date.now() + '_' + Math.ceil(Math.random() * 99999)
+        do{
+            cloneData.gridName =name_prefix.replace(/-/, "_") +"_" + Math.ceil(Math.random() * 999);
+        }while(this.has_name(cloneData.gridName));
         this.context?.allElementSet?.add(cloneData.gridName)
       }
       this.parent.children.column.splice(index, 0, cloneData)
-      if(this.parent.children.column.length==1){
-        this.parent.type="layout_div"
-      }
-      else{
-        this.parent.type="layout_row_col"
-      }
+      //if(this.parent.children.column.length==1){
+      //  this.parent.type="layout_div"
+      //}
+      //else{
+      //  this.parent.type="layout_row_col"
+      //}
       this.$nextTick(() => {
         this.handleSelectWidget(index + 1)
         this.$emit("change")

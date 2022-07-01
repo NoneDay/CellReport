@@ -1,48 +1,6 @@
 <template>
   <div :style="{height: self.type!='el-row'?'calc(100% - '+border_size+'px)':'','width':'calc(100% - '+border_size+'px)'}"> 
-    <template  v-if="context.canDraggable">
-    <!--<h1 class="widget-form-group__head"
-        v-show="self.label"><i :class="self.icon"
-         v-show="self.icon"
-         style="margin-right: 10px;"></i>{{self.label}}</h1>
-         -->
-      <el-row :is="MainComponent" v-if="MainComponent=='el-row'" :gutter="gutter" :style="MainComponent=='el-row'?'margin-bottom: 0px;height: 100%;position: relative;overflow: auto;':''">
-        <draggable class="widget-form-group__body" style="overflow:auto"
-                  :list="self.children.column"
-                  :group="{ name: 'form' }"
-                  ghost-class="ghost" handle=".mover"
-                  
-                  @add="handleWidgetGroupAdd($event, self)"
-                  @end="$emit('change')">
-            <el-col :is="SubComponent" :key="groupIndex"  v-for="(item, groupIndex) in self.children.column"
-                    :md="item.span || 12" :xs="24" :offset="item.offset || 0" :style="{height:(item.height)?item.height:item.style.height}"
-                    > 
-                <widget-form-item :self="item" :parent="self"  :index="groupIndex"
-                      :select.sync="selectWidget"  :depth="0"
-                      :params="self.params"></widget-form-item>     
-            </el-col>
-        </draggable>
-      </el-row>
-      <component :is="MainComponent" v-else style="height:100%">  
-        <draggable class="widget-form-group__body"
-                  :list="self.children.column"
-                  :group="{ name: 'form' }"
-                  ghost-class="ghost" handle=".mover"
-                  :animation="200" style="height:100%"
-                  @add="handleWidgetGroupAdd($event, self)"
-                  @end="$emit('change')">
-                <widget-form-item 
-                      :key="groupIndex"  v-for="(item, groupIndex) in self.children.column"
-                      :self="item" :parent="self"  :index="groupIndex"
-                      :select.sync="selectWidget" :depth="0"
-                      :params="self.params"></widget-form-item>     
-        </draggable>
-      </component>
-      
-    </template>
-    <template v-else>   
-      
-       <component :is="MainComponent" v-if="MainComponent=='el-row'" :gutter="gutter" :style="MainComponent=='el-row'?'margin-bottom: 0px;height: 100%;position: relative;overflow: auto;':''"
+       <component :is="MainComponent" v-if="MainComponent=='el-row'" :gutter="gutter" :style="MainComponent=='el-row'?'margin-bottom: 0px;height: 100%;position: relative;overflow: auto;':'display:flex;'"
        >
             <component :is="SubComponent" :key="groupIndex"  v-for="(item, groupIndex) in self.children.column"
                     :md="item.span || 12" :xs="24" :offset="item.offset || 0"  :style="{height:(item.height)?item.height:item.style.height}"
@@ -59,7 +17,7 @@
                 :select.sync="selectWidget" :depth="0"
                 :params="self.params"></widget-form-item>     
       </component>
-    </template>
+
   
   </div>
 </template>

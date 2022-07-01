@@ -153,7 +153,7 @@ export const build_layout=function(AllGrids){
               "prop": Date.now() + '_' + Math.ceil(Math.random() * 99999)
           }
     }
-
+    return insert_item
     return {
         "type": "layout_div",
         "component": "widget-form-group",
@@ -257,6 +257,30 @@ export const build_chart_data=function (ds_name_source,report_result,clickedEle_
         });
     });
     return {__valid_data__,valid_fileds,real_data}
+}
+export function select_field_data(real_data,fields){
+    if(real_data){
+        let valid_fileds=[] 
+        if(!fields || fields.length==0)
+            return real_data
+          
+        let __valid_data__=[[]]
+        for (let index = 0; index < fields.length; index++) {
+            const element = fields[index];
+            if(!element.selected)
+                continue
+            valid_fileds.push(real_data[0].indexOf(element.key))
+            __valid_data__[0].push(element.label)
+        }
+        real_data.slice(1).forEach(element=>{
+            let one_line=[]
+            __valid_data__.push(one_line)
+            valid_fileds.forEach(i=>{
+                    one_line.push(element[i])
+            });
+        });
+        return __valid_data__
+    }
 }
 export const convert_csv_to_json=function (txt,start=0,end=-1){
     let gridData=[]

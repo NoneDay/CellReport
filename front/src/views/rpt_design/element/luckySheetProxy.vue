@@ -1,6 +1,11 @@
 <template>
-  <div :style="{width:'100%',height:height||'100%','display':'flex','flex-direction': 'column'}">
+  <div :style="{width:'100%',height:height||'100%','display':'flex','flex-direction': 'column'}" >
+    <span v-if='TABLEOBJ && TABLEOBJ.param_grid.optimize' style="position: absolute;right: 0px;top: 0px;z-index: 10;"
+     @click="searchDialogVisible=true">
+        <img src='img/search.png'>
+      </span>
     <template v-if="context.report_result.pager_template!=undefined && context.mode!='design' && useHtml && gridType=='common'">
+      
         <div  :style="{'flex-grow':1,width:'100%','height':'20px'}" v-html="html_table" ref="htmTalbe">        
       </div>
       <div :style="{width:'100%','height':'20px'}">
@@ -9,6 +14,7 @@
       </div>
     </template>
     <template v-else-if="context.report_result.pager_template==undefined && context.mode!='design' && useHtml && gridType=='common'">
+      
       <div  :style="{'flex-grow':1,width:'100%','height':'20px'}" v-html="html_table" ref="htmTalbe">        
       </div>
       <el-pagination  v-if="TABLEOBJ!=null" 
@@ -20,11 +26,64 @@
         hide-on-single-page
         :total="TABLEOBJ.total()">
       </el-pagination>
+      
     </template>
     <div v-else-if="context.mode!='design' && useHtml && gridType=='large'" 
-    :style="{width:'100%',height:'100%'}"
-    v-html="self.content"></div>
+      :style="{width:'100%',height:'100%'}"
+      v-html="self.content">
+    </div>
     <iframe v-else ref='iframe' style="width:100%;height:100%"></iframe>
+
+    <el-dialog
+      v-draggable
+      v-if="searchDialogVisible"
+      style="text-align: left"
+      class=""
+      :visible.sync="searchDialogVisible"
+      title="搜索设置"
+      direction="btt"
+      append-to-body
+    >
+    <el-form label-width="100px">
+      <el-form-item label="数据列">
+      <el-select v-model="for_col" placeholder="请选择">
+          <el-option
+            v-for="(item,idx) in TABLEOBJ.param_grid.columns"
+            :key="item"
+            :label="item"
+            :value="idx">
+          </el-option>
+        </el-select>
+        </el-form-item>
+         <el-form-item label="关系运算符">
+        <el-radio-group v-model="relation" placeholder="请选择">
+          <el-radio
+            v-for="item in [{label:'等于',value:'=='},{label:'不等于',value:'!='},{label:'大于',value:'>'},{label:'大于等于',value:'>='},{label:'小于',value:'<'},{label:'小于等于',value:'<='},]"
+            :key="item.value"
+            :label="item.value"
+            :value="item.value">{{item.label}}
+          </el-radio>
+        </el-radio-group>
+        </el-form-item>
+         <el-form-item label="值"><el-input v-model="target_val" placeholder="请输入内容"></el-input></el-form-item>
+         <el-form-item label="值类型">
+          <el-radio-group v-model="as_type" placeholder="请选择">
+            <el-radio
+              v-for="item in [{label:'文本',value:'string'},{label:'数字',value:'number'}]"
+              :key="item.value"
+              :label="item.value"
+              :value="item.value">{{item.label}}
+            </el-radio>
+          </el-radio-group>
+ 
+         </el-form-item>
+      </el-form>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="searchFunc(true)">复原</el-button>
+        <el-button @click="searchDialogVisible = false">取消</el-button>
+        <el-button type="primary" @click="searchFunc(false)">搜索</el-button>
+      </span>
+    </el-dialog>
   </div>
 </template>
 
@@ -52,6 +111,11 @@ export default {
       scriptArr:[],pager_height:0,
       gridType:"common",
       delayShowType:"none", // or block
+      searchDialogVisible:false,
+      for_col:0,
+      relation:"==",
+      target_val:'',
+      as_type:"string",
     }
   },
   computed:{
@@ -169,8 +233,24 @@ export default {
       
     },
     sortFunc(evt){
-      this.TABLEOBJ.sort(evt.currentTarget.dataset['c'])
-      this.grid_sort_action(evt.currentTarget.dataset['c'])
+      let col_n=evt.currentTarget.closest("td").dataset['c']
+      this.TABLEOBJ.sort(col_n)
+      this.grid_sort_action(col_n )
+    }, 
+    searchFunc(clear){
+      //let col_n=evt.currentTarget.closest("td").dataset['c']
+      this.searchDialogVisible=false
+      if(clear)
+        this.TABLEOBJ.search_cond=null
+      else
+        this.TABLEOBJ.search_cond={
+          relation:this.relation,
+          for_col:this.for_col,
+          target_val:this.target_val,
+          as_type:this.as_type
+        }
+      this.TABLEOBJ.search()
+      this.grid_sort_action()
     }, 
     grid_sort_action(){
       let _this=this
@@ -178,7 +258,7 @@ export default {
       if(cur_grid){
           if(_this.$refs.htmTalbe){
             this.$refs.htmTalbe?.querySelector(`#reportDiv${this.gridName}`)?.removeEventListener('scroll',this.scrollFunc)
-            let sortArr=$(_this.$refs.htmTalbe.querySelectorAll(`table .cr-sort`))
+            let sortArr=$(_this.$refs.htmTalbe.querySelectorAll(`table .cr-sort`))// cr-sort-icon 只点击图标才能排序，cr-sort 点击表头就可以排序
             if(sortArr.length>0)
               sortArr?.off('click',this.sortFunc)
           }
@@ -197,63 +277,85 @@ export default {
             let div_Left=target.parentElement.querySelector(".cr-table__fixed-body-wrapper")
             if(div_Left)
               div_Left.style.height=`${target.clientHeight}px`
-            //="16px"
+            // 绑定排序函数, cr-sort-icon 只点击图标才能排序，cr-sort 点击表头就可以排序
             $(_this.$refs.htmTalbe.querySelectorAll(`table .cr-sort`)).on('click',_this.sortFunc)
-            
             target?.addEventListener('scroll',_this.scrollFunc)
-             this.$nextTick(xaa=>{
-                if(div_Left)
-                  div_Left.style.height=`${target.clientHeight}px`
-                $(`#reportDiv${_this.gridName}Top .gutter`).width(target.offsetWidth - target.clientWidth)
-                target.scrollLeft=_this.scrollLeft
-                target.scrollTop=_this.scrollTop
-                
-                $(`#reportDiv${_this.gridName} .cr-table__body tr`).unbind()
-                $(`#reportDiv${_this.gridName} .cr-table__body tr`).bind('click',
-                  function(evt){
-                    let cur_row=_this.TABLEOBJ.param_grid.tableData[$(evt.currentTarget).data("n")]
-                    let ret={"KEY":cur_row[cur_row.length-1]}
-                    for(let idx=0;idx<cur_row.length-1;idx++){
-                      ret[numToString(idx+1)]=cur_row[idx]
-                    }                  
-                    ret=convert_array_to_json([_this.TABLEOBJ.param_grid.columns,cur_row])[0]
-                    console.info(ret) 
-                    _this.$set(_this.context.clickedEle,_this.self.gridName,{data:ret,cell:null,column:null,self:_this.self})
-                    _this.click_fresh(_this.context.clickedEle[_this.self.gridName])
-                  }
-                )
-                //树折叠展开
-                $(`#reportDiv${_this.gridName} span.cr_tree_node`).unbind()
-                $(`#reportDiv${_this.gridName} span.cr_tree_node`).click(
+            this.$nextTick(xaa=>{
+              if(div_Left)
+                div_Left.style.height=`${target.clientHeight}px`
+              $(`#reportDiv${_this.gridName}Top .gutter`).width(target.offsetWidth - target.clientWidth)
+              target.scrollLeft=_this.scrollLeft
+              target.scrollTop=_this.scrollTop
+              // 设置表头的行高和主体表的行高一致
+              $(`#reportDiv${_this.gridName}Top tr`).each(function() {
+                  let row_no=this.dataset['n']
+                  $(`#reportDiv${_this.gridName}TopLeft tr[data-n=${this.dataset['n']}]`).find("td").height($(this).find("td").height() ) 
+              })
+              $(`#reportDiv${_this.gridName} tr`).each(function() {
+                  $(`#reportDiv${_this.gridName}Left tr[data-n=${this.dataset['n']}]`).find("td").height($(this).find("td").height() ) 
+              })
+              //点击，发送数据到clickedEle
+              $(`#reportDiv${_this.gridName} .cr-table__body tr`).unbind()
+              $(`#reportDiv${_this.gridName} .cr-table__body tr`).bind('click',
                 function(evt){
-                  let click_tr=$(this).closest("tr")
-                  let click_td=$(this).closest("td")
-                  let end=[]
-                  for(let i=0;i<=click_tr.data("pr");i++){
-                    end.push(`tr[data-pr=${i}]`)
-                  }
-                  //console.info(end.join(','))
-                  let trs=click_tr.nextUntil(end.join(','))
-                  if($(this).hasClass("el-table__expand-icon--expanded")){//动作：隐藏
-                    trs.not(`tr[data-pr=${click_tr.data("pr")+1}]`).each(function(_,one){ $(one).data('old',  $(one).css('display')) })
-                    trs.hide()
-                    $(click_td).attr('rowSpan',  1)
-                    $(this).removeClass("el-table__expand-icon--expanded")
-                  }
-                  else{//动作：展开
-                    trs.show()
-                    trs.not(`tr[data-pr=${click_tr.data("pr")+1}]`).each(function(_,one){ 
-                      $(one).css('display',$(one).data('old')||'table-row') 
-                      
-                    })
-                    $(click_td).attr('rowSpan',  $(click_td).data('oldrs'))
-                    $(this).addClass("el-table__expand-icon--expanded")
-                  }
-                  //trs.slideToggle(100)
-                })
-                _this.scrollFunc({currentTarget:target})
-            })
+                  let real_row_no=_this.TABLEOBJ.tableData_bridge[$(evt.currentTarget).data("n")]
+                  let cur_row=_this.TABLEOBJ.param_grid.tableData[real_row_no]
+                  let ret={"KEY":cur_row[cur_row.length-1]}
+                  for(let idx=0;idx<cur_row.length-1;idx++){
+                    ret[numToString(idx+1)]=cur_row[idx]
+                  } 
+                
+                  ret=convert_array_to_json([_this.TABLEOBJ.param_grid.columns,cur_row])[0]
+                  console.info(ret) 
+                  _this.$set(_this.context.clickedEle,_this.self.gridName,{data:ret,cell:null,column:null,self:_this.self})
+                  _this.click_fresh(_this.context.clickedEle[_this.self.gridName])
+                  // 点击后的活动行
+                  $(this).siblings('tr').removeClass('active-row');
+                  $(this).addClass('active-row');
+                  $(`#reportDiv${_this.gridName}Left tr[data-n=${this.dataset['n']}]`).siblings('tr').removeClass('active-row');
+                  $(`#reportDiv${_this.gridName}Left tr[data-n=${this.dataset['n']}]`).addClass('active-row');      
+                }
+              )
+              //鼠标悬停
+              $(`#reportDiv${_this.gridName} .cr-table__body tr`).mouseover(function (e) {
+                $(this).siblings('tr').removeClass('hover-row');
+                  $(this).addClass('hover-row');
+                  $(`#reportDiv${_this.gridName}Left tr[data-n=${this.dataset['n']}]`).siblings('tr').removeClass('hover-row');
+                  $(`#reportDiv${_this.gridName}Left tr[data-n=${this.dataset['n']}]`).addClass('hover-row'); 
+              })
+              
+              //树折叠展开
+              $(`#reportDiv${_this.gridName} span.cr_tree_node`).unbind()
+              $(`#reportDiv${_this.gridName} span.cr_tree_node`).click(
+              function(evt){
+                let click_tr=$(this).closest("tr")
+                let click_td=$(this).closest("td")
+                let end=[]
+                for(let i=0;i<=click_tr.data("pr");i++){
+                  end.push(`tr[data-pr=${i}]`)
+                }
+                //console.info(end.join(','))
+                let trs=click_tr.nextUntil(end.join(','))
+                if($(this).hasClass("el-table__expand-icon--expanded")){//动作：隐藏
+                  trs.not(`tr[data-pr=${click_tr.data("pr")+1}]`).each(function(_,one){ $(one).data('old',  $(one).css('display')) })
+                  trs.hide()
+                  $(click_td).attr('rowSpan',  1)
+                  $(this).removeClass("el-table__expand-icon--expanded")
+                }
+                else{//动作：展开
+                  trs.show()
+                  trs.not(`tr[data-pr=${click_tr.data("pr")+1}]`).each(function(_,one){ 
+                    $(one).css('display',$(one).data('old')||'table-row') 
+                    
+                  })
+                  $(click_td).attr('rowSpan',  $(click_td).data('oldrs'))
+                  $(this).addClass("el-table__expand-icon--expanded")
+                }
+                //trs.slideToggle(100)
+              })
+              _this.scrollFunc({currentTarget:target})
           })
+        })
       }
     },
     onclickrow(idx,row){
@@ -590,9 +692,6 @@ export default {
     
 }
 .cr-table__fixed-header-wrapper {
-    position: absolute;
-    left: 0;
-    top: 0;
     z-index: 3;
 }
 .cr-table__body, .cr-table__footer, .cr-table__header {
@@ -600,9 +699,7 @@ export default {
     border-collapse: separate;
 }
 .cr-table__fixed-body-wrapper {
-    position: absolute;
-    left: 0;
-    top: 37px;
+
     overflow: hidden;
     z-index: 3;
 }
@@ -643,4 +740,6 @@ export default {
     padding: 0;
     background-color: transparent;
 }
+
+
 </style>

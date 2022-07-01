@@ -210,3 +210,14 @@ import 'codemirror/theme/cobalt.css'
     }
   }
 </script>
+<style>
+.CodeMirror {
+   height: 100% !important;
+}
+.CodeMirror-scroll {
+    height: 100% !important;
+    min-height: 100px;
+    /*overflow-y: hidden;*/
+    /*overflow-x: auto;*/
+}
+</style>

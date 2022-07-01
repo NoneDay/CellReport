@@ -23,11 +23,14 @@
         <el-switch  v-model="cur_grid.as_tree"  active-color="#ff4949" inactive-color="#13ce66"  inactive-text="不使用" active-text="使用"  
         > </el-switch>
     </el-form-item>
-
+    <el-form-item label="自动行高"> 
+        <el-switch  v-model="data.auto_line_height"  active-color="#ff4949" inactive-color="#13ce66"  inactive-text="不使用" active-text="使用"  
+        > </el-switch>
+    </el-form-item>
     <el-form-item label="easuyi大数据">
         <el-checkbox v-model="cur_grid._is_large" true-label="1" false-label="0" label="is_large" border></el-checkbox>
     </el-form-item> 
-    
+   
     
       <el-button type='primary' @click="paper_setting_dialogVisible = true">打印设置</el-button>
 

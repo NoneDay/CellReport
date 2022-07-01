@@ -1,5 +1,6 @@
+import { xlsxjs_inner_exec } from "../utils/export_excel"
 import {seriesLoadScripts,load_css_file,load_css_js,insert_css_to_head,build_chart_data,convert_array_to_json
-    ,extract_style_txt,extract_script_txt } from "../utils/util"
+    ,extract_style_txt,extract_script_txt,select_field_data,test_data } from "../utils/util"
 
 export default (function(){ return {
     provide(){
@@ -7,7 +8,7 @@ export default (function(){ return {
             context: this._context,
             fresh_ele:this._fresh_ele,
             clickedEle:this._clickedEle,
-            _zb_var_:this._context.report_result?._zb_var_||{}
+            
         }
         
         //if(this._context?.report_result?._zb_var_)
@@ -79,24 +80,34 @@ export default (function(){ return {
         selfHeight(){
             return this.$el.clientHeight
         },
+        _zb_var_(){
+          return  this._context.report_result?._zb_var_||{}
+        },
         cur_ds(){
             let ds_name=''
             let ret
             let report_result=this.context.report_result
-            if(this.self.datasource){
+            let real_data
+            
+            if(this.self.datasource){// &&(this.self.dataType==1 || this.self.dataType==undefined)
+                
                 let source_arr=this.self.datasource.split(":")
                 ds_name=source_arr[1]
-                if(source_arr[0]=='数据集'){
+                if(this.self.datasource=='静态数据'){
+                    real_data= this.self.optionData
+                }else if(source_arr[0]=='数据集'){
                     if(report_result?.dataSet && report_result?.dataSet[ds_name])
-                        ret=report_result?.dataSet[ds_name][0]
-                    else
-                        ret=this.dataset('xxx')
-                    return ret
+                        real_data=report_result?.dataSet[ds_name][0]
+                    else{
+                        real_data=JSON.parse(JSON.stringify(test_data)) 
+                        real_data[0]=Enumerable.from(this.self.fields).where(x=>x.selected).select(x=>x.key).toArray()
+                    }
+                   
                 }else if(source_arr[0].startsWith('表格')){
                     if(report_result.data==undefined  || report_result.data[ds_name]==undefined)
                             return
                         let cur_grid=report_result.data[ds_name]
-                        let real_data=[cur_grid.columns]
+                        real_data=[cur_grid.columns]
                         if(this.self.datasource.startsWith('表格明细数据'))
                         {
                             for (let index = cur_grid.extend_lines[0]; index <= cur_grid.extend_lines[1]; index++) 
@@ -113,8 +124,28 @@ export default (function(){ return {
                                 }
                             }
                         } 
-                    return real_data
+                    //return real_data
                 }
+                else if(source_arr[0].startsWith('元素')){
+                    let cur_grid=report_result.data[ds_name]
+                    let clickedData=clickedEle[datasource.split(":")[1]]
+                    if(clickedData){
+                        if(!Array.isArray(real_data))
+                        {
+                            let keys=Object.keys(real_data)
+                            let values=Object.values(real_data)
+                            if(keys.length==0){
+                                keys=cur_grid.columns
+                                values= cur_grid.tableData[cur_grid.extend_lines[0]]
+                            }
+                            real_data=JSON.parse(JSON.stringify([keys,values]))
+                        }
+                        
+                    }
+                }
+            }
+            if(real_data){
+                return select_field_data(real_data,this.self.fields)
             }
             return this.dataset('xxx')
           },
@@ -122,7 +153,12 @@ export default (function(){ return {
     beforeDestroy(){
         $("#"+this.id_name+"_css_"+this.context.mode).remove()
     },
-    methods:{        
+    methods:{   
+        conf_field_prop_arr(prop){
+            if(!this.self.fields)
+                return [];
+            return  Enumerable.from(this.self.fields).where(x=>x.selected && x[prop]).select(x=>x[prop]).toArray()
+        },     
         parse_content(){
             if(this.in_parse_call)
                 return
@@ -192,12 +228,20 @@ export default (function(){ return {
                         .replace(/<style.*?>*?>([\s\S]*?)<\/style>/img,'')
                 }
                 _this.cut_script_css_content=tmp.replace(/<t>(.*?)<\/t>/img,function(all,one,pos){
-                    if(_this.self.option[one]!=undefined){
+                    if(_this.self.option && _this.self.option[one]!=undefined){
                         if(_this.self.option[one].startsWith('=')){
                             return _this.self.option[one].slice(1)
                         }
                         else{
                             return "'" + _this.self.option[one] +"'"
+                        }
+                    }
+                    if(_this.self.type=="text" && one=="value"){
+                        if(_this.self.label.startsWith('=')){
+                            return _this.self.label.slice(1)
+                        }
+                        else{
+                            return "'" + _this.self.label +"'"
                         }
                     }
                     return "undefined"

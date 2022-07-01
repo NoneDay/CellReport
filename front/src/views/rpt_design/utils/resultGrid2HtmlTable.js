@@ -26,137 +26,86 @@ StringBuilder.prototype.append = function(str){
 StringBuilder.prototype.toString = function(joinGap){  
     return this._stringArray.join(joinGap);  
 }
+ //是否是空值
+ function isRealNull(val) {
+    if (val == null || val.toString().replace(/\s/g, "") == "") {
+        return true;
+    }
+    else {
+        return false;
+    }
+}
+//是否是纯数字
+function isRealNum(val) {
+    if (val == null || val.toString().replace(/\s/g, "") === "") {
+        return false;
+    }
+
+    if (typeof val == "boolean") {
+        return false;
+    }
+
+    if (!isNaN(val)) {
+        return true;
+    }
+    else {
+        return false;
+    }
+}
+
+function isdatetime(s) {
+    if (s == null || s.toString().length < 5) {
+        return false;
+    }
+    else if(checkDateTime(s)){
+        return true;
+    }
+    else {
+        return false;
+    }
+
+    function checkDateTime(str){
+        var reg1 = /^(\d{4})-(\d{1,2})-(\d{1,2})(\s(\d{1,2}):(\d{1,2})(:(\d{1,2}))?)?$/;
+        var reg2 = /^(\d{4})\/(\d{1,2})\/(\d{1,2})(\s(\d{1,2}):(\d{1,2})(:(\d{1,2}))?)?$/;
+
+        if(!reg1.test(str) && !reg2.test(str)){
+            return false;
+        }
+
+        var year = RegExp.$1,
+            month = RegExp.$2,
+            day = RegExp.$3;
+
+        if(year < 1900){
+            return false;
+        }
+
+        if(month > 12){
+            return false;
+        }
+
+        if(day > 31){
+            return false;
+        }
+
+        if(month == 2){
+            if(new Date(year, 1, 29).getDate() == 29 && day > 29){
+                return false;
+            }
+            else if(new Date(year, 1, 29).getDate() != 29 && day > 28){
+                return false;
+            }
+        }
+
+        return true;
+    }
+}
 //数据排序方法
 function orderbydata(data, index, isAsc) {
     if (isAsc == null) {
         isAsc = true;
     }
-    //是否是空值
-    function isRealNull(val) {
-        if (val == null || val.toString().replace(/\s/g, "") == "") {
-            return true;
-        }
-        else {
-            return false;
-        }
-    }
-    //是否是纯数字
-    function isRealNum(val) {
-        if (val == null || val.toString().replace(/\s/g, "") === "") {
-            return false;
-        }
-
-        if (typeof val == "boolean") {
-            return false;
-        }
-
-        if (!isNaN(val)) {
-            return true;
-        }
-        else {
-            return false;
-        }
-    }
-    function isdatetime(s) {
-        if (s == null || s.toString().length < 5) {
-            return false;
-        }
-        else if (checkDateTime(s)) {
-            return true;
-        }
-        else {
-            return false;
-        }
-
-        function checkDateTime(str) {
-            var reg1 = /^(\d{4})-(\d{1,2})-(\d{1,2})(\s(\d{1,2}):(\d{1,2})(:(\d{1,2}))?)?$/;
-            var reg2 = /^(\d{4})\/(\d{1,2})\/(\d{1,2})(\s(\d{1,2}):(\d{1,2})(:(\d{1,2}))?)?$/;
-
-            if (!reg1.test(str) && !reg2.test(str)) {
-                return false;
-            }
-
-            var year = RegExp.$1,
-                month = RegExp.$2,
-                day = RegExp.$3;
-
-            if (year < 1900) {
-                return false;
-            }
-
-            if (month > 12) {
-                return false;
-            }
-
-            if (day > 31) {
-                return false;
-            }
-
-            if (month == 2) {
-                if (new Date(year, 1, 29).getDate() == 29 && day > 29) {
-                    return false;
-                }
-                else if (new Date(year, 1, 29).getDate() != 29 && day > 28) {
-                    return false;
-                }
-            }
-
-            return true;
-        }
-    }
-
-    function diff(now, then) {
-        return now.localeCompare(then)
-        //return moment(now).diff(moment(then));
-    }
-
-    function isdatetime(s) {
-        if (s == null || s.toString().length < 5) {
-            return false;
-        }
-        else if(checkDateTime(s)){
-            return true;
-        }
-        else {
-            return false;
-        }
-
-        function checkDateTime(str){
-            var reg1 = /^(\d{4})-(\d{1,2})-(\d{1,2})(\s(\d{1,2}):(\d{1,2})(:(\d{1,2}))?)?$/;
-            var reg2 = /^(\d{4})\/(\d{1,2})\/(\d{1,2})(\s(\d{1,2}):(\d{1,2})(:(\d{1,2}))?)?$/;
-
-            if(!reg1.test(str) && !reg2.test(str)){
-                return false;
-            }
-
-            var year = RegExp.$1,
-                month = RegExp.$2,
-                day = RegExp.$3;
-
-            if(year < 1900){
-                return false;
-            }
-
-            if(month > 12){
-                return false;
-            }
-
-            if(day > 31){
-                return false;
-            }
-
-            if(month == 2){
-                if(new Date(year, 1, 29).getDate() == 29 && day > 29){
-                    return false;
-                }
-                else if(new Date(year, 1, 29).getDate() != 29 && day > 28){
-                    return false;
-                }
-            }
-
-            return true;
-        }
-    }
+   
 
     function diff(now, then) {
         return now.localeCompare(then)
@@ -234,6 +183,7 @@ function getScrollBarWidth() {
 }
 const BitArray = require("./bits");
 import {cellFromatCompute} from "./cellFromatCompute"
+import { widget_row_col_layout } from "../fieldsConfig";
 const luckysheet_CFiconsImg = new Image();
 luckysheet_CFiconsImg.src = "cdn/luckysheet/plugins/images/CFicons.png"
 const icon_arr=[]
@@ -279,6 +229,7 @@ export default class ResultGrid2HtmlTable{
         //this.param_grid.need_footer=true
         this.ScrollBarWidth=getScrollBarWidth()
         this.cell_cf={}
+        this.search_cond=null
         let cdf_arr=[]
         let _this=this
         this.tree_row_set={};
@@ -335,15 +286,17 @@ export default class ResultGrid2HtmlTable{
         if(tableData.length<=1000)
             this.cell_cf= cellFromatCompute(cdf_arr,tableData)
 
-        this.t_tableData=new Array(tableData.length)
-        this.tableData_bridge=new Array(tableData.length)
+        
+        this.tableData_bridge=new Array(tableData.length)//里面存的是指向原始表的行号
         for(let idx=0;idx<tableData.length;idx++)
             this.tableData_bridge[idx]=idx
-
+        
         //this.convert(0,this.param_grid.extend_lines[0]+this.page_size*2)
-        //setTimeout(() => {
-        //    this.convert(this.param_grid.extend_lines[0]+this.page_size*2,Number.MAX_VALUE)
-        //});
+        setTimeout(() => {
+            //this.convert(this.param_grid.extend_lines[0]+this.page_size*2,Number.MAX_VALUE)
+            this.data_for_sort=this.param_grid.tableData.slice(extend_lines[0],extend_lines[1]+1).map((item,idx)=>{return {"k":idx,'value':item}})
+        
+        });
         this.total_columns=Object.keys(this.param_grid.columnlenArr).length
         this.total_rows=Object.keys(this.param_grid.rowlenArr).length
         this.fix_rows=1
@@ -351,7 +304,7 @@ export default class ResultGrid2HtmlTable{
         if(this.param_grid.optimize &&(this.fix_cols==undefined || this.fix_cols<1)) this.fix_cols=1
 
         this.fix_rows=parseInt( param_grid.fix_rows||Math.max(this.fix_rows,this.param_grid.colName_lines[1]+1) )
-
+        
         
     }
     getData(s_num,e_num){
@@ -398,7 +351,7 @@ export default class ResultGrid2HtmlTable{
         this.param_grid.tableData.slice(s_num,e_num).forEach((rowData,idx)=>{
             let rowNo=idx+s_num
             let newRowData=new Array(Object.keys(this.param_grid.columnlenArr).length)
-            this.t_tableData[rowNo]=newRowData
+            
             rowData.slice(0,-1).forEach((cell,colNo)=>{
                 let m
                 if(rowNo<=this.param_grid.colName_lines[1])
@@ -449,6 +402,9 @@ export default class ResultGrid2HtmlTable{
         return ""
     }
     total(){
+        let ret= this.tableData_bridge.length -  (this.param_grid.tableData.length - this.param_grid.extend_lines[1]) - this.param_grid.extend_lines[0] + 1
+        console.info(ret +"--"+(this.param_grid.extend_lines[1]- this.param_grid.extend_lines[0] + 1))
+        return ret
         return this.param_grid.extend_lines[1]- this.param_grid.extend_lines[0] + 1
     }
     handleSizeChange(){
@@ -456,6 +412,60 @@ export default class ResultGrid2HtmlTable{
     }
     handleCurrentChange(){
 
+    }
+    search(){
+        let extend_lines=this.param_grid.extend_lines
+        let tmp_arr=this.param_grid.tableData.slice(extend_lines[0],extend_lines[1]+1).map((item,idx)=>{return {"k":idx,'value':item}})
+        if(this.search_cond!=null)
+        {
+            let for_col=this.search_cond.for_col;
+            let traget_value=this.search_cond.target_val;
+            let convert_func=function(a){
+                return a
+            }
+            if(this.search_cond.as_type=="number")
+                convert_func=function(a){
+                    return Number.parseFloat(a)
+                }
+            traget_value=convert_func(traget_value)
+            switch(this.search_cond.relation){
+                case '==':
+                    tmp_arr=Enumerable.from(tmp_arr).where(x=>convert_func(x.value[for_col])==traget_value).toArray();
+                    break;
+                case '!=':
+                    tmp_arr=Enumerable.from(tmp_arr).where(x=>convert_func(x.value[for_col])!=traget_value).toArray();
+                    break;
+                case '>=':
+                    tmp_arr=Enumerable.from(tmp_arr).where(x=>convert_func(x.value[for_col])>=traget_value).toArray();
+                    break;
+                case '>':
+                    tmp_arr=Enumerable.from(tmp_arr).where(x=>convert_func(x.value[for_col])>traget_value).toArray();
+                    break;
+                case '<':
+                    tmp_arr=Enumerable.from(tmp_arr).where(x=>convert_func(x.value[for_col])<traget_value).toArray();
+                    break;                                    
+                case '<=':
+                    tmp_arr=Enumerable.from(tmp_arr).where(x=>convert_func(x.value[for_col])<=traget_value).toArray();
+                    break;                                    
+            }
+        }
+        
+        
+        let bridge_len=tmp_arr.length + (this.param_grid.tableData.length - this.param_grid.extend_lines[1] - 1) + this.param_grid.extend_lines[0]
+        this.tableData_bridge=new Array(bridge_len)
+        // 填充表头
+        for(let idx=0;idx<extend_lines[0];idx++)
+            this.tableData_bridge[idx]=idx
+        // 填充排序好的数据
+        for(let idx=0;idx<tmp_arr.length;idx++)
+            this.tableData_bridge[extend_lines[0]+idx]=extend_lines[0]+tmp_arr[idx].k
+        let end_start=extend_lines[0] + tmp_arr.length 
+        // 填充表尾
+        for(let i=extend_lines[1]+1;i<this.param_grid.tableData.length;i++){
+            this.tableData_bridge[end_start + (i - extend_lines[1] - 1) ]=i
+        }
+        this.data_for_sort=tmp_arr
+        return  this.data_for_sort 
     }
     sort(sort_col){
         if(sort_col!=undefined){
@@ -470,19 +480,26 @@ export default class ResultGrid2HtmlTable{
                 this.sort_col={isAsc:-1,col:sort_col}
             }
             let extend_lines=this.param_grid.extend_lines
-            //let tmp_arr=this.t_tableData.slice(extend_lines[0],extend_lines[1]+1)
-            let tmp_arr=this.param_grid.tableData.slice(extend_lines[0],extend_lines[1]+1).map((item,idx)=>{return {"k":idx,'value':item}})
+            let tmp_arr=this.data_for_sort//this.param_grid.tableData.slice(extend_lines[0],extend_lines[1]+1).map((item,idx)=>{return {"k":idx,'value':item}})
             if(this.sort_col.isAsc==-1)
                 tmp_arr=orderbydata(tmp_arr,Number.parseInt(this.sort_col.col),false)
             else if(this.sort_col.isAsc==1)
                 tmp_arr=orderbydata(tmp_arr,Number.parseInt(this.sort_col.col),true)
-            //else
-            //    tmp_arr=orderbydata(tmp_arr,tmp_arr[0].length-1,true)
+            else
+                tmp_arr=this.search()
+            let bridge_len=tmp_arr.length + (this.param_grid.tableData.length - this.param_grid.extend_lines[1] - 1) + this.param_grid.extend_lines[0]
+            this.tableData_bridge=new Array(bridge_len)
+            // 填充表头
+            for(let idx=0;idx<extend_lines[0];idx++)
+                this.tableData_bridge[idx]=idx
+            // 填充排序好的数据
             for(let idx=0;idx<tmp_arr.length;idx++)
                 this.tableData_bridge[extend_lines[0]+idx]=extend_lines[0]+tmp_arr[idx].k
-            //for(let i=extend_lines[0];i<extend_lines[1]+1;i++){
-            //    this.t_tableData[i]=tmp_arr[i-extend_lines[0]]
-            //}           
+            let end_start=extend_lines[0] + tmp_arr.length 
+            // 填充表尾
+            for(let i=extend_lines[1]+1;i<this.param_grid.tableData.length;i++){
+                this.tableData_bridge[end_start + (i - extend_lines[1] - 1) ]=i
+            }           
         }
     }
     find_config_merge(config_merge,rowNo,colNo){
@@ -531,19 +548,21 @@ export default class ResultGrid2HtmlTable{
         for(let i=0;i<tableBitFlag.length;i++)
             tableBitFlag[i]=new BitArray()
         this.getData(s_row,e_row).forEach((rowData,row_idx)=>{
-        //this.t_tableData.slice(s_row,e_row).forEach((rowData,row_idx)=>{
+            let real_rowno=rowData[rowData.length-1].v
             let rowNo=s_row+row_idx
             let row_type=''
             let row_pr
-            if(extend_lines[0]<=rowNo && extend_lines[1]>=rowNo){
-                row_pr=(this.tree_row_set[rowNo]? this.tree_row_set[rowNo][2] :0)
+            let in_detail=false
+            if(extend_lines[0]<=real_rowno && extend_lines[1]>=real_rowno){
+                row_pr=(this.tree_row_set[real_rowno]? this.tree_row_set[real_rowno][2] :0)
                 row_type='detail' +' data-pr=' + row_pr
+                in_detail=true
             }
-            else  if(rowNo<colName_lines[0])
+            else  if(real_rowno<colName_lines[0])
                 row_type='isHead'
-            else  if(rowNo<=colName_lines[1])
+            else  if(real_rowno<=colName_lines[1])
                 row_type='isColumn'
-            else  if(rowNo<extend_lines[0])
+            else  if(real_rowno<extend_lines[0])
                 row_type='isComment'
             else
                 row_type='isComment isAfterExtend'
@@ -560,14 +579,14 @@ export default class ResultGrid2HtmlTable{
                     return;
                 }
                 tableBitFlag[rowNo-s_row].set(colNo ,1)
-                let max_height=rowlenArr[rowNo]??rowlenArr["default"]
+                let max_height=rowlenArr[real_rowno]??rowlenArr["default"]
                 let max_width=columnlenArr[colNo]
                 sb.append(`\n<td `)
-                let r_c=this.find_config_merge(config_merge,rowNo,colNo)//config_merge[`${rowNo}_${colNo}`]
+                let r_c=this.find_config_merge(config_merge,real_rowno,colNo)//config_merge[`${rowNo}_${colNo}`]
                 if(r_c){
                     let {r, c, rs, cs}={...r_c}
                     if(rs>1)
-                        sb.append(`data-oldrs=${rs} rowspan=${ this.param_grid.tree_row_list==undefined?rs:(row_pr&& row_pr!=0?rs:1)}`) 
+                        sb.append(`data-oldrs=${rs} rowspan=${ !in_detail || this.param_grid.tree_row_list==undefined?rs:(row_pr&& row_pr!=0?rs:1)}`) 
                     if(cs>1)
                         sb.append(` colspan=${cs}`)
                     max_width=0
@@ -576,9 +595,9 @@ export default class ResultGrid2HtmlTable{
                     }
                     max_height=0
                     for(let ri=0;ri<rs;ri++){
-                        max_height+=rowlenArr[rowNo+ri]
+                        max_height+=rowlenArr[real_rowno+ri]
                         for(let ci=0;ci<cs;ci++){
-                            tableBitFlag[r+ri-s_row]?.set(c+ci ,1)
+                            tableBitFlag[rowNo+ri-s_row]?.set(c+ci ,1)
                         }
                     }
                 }
@@ -591,8 +610,11 @@ export default class ResultGrid2HtmlTable{
                   disp=`<span class='cr_tree_node  '><i class='el-icon-arrow-right'></i></span>` + disp 
                 if(cell?.m?.t=='img'){
                     disp=`<img style="width: 100%;height: 100%;" src='${disp}'>`
-                }
-                let style=`style="max-height:${max_height-1}px;max-width:${max_width*this.ratio}px;height:${max_height-1}px;width:${max_width*this.ratio}px"`
+                }//max-height:${max_height-1}px;
+                let style=`style="max-width:${max_width*this.ratio-4}px;width:${max_width*this.ratio-4}px;`
+                if(!this.setting.auto_line_height && !window.cr_auto_line_height)
+                    style=style+`max-height:${max_height-1}px;`// 不能设置height，否则就不会上下居中了
+                style=style+'"'
                 if(this.optimize && cell_sort!=undefined){
                     sb.append(` cr-sort`)
                     if(this.sort_col.col==colNo){
@@ -601,9 +623,9 @@ export default class ResultGrid2HtmlTable{
                         if(this.sort_col.isAsc==1)
                             sb.append(` cr-sort-asc`)
                    }//不加 max- 会撑破cell和不能居中
-                   sb.append(`' data-c=${colNo} ><div class="cr-cell" ${style}> 
-                   <span>${disp??''}</span>
-                   <span class="cr-sort-icon"></span>
+                   sb.append(`' data-c=${colNo} ><div class="cr-cell" ${style}><span>${disp??''}</span>`)
+                   sb.append(`<span class="cr-sort-icon"></span>
+                   <span class="cr-search-icon"></span>
                    </div></td>`)
                 }
                 else
@@ -695,7 +717,7 @@ export default class ResultGrid2HtmlTable{
             table_obj=this._inner_table(start_row,this.fix_rows,  build_col_arr(0,this.fix_cols))
             sb.append(`<div class="cr-table__fixed" style="width: ${table_obj.table_width+1}px; height:calc(100% - ${this.ScrollBarWidth}px);">`)
             
-            sb.append(`<div class='cr-table__fixed-header-wrapper'  style='background-color:${background_color};' >\n
+            sb.append(`<div id='reportDiv${this.param_grid.name}TopLeft' class='cr-table__fixed-header-wrapper'  style='background-color:${background_color};' >\n
             <table class='cr-table__header reportDefaultCss' width=${table_obj.table_width}  `)  //height=${table_obj.table_height}
             add_other()
             sb.append(table_obj.sb.toString(''))
@@ -742,6 +764,7 @@ export default class ResultGrid2HtmlTable{
                     tr:nth-child(odd)[Detail]  td[data-c${idx>=0?'="'+idx+'"':''}] {background-color:${one.bc}; color:${one.fc};   border: 1px solid #bdbcbc;}
                     tr:nth-child(even)[Detail] td[data-c${idx>=0?'="'+idx+'"':''}] {background-color:${two.bc}; color:${two.fc};border: 1px solid #bdbcbc;}
                     .form_query_button {background-color:${head.bc};color:${head.fc};}
+                    
                     `)
         }
         sb.append(`<style type="text/css">`)
@@ -765,17 +788,26 @@ export default class ResultGrid2HtmlTable{
             }
             
         })
-        sb.append("\n</style>\n")  
-        sb.append("<style>\n")
+        //sb.append("\n</style>\n")  
+        //sb.append("<style >\n")
         Object.entries(this.param_grid.styles).forEach(([key, value])=>{
             sb.append(".").append(key).append(' {').append(value).append("}\n")
         })
-        sb.append(".reportDefaultCss{").append(this.param_grid.reportDefaultCss).append("}\n")
-        sb.append(`.cr-cell {margin: 0;
-            padding: 0 4px;
-            white-space: wrap;
-            word-wrap: normal;
-            overflow: hidden;            
+        /*
+            $("#reportDivmain").on('click', 'tr', function () {
+                $(this).siblings('tr').removeClass('active-row');
+                $(this).addClass('active-row');
+            });
+        */
+        sb.append(".reportDefaultCss{").append(this.param_grid.reportDefaultCss)
+        .append(`}
+        tr.hover-row>td ${window.cr_hover_row||'{background-color:lightgray!important;}'}
+        tr.active-row>td  ${window.cr_active_row || '{background-color: #7cbcfc!important;}'}
+            .cr-cell {margin: 0;box-sizing: border-box;
+                padding: 0 2px;
+                white-space: wrap;
+                word-wrap: normal;
+                overflow: hidden; 
             }
             .cr-sort .cr-sort-icon {
                 display: inline;

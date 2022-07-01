@@ -409,14 +409,14 @@ export default {
       this.data.option.barColor.splice(index, 1, row);
       done();
     },
-    changeMapLevel(value) {
-      if (value === "国家") {
+    changeMapLevel(p) {
+      if (p.value === "国家") {
         this.data.option.mapData = `https://geo.datav.aliyun.com/areas_v3/bound/100000_full.json`;
       }
     },
     //https://geo.datav.aliyun.com/areas_v3/bound/100000_full.json
     //https://geo.datav.aliyun.com/areas_v3/bound/410800_full.json
-    changeProvince(value) {
+    changeProvince({value}) {
       if (value) {
         this.data.option.mapData = `https://geo.datav.aliyun.com/areas_v3/bound/${value}_full.json`
         //`${

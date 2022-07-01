@@ -129,6 +129,15 @@ http {
             #   proxy_pass     http://report/;        
             #}
         }
+        location  /report5/static/ {             
+            proxy_pass     http://report/static/;
+            client_max_body_size    100m;
+            proxy_set_header Upgrade $http_upgrade;
+            proxy_set_header Connection "upgrade";
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;            
+        }
         location ~ /report5/(.*\.)(js|css|png|map|svg|woff|jpg|svg|gif|ico)$ {    
             alias 'D:/publish_test3/wwwroot/$2$3';
         } 

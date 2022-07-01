@@ -44,151 +44,153 @@
         </el-button>
          
     </el-row> 
-   </el-aside>
-   <el-main>
-
-        <el-form :inline="true" class="demo-form-inline" v-if="action_target!=null">
-            <el-row><el-col :span="6">
-                <el-form-item label="名字"><el-button type="primary" @click="update_name" >{{action_target._name}}</el-button ></el-form-item>
-            </el-col>
-            
-            <el-col v-if="action_target._type=='sql'|| action_target._type=='db'" :span="4">
-                <el-form-item label="数据源">
-                    <el-select v-model="action_target._dataSource" placeholder="数据源">
-                        <el-option  v-for="(one,index) in context.report.conn_list" :key="one+index" :label="one" :value="one"></el-option>
-                    </el-select>
-                </el-form-item>
-                </el-col>  
-                <el-col :span="4"><el-form-item label="类型" style="color:red;font-weight: 900;">{{action_target._type}} </el-form-item> </el-col>
-                <el-col v-if="action_target._type=='sql'|| action_target._type=='db'" :span="4">
-                    <el-form-item label="舍弃数值全零的行">  <el-checkbox v-model="action_target._FilterZero"></el-checkbox></el-form-item> 
-                </el-col>
-                <el-button  type="primary" v-if="['memory','sql','userDefine'].includes(action_target._type)"  @click="preview">取数</el-button>
-                 <el-button type="primary" v-if="action_target._type=='cr'" @click="cr_run">取数</el-button> 
-                <el-button type="primary" v-if="action_target._type=='api'" @click="api_run">取数</el-button> 
-            </el-row>
-
-            <el-row v-if="['sql','db'].includes(action_target._type) " :span="6">
-                
-                <div v-if="dataLengthList(action_target._name).length>1">
-                    <el-tag v-for="(one,index) in dataLengthList(action_target._name)" :key="one+index" 
-                        @click="url_choose_get(index)"
-                        :style="{'font-weight':(action_target.get==index?'bold':'')}">
-                        {{index }}
-                     </el-tag>
-                </div>     
-            </el-row>
-
-            <el-row v-if="['cr','api'].includes(action_target._type)">
-                <el-col :span="16"  v-if="['cr'].includes(action_target._type)">
-                    <el-input v-model="action_target._dataSource" placeholder="请输入URL地址"></el-input> 
-                </el-col>
-                 <el-col :span="2">
-                     
-                     </el-col>
-                 <el-col :span="6" style="font-weight:800" > 
-                     当前选择的是 ： 
-                     <span v-if="action_target.get && action_target._type!='api'" >
-                     {{action_target.get.substring(0,2)=='tb'?'表格:':'数据集:' }}{{action_target.get.substring(3)}} 
-                     </span >
-                     <span v-else>
-                    {{action_target.get}} 
-                     </span >
-                     </el-col>
-            </el-row>
-            <el-row  v-if="['memory','sql','userDefine','api','csv'].includes(action_target._type)">
-                <el-col :span="24">
-             <codemirror  
-                        ref="editor" 
-                        v-model="action_target.__text" 
-                        style="height:100%;border:solid 1px silver;margin-bottom:5px;"
-                        :options="{tabSize: 4, mode: 'text/x-sql', lineNumbers: true,line: true,}"  
-            /></el-col>
-            </el-row>
-            <el-table stripe border  :height="250" v-if="action_target.url_param" 
-                    :data="action_target.url_param"  
-                >
-                <el-table-column prop="_prompt" label="参数说明"> </el-table-column>
-                <el-table-column prop="_name" label="参数名"> </el-table-column>
-                <el-table-column prop="_default_value" label="值">
-                    <template slot-scope="scope">
-                        <el-input v-model="scope.row._default_value" 
-                        style="width:80%"
-                        placeholder=""></el-input> 
-                        <el-button @click="paramDialog_open(scope.row)"
-                         circle
-                         type="success"
-                         size="mini"
-                         icon="el-icon-edit"
-                         style="padding: 4px;margin-left: 5px"></el-button>
-                    </template>
-                </el-table-column>
-            </el-table> 
-            <el-row v-if="['api','csv','cr'].includes(action_target._type)"><el-col :span="10">
-                <div v-if="action_target._path_list">
-                    <el-tag v-for="(one,index) in JSON.parse(action_target._path_list)" 
-                    :key="one+index" type="danger" 
-                    @click="url_choose_get(one)"  
-                    :style="{'font-weight':(action_target.get==one?'bold':'')}">{{one }}</el-tag>
+    </el-aside>
+    <el-main>
+        <div style="height:100%;display:flex;flex-direction:column" v-if="action_target!=null">
+            <div style="height:50%;display:flex;flex-direction:column" >
+                <el-form :inline="true" class="demo-form-inline" >
+                    <el-row><el-col :span="6">
+                        <el-form-item label="名字"><el-button type="primary" @click="update_name" >{{action_target._name}}</el-button ></el-form-item>
+                    </el-col>
                     
-                </div>  
-            </el-col>
-            </el-row>
+                    <el-col v-if="action_target._type=='sql'|| action_target._type=='db'" :span="4">
+                        <el-form-item label="数据源">
+                            <el-select v-model="action_target._dataSource" placeholder="数据源">
+                                <el-option  v-for="(one,index) in context.report.conn_list" :key="one+index" :label="one" :value="one"></el-option>
+                            </el-select>
+                        </el-form-item>
+                        </el-col>  
+                        <el-col :span="4"><el-form-item label="类型" style="color:red;font-weight: 900;">{{action_target._type}} </el-form-item> </el-col>
+                        <el-col v-if="action_target._type=='sql'|| action_target._type=='db'" :span="4">
+                            <el-form-item label="舍弃数值全零的行">  <el-checkbox v-model="action_target._FilterZero"></el-checkbox></el-form-item> 
+                        </el-col>
+                        <el-button  type="primary" v-if="['memory','sql','userDefine'].includes(action_target._type)"  @click="preview">取数</el-button>
+                        <el-button type="primary" v-if="action_target._type=='cr'" @click="cr_run">取数</el-button> 
+                        <el-button type="primary" v-if="action_target._type=='api'" @click="api_run">取数</el-button> 
+                    </el-row>
 
-             <el-row v-if="action_target._type=='from'"><el-col :span="8">
-                 挑选数据集
-                <el-select v-model="action_target._dataSource" >
-                    <el-option  v-for="(ds,index) in all_dataSet.filter(x=> 
-                            ['db','sql','cr'].includes(x._type) 
-                            && ((x._type!='cr' 
-                            && dataLengthList(x._name).length>1) )|| x._type=='cr')" 
-                        :key="ds._name+index" :label="ds._name" :value="ds._name"></el-option>
-                    <el-option  v-for="(ds,index) in all_dataSet.filter(x=> 
-                            ['api'].includes(x._type) && x._path_list && JSON.parse(x._path_list).length>1)" 
-                        :key="ds._name+index" :label="ds._name" :value="ds._name"></el-option>
+                    <el-row v-if="['sql','db'].includes(action_target._type) " :span="6">
+                        
+                        <div v-if="dataLengthList(action_target._name).length>1">
+                            <el-tag v-for="(one,index) in dataLengthList(action_target._name)" :key="one+index" 
+                                @click="url_choose_get(index)"
+                                :style="{'font-weight':(action_target.get==index?'bold':'')}">
+                                {{index }}
+                            </el-tag>
+                        </div>     
+                    </el-row>
+
+                    <el-row v-if="['cr','api'].includes(action_target._type)">
+                        <el-col :span="16"  v-if="['cr'].includes(action_target._type)">
+                            <el-input v-model="action_target._dataSource" placeholder="请输入URL地址"></el-input> 
+                        </el-col>
+                        <el-col :span="2">
+                            
+                            </el-col>
+                        <el-col :span="6" style="font-weight:800" > 
+                            当前选择的是 ： 
+                            <span v-if="action_target.get && action_target._type!='api'" >
+                            {{action_target.get.substring(0,2)=='tb'?'表格:':'数据集:' }}{{action_target.get.substring(3)}} 
+                            </span >
+                            <span v-else>
+                            {{action_target.get}} 
+                            </span >
+                            </el-col>
+                    </el-row>
                     
-                </el-select> 
-                </el-col>
-                 <el-col :span="8">
-                     挑选内部数据集
-                    <el-select v-model="action_target.__text" 
-                            v-if="this.action_target._dataSource!=''  && ['db','sql'].includes(all_dataSet.find(a=>a._name==action_target._dataSource)._type)  " 
-                    >
-                        <el-option v-for="(one,index) in dataLengthList(action_target._dataSource).slice(1)" 
-                            :key="index" type="success" @click="url_choose_get(one)"  :label="one" :value="one" >{{one }}</el-option>
-                    </el-select> 
-                    <el-select v-model="action_target.__text" 
-                            v-if="this.action_target._dataSource!=''  && ['api','cr'].includes(all_dataSet.find(a=>a._name==action_target._dataSource)._type)" 
-                    >
-                        <el-option v-for="(one,index) in JSON.parse( all_dataSet.find(a=>a._name==action_target._dataSource)._path_list)" 
-                            :key="index" type="success" @click="url_choose_get(one)"  :label="one" :value="one" >{{one }}</el-option>
-                    </el-select>  
-                     
-                </el-col>
-            </el-row>
+                    <el-row v-if="['api','csv','cr'].includes(action_target._type)"><el-col :span="10">
+                        <div v-if="action_target._path_list">
+                            <el-tag v-for="(one,index) in JSON.parse(action_target._path_list)" 
+                            :key="one+index" type="danger" 
+                            @click="url_choose_get(one)"  
+                            :style="{'font-weight':(action_target.get==one?'bold':'')}">{{one }}</el-tag>
+                            
+                        </div>  
+                    </el-col>
+                    </el-row>
 
-            <div >
-            <el-upload v-if="action_target._type=='csv'" class="upload-demo" action :auto-upload="false" :show-file-list="false" :on-change="choose_file"
-            >
-            <el-button size="small" type="primary">请选择导入excel</el-button>
-            </el-upload>
-            <div v-if="tableData==undefined || tableData.length==0" >无数据</div>
-            
-            <el-table stripe border  :height="250" v-if="tableData.length>0" 
-                :data="tableData.slice((currentPage - 1) * pageSize, currentPage*pageSize)"  
-                style="width: calc(100% -1px)">
-                <el-table-column v-for="(one,idx) in Object.keys(tableData[0])"
-                sortable :key="one+idx" :prop="one" :label="one"> </el-table-column>
-            </el-table>           
-            <el-pagination  v-if="tableData.length>0"
-                :current-page.sync="currentPage"
-                :page-sizes="[2, 5, 10, 20]"
-                :page-size.sync="pageSize"
-                layout="total, sizes, prev, pager, next, jumper"
-                :total.sync="tableData.length">
-            </el-pagination>
+                    <el-row v-if="action_target._type=='from'"><el-col :span="8">
+                        挑选数据集
+                        <el-select v-model="action_target._dataSource" >
+                            <el-option  v-for="(ds,index) in all_dataSet.filter(x=> 
+                                    ['db','sql','cr'].includes(x._type) 
+                                    && ((x._type!='cr' 
+                                    && dataLengthList(x._name).length>1) )|| x._type=='cr')" 
+                                :key="ds._name+index" :label="ds._name" :value="ds._name"></el-option>
+                            <el-option  v-for="(ds,index) in all_dataSet.filter(x=> 
+                                    ['api'].includes(x._type) && x._path_list && JSON.parse(x._path_list).length>1)" 
+                                :key="ds._name+index" :label="ds._name" :value="ds._name"></el-option>
+                            
+                        </el-select> 
+                        </el-col>
+                        <el-col :span="8">
+                            挑选内部数据集
+                            <el-select v-model="action_target.__text" 
+                                    v-if="this.action_target._dataSource!=''  && ['db','sql'].includes(all_dataSet.find(a=>a._name==action_target._dataSource)._type)  " 
+                            >
+                                <el-option v-for="(one,index) in dataLengthList(action_target._dataSource).slice(1)" 
+                                    :key="index" type="success" @click="url_choose_get(one)"  :label="one" :value="one" >{{one }}</el-option>
+                            </el-select> 
+                            <el-select v-model="action_target.__text" 
+                                    v-if="this.action_target._dataSource!=''  && ['api','cr'].includes(all_dataSet.find(a=>a._name==action_target._dataSource)._type)" 
+                            >
+                                <el-option v-for="(one,index) in JSON.parse( all_dataSet.find(a=>a._name==action_target._dataSource)._path_list)" 
+                                    :key="index" type="success" @click="url_choose_get(one)"  :label="one" :value="one" >{{one }}</el-option>
+                            </el-select>  
+                            
+                        </el-col>
+                    </el-row>
+                </el-form>
+               
+                    <codemirror   v-if="['memory','sql','userDefine','api','csv'].includes(action_target._type)"
+                                ref="editor" 
+                                v-model="action_target.__text" 
+                                style="height:100%;border:solid 1px silver;margin-bottom:5px;"
+                                :options="{tabSize: 4, mode: 'text/x-sql', lineNumbers: true,line: true,}"  
+                    />
+                   
+                    <el-table stripe border  :height="250" v-if="action_target.url_param" 
+                            :data="action_target.url_param"  
+                        >
+                        <el-table-column prop="_prompt" label="参数说明"> </el-table-column>
+                        <el-table-column prop="_name" label="参数名"> </el-table-column>
+                        <el-table-column prop="_default_value" label="值">
+                            <template slot-scope="scope">
+                                <el-input v-model="scope.row._default_value" 
+                                style="width:80%"
+                                placeholder=""></el-input> 
+                                <el-button @click="paramDialog_open(scope.row)"
+                                circle
+                                type="success"
+                                size="mini"
+                                icon="el-icon-edit"
+                                style="padding: 4px;margin-left: 5px"></el-button>
+                            </template>
+                        </el-table-column>
+                    </el-table> 
             </div>
-       </el-form>
+            <div style="height:50%;display:flex;flex-direction:column">
+                <el-upload v-if="action_target._type=='csv'" class="upload-demo" action :auto-upload="false" :show-file-list="false" :on-change="choose_file"
+                >
+                <el-button size="small" type="primary">请选择导入excel</el-button>
+                </el-upload>
+                <div v-if="tableData==undefined || tableData.length==0" >无数据</div>
+                
+                <el-table stripe border  :height="250" v-if="tableData.length>0" 
+                    :data="tableData.slice((currentPage - 1) * pageSize, currentPage*pageSize)"  
+                    style="width: calc(100% -1px)">
+                    <el-table-column v-for="(one,idx) in Object.keys(tableData[0])"
+                    sortable :key="one+idx" :prop="one" :label="one"> </el-table-column>
+                </el-table>           
+                <el-pagination  v-if="tableData.length>0"
+                    :current-page.sync="currentPage"
+                    :page-sizes="[2, 5, 10, 20]"
+                    :page-size.sync="pageSize"
+                    layout="total, sizes, prev, pager, next, jumper"
+                    :total.sync="tableData.length">
+                </el-pagination>
+            </div>
+        </div>
    </el-main>
   </el-container>
           <span slot="footer" class="dialog-footer">
@@ -370,11 +372,10 @@ export default {
                     _this.$set(_this.context.report_result.dataSet,name,response.dataSet[name]  )
                 });
                 let old=this.action_target
-                _this.$set(this,'action_target',{})                
-                 
-                    _this.$set(this,'action_target',old)
-                    _this.action_target._fields=JSON.stringify(response.dataSet[_this.action_target._name][0][0])
-                    _this.$message({showClose: true,message: "取数成功",type: 'success',duration: 3000});   
+                _this.$set(this,'action_target',{})
+                _this.$set(this,'action_target',old)
+                _this.action_target._fields=JSON.stringify(response.dataSet[_this.action_target._name][0][0])
+                _this.$message({showClose: true,message: "取数成功",type: 'success',duration: 3000});   
             })
             .catch(error=> { 
             _this.context.in_exec_url.stat=false;
@@ -479,7 +480,7 @@ export default {
                 }
                 let path_list=[]
                 
-                let result=JSON.parse( response_data.result)
+                let result=(typeof response_data.result =="string")? JSON.parse( response_data.result) :response_data.result
    
                 
                 if(_this.action_target.__text.indexOf("from_zb")>=0 ){
@@ -661,5 +662,5 @@ innerReport(); //设计好的报表页面选中有关单元格，复制粘贴到
 
 <style scoped>
 .el-dialog {display: flex;flex-direction: column;}
-.el-dialog__body {height: calc(100% - 200px);}
+.el-dialog__body {height: calc(100% - 120px);}
 </style>

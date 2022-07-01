@@ -79,7 +79,6 @@ export default {
                     this.$set(this.context.clickedEle,this.self.gridName,{data:deepClone(cur_data[0]),cell:cell.innerText,column,self:this.self})
                 this.click_fresh(this.context.clickedEle[this.self.gridName])
             }
-            
         }
   },
 }

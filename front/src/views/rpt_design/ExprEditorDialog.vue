@@ -4,91 +4,87 @@
         :close-on-click-modal="false"  @close="close" 
           direction="btt" append-to-body  
     > 
-<div style="height: 500px;">
-  <div style="height: 150px;">
-   
-    <form>
-      <codemirror v-if='dialogVisible' ref="editor"    v-model="obj[prop.val]" 
-          :options="{tabSize: 4, mode: 'text/javascript', styleActiveLine: true,lineWrapping: true,
+<div style="height: 500px;;display:flex;flex-direction:column">
+  <codemirror v-if='dialogVisible' ref="editor"    v-model="obj[prop.val]" 
+          :options="{tabSize: 4, mode: 'text/javascript', styleActiveLine: true,lineWrapping: true,lineNumbers: true,line: true,
             theme: 'cobalt',showCursorWhenSelecting: true, cursorBlinkRate:0 }" 
-            @ready="editor_ready"
+            style="height:33%;border:solid 1px silver;margin-bottom:5px;"
+           
          />
-      </form>
-  </div>
-  <div style="padding:10px 20px;height:calc(100% - 150px)">
+  <div style="height:67%">
 
-<div style="height:100%;width:100%;display:flex">
-  <div  style="height:100%;width:33%">
-    <div class="cr_title">数据集</div>
-      <div style="width:100%;height:calc(50% - 30px);border: 1px dotted;overflow:auto">
-        <div v-for="(ds,ds_idx) in report.dataSets.dataSet" :key="ds+ds_idx" 
-        @click="cur_ds=ds"
-        :style="{'background-color':cur_ds==ds?'#c5f3e0':'#fff'}"> <!-- https://www.iconfont.cn -->
-            <img v-if="ds._type=='csv'" class="cr_icon" src="img/CSV图标.svg"/>
-            <img v-if="ds._type!='csv' && ds._type!='cr'" class="cr_icon" src="img/数据库.svg"/>
-            <img v-if="ds._type=='cr'" class="cr_icon" src="img/引用.svg"/>
-              {{ds._name}} 
-        </div> 
-        <div 
-        @click="cur_ds=param_ds"
-        :style="{'background-color':cur_ds==param_ds?'#c5f3e0':'#fff'}"> <!-- https://www.iconfont.cn -->
-            <img class="cr_icon" src="img/引用.svg"/>
-             param
-        </div> 
+    <div style="height:100%;width:100%;display:flex">
+      <div  style="height:100%;width:33%">
+        <div class="cr_title">数据集</div>
+          <div style="width:100%;height:calc(50% - 30px);border: 1px solid;overflow:auto">
+            <div v-for="(ds,ds_idx) in report.dataSets.dataSet" :key="ds+ds_idx" 
+            @click="cur_ds=ds"
+            :style="{'background-color':cur_ds==ds?'#c5f3e0':'#fff'}"> <!-- https://www.iconfont.cn -->
+                <img v-if="ds._type=='csv'" class="cr_icon" src="img/CSV图标.svg"/>
+                <img v-if="ds._type!='csv' && ds._type!='cr'" class="cr_icon" src="img/数据库.svg"/>
+                <img v-if="ds._type=='cr'" class="cr_icon" src="img/引用.svg"/>
+                  {{ds._name}} 
+            </div> 
+            <div 
+            @click="cur_ds=param_ds"
+            :style="{'background-color':cur_ds==param_ds?'#c5f3e0':'#fff'}"> <!-- https://www.iconfont.cn -->
+                <img class="cr_icon" src="img/引用.svg"/>
+                param
+            </div> 
+          </div>
+          <div class="cr_title">字段：</div>
+        <div style="width:100%;height:50%;border: 1px solid;overflow:auto">     
+          
+          <div v-for="(one,idx) in JSON.parse(cur_ds._fields)" 
+              :key="one+idx" 
+              :style="{'background-color':( cur_field==one)?'#c5f3e0':'#fff','cursor': 'pointer'}"        
+              @click="choose_field(cur_ds,one)"
+              @dblclick="insert_field(cur_ds,one)">       
+              {{ one }}
+          </div>
+        </div>
       </div>
-      <div class="cr_title">字段：</div>
-     <div style="width:100%;height:50%;border: 1px dotted;overflow:auto">     
-       
-      <div v-for="(one,idx) in JSON.parse(cur_ds._fields)" 
-          :key="one+idx" 
-          :style="{'background-color':( cur_field==one)?'#c5f3e0':'#fff','cursor': 'pointer'}"        
-          @click="choose_field(cur_ds,one)"
-          @dblclick="insert_field(cur_ds,one)">       
-          {{ one }}
-      </div>
-     </div>
-  </div>
-  <div style="width:67%;height:100%">
-    <el-row>
-  <el-col :span="12">
-    <el-scrollbar style="height:250px">
-     <el-tree :data="func_xml" :props="{children:'catalogy',label:'_name'}" node-key="_name" accordion >
-             <span class="custom-tree-node" slot-scope="{ node, data }" >
-                    <span v-if="!node.isLeaf" type="text" size="mini" class="el-icon-folder custom-tree-node-label" 
-                    style="font-weight:700;" >
-                        {{ data.name }}
+      <div style="width:66%;height:100%">
+        <el-row>
+      <el-col :span="12" style="border: 1px solid;">
+        <el-scrollbar style="height:250px">
+        <el-tree :data="func_xml" :props="{children:'catalogy',label:'_name'}" node-key="_name" accordion >
+                <span class="custom-tree-node" slot-scope="{ node, data }" >
+                        <span v-if="!node.isLeaf" type="text" size="mini" class="el-icon-folder custom-tree-node-label" 
+                        style="font-weight:700;" >
+                            {{ data.name }}
+                        </span>
+                        <span  v-else type="text" size="mini" class="el-icon-bell custom-tree-node-label" 
+                        @click="change_func_xml('catalogy',data,node)" >
+                            {{ data._name }}
+                        </span>
                     </span>
-                    <span  v-else type="text" size="mini" class="el-icon-bell custom-tree-node-label" 
-                    @click="change_func_xml('catalogy',data,node)" >
-                        {{ data._name }}
-                    </span>
-                </span>
-    </el-tree>
-    </el-scrollbar>
-  </el-col>
-  <el-col :span="12">
-    <el-scrollbar style="height:250px">
-    <el-table :show-header='false' max-height="250"
-     :data="catalogy.function" highlight-current-row style="width: 100%">
-        <el-table-column label="姓名" width="180">
-          <template slot-scope="scope">
-              <div @click="change_func_xml('cur_func',scope.row.__text)"  @dblclick="insert_func(scope.row._name)">
-                  {{ scope.row._name }}
-              </div>
-            </template>
-        </el-table-column>
-    </el-table>
-    </el-scrollbar>
+        </el-tree>
+        </el-scrollbar>
+      </el-col>
+      <el-col :span="12" style="border: 1px solid;">
+        <el-scrollbar style="height:250px">
+        <el-table :show-header='false' max-height="250"
+        :data="catalogy.function" highlight-current-row style="width: 100%">
+            <el-table-column label="姓名" width="180">
+              <template slot-scope="scope">
+                  <div @click="change_func_xml('cur_func',scope.row.__text)"  @dblclick="insert_func(scope.row._name)">
+                      {{ scope.row._name }}
+                  </div>
+                </template>
+            </el-table-column>
+        </el-table>
+        </el-scrollbar>
 
-  </el-col>
-  </el-row>
-  <el-row>
-    <el-col :span="24">
-    <el-input type="textarea" :rows="5" v-model="cur_func"></el-input>    
-  </el-col>  
-  </el-row>
-  </div>
-</div>    
+      </el-col>
+      </el-row>
+      <el-row>
+        <el-col :span="24">
+        <el-input type="textarea" :rows="5" v-model="cur_func"></el-input>    
+      </el-col>  
+      </el-row>
+      </div>
+    </div>    
 
   </div>
 

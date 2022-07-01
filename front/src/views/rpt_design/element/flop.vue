@@ -1,15 +1,19 @@
 <template>
-<div   style="height:100%;width:100%;display: flex;flex-direction: column;"  >  
-  <div :style="[prefixStyle]" v-if="getValByArray(item,'prefixText')">{{getValByArray(item,'prefixText')}}</div>
+<div   style="height:100%;width:100%;display: flex;flex-direction: row;"  >  
+   <img v-if="!validatenull(self.option.inline_Image)" style="height: 100%;width: auto;" :src="self.option.inline_Image">
+   <div   style="height:100%;width:100%;display: flex;flex-direction: column;"  >  
+      <div :style="[prefixStyle]" v-if="getValByArray(item,'prefixText')">{{getValByArray(item,'prefixText')}}</div>
 
-  <div style="height:100%;width:100%;" class="cr-flop__count" :class="'cr-flop__count-'+self.option.textAlign">
-    <div  v-for="one in dataArr" :key="one" style="display: inline-block;" :style="styleName" >
-        <avue-count-up :start='0' :end='one' ref="count"
-        :decimals="self.option.decimals||0" :duration='self.option.duration||2'></avue-count-up>
-    </div>
-    <div :style="[suffixStyle]" v-if="getValByArray(item,'suffixText')">{{getValByArray(item,'suffixText')}}</div>
-  </div>
-  
+      <div style="height:100%;width:100%;" class="cr-flop__count" :class="'cr-flop__count-'+self.option.textAlign">
+      
+        <div  v-for="one in dataArr" :key="one" style="display: inline-block;" :style="styleName" >
+            <avue-count-up :start='0' :end='one' ref="count"
+            :decimals="self.option.decimals||0" :duration='self.option.duration||2'></avue-count-up>
+        </div>  
+        <div :style="[inline_suffixStyle]" v-if="getValByArray(item,'inline_suffixText')">{{getValByArray(item,'inline_suffixText')}}</div>  
+      </div>
+      <div :style="[suffixStyle]" v-if="getValByArray(item,'suffixText')">{{getValByArray(item,'suffixText')}}</div>
+      </div>
   </div>
 </template>
 
@@ -58,10 +62,23 @@ export default ({
     suffixStyle () {
       return {
         display: this.self.option.suffixInline ? 'inline-block' : 'block',
+        textAlign: this.self.option.suffixTextAlign,
         marginLeft: this.setPx(this.self.option.suffixSplitx),
+        marginBottom: this.setPx(this.self.option.suffixSplity),
         color: this.self.option.suffixColor || this.defaultsetting['COLOR'],
         fontSize: this.setPx(this.self.option.suffixFontSize || 24),
-        'align-self': 'flex-end'
+        //'align-self': 'flex-end'
+      };
+    },
+    inline_suffixStyle () {
+      return {
+        display: this.self.option.inline_suffixInline ? 'inline-block' : 'block',
+        textAlign: this.self.option.inline_suffixTextAlign,
+        marginLeft: this.setPx(this.self.option.inline_suffixSplitx),
+        marginBottom: this.setPx(this.self.option.inline_suffixSplity),
+        color: this.self.option.inline_suffixColor || this.defaultsetting['COLOR'],
+        fontSize: this.setPx(this.self.option.inline_suffixFontSize || 24),
+        'align-self': this.self.option.inline_suffixTextAlign??'flex-end'
       };
     },
     styleName () {

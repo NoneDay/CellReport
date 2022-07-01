@@ -86,7 +86,7 @@ export default {
                     ret.push(`表格:${element._name}`)
                 });
             let t_fresh_ds=[]
-            this.data.fresh_ds.forEach(x=>{ 
+            this.data.fresh_ds?.forEach(x=>{ 
                 if(ret.includes(x))
                     t_fresh_ds.push(x)
             })

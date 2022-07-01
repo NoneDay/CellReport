@@ -318,6 +318,8 @@ export function run_one(_this,reportFilePath,_param_name_=null,loading_conf=null
         _this.$notify({title: '提示',message: response_data.message,duration: 0});
         return;
         }
+        if(response_data.zb_var) //兼容老写法
+            response_data._zb_var_=response_data.zb_var
         if(response_data._zb_var_.watermark){
             $(".mask_div").remove()
             _this.watermark(response_data._zb_var_.watermark);

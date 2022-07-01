@@ -54,7 +54,7 @@
               >
             </div>
           </div>
-          <div style="flex:1;padding: 4px;  width: 100%; overflow: auto;background-color:#012545;color:#fff">
+          <div style="flex:1;left-padding: 4px;  width: 100%; overflow: auto;background-color:#012545;color:#fff">
             <widget-form-item
               v-if="
                 tab_value == field.title &&

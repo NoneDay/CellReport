@@ -1,6 +1,8 @@
 import WidgetFormGroup from './element/WidgetFormGroup'
 import WidgetFormItem from './element/WidgetFormItem'
 import WidgetFormTabs from './element/WidgetFormTabs'
+import WidgetFormRowSpan from './element/WidgetFormRowSpan'
+
 import WidgetFormContainer from './element/WidgetFormContainer'
 import gridLayoutForm from './gridLayoutForm'
 import echarts from './element/echarts'
@@ -18,7 +20,8 @@ export default {
     Vue.component('WidgetFormItem' , WidgetFormItem);
     Vue.component('WidgetFormGroup', WidgetFormGroup);
     Vue.component('WidgetFormTabs', WidgetFormTabs);
-
+    Vue.component('WidgetFormRowSpan', WidgetFormRowSpan);
+    
     Vue.component('WidgetFormContainer', WidgetFormContainer);
     Vue.component('gridLayoutForm', gridLayoutForm);
     

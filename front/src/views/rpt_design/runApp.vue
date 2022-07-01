@@ -46,7 +46,7 @@
           <el-form-item :label="one.prompt">
           <el-input v-if="one.data_type=='string' && one.tagValueList.length==0 && one.canUsedValueFrom!='Query' " v-model="queryForm[one.name]"></el-input>
           <el-select v-if="['string','int'].includes(one.data_type) && one.canUsedValueFrom!='Query' && one.tagValueList.length>0" v-model="queryForm[one.name]" 
-            collapse-tags  @change="change_param(one.name)"
+            collapse-tags  @change="change_param(one.name)" clearable filterable 
             :multiple="one.allowMutil=='False'?false:true">
              <el-option
                 v-for="item in one.tagValueList"
@@ -57,7 +57,7 @@
           </el-select>  
           
           <el-select v-if="['string','int'].includes(one.data_type) && one.canUsedValueFrom=='Query' && one.parent_valueField_kyz=='' " v-model="queryForm[one.name]" 
-            collapse-tags  @change="change_param(one.name)"
+            collapse-tags  @change="change_param(one.name)" clearable filterable 
             :multiple="one.allowMutil=='False'?false:true">
              <el-option
                 v-for="item in convert_param_array_to_json(result.dataSet[one.dataSetName_kyz][0],one)"
@@ -83,7 +83,16 @@
            </div>
             <el-form-item style="text-align: center;">
             <el-button type="primary" class='form_query_button' @click="submit">查询</el-button>
-            <el-button type="primary" class='form_query_button' @click="export_excel">导出excel</el-button>
+            
+            <el-dropdown style="margin: 2px;" @command="ExcelCommand($event, node,data)">
+              <el-button type="primary" class='form_query_button' >
+                导出excel<i class="el-icon-arrow-down el-icon--right"></i>
+              </el-button>
+              <el-dropdown-menu slot="dropdown">
+                <el-dropdown-item command="exceljs">小数据量（带格式）</el-dropdown-item>
+                <el-dropdown-item  command="xlsxjs">大数据量（无格式）</el-dropdown-item>
+              </el-dropdown-menu>
+            </el-dropdown>
             <el-button type="primary" class='form_query_button' @click="export_pdf">PDF预览</el-button>            
           </el-form-item>
       </el-form>
@@ -162,7 +171,8 @@
       </form>
     </div>
     <div ref="report_pane" class="report_define" v-if="isShow" :style="{'flex-grow': 1,color:result.defaultsetting['COLOR'],background:result.defaultsetting['BACKGROUND-COLOR']}">
-        <grid-layout-form v-if="layoutType=='gridLayout'" :layout="layout"  :big_screen_scale="big_screen_scale">
+        <grid-layout-form v-if="layoutType=='gridLayout'" :layout="layout"  :big_screen_scale="big_screen_scale" :big_screen_scale_x="big_screen_scale_x"
+         :big_screen_scale_y="big_screen_scale_y">
         </grid-layout-form>          
         <widget-form v-else   :data="layout"   
         ></widget-form>
@@ -178,7 +188,7 @@ import {convert_array_to_json,arrayToTree,seriesLoadScripts,load_css_file,waterm
 import install_component from './install_component'
 import dyncTemplate from './element/dyncTemplate.vue'
 import paperSetting  from './paperSetting.vue'
-import {exceljs_inner_exec} from './utils/export_excel.js'
+import {exceljs_inner_exec,xlsxjs_inner_exec} from './utils/export_excel.js'
 export default {
   name: 'App', //CellReportFormDesign
   components:{dyncTemplate,widgetForm,paperSetting},
@@ -210,8 +220,7 @@ export default {
           if(typeof _this.setTimeout_function=="function")
             _this.setTimeout_function(_this)
         }
-        else
-          _this.setTimeout_second--
+        _this.setTimeout_second--
         if(_this.setTimeout_second<0)
           _this.setTimeout_second=-1
       },1000)
@@ -249,12 +258,14 @@ export default {
           in_exec_url:this.in_exec_url,
           defaultsetting:this.result.defaultsetting,
           rpt_this:this,
+          name_lable_map:this.name_lable_map,
       },   fresh_ele:this.fresh_ele,   
 
     }
   },  
   data () {
     return { 
+        name_lable_map:{},
         isShow:false,
         grpId:0,
         reportName:"",
@@ -280,6 +291,8 @@ export default {
         pdf_output_dialogVisible:false,
         paper_setting_dialogVisible:false,
         big_screen_scale:100,
+        big_screen_scale_x:100,
+        big_screen_scale_y:100,
         paperSetting:{pageSize_name:'A5',}
     }
   },
@@ -311,10 +324,9 @@ export default {
                       let form_h=_this.$refs.form?_this.$refs.form.clientHeight:0
                       _this.$refs.report_pane.style.height=`calc(100% - ${form_h}px)`
                       if(_this.result.defaultsetting.big_screen=='1'){
-                        _this.big_screen_scale=(Math.min(
-                        100.0*_this.$refs.report_pane.clientHeight/parseInt(_this.result.defaultsetting.screen_height)
-                        ,100.0*_this.$refs.report_pane.clientWidth/parseInt(_this.result.defaultsetting.screen_width)
-                        ))
+                          _this.big_screen_scale_y=100*_this.$refs.report_pane.clientHeight/parseInt(_this.result.defaultsetting.screen_height)
+                          _this.big_screen_scale_x=100*_this.$refs.report_pane.clientWidth/parseInt(_this.result.defaultsetting.screen_width)
+                          _this.big_screen_scale=Math.min(_this.big_screen_scale_x,_this.big_screen_scale_y)
                       }
                       document.title = (_this.result.data[Object.keys(_this.result.data)[0]]?.title)   || 'CellReport'
                   })
@@ -371,12 +383,25 @@ export default {
       }
       
     },
+    ExcelCommand(command, node,data){
+      let _this=this
+      if(command=="exceljs")
+        seriesLoadScripts('cdn/exceljs/exceljs.min.js',null,function (){
+          exceljs_inner_exec(_this.result,_this.name_lable_map)
+        })
+      else if(command=="xlsxjs")
+          seriesLoadScripts('cdn/xlsx/dist/xlsx.full.min.js',null,function (){
+            xlsxjs_inner_exec(_this,_this.name_lable_map)
+        })
+    },
     export_excel(){
        let _this=this
-       seriesLoadScripts('cdn/exceljs/exceljs.min.js',null,function (){
-          exceljs_inner_exec(_this.result)
-          })
-      
+        //seriesLoadScripts('cdn/exceljs/exceljs.min.js',null,function (){
+        //  exceljs_inner_exec(_this.result)
+        //})
+          seriesLoadScripts('cdn/xlsx/dist/xlsx.full.min.js',null,function (){
+            xlsxjs_inner_exec(_this,_this.name_lable_map)
+        })
     },
     async export_pdf(){
       let _this=this
@@ -435,7 +460,7 @@ html, body, #report_app {
     height: 100%;
 }
 .report_define .el-tabs--border-card .el-tabs__content {
-    height: calc(100% - 40px);
+    height: calc(100% - 20px);
 }
 
 .CodeMirror { /*不加margin border codemirror的光标会有问题，行尾不出现光标，行内遇到空白会消失 */
@@ -458,12 +483,7 @@ html, body, #report_app {
 .nut-button.circle {
     margin-right: 20px;
 }
-.cr-cell {margin: 0;
-  padding: 0 4px;
-  white-space: wrap;
-  word-wrap: normal;
-  overflow: hidden;            
-}
+
 .el-table{
        width:99.9%!important; 
 }

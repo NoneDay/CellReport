@@ -80,7 +80,9 @@ export default ({
     
   },
   computed: {
-
+      "self.option.value"(){
+        return this.self.label
+      },
     width(){
       return this.$el.clientWidth
     },

@@ -25,7 +25,7 @@
     <div style="position: absolute;right:40px;top:10px;">
     <div v-if="!executed || showLog" style="display:inline-block;">  
       <div v-for="([key,val]) in Object.entries(ds_log)" :key="key" style="display:inline-block;padding-right:20px">
-        <el-tag :type="val.color" :style="{'border':key==show_type?'2px darkgreen solid':''}"
+        <el-tag :type="val.color" :style="{'border':key==show_type?'2px red solid':''}"
          @click="tag_click(key,val)" effect="dark"
         >{{key}}</el-tag>
       </div>
@@ -38,7 +38,7 @@
      </el-button>
      </div>
   </div>
-  <div  v-if="!executed || showLog || result.form==undefined" style="height:100%" >
+  <div  v-if="!executed || showLog || result.form==undefined" style="height:100%;height: 100%;display: flex;flex-direction: column;" >
     <textarea ref="textarea" :style="{height:show_type=='______ALL_____'?'100%':'50%',width:'100%'}" :value="show_content">
     </textarea>
     
@@ -67,7 +67,7 @@
           <el-form-item :label="one.prompt">
           <el-input v-if="one.data_type=='string' && one.tagValueList.length==0 && one.canUsedValueFrom!='Query' " v-model="queryForm[one.name]"></el-input>
           <el-select v-if="['string','int'].includes(one.data_type) && one.canUsedValueFrom!='Query' && one.tagValueList.length>0 " v-model="queryForm[one.name]" 
-            collapse-tags @change="change_param(one.name)"
+            collapse-tags @change="change_param(one.name)" clearable filterable  
             :multiple="one.allowMutil=='False'?false:true">
              <el-option
                 v-for="item in one.tagValueList"
@@ -78,7 +78,7 @@
           </el-select>  
           
           <el-select v-if="['string','int'].includes(one.data_type) && one.canUsedValueFrom=='Query' && one.parent_valueField_kyz=='' " v-model="queryForm[one.name]" 
-            collapse-tags @change="change_param(one.name)"
+            collapse-tags @change="change_param(one.name)" clearable filterable
             :multiple="one.allowMutil=='False'?false:true">
              <el-option
                 v-for="item in convert_param_array_to_json(previewFormParam.dataSet[one.dataSetName_kyz][0],one)"
@@ -104,13 +104,25 @@
            </div>
             <el-form-item>
             <el-button type="primary"  class='form_query_button'  @click="submit">查询</el-button>
-            <el-button type="primary" v-if='Object.keys(result.data)!=0' class='form_query_button' @click="export_excel">导出excel</el-button>
+                   
+            <el-dropdown style="margin: 2px;" v-if='Object.keys(result.data)!=0' @command="ExcelCommand($event, node,data)">
+              <el-button type="primary" class='form_query_button' >
+                导出excel<i class="el-icon-arrow-down el-icon--right"></i>
+              </el-button>
+              <el-dropdown-menu slot="dropdown">
+                <el-dropdown-item command="exceljs">小数据量（带格式）</el-dropdown-item>
+                <el-dropdown-item  command="xlsxjs">大数据量（无格式）</el-dropdown-item>
+              </el-dropdown-menu>
+            </el-dropdown>
+
             <el-button type="primary" v-if='Object.keys(result.data)!=0' class='form_query_button' @click="export_pdf">PDF预览</el-button>
           </el-form-item>
       </el-form>
     </div>
     <div ref="report_pane" :style="{height:'90%',overflow: 'auto',color:result.defaultsetting['COLOR'],background:result.defaultsetting['BACKGROUND-COLOR']}">
-        <grid-layout-form v-if="layoutType=='gridLayout'" :layout="layout" :big_screen_scale="big_screen_scale">
+        <grid-layout-form v-if="layoutType=='gridLayout'" :layout="layout" :big_screen_scale="big_screen_scale" :big_screen_scale_x="big_screen_scale_x"
+         :big_screen_scale_y="big_screen_scale_y"
+        >
         </grid-layout-form>          
         <widget-form v-else   :data="layout"   
         ></widget-form>
@@ -125,7 +137,7 @@
 import widgetForm from './WidgetForm'
 import {convert_array_to_json,arrayToTree,seriesLoadScripts} from './utils/util.js'
 import {preview_one,get_pdf} from "./api/report_api"
-import {exceljs_inner_exec} from './utils/export_excel.js'
+import {exceljs_inner_exec,xlsxjs_inner_exec} from './utils/export_excel.js'
 import paperSetting  from './paperSetting.vue'
 export default {
     name: 'preview',  
@@ -151,13 +163,15 @@ export default {
           //不放到这里，会导致动态runtime-template重算，如果是有滚动行的，会每次都重新跑到顶部
           in_exec_url:this.in_exec_url,
           fresh_ele:this.fresh_ele,
-          defaultsetting:this.result.defaultsetting
+          defaultsetting:this.result.defaultsetting,
+          name_lable_map:this.name_lable_map
       },      
 
     }
   },  
   data () {
     return {
+        name_lable_map:{},
         paper_setting_dialogVisible:false,
         pdf_output_dialogVisible:false,
         preview_dialogVisible:false,
@@ -179,7 +193,9 @@ export default {
         pageSize:20,
         fresh_ele:[],
         in_exec_url:{stat:false},
-        big_screen_scale:70
+        big_screen_scale:70,
+        big_screen_scale_x:70,
+        big_screen_scale_y:70,
     }
   },
   watch:{
@@ -188,13 +204,12 @@ export default {
       if(newVal==false){
         setTimeout(() => {
             _this.$nextTick(x=>{
-                let form_h=_this.$refs.form.clientHeight-4
+                let form_h=_this.$refs.form.clientHeight+4
                 _this.$refs.report_pane.style.height=`calc(100% - ${form_h}px)`
                 if(_this.result.defaultsetting.big_screen=='1'){
-                  _this.big_screen_scale=(Math.min(
-                  100*_this.$refs.report_pane.clientHeight/parseInt(_this.result.defaultsetting.screen_height)
-                  ,100*_this.$refs.report_pane.clientWidth/parseInt(_this.result.defaultsetting.screen_width)
-                  ))
+                  _this.big_screen_scale_y=100*_this.$refs.report_pane.clientHeight/parseInt(_this.result.defaultsetting.screen_height)
+                  _this.big_screen_scale_x=100*_this.$refs.report_pane.clientWidth/parseInt(_this.result.defaultsetting.screen_width)
+                  _this.big_screen_scale=Math.min(_this.big_screen_scale_x,_this.big_screen_scale_y)
                 }
             })    
         });
@@ -264,12 +279,25 @@ export default {
       console.info(val.color); 
       this.show_type=key
     },
+    ExcelCommand(command, node,data){
+      let _this=this
+      if(command=="exceljs")
+        seriesLoadScripts('cdn/exceljs/exceljs.min.js',null,function (){
+          exceljs_inner_exec(_this.result,_this.name_lable_map)
+        })
+      else if(command=="xlsxjs")
+          seriesLoadScripts('cdn/xlsx/dist/xlsx.full.min.js',null,function (){
+            xlsxjs_inner_exec(_this,_this.name_lable_map)
+        })
+    },
     export_excel(){
        let _this=this
-       seriesLoadScripts('cdn/exceljs/exceljs.min.js',null,function (){
-          exceljs_inner_exec(_this.result)
-          })
-      
+       //seriesLoadScripts('cdn/exceljs/exceljs.min.js',null,function (){
+       //   exceljs_inner_exec(_this.result)
+       //   })
+       seriesLoadScripts('cdn/xlsx/dist/xlsx.full.min.js',null,function (){
+            xlsxjs_inner_exec(_this,_this.name_lable_map)
+        })
     },
     async export_pdf(){
       let _this=this

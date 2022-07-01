@@ -86,6 +86,8 @@ export default {
                 return
               if(val.data && this.self.component=="luckySheetProxy"){
                 if(["run" ,"preview" ].includes( this.context.mode) && this.buildDisplayData && val.data[this.self.gridName]){
+                  if(!this.fresh_ele.includes("表格:"+this.self.gridName))
+                    return
                   this.buildDisplayData(true)
                   return
                 }
@@ -111,10 +113,11 @@ export default {
     },
     computed: {
         defaultsetting(){
-            if(this.context.mode=='design')
-                return this.context.report.defaultsetting
+            if(this.context.mode=='run')
+              return this.context.report_result.defaultsetting  
             else
-                return this.context.report_result.defaultsetting
+              return this.context.report.defaultsetting
+              
         },
     },
     methods:{
@@ -159,10 +162,15 @@ export default {
         data.append("_fresh_ds", JSON.stringify(real_fresh_ds))
         let t_params=[];
         this.self.fresh_params.forEach(ele=>{
-          if(ele.value.startsWith("原始参数:"))
+          if(!ele.value.startsWith("原始参数:") && p_data?.data && p_data.data[ele.value]){
+            t_params.push({"name":ele.name,"value":p_data.data[ele.value]})
+            data.append(ele.name,p_data.data[ele.value])
             return;
-          t_params.push({"name":ele.name,"value":p_data.data[ele.value]})
-          data.append(ele.name,p_data.data[ele.value])
+          }
+          // 使用缺省原始参数
+          let default_param=Enumerable.from(_this.context.report_result.form).first(x=>x.name==ele.name)
+          t_params.push({"name":ele.name,"value":default_param.value})
+          data.append(ele.name,default_param.value)  
         })        
         _this.context.in_exec_url.stat=true;
         
@@ -186,15 +194,24 @@ export default {
           _this.fresh_ele.splice(0)
           if(_this.context.report_result.dataSet==undefined)
             _this.context.report_result.dataSet={}
-          Object.keys(response.dataSet).forEach(name => {
-            _this.context.report_result.dataSet[name] =response.dataSet[name]  
-            _this.fresh_ele.push("数据集:"+name);
-          });
-          Object.keys(response.data).forEach(name => {
-            _this.context.report_result.data[name] =response.data[name]  
-            _this.fresh_ele.push("表格:"+name);
-          });
-          _this.$notify({title: '提示',type: 'success',message: _this.fresh_ele,position: 'bottom-right',duration: 3000});
+          if(!_this.validatenull(response.dataSet)){
+            Object.assign(_this.context.report_result.dataSet,response.dataSet)
+            Object.keys(response.dataSet).forEach(name => {
+              //if(response.dataSet[name][0].length<=1)
+              //  return
+              //_this.context.report_result.dataSet[name] =response.dataSet[name]  
+              _this.fresh_ele.push("数据集:"+name);
+            });
+          }
+          if(!_this.validatenull(response.data)){
+            Object.assign(_this.context.report_result.data,response.data)
+            Object.keys(response.data).forEach(name => {
+            //  _this.context.report_result.data[name] =response.data[name]  
+              _this.fresh_ele.push("表格:"+name);
+            });
+          }
+          if(!window.cr_close_fresh_message)
+            _this.$notify({title: '提示',type: 'success',message: _this.fresh_ele,position: 'bottom-right',duration: 3000});
         }).catch(error=> { 
           _this.context.in_exec_url.stat=false;
           _this.$notify({title: '提示',message: error.message,type: 'error',duration:0});
