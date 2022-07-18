@@ -757,14 +757,14 @@ export default class ResultGrid2HtmlTable{
             }
             }catch{}
         }
+        let grid_id=this.param_grid.name
         function inner_append_css(idx,head,foot,one,two){
             sb.append(`
-                    tr[isColumn]  td[data-c${idx>=0?'="'+idx+'"':''}] {background-color:${head.bc};color:${head.fc}; border: 1px solid #bdbcbc;}
-                    tr[isComment]:not([isAfterExtend] ) td[data-c${idx>=0?'="'+idx+'"':''}] {background-color:${foot.bc};border: 1px solid #bdbcbc;}
-                    tr:nth-child(odd)[Detail]  td[data-c${idx>=0?'="'+idx+'"':''}] {background-color:${one.bc}; color:${one.fc};   border: 1px solid #bdbcbc;}
-                    tr:nth-child(even)[Detail] td[data-c${idx>=0?'="'+idx+'"':''}] {background-color:${two.bc}; color:${two.fc};border: 1px solid #bdbcbc;}
+                    #cr_id_${grid_id} tr[isColumn]  td[data-c${idx>=0?'="'+idx+'"':''}] {background-color:${head.bc};color:${head.fc}; border: 1px solid #bdbcbc;}
+                    #cr_id_${grid_id} tr[isComment]:not([isAfterExtend] ) td[data-c${idx>=0?'="'+idx+'"':''}] {background-color:${foot.bc};border: 1px solid #bdbcbc;}
+                    #cr_id_${grid_id} tr:nth-child(odd)[Detail]  td[data-c${idx>=0?'="'+idx+'"':''}] {background-color:${one.bc}; color:${one.fc};   border: 1px solid #bdbcbc;}
+                    #cr_id_${grid_id} tr:nth-child(even)[Detail] td[data-c${idx>=0?'="'+idx+'"':''}] {background-color:${two.bc}; color:${two.fc};border: 1px solid #bdbcbc;}
                     .form_query_button {background-color:${head.bc};color:${head.fc};}
-                    
                     `)
         }
         sb.append(`<style type="text/css">`)
@@ -773,7 +773,7 @@ export default class ResultGrid2HtmlTable{
             let {head,one,two,foot}= {...x.format}
             for(let idx=x.cellrange.column[0];idx<=x.cellrange.column[1];idx++){
                 if(alter_format_arr.length==1)
-                    sb.append(`tr[isHead]  td {background-color:${head.bc};color:${head.fc};}`)
+                    sb.append(`#cr_id_${grid_id} tr[isHead]  td {background-color:${head.bc};color:${head.fc};}`)
                 if(idx<0)
                     inner_append_css(idx,head,foot,one,two)
                 else

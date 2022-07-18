@@ -433,24 +433,10 @@ export function run_one(_this,reportFilePath,_param_name_=null,loading_conf=null
 
         _this.isShow=false
         setTimeout(() => {
+            _this.refresh_layout(null,_this)
             _this.isShow=true
             loading.hide(loading_conf)
-            setTimeout(() => {
-                _this.$nextTick(x=>{
-                    let form_h=_this.$refs.form?_this.$refs.form.clientHeight:0
-                    _this.$refs.report_pane.style.height=`calc(100% - ${form_h}px)`
-                    try{
-                    document.title = _this.result.data[Object.keys(_this.result.data)[0]].title
-                    }catch(ex){}
-                    if(_this.result.defaultsetting.big_screen=='1'){
-                        _this.big_screen_scale=(Math.min(
-                        100*_this.$refs.report_pane.clientHeight/parseInt(_this.result.defaultsetting.screen_height)
-                        ,100*_this.$refs.report_pane.clientWidth/parseInt(_this.result.defaultsetting.screen_width)
-                        ))
-                      }
-                    if(window.after_show_report_hook){window.after_show_report_hook()}
-                })
-            });
+            
         });
     }).catch(error=> {
         loading.hide(loading_conf) 

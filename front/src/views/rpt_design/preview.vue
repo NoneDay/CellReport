@@ -57,7 +57,7 @@
     </el-pagination>    
   </div>
   <template v-else>
-    <div id="report_app" >
+    <div id="report_app" style="display:flex;flex-direction:column" >
     <div ref="form"> 
       <el-form :inline="true" v-if="previewFormParam.form">
         <input hidden v-for="one in previewFormParam.form.filter(x=>x.hide=='True')" :key="one.name" v-model="queryForm[one.name]"/>
@@ -205,7 +205,7 @@ export default {
         setTimeout(() => {
             _this.$nextTick(x=>{
                 let form_h=_this.$refs.form.clientHeight+4
-                _this.$refs.report_pane.style.height=`calc(100% - ${form_h}px)`
+                _this.$refs.report_pane.style.height=`calc(100%)`// - ${form_h}px
                 if(_this.result.defaultsetting.big_screen=='1'){
                   _this.big_screen_scale_y=100*_this.$refs.report_pane.clientHeight/parseInt(_this.result.defaultsetting.screen_height)
                   _this.big_screen_scale_x=100*_this.$refs.report_pane.clientWidth/parseInt(_this.result.defaultsetting.screen_width)

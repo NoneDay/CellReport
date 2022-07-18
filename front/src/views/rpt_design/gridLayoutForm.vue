@@ -176,9 +176,11 @@ export default {
             let {x,y,w,h}={...max_row_element}
             _this.pan_height=_this.$parent.$el.clientHeight-1-
                 (_this.$parent.$el.children.length==1?0:(this.context.crisMobile?1:1)* _this.$parent.$el.children[0].clientHeight)
+                - _this.margin
             let last_top =Math.round(_this.row_height * y + (y + 1) * _this.margin)
             let last_height= h === Infinity ? h : Math.round(_this.row_height * h + Math.max(0, h - 1) * _this.margin)
             let layout_mode=this.context.report_result?.defaultsetting?.layout_mode
+            //layout_mode  : ""高度小于容器高度时自动撑满，大于时保持 "1">保持与设计时一样的高度 "2">强制适配到容器高度
             if(layout_mode=="" && last_top+last_height < _this.pan_height)
             {
                 _this.row_height=Math.round((_this.pan_height - Math.max(0, h - 1) * _this.margin - (y + 1) * _this.margin)/(y+h))

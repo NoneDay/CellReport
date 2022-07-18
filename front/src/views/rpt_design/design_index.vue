@@ -1,6 +1,6 @@
 <template>
   <div  style="height:calc(100% - 30px); border: 1px solid #eee" class="report_define">
-    <ExprEditorDialog  :visible.sync="ExprEditorDialog_visible"
+    <ExprEditorDialog  :visible.sync="ExprEditorDialog_visible" 
       :target_obj="action_target"
       :prop="action_name" 
       :report="report">

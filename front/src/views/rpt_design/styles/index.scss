@@ -531,6 +531,7 @@ $primary-background-color: #ecf8ff;
   .el-tabs--border-card{
     .el-tabs__content{
       height: calc(100% - 20px);
+      width: 100%;
     }
   }
   .el-dialog__body {height: calc(100% - 60px);}

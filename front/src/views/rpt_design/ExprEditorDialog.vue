@@ -13,10 +13,10 @@
          />
   <div style="height:67%">
 
-    <div style="height:100%;width:100%;display:flex">
+    <div style="height:100%;width:100%;display:flex;justify-content: space-between;">
       <div  style="height:100%;width:33%">
         <div class="cr_title">数据集</div>
-          <div style="width:100%;height:calc(50% - 30px);border: 1px solid;overflow:auto">
+          <div style="width:100%;height:calc(50% - 30px);border: 1px solid #cbc8c8;overflow:auto">
             <div v-for="(ds,ds_idx) in report.dataSets.dataSet" :key="ds+ds_idx" 
             @click="cur_ds=ds"
             :style="{'background-color':cur_ds==ds?'#c5f3e0':'#fff'}"> <!-- https://www.iconfont.cn -->
@@ -33,7 +33,7 @@
             </div> 
           </div>
           <div class="cr_title">字段：</div>
-        <div style="width:100%;height:50%;border: 1px solid;overflow:auto">     
+        <div style="border: 1px solid #cbc8c8;width:100%;height:50%;overflow:auto">     
           
           <div v-for="(one,idx) in JSON.parse(cur_ds._fields)" 
               :key="one+idx" 
@@ -46,41 +46,38 @@
       </div>
       <div style="width:66%;height:100%">
         <el-row>
-      <el-col :span="12" style="border: 1px solid;">
-        <el-scrollbar style="height:250px">
-        <el-tree :data="func_xml" :props="{children:'catalogy',label:'_name'}" node-key="_name" accordion >
-                <span class="custom-tree-node" slot-scope="{ node, data }" >
-                        <span v-if="!node.isLeaf" type="text" size="mini" class="el-icon-folder custom-tree-node-label" 
-                        style="font-weight:700;" >
-                            {{ data.name }}
-                        </span>
-                        <span  v-else type="text" size="mini" class="el-icon-bell custom-tree-node-label" 
-                        @click="change_func_xml('catalogy',data,node)" >
-                            {{ data._name }}
-                        </span>
-                    </span>
+      <el-col :span="12" style="">
+        <el-scrollbar style="height: 200px;border: 1px solid #cbc8c8;margin-right: 1px;">
+        <el-tree :data="func_xml" :props="{children:'catalogy',label:'_name'}" node-key="_name" accordion 
+          @node-click="(data)=>catalogy=data">
+            <span class="custom-tree-node" slot-scope="{ node, data }" >
+                <span v-if="!node.isLeaf" type="text" size="mini" class="el-icon-folder custom-tree-node-label" 
+                style="font-weight:700;" >
+                    {{ data.name }}
+                </span>
+                <span  v-else type="text" size="mini" class="el-icon-bell custom-tree-node-label" 
+                  >
+                    {{ data._name }}
+                </span>
+            </span>
         </el-tree>
         </el-scrollbar>
       </el-col>
-      <el-col :span="12" style="border: 1px solid;">
-        <el-scrollbar style="height:250px">
-        <el-table :show-header='false' max-height="250"
-        :data="catalogy.function" highlight-current-row style="width: 100%">
-            <el-table-column label="姓名" width="180">
-              <template slot-scope="scope">
-                  <div @click="change_func_xml('cur_func',scope.row.__text)"  @dblclick="insert_func(scope.row._name)">
-                      {{ scope.row._name }}
-                  </div>
-                </template>
-            </el-table-column>
-        </el-table>
-        </el-scrollbar>
-
+      <el-col :span="12" style="border: 1px solid #cbc8c8;">
+      <div style="height:200px;overflow:auto">
+       <div v-for="(one,idx) in catalogy.function" 
+              :key="one+idx" 
+              :style="{'background-color':( cur_func==one)?'#c5f3e0':'#fff','cursor': 'pointer'}"
+              @click="change_func_xml('cur_func',one)"  
+              @dblclick="insert_func(one._name)">       
+              {{ one._name }}
+          </div>
+        </div>
       </el-col>
       </el-row>
       <el-row>
         <el-col :span="24">
-        <el-input type="textarea" :rows="5" v-model="cur_func"></el-input>    
+        <el-input type="textarea" :rows="7" :value="cur_func.__text??''"></el-input>    
       </el-col>  
       </el-row>
       </div>
@@ -130,6 +127,11 @@ export default {
     }, 
   watch: {
     dialogVisible(val) {
+      if(val){
+        this.cur_func=""
+        this.cur_ds={_fields:"[]"}
+        this.cur_field=""
+      }
       this.$emit('update:visible', val)
     },
     oldFormInput(val){
@@ -184,7 +186,7 @@ export default {
     onCmCodeChange(newCode) {
       console.log('this is new code', newCode)
       this.obj = newCode
-    },    
+    },   
     change_func_xml(prop,data){
       this[prop]=data
     },
@@ -200,6 +202,10 @@ export default {
       let insrt_str
       if(this.catalogy._name=="数据集"){
         //let arg=name.replace("()",`(${this.cur_ds._name}.${this.cur_field})`)
+        if(this.cur_ds._name==undefined){
+          this.$message.error("数据集函数需要先选择数据集")
+          return 
+        }
         insrt_str=`${prefix}${this.cur_ds._name}.${name}`
       }
       else
@@ -244,4 +250,7 @@ export default {
 </script>
 <style lang="less" scoped>
 .my_active{ color: red;}
+.el-table__body tr.current-row>td {
+    background-color: rgb(197, 243, 224);
+}
 </style>

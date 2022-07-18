@@ -288,12 +288,20 @@ export default {
               target.scrollTop=_this.scrollTop
               // 设置表头的行高和主体表的行高一致
               $(`#reportDiv${_this.gridName}Top tr`).each(function() {
-                  let row_no=this.dataset['n']
-                  $(`#reportDiv${_this.gridName}TopLeft tr[data-n=${this.dataset['n']}]`).find("td").height($(this).find("td").height() ) 
+                  let main_td_arr=$(this).find("td")
+                  $.each( $(`#reportDiv${_this.gridName}TopLeft tr[data-n=${this.dataset['n']}]`).find("td")
+                  ,function(i,val){// 每个对应的单元格都设置行高
+                    $(val).height( $(main_td_arr[i]).height() )
+                  })
               })
               $(`#reportDiv${_this.gridName} tr`).each(function() {
-                  $(`#reportDiv${_this.gridName}Left tr[data-n=${this.dataset['n']}]`).find("td").height($(this).find("td").height() ) 
+                  let main_td_arr=$(this).find("td")
+                  $.each( $(`#reportDiv${_this.gridName}Left tr[data-n=${this.dataset['n']}]`).find("td")
+                  ,function(i,val){
+                    $(val).height( $(main_td_arr[i]).height() )
+                  })
               })
+              
               //点击，发送数据到clickedEle
               $(`#reportDiv${_this.gridName} .cr-table__body tr`).unbind()
               $(`#reportDiv${_this.gridName} .cr-table__body tr`).bind('click',

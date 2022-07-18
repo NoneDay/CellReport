@@ -1,5 +1,5 @@
 <template>
-  <div id="report_app" :style="{'overflow':result.defaultsetting.big_screen=='1'?'hidden':''}"> 
+  <div id="report_app" style="display:flex;flex-direction:column" :style="{'overflow':result.defaultsetting.big_screen=='1'?'hidden':''}"> 
     <el-dialog v-draggable v-if="pdf_output_dialogVisible" style="text-align: left;" class="report_define"
         :visible.sync="pdf_output_dialogVisible" :title="'PDF导出和打印预览'" 
             :close-on-click-modal="false"   :fullscreen="true"
@@ -322,7 +322,7 @@ export default {
               setTimeout(() => {
                   _this.$nextTick(x=>{
                       let form_h=_this.$refs.form?_this.$refs.form.clientHeight:0
-                      _this.$refs.report_pane.style.height=`calc(100% - ${form_h}px)`
+                      _this.$refs.report_pane.style.height=`calc(100%)`//- ${form_h}px
                       if(_this.result.defaultsetting.big_screen=='1'){
                           _this.big_screen_scale_y=100*_this.$refs.report_pane.clientHeight/parseInt(_this.result.defaultsetting.screen_height)
                           _this.big_screen_scale_x=100*_this.$refs.report_pane.clientWidth/parseInt(_this.result.defaultsetting.screen_width)
@@ -461,13 +461,14 @@ html, body, #report_app {
 }
 .report_define .el-tabs--border-card .el-tabs__content {
     height: calc(100% - 20px);
+    width:100%
 }
 
 .CodeMirror { /*不加margin border codemirror的光标会有问题，行尾不出现光标，行内遇到空白会消失 */
   width: 100%;
   margin: 0 0 0 10px;
   border: 1px solid black;
-  font-size : 13px;
+  font-size : 11px;
     line-height : 150%;
     height: 100%!important; 
   }

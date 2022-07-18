@@ -26,7 +26,7 @@ function find_style(tbl,rowNo,colNo,cur_tbl_class_dict){
   }
   let default_css
   function parse_elelment(x_ele){
-    let ccc
+    let ccc,i_idx
     let ret={'font':{},'alignment':{},'border':{},'fill':{}};
     x_ele.split(";").forEach(element => {
         if(element=="")
@@ -34,11 +34,19 @@ function find_style(tbl,rowNo,colNo,cur_tbl_class_dict){
         let one_pair=element.split(":")
         switch(one_pair[0].trim()){
           case "background-color":
+            i_idx=one_pair[1].indexOf("!")
+            if(i_idx>0)
+              ccc=color_convert(one_pair[1].substring(0,i_idx))
+            else
             ccc=color_convert(one_pair[1])
             if(ccc)
               ret['fill']['fgColor']={argb:ccc.hex().substring(1)}
             break
           case "color":
+            i_idx=one_pair[1].indexOf("!")
+            if(i_idx>0)
+              ccc=color_convert(one_pair[1].substring(0,i_idx))
+            else
             ccc=color_convert(one_pair[1])
             if(ccc)
               ret['font']['color']={argb:ccc.hex().substring(1)}
@@ -109,8 +117,8 @@ function find_style(tbl,rowNo,colNo,cur_tbl_class_dict){
 export  async function exceljs_inner_exec(_this_result,name_lable_map){
     const wb = new ExcelJS.Workbook();
     let ws ,title,one_obj
+    let allSheetNames=new Set()
     Object.keys( name_lable_map).forEach(one => {
-      
         one_obj=name_lable_map[one]
         if(one_obj.component=="luckySheetProxy"){
           title=one_obj.label??one
@@ -119,8 +127,9 @@ export  async function exceljs_inner_exec(_this_result,name_lable_map){
           if (cur_table.type== "common"){
             //if(cur_table.optimize==true &&
             //  cur_table.columns.slice(-1)=="key")
-            //while(wb.SheetNames.includes(title)) //_worksheets[1].name
-            //  title=title+one_obj.gridName
+            while(allSheetNames.has(title)) //_worksheets[1].name
+              title=title+one_obj.gridName
+            allSheetNames.add(title)
             ws =wb.addWorksheet(title,{pageSetup:{fitToPage: false} });
             let col_width_arr=[]
             //1磅pt = 1/72 英寸

@@ -26,7 +26,7 @@
               </el-option-group>
             </el-select>
           </el-form-item>
-          <!--
+          
           <el-form-item label="显示标题">
             <el-switch
               v-model="data.show_title"
@@ -42,7 +42,7 @@
                       placeholder="标题"></el-input>
             </div>
           </el-form-item>  
-          -->      
+              
           <el-form-item label="标识ID">
             <el-button @click="update_name" type="primary">{{data.gridName}}</el-button>
           </el-form-item>   
