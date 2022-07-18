@@ -1,5 +1,6 @@
 import {getObjType} from "./util"
 
+let is_Safari = (navigator.userAgent.indexOf("Safari") > -1)
 
 export function dateToString(date){ 
     var year = date.getFullYear(); 
@@ -791,7 +792,11 @@ export default class ResultGrid2HtmlTable{
         //sb.append("\n</style>\n")  
         //sb.append("<style >\n")
         Object.entries(this.param_grid.styles).forEach(([key, value])=>{
-            sb.append(".").append(key).append(' {').append(value).append("}\n")
+            sb.append(".").append(key).append(' {')
+            //if(is_Safari)
+            sb.append(value.replaceAll("0.5pt ",'1px '))
+            //else sb.append(value)
+            sb.append("}\n")
         })
         /*
             $("#reportDivmain").on('click', 'tr', function () {

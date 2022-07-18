@@ -1,4 +1,5 @@
 import {getLuckyStyle,numToString } from "./util.js"
+const BitArray = require("./bits");
 let color_convert = require('onecolor');
 
 //如果使用 FileSaver.js 就不要同时使用以下函数
@@ -114,6 +115,26 @@ function find_style(tbl,rowNo,colNo,cur_tbl_class_dict){
     })
     return cur_tbl_class_dict
   }
+
+function find_config_merge(result_tbl,rowNo,colNo){
+  let {optimize,config_merge,abs_to_design,extend_lines}={...result_tbl}
+  if(optimize){
+      if(rowNo>=extend_lines[0] && rowNo<=extend_lines[1]){
+          let t=config_merge[`${extend_lines[0]}_${colNo}`]
+          return 
+      }
+      else
+          return config_merge[`${rowNo}_${colNo}`]
+  }
+  for(let idx=0;idx<abs_to_design.length;idx++){
+      let one=abs_to_design[idx]
+      if(one.row[0]<=rowNo && rowNo<=one.row[1]
+          && one.col[0]<=colNo && colNo<=one.col[1]){
+              return config_merge[`${rowNo}_${colNo}`]
+      }
+  }
+}  
+const http_src_pattern=/<img [^>]*src=['"]([^'"]+)[^>]*>/gi  
 export  async function exceljs_inner_exec(_this_result,name_lable_map){
     const wb = new ExcelJS.Workbook();
     let ws ,title,one_obj
@@ -141,17 +162,73 @@ export  async function exceljs_inner_exec(_this_result,name_lable_map){
               col_width_arr[c[0]]={width:c[1] *10 /72 } 
             })
             ws.columns =col_width_arr
-
+            let tableBitFlag =new Array()
+            for(let i=0;i<cur_table.tableData.length;i++)
+                tableBitFlag[i]=new BitArray()
             let line_no=0
             let column_nums=Object.keys( cur_table.columnlenArr).length
-            cur_table.tableData.forEach(one_line=>{                                    
-              ws.addRow(one_line.slice(0,column_nums))
+            cur_table.tableData.forEach(one_line=>{   
+              
+              ws.addRow(one_line.slice(0,column_nums))//添加数据到excel
               let col_no=0
+              const row = ws.getRow(line_no+1)// 从1 开始计数，设置行高
+              row.height= (cur_table.rowlenArr[line_no]??cur_table.rowlenArr["default"] )*72/96
+
               one_line.forEach(one_cell => {
                 if(col_no>=column_nums)
-                  return
+                  return   
+                if(tableBitFlag[line_no].get(col_no))
+                {
+                    return;
+                }
+                tableBitFlag[line_no].set(col_no ,1)
+                let r_c=find_config_merge(cur_table,line_no,col_no)//config_merge[`${rowNo}_${colNo}`]
+                if(r_c){
+                    let {r, c, rs, cs}={...r_c}
+                    for(let ri=0;ri<rs;ri++){
+                        for(let ci=0;ci<cs;ci++){
+                            tableBitFlag[r+ri]?.set(c+ci ,1)
+                        }
+                    }
+                }
+                let name=numToString(col_no+1)+(line_no+1)      //excel 单元格名字       
+                if(one_cell && one_cell.indexOf("<img")>=0){
+                  let imageId2=null
+                  let script_result;
+                  while ((script_result = http_src_pattern.exec(one_cell)) != null)  {
+                      let match_result=script_result[1];
+                      if(match_result && match_result.length>0){
+                        if(match_result.startsWith("http")){
+                          imageId2 = wb.addImage({
+                            filename: match_result,
+                            extension: 'png',
+                          });
+                        }else if(match_result.startsWith("data")){
+                          imageId2 = wb.addImage({
+                            base64filename: `img/${name}.png`,
+                            base64: match_result,
+                            extension: 'png'
+                          });
+                         
+                        }
+                      }
+                  }
+                  ws.getCell(name).value=""
+                  let m=cur_table.config_merge[`${line_no}_${col_no}`]
+                  if(m){
+                    ws.addImage(imageId2, numToString(m.c+1) + (m.r+1)+":"+ numToString(m.c+m.cs)+ (m.r+m.rs));
+                  }else{                  
+                    ws.addImage(imageId2, name+":"+name);
+                  }
+                  //ws.addBackgroundImage(imageId2);
+                }
+                //else  if(one_cell && one_cell.startsWith("<")>=0){
+                //  let excel_cell=ws.getCell(name)
+                //  excel_cell.value=""
+                //  excel_cell.html= '<div>' + one_cell + '</div>';
+                //}
                 let ret=find_style(cur_table,line_no,col_no,cur_tbl_class_dict)
-                let name=numToString(col_no+1)+(line_no+1)
+                
                 let cur_cell=ws.getCell(name);
                 ['font','alignment','border','fill'].forEach(p=>{
                   if(ret[p]){
@@ -167,6 +244,7 @@ export  async function exceljs_inner_exec(_this_result,name_lable_map){
               ws.mergeCells(numToString(m.c+1) + (m.r+1)+":"+ numToString(m.c+m.cs)+ (m.r+m.rs));
             })                
           }
+          
           if (_this_result.data[one].type== "large"){
             ws= XLSX.utils.aoa_to_sheet(_this_result.data[one].tableData)
             let header_len=_this_result.data[one].tableData.length

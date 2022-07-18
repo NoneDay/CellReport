@@ -433,8 +433,9 @@ export function run_one(_this,reportFilePath,_param_name_=null,loading_conf=null
 
         _this.isShow=false
         setTimeout(() => {
-            _this.refresh_layout(null,_this)
             _this.isShow=true
+            _this.refresh_layout(null,_this)
+            
             loading.hide(loading_conf)
             
         });

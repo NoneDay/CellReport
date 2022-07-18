@@ -277,7 +277,7 @@ style标签包起来的部分，将会在报表展现前注入当前页面的样
 - 
 ```
 <script> 
-function after_show_report_hook(){
+window.after_show_report_hook=function(){
   	console.info("function report_after_show exec")
 }
 

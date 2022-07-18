@@ -57,7 +57,7 @@
     </el-pagination>    
   </div>
   <template v-else>
-    <div id="report_app" style="display:flex;flex-direction:column" >
+    <div id="report_app" style="display:flex;flex-direction:column;height:100%" >
     <div ref="form"> 
       <el-form :inline="true" v-if="previewFormParam.form">
         <input hidden v-for="one in previewFormParam.form.filter(x=>x.hide=='True')" :key="one.name" v-model="queryForm[one.name]"/>
@@ -119,7 +119,7 @@
           </el-form-item>
       </el-form>
     </div>
-    <div ref="report_pane" :style="{height:'90%',overflow: 'auto',color:result.defaultsetting['COLOR'],background:result.defaultsetting['BACKGROUND-COLOR']}">
+    <div ref="report_pane" :style="{    'flex-grow': 1,height:'90%',overflow: 'auto',color:result.defaultsetting['COLOR'],background:result.defaultsetting['BACKGROUND-COLOR']}">
         <grid-layout-form v-if="layoutType=='gridLayout'" :layout="layout" :big_screen_scale="big_screen_scale" :big_screen_scale_x="big_screen_scale_x"
          :big_screen_scale_y="big_screen_scale_y"
         >

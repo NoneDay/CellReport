@@ -1,5 +1,5 @@
 <template>
-  <div id="report_app" style="display:flex;flex-direction:column" :style="{'overflow':result.defaultsetting.big_screen=='1'?'hidden':''}"> 
+  <div id="report_app" style="display:flex;flex-direction:column;height:100%" :style="{'overflow':result.defaultsetting.big_screen=='1'?'hidden':''}"> 
     <el-dialog v-draggable v-if="pdf_output_dialogVisible" style="text-align: left;" class="report_define"
         :visible.sync="pdf_output_dialogVisible" :title="'PDF导出和打印预览'" 
             :close-on-click-modal="false"   :fullscreen="true"
@@ -321,14 +321,15 @@ export default {
               _this.$set(_this,'isShow',true)
               setTimeout(() => {
                   _this.$nextTick(x=>{
-                      let form_h=_this.$refs.form?_this.$refs.form.clientHeight:0
-                      _this.$refs.report_pane.style.height=`calc(100%)`//- ${form_h}px
+                     let form_h=_this.$refs.form?_this.$refs.form.clientHeight:0
+                      //_this.$refs.report_pane.style.height=`calc(100% - ${form_h}px)`//
                       if(_this.result.defaultsetting.big_screen=='1'){
                           _this.big_screen_scale_y=100*_this.$refs.report_pane.clientHeight/parseInt(_this.result.defaultsetting.screen_height)
                           _this.big_screen_scale_x=100*_this.$refs.report_pane.clientWidth/parseInt(_this.result.defaultsetting.screen_width)
                           _this.big_screen_scale=Math.min(_this.big_screen_scale_x,_this.big_screen_scale_y)
                       }
                       document.title = (_this.result.data[Object.keys(_this.result.data)[0]]?.title)   || 'CellReport'
+                      if(window.after_show_report_hook){window.after_show_report_hook()}
                   })
               });
           });
@@ -460,7 +461,7 @@ html, body, #report_app {
     height: 100%;
 }
 .report_define .el-tabs--border-card .el-tabs__content {
-    height: calc(100% - 20px);
+    height: calc(100% - 40px);
     width:100%
 }
 

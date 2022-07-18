@@ -1347,11 +1347,8 @@ function map_option (self,_this,__valid_data__) {
             if (_this.zoomData < 1) _this.zoomData = 1;
         });
         let _myChart=_this.myChart
-        
-
+        _this.myChart.setOption(option);
         eval("option=(function(option,myChart,_this){"+self.content+"\n return option})(option,_myChart,_this)")                    
-        
-        
         return option
     }
     if(window.echarts.getMap(_this.real_map_url()))
@@ -1362,9 +1359,9 @@ function map_option (self,_this,__valid_data__) {
             window.echarts.registerMap(_this.real_map_url(), result);
             let option=map_inner_exec()
             _this.myChart.setOption(option,true);
-        
             _this.myChart.resize();
-            _this.myChart.setOption(option, true);
+            _this.myChart.setOption(option, true);  
+            
         })
         return {}
     }    
