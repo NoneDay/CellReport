@@ -18,6 +18,10 @@ export const getUserInfo = () => request({
     url:  '/user/getUserInfo',
     method: 'get',noloading:true
 });
+export const VerifyCode = (userid,code_len) => request({
+    url:  `/user/VerifyCode?userid=${userid}&code_len=${code_len}`,
+    method: 'get',noloading:true
+});
 
 export function refeshToken(auth){
     return request({

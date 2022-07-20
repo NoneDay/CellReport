@@ -5,6 +5,7 @@
 @using System.Data.SqlClient;
 @using Microsoft.AspNetCore.Http;
 @using Microsoft.Extensions.Primitives;
+@using System.Text.RegularExpressions
 
 @functions{
     [IgnoreAntiforgeryToken(Order = 2000)]
@@ -18,5 +19,15 @@
 }
 @{
     Layout = null;
+     string UserAgent = Request.Headers["User-Agent"];
+    if (String.IsNullOrEmpty(UserAgent))
+        UserAgent = "";
+    var chrome_version = Regex.Match(UserAgent, @"\sChrome/(\d+)");
+    if (!Regex.Match(UserAgent, "(iPhone|iPod|Android|ios|SymbianOS)").Success &&
+    chrome_version.Success && chrome_version.Groups.Count > 1 && int.TryParse(chrome_version.Groups[1].Value, out var chrome_version_int) && chrome_version_int < 77)
+    {
+        await Response.WriteAsync("请使用开始菜单中的chrome81浏览器才可以正常浏览报表，否则报表无法加载");
+        return;
+    }
     await Model.Page_Load();
 }

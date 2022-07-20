@@ -39,6 +39,7 @@ using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.EntityFrameworkCore;
 //using PolarDB.PolarDBClient;
 using Serilog;
+using Microsoft.Extensions.FileProviders;
 
 namespace reportWeb
 {
@@ -58,6 +59,8 @@ namespace reportWeb
             //services.AddSingleton(HtmlEncoder.Create(System.Text.Unicode.UnicodeRanges.All));
             CellReport.core.expr.ExprHelper.buildFuncMap();
             //CellReport.core.expr.ExprHelper.AddFunc(typeof(CellReport.function.Func_md5));
+            CellReport.core.expr.ExprHelper.AddFunc(typeof(CellReport.function.Func_qr_code));
+
             services.AddDbContext<ReportDbContext>(optionsBuilder =>
             {
                 var folder = Environment.SpecialFolder.LocalApplicationData;
@@ -186,6 +189,7 @@ namespace reportWeb
                 //options.Cookie.IsEssential = true;
                 options.Cookie.SameSite = SameSiteMode.Unspecified;//
                 options.IdleTimeout = TimeSpan.FromSeconds(60 * 60);
+                options.Cookie.Name = ".cellreport.Session"; // <--- 没有这一行，有时会报："Error unprotecting the session cookie"异常
             });
             services.AddDataProtection().PersistKeysToFileSystem(new DirectoryInfo(Directory.GetCurrentDirectory() + Path.DirectorySeparatorChar + "DataProtection"));
 
@@ -247,6 +251,7 @@ namespace reportWeb
                 });
                 _reportDbContext.SaveChanges();
             }
+
             using (var report_db = SqliteFactory.Instance.CreateConnection())
             {
                 report_db.ConnectionString = "Data Source=report.db";
@@ -317,7 +322,18 @@ namespace reportWeb
             });
             //app.UseHttpsRedirection();
             app.UseStaticFiles();
-            
+            string static_path = Configuration["static_path"];
+            if (String.IsNullOrEmpty(static_path))
+                static_path = Path.Combine(env.WebRootPath, "../static");
+            if(!(new DirectoryInfo(static_path).Exists))
+            {
+                Directory.CreateDirectory(static_path);
+            }
+            app.UseStaticFiles(new StaticFileOptions()
+            {
+                FileProvider = new PhysicalFileProvider(static_path),
+                RequestPath = new PathString("/Static"),
+            });
             app.Use(next => context =>
             {
                 var cur_path = context.Request.Path.Value;

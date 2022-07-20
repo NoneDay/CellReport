@@ -3,7 +3,7 @@
 let baseUrl = '';
 let iconfontVersion = ['567566_pwc3oottzol'];
 let iconfontUrl = `//at.alicdn.com/t/font_$key.css`;
-let codeUrl = `${baseUrl}/code`
+
 const env = process.env
 if (env.NODE_ENV == 'development') {
     baseUrl = `/report5`; // 开发环境地址 report5 aps
@@ -15,6 +15,7 @@ if (env.NODE_ENV == 'development') {
 } else if (env.NODE_ENV == 'test') {
     baseUrl = `/aps`; //测试环境地址
 }
+let codeUrl = `${baseUrl}/VerifyCode`
 export {
     baseUrl,
     iconfontUrl,

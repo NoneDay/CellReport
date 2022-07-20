@@ -155,7 +155,10 @@ namespace reportWeb.Controllers
             {
                 foreach(var one in watermark.EnumerateObject())
                 {
-                    mark_dict[one.Name] = one.Value.GetString();
+                    if(one.Value.ValueKind==JsonValueKind.String)
+                        mark_dict[one.Name] = one.Value.GetString();
+                    if (one.Value.ValueKind == JsonValueKind.Number)
+                        mark_dict[one.Name] = one.Value.GetDouble();
                 }
             }
             else if (watermark.ValueKind == JsonValueKind.Undefined)

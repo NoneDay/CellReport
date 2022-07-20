@@ -125,6 +125,14 @@
                           style="padding: 4px;margin-left: 5px;    width: 30px;height: 30px;">
                 </el-button>
             </li>
+            <li  style="display: flex;padding-bottom: 10px;" >
+              <label style="width:100px;padding-top:5px;" >同值合并方式</label>
+              <el-select v-model="cur_cell.cr._combin_way" placeholder="同值合并方式">
+                <el-option label="行方向" value="row"></el-option>
+                <el-option label="列方向" value="col"></el-option>
+                <el-option label="无" value=""></el-option>
+              </el-select>
+            </li>
         </ul>
         <widget-config  v-else style="flex:1"
           :data="selectWidget" 

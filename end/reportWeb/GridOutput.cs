@@ -73,7 +73,9 @@ namespace CellReport
                 if (!gobal_reportDefinePath.EndsWith(Path.DirectorySeparatorChar))
                         gobal_reportDefinePath = gobal_reportDefinePath + Path.DirectorySeparatorChar;
                 {
-                    reportDefine = XmlReport.loadReport(gobal_reportDefinePath, reportName);
+                    //var load_task=;
+                    //load_task.ConfigureAwait(continueOnCapturedContext:false);
+                    reportDefine = XmlReport.loadReport(gobal_reportDefinePath, reportName).Result;
                 }
                     reportDefine.getEnv().logger = logger;
                 //reportDefinePath = gobal_reportDefinePath + reportName;

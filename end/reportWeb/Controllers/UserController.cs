@@ -107,7 +107,28 @@ namespace reportWeb.Controllers
         [AllowAnonymous]        
         public IActionResult login([FromBody] UserInfo userinfo)
         {
+
             IDictionary<Object, Object> result = new Dictionary<Object, Object>() { { "errcode", 1 }, {"message" ,"用户名或密码错误" } };
+            var verfiy_code_script = configuration["verfiy_code_script"];
+            if (!string.IsNullOrEmpty(verfiy_code_script))
+            {
+                var verfiy_code = HttpContext.Session.GetString("verfiy_code");
+                var send_time_str = HttpContext.Session.GetString("send_time"); 
+                if (String.IsNullOrEmpty(verfiy_code)|| String.IsNullOrEmpty(send_time_str))
+                    return Unauthorized(new { message = "请先点击发送验证码！" });
+                
+                var send_time = new DateTime(long.Parse(send_time_str));
+                if (send_time.AddMinutes(5) < DateTime.Now)
+                {
+                    HttpContext.Session.Remove("verfiy_code");
+                    HttpContext.Session.Remove("send_time");
+                    return Unauthorized(new { message = "验证码已超时" });
+                }
+                
+                if(userinfo.code!= verfiy_code)
+                    return Unauthorized(new { message = "验证码错误" });
+            }
+            
             String username = AESDecrypt(userinfo.username, configuration["aes_key"]);
             var password = AESDecrypt(userinfo.password, configuration["aes_key"]);
             if (username == configuration["admin_user"]) { 
@@ -133,7 +154,7 @@ namespace reportWeb.Controllers
                 if(conf!=null && conf.login_script.Trim()!="")
                     result = ef.addNewScopeForScript(conf.login_script) as IDictionary<Object, Object>;
                 else
-                    return Unauthorized("用户名或密码错误");
+                    return Unauthorized(new { message = "用户名或密码错误" });
             }
             if (!"0".Equals(result["errcode"]?.ToString()))
             {
@@ -152,6 +173,8 @@ namespace reportWeb.Controllers
             }
             else
             {
+                HttpContext.Session.Remove("verfiy_code");
+                HttpContext.Session.Remove("send_time");
                 //await HttpContext.SignInAsync(new ClaimsPrincipal(new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme)));
                 string jwtToken = GenerateJwtToken(user);
                 HttpContext.Response.Cookies.Append("access_token", jwtToken);
@@ -336,7 +359,40 @@ namespace reportWeb.Controllers
                 // return null if validation fails
                 return null;
             }
-        } 
+        }
+        [AllowAnonymous]
+        public IActionResult VerifyCode(string userid, string verfiy_code,int code_len)
+        {
+            var verfiy_code_script = configuration["verfiy_code_script"];
+            if (string.IsNullOrEmpty(verfiy_code_script))
+                return new JsonResult(new { errcode = 1, message = "没有设置验证码发送脚本" });
+            if (string.IsNullOrEmpty(userid))
+                return new JsonResult(new { errcode = 1, message = "请先设置用户名" });
+            var send_time_str=HttpContext.Session.GetString("send_time");
+            if (!String.IsNullOrEmpty(send_time_str))
+            {
+                var send_time = new DateTime(long.Parse(send_time_str));
+                if(send_time.AddMinutes(1)>DateTime.Now)
+                    return new JsonResult(new { errcode = 1, message = "频繁发送！！！" });
+            }
+            verfiy_code = Random.Shared.Next(999999).ToString("000000")[0..code_len];
+            HttpContext.Session.SetString("verfiy_code", verfiy_code);
+            HttpContext.Session.SetString("send_time", DateTime.Now.Ticks.ToString());
+            var ef = new CellReport.core.expr.ExprFaced2();
+            ef.addNewScopeForScript();
+            ef.addVariable("env", new Env());
+            ef.addVariable("__env__", new Env());
+            ef.addVariable("userid", userid);
+            ef.addVariable("verfiy_code", verfiy_code);
+            var result = ef.addNewScopeForScript(verfiy_code_script) as IDictionary<Object, Object>;
+            //var result = new Dictionary<String, string>() { { "errcode", "0" },{ "message","发送成功" } };
+            if (!"0".Equals(result["errcode"]?.ToString()))
+            {
+                return new JsonResult(new { errcode = 1, message = "验证码发送失败" });
+            }
+            //if (userid == null) return new JsonResult(new { errcode = 1,
+            return new JsonResult(new { errcode = 0, message = result["message"]?.ToString() });
+        }
         #endregion
     }
 }

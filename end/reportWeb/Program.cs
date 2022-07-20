@@ -18,7 +18,8 @@ namespace reportWeb
         
         public static void Main(string[] args)
         {
-            Console.WriteLine(CellReport.util.KeyAndPassword.getMachine_key());
+            Console.WriteLine("ÐÅÏ¢:" + String.Join(",", CellReport.util.KeyAndPassword.get_ip_mac_list()) ); 
+            Console.WriteLine("»úÆ÷Âë:"+CellReport.util.KeyAndPassword.getMachine_key());
              
 
             System.Threading.ThreadPool.SetMinThreads(200, 200);

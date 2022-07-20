@@ -47,6 +47,7 @@ namespace reportWeb.Controllers
             this.rpt_group = reportGrp.rpt_group;
             this.reportDb = reportDb;
             this.reportGrp = reportGrp;
+
             json_option = new JsonSerializerOptions()
             {
                 DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull,
@@ -120,7 +121,7 @@ namespace reportWeb.Controllers
                 xmlDoc.LoadXml(_content);
                 if (reportName!=null && reportName.Contains(":"))
                     reportName = reportName.Split(":")[1];
-                var reportDefine = XmlReport.loadReportFromXmlDoc(xmlDoc, this.rpt_group.report_path, reportName??"temp.cr");
+                var reportDefine = await XmlReport.loadReportFromXmlDoc(xmlDoc, this.rpt_group.report_path, reportName??"temp.cr");
                 if (!String.IsNullOrEmpty(_fresh_ds))
                 {
                     reportDefine.getEnv().getExprFaced().addVariable("_fresh_ds", _fresh_ds);
@@ -397,7 +398,7 @@ namespace reportWeb.Controllers
 
         }
         [HttpPost]
-        public IActionResult Open(String reportName,string zb_dict_str,string zb_param)
+        public async Task<IActionResult> Open(String reportName,string zb_dict_str,string zb_param)
         {
             if (reportName.StartsWith("/"))
                 reportName = reportName.Substring(1);
@@ -406,12 +407,12 @@ namespace reportWeb.Controllers
                 && System.IO.File.Exists(file_path))
             {
                 Env parent_env = new Env();
-                XmlReport.templateValue2Env(this.rpt_group.report_path, reportName, parent_env);
-                var xmlDoc =XmlReport.getReportXmlDoc(this.rpt_group.report_path, reportName);
+                await XmlReport.templateValue2Env(this.rpt_group.report_path, reportName, parent_env);
+                var xmlDoc = (await XmlReport.getReportXmlDoc(this.rpt_group.report_path, reportName)).xml;
                 //var ret = XmlReport.reportToXmlDocumnt(XmlReport.loadReport(file_path), false).OuterXml;
                 //var report_content = await System.IO.File.ReadAllTextAsync(file_path, System.Text.Encoding.UTF8);
                 var conn_list =from x in this.rpt_group.db_connection_list select x.name;
-                var ttt = range_level(xmlDoc.OuterXml, reportName);
+                var ttt = await range_level(xmlDoc.OuterXml, reportName);
                 return Json(new
                 {
                     report_content = xmlDoc.OuterXml,
@@ -424,10 +425,10 @@ namespace reportWeb.Controllers
             }
             return Json(new { errcode = 1, message = "路径错误" });
         }
-        private void insert_ds_param(string reportName, string zb_dict_str,string zb_param)
+        private async Task insert_ds_param(string reportName, string zb_dict_str,string zb_param)
         {
             var file_path = Path.Combine(this.rpt_group.report_path, reportName);
-            var xmlDoc = XmlReport.getReportXmlDoc(this.rpt_group.report_path, reportName);
+            var xmlDoc = (await XmlReport.getReportXmlDoc(this.rpt_group.report_path, reportName)).xml;
             //var ret = XmlReport.reportToXmlDocumnt(XmlReport.loadReport(file_path), false).OuterXml;
             //var report_content = await System.IO.File.ReadAllTextAsync(file_path, System.Text.Encoding.UTF8);
             var xml_elem_root = xmlDoc.SelectSingleNode("//report");
@@ -573,10 +574,11 @@ namespace reportWeb.Controllers
                     //content = Regex.Replace(content, @"<parsererror>.*?</parsererror>", "");
                     //content = Regex.Replace(content, @"<parent_defaultsetting>.*?</parent_defaultsetting>", "");
                     await System.IO.File.WriteAllTextAsync(file_path, content, System.Text.Encoding.UTF8);
+                    XmlReport.MemoryCacheInstance.Remove(file_path);
                 }
                 if (!String.IsNullOrEmpty(zb_dict_str))
                 {
-                    insert_ds_param( reportName,  zb_dict_str, zb_param);
+                    await insert_ds_param( reportName,  zb_dict_str, zb_param);
                 }
                 return Json(new { errcode = 0, message = "保存成功" });
             }
@@ -595,7 +597,7 @@ namespace reportWeb.Controllers
                 path = path + "/template.xml";
             var file_path = Path.Combine(this.rpt_group.report_path, path);
             Env parent_env = new Env();
-            XmlReport.templateValue2Env(this.rpt_group.report_path, path, parent_env,true);
+            await XmlReport.templateValue2Env(this.rpt_group.report_path, path, parent_env,true);
 
             if (file_path.StartsWith(this.rpt_group.report_path) && System.IO.File.Exists(file_path))
             {
@@ -618,15 +620,16 @@ namespace reportWeb.Controllers
             if (file_path.StartsWith(this.rpt_group.report_path))
             {
                 await System.IO.File.WriteAllTextAsync(file_path, content, System.Text.Encoding.UTF8);
+                XmlReport.MemoryCacheInstance.Remove(file_path);
                 return Json(new { errcode = 0, message = "保存成功" });
             }
             return Json(new { errcode = 1, message = "路径错误" });
         }
-        private (System.Collections.IEnumerable range_level, object defaultsetting) range_level(String content,string reportName)
+        private async Task<(System.Collections.IEnumerable range_level, object defaultsetting)> range_level(String content,string reportName)
         {
             System.Xml.XmlDocument xmlDoc = new System.Xml.XmlDocument();
             xmlDoc.LoadXml(content);
-            var report = XmlReport.loadReportFromXmlDoc(xmlDoc, this.rpt_group.report_path, reportName??"temp.cr");
+            var report = await XmlReport.loadReportFromXmlDoc(xmlDoc, this.rpt_group.report_path, reportName??"temp.cr");
             Engine engine = new Engine(report);
             engine.buildRelation();
             engine.prepareCalcLevelForCell();
@@ -651,9 +654,9 @@ namespace reportWeb.Controllers
             );  
         }
         
-        public IActionResult grid_range_level(String content,string reportName)
+        public async Task<IActionResult> grid_range_level(String content,string reportName)
         {
-            return Json(range_level(content, reportName).range_level);
+            return Json((await range_level(content, reportName)).range_level);
         }
         class MyFileInfo
         {
@@ -731,16 +734,16 @@ namespace reportWeb.Controllers
         {
             var userid = HttpContext.User.Claims.FirstOrDefault(x => x.Type == "userid").Value;
             var file_path = Path.Combine(Environment.CurrentDirectory, "widgets", userid+".json");
-            String admin_txt = "[]";
+            String self_txt = "{}";
             if (System.IO.File.Exists(file_path))
-                admin_txt = System.IO.File.ReadAllText(file_path,encoding:Encoding.UTF8);
-            file_path = Path.Combine(Environment.CurrentDirectory, "widgets", "admin.json");
-            if (action=="design_rpt" && userid!="admin")
-                if (System.IO.File.Exists(file_path))
-                    admin_txt +=".concat(\n"+
-                        System.IO.File.ReadAllText(file_path, encoding: Encoding.UTF8)
-                        +"\n)";
-            return Json(new { txt = admin_txt }, json_option);
+                self_txt = System.IO.File.ReadAllText(file_path,encoding:Encoding.UTF8);
+
+            var admin_file_path = Path.Combine(Environment.CurrentDirectory, "widgets", "admin.json");
+            string admin_txt = "{}";
+            if (userid!="admin" && System.IO.File.Exists(admin_file_path))
+                admin_txt =System.IO.File.ReadAllText(admin_file_path, encoding: Encoding.UTF8);
+
+            return Json(new { admin_json = JsonDocument.Parse(admin_txt), self_json = JsonDocument.Parse(self_txt) }, json_option);
         }
         public IActionResult saveWidget(string txt)
         {
@@ -751,11 +754,76 @@ namespace reportWeb.Controllers
         }
         public IActionResult getKeyAndLicese()
         {
-            //var tMachine_key = CellReport.util.KeyAndPassword.getMachine_key(); WebHostEnvironment.WebRootPath
+            //var tMachine_key = CellReport.util.KeyAndPassword.getMachine_key();
             //var ccc = CellReport.util.EncryptHelper.AES_Encrypt(tMachine_key, "CellReport");
 
             return Json(new { errcode = 0, message = "" });
         }
-
+        public IActionResult getImgFileList(string path)
+        {
+            if (path.Contains(".") || path.Contains("/") || !Path.Combine(this.reportGrp.WebHostEnvironment.WebRootPath, "img",path).StartsWith(reportGrp.WebHostEnvironment.WebRootPath))
+                return Json(new { errcode = 1, message = "非法地址" });
+            var ret = new List<string>();
+            var sourceDirectory=Path.Combine(this.reportGrp.WebHostEnvironment.WebRootPath, "../static", path);
+            foreach (var one in  Directory.EnumerateFiles(sourceDirectory))
+            {
+                string fileName = one.Substring(sourceDirectory.Length + 1);
+                ret.Add("static/"+ path+ "/" +fileName);
+            }
+            return Json(new { errcode = 0, data = ret, message = "成功" }); ;
+        }
+        public IActionResult putFile(IFormFile file,string file_type)
+        {
+            string static_path = configuration["static_path"];
+            if (String.IsNullOrEmpty(static_path))
+                static_path = Path.Combine(reportGrp.WebHostEnvironment.WebRootPath, "../static");
+            if (!(new DirectoryInfo(static_path).Exists))
+            {
+                Directory.CreateDirectory(static_path);
+            }
+            var currentDate = DateTime.Now;
+            var webRootPath = Directory.GetCurrentDirectory();//获取项目路径
+            try
+            {
+                
+                //创建每日存储文件夹
+                if (!Directory.Exists(Path.Combine( static_path ,file_type)))
+                {
+                    Directory.CreateDirectory(Path.Combine(static_path , file_type));
+                }
+                if (file != null)
+                {
+                    var fileSize = file.Length;
+                    //判断文件大小
+                    if (fileSize > 1024 * 1024 * 10) //10M TODO:(1mb=1024X1024b)
+                    {
+                        return new JsonResult(new { errcode = 1, message = "上传失败，文件大小超过范围" });
+                    }
+                    var completeFilePath = Path.Combine(static_path, file_type, file.FileName);
+                    //文件保存
+                    using (var fs = System.IO.File.Create(completeFilePath))
+                    {
+                        file.CopyTo(fs);
+                        fs.Flush();
+                    }
+                    //完整的文件路径
+                    
+                    return new JsonResult(new { errcode = 0, message = "上传成功", completeFilePath = completeFilePath });
+                }
+                else
+                {
+                    return new JsonResult(new { errcode = 1, message = "上传失败，未检测上传的文件信息~" });
+                }
+            }
+            catch (Exception ex)
+            {
+                return new JsonResult(new
+                {
+                    isSuccess = false,
+                    resultMsg = "文件保存失败，异常信息为：" + ex.Message
+                });
+            }            
+        }
+        
     }
 }

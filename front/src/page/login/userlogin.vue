@@ -29,7 +29,24 @@
            class="icon-mima"></i>
       </el-input>
     </el-form-item>
-    <el-form-item prop="code">
+    <el-form-item prop="code" v-if=" !['text','img'].includes(code.type)">
+      <el-input size="small"
+                @keyup.enter.native="handleLogin"
+                v-model="loginForm.code"
+                auto-complete="off"
+                :placeholder="$t('login.code')">
+        <i slot="prefix"
+           class="icon-yanzhengma"
+           style="margin-top:6px;"></i>
+        <template slot="append">
+          <span @click="handleSend"
+                class="msg-text"
+                :class="[{display:msgKey}]">{{msgText}}</span>
+        </template>
+      </el-input>
+    </el-form-item>
+
+    <el-form-item prop="code" v-else>
       <el-row :span="24">
         <el-col :span="16">
           <el-input size="small"
@@ -50,7 +67,7 @@
             <img :src="code.src"
                  class="login-code-img"
                  @click="refreshCode"
-                 v-else />
+                  v-else />
             <!-- <i class="icon-shuaxin login-code-icon" @click="refreshCode"></i> -->
           </div>
         </el-col>
@@ -70,11 +87,13 @@
 <script>
 import { randomLenNum } from "@/util/util";
 import { mapGetters } from "vuex";
+import { VerifyCode } from "@/api/user";
+
 export default {
   name: "userlogin",
   data() {
     const validateCode = (rule, value, callback) => {
-      if (this.code.value != value) {
+      if (this.code.value != value && ['text','img'].includes(this.code.type)) {
         this.loginForm.code = "";
         this.refreshCode();
         callback(new Error("请输入正确的验证码"));
@@ -83,6 +102,9 @@ export default {
       }
     };
     return {
+      msgText: "",
+      msgTime: "",
+      msgKey: false,
       loginForm: {
         username: "",
         password: "",
@@ -94,7 +116,7 @@ export default {
         src: "",
         value: "",
         len: 4,
-        type: "text"
+        type: window.cr_login_verfiy_code_type??"text"
       },
       loginRules: {
         username: [
@@ -114,19 +136,63 @@ export default {
     };
   },
   created() {
-    this.refreshCode();
+    this.msgText = this.config.MSGINIT;
+    this.msgTime = this.config.MSGTIME;
+    if(['text','img'].includes(this.code.type))
+      this.refreshCode();
   },
   mounted() {},
   computed: {
-    ...mapGetters(["tagWel"])
+    ...mapGetters(["tagWel"]),
+    config() {
+      return {
+        MSGINIT: this.$t("login.msgText"),
+        MSGSCUCCESS: this.$t("login.msgSuccess"),
+        MSGTIME: 60
+      };
+    }
   },
   props: [],
   methods: {
+    handleSend() {
+      if (this.msgKey) return;
+      if(this.loginForm.username.trim()==""){
+        this.$message.error("用户名为空")
+        return
+      }
+      VerifyCode(this.loginForm.username,this.code.len).then((res)=>{
+          if(res.errcode==1)
+            this.$message.error(res.message)
+          else if(res.errcode==0){
+            this.msgText = this.msgTime + this.config.MSGSCUCCESS;
+            this.msgKey = true;
+            const time = setInterval(() => {
+              this.msgTime--;
+              this.msgText = this.msgTime + this.config.MSGSCUCCESS;
+              if (this.msgTime == 0) {
+                this.msgTime = this.config.MSGTIME;
+                this.msgText = this.config.MSGINIT;
+                this.msgKey = false;
+                clearInterval(time);
+              }
+            }, 1000);
+          }
+          else
+            this.$message.error(res)
+        })      
+    },
     refreshCode() {
       this.loginForm.redomStr = randomLenNum(this.code.len, true);
-      this.code.type == "text"
-        ? (this.code.value = randomLenNum(this.code.len))
-        : (this.code.src = `${this.codeUrl}/${this.loginForm.redomStr}`);
+      if(this.code.type == "text")
+        this.code.value = randomLenNum(this.code.len)
+      else if (this.code.type == "img")
+        this.code.src = `${this.codeUrl}/${this.loginForm.redomStr}`;
+      else{
+        VerifyCode(this.loginForm.username,this.code.len).then((res)=>{
+          if(res.errcode)
+            this.$message.error(res.message)
+        })
+      }
       //this.loginForm.code = this.code.value;
     },
     showPassword() {

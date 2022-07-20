@@ -80,6 +80,7 @@ namespace reportWeb.Pages
         public CellReport.BaseCache myCache { get;protected set;} = null;
         
         protected CellReport.running.Env report_env;
+        private static string g_report_content = null;
         public async Task Page_Load()
         {
             if(rpt_group==null)
@@ -106,7 +107,10 @@ namespace reportWeb.Pages
             {
                 string Referer = Request.Headers["Referer"];
                 string Authorization = Request.Headers["Authorization"];
-                var report_content=await CellReport.running.XmlReport.getIndexHtml(this.WebHostEnvironment.WebRootPath, Referer, Authorization);
+                //if(g_report_content==null)
+                    g_report_content = await CellReport.running.XmlReport.getIndexHtml(this.WebHostEnvironment.WebRootPath, Referer, Authorization);
+                
+                var report_content = g_report_content.Replace("<head>", $"<head><script>var __real_referer='{Referer}';__Authorization='{Authorization}'</script>");
                 await Response.WriteAsync(report_content);
                 return;
             }

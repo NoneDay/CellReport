@@ -68,7 +68,7 @@ namespace reportWeb.Controllers
             {
                 return BadRequest();
             }
-            rpt_group?.db_connection_list.ForEach(one =>
+            rpt_group?.db_connection_list?.ForEach(one =>
             {
                 one.grp_id = rpt_group.Id;
             });
@@ -81,7 +81,7 @@ namespace reportWeb.Controllers
             else
                 _context.Entry(rpt_group).State = EntityState.Added;
             List<int> all_conn_id_list = new List<int>();
-            rpt_group?.db_connection_list.ForEach(one =>
+            rpt_group?.db_connection_list?.ForEach(one =>
             {
                 if (Rpt_connectionExists(one.Id))
                 {
@@ -95,7 +95,7 @@ namespace reportWeb.Controllers
                     _context.Rpt_db_connection.Remove(x);
                 }
             });
-            rpt_group?.db_connection_list.ForEach(one =>
+            rpt_group?.db_connection_list?.ForEach(one =>
             {
                 if (del_conn_id_list.Contains(one.Id))
                     return;
