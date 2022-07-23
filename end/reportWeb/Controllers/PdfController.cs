@@ -22,6 +22,7 @@ using iText.Layout.Font;
 using iText.Kernel.Pdf.Canvas;
 using iText.Layout.Layout;
 using iText.Kernel.Pdf.Xobject;
+using System.Text.RegularExpressions;
 
 namespace reportWeb.Controllers
 {
@@ -92,8 +93,7 @@ namespace reportWeb.Controllers
                     var rg = new ReportGridJSON(item.Value, ps);
                     rg.output(pdf_doc,ref is_first, addTable);
                 }
-                json_root.GetProperty("_zb_var_").TryGetProperty("watermark", out var watermark);
-                add_header_footer(ps, pdfDocument, pdf_doc, watermark);
+                add_header_footer(ps, pdfDocument, pdf_doc,json_root.GetProperty("_zb_var_"));
 
                 //*/
                 pdf_doc.Flush();
@@ -121,21 +121,28 @@ namespace reportWeb.Controllers
             }
             return retpp;
         }
-        private static Paragraph replace_var_to_Paragraph(string str, int page_no, int page_all)
+        private static Regex r = new(@"&\[(.*?)\]"); //[^\\]#.*#
+        private static Paragraph replace_var_to_Paragraph(string str,Dictionary<String, object> mark_dict=null)
         {//&[页码]&[总页数]&[日期]&[时间]
-            var t = str.Replace("&[页码]", page_no.ToString())
-                .Replace("&[总页数]", page_all.ToString())
-                .Replace("&[日期]", DateTime.Today.ToString("yyyy-MM-dd"))
-                .Replace("&[时间]", DateTime.Today.ToString("hh:ss:mm"))
-                ;
-            return convert_html_to_paragraph(t);
+            MatchCollection mc = r.Matches(str);//替换#xxx#为 ?,同时记录位置
+            foreach (Match a in mc)
+            {
+                str = str.Replace(  a.Value ,mark_dict.GetValueOrDefault(a.Groups[1].Value).ToString());
+            }
+            
+            return convert_html_to_paragraph(str);
         }
-        private  void add_header_footer(PageSetup ps, PdfDocument pdf, Document pdf_doc,JsonElement watermark)
+        private  void add_header_footer(PageSetup ps, PdfDocument pdf, Document pdf_doc,JsonElement zb_var)
         {
+            zb_var.TryGetProperty("watermark", out var watermark);
+            
+            
             var pp = new Paragraph();
             int n = pdf.GetNumberOfPages();
             Dictionary<String, object> mark_dict = new Dictionary<string, object>()
             {
+                {"日期", DateTime.Now.ToString("yyyy-MM-dd")},
+                {"时间", DateTime.Now.ToString("hh:ss:mm")},
                 {"watermark_txt", ""},
                 {"watermark_x", 20}, //水印起始位置x轴坐标
                 {"watermark_y", 20}, //水印起始位置Y轴坐标
@@ -151,6 +158,10 @@ namespace reportWeb.Controllers
                 {"watermark_height", 40}, //水印长度
                 {"watermark_angle", 20 }//水印倾斜度数
             };
+            foreach (var item in zb_var.EnumerateObject())
+            {
+                mark_dict[item.Name] = item.Value.GetString();
+            }
             if (watermark.ValueKind == JsonValueKind.Object)
             {
                 foreach(var one in watermark.EnumerateObject())
@@ -187,8 +198,11 @@ namespace reportWeb.Controllers
             var water_mark = new Paragraph(watermark_txt)
                 .SetFontColor(watermark_color)//.SetFontFamily(watermark_font)
                 .SetFontSize(watermark_fontsize).SetOpacity(watermark_alpha);
+
+            mark_dict["总页数"] = n;
             for (int page_idx = 1; page_idx <= n; page_idx++)
             {
+                mark_dict["页码"] = page_idx;
                 for (float x = watermark_x; x < ps.pageSize_Width; x += watermark_x_space)
                 {
                     for (float y = watermark_y; y < ps.pageSize_Height; y += watermark_y_space)
@@ -199,42 +213,42 @@ namespace reportWeb.Controllers
 
                 if (!String.IsNullOrEmpty(ps.footer_left))
                 {
-                    pp = replace_var_to_Paragraph(ps.footer_left, page_idx, n);
+                    pp = replace_var_to_Paragraph(ps.footer_left, mark_dict);
                     pdf_doc.ShowTextAligned(pp, ps.margin_footer, ps.margin_footer, page_idx, TextAlignment.LEFT,
                    VerticalAlignment.BOTTOM, 0);//footer left BOTTOM
                 }
 
                 if (!String.IsNullOrEmpty(ps.footer_right))
                 {
-                    pp = replace_var_to_Paragraph(ps.footer_right, page_idx, n);
+                    pp = replace_var_to_Paragraph(ps.footer_right, mark_dict);
                     pdf_doc.ShowTextAligned(pp,
                     ps.pageSize_Width - ps.margin_footer, ps.margin_footer, page_idx, TextAlignment.RIGHT,
                     VerticalAlignment.BOTTOM, 0);//footer RIGHT BOTTOM
                 }
                 if (!String.IsNullOrEmpty(ps.header_left))
                 {
-                    pp = replace_var_to_Paragraph(ps.header_left, page_idx, n);
+                    pp = replace_var_to_Paragraph(ps.header_left, mark_dict);
                     pdf_doc.ShowTextAligned(pp,
                   ps.margin_footer, ps.pageSize_Height - ps.margin_footer, page_idx, TextAlignment.LEFT,
                   VerticalAlignment.TOP, 0);//header left top
                 }
                 if (!String.IsNullOrEmpty(ps.header_right))
                 {
-                    pp = replace_var_to_Paragraph(ps.header_right, page_idx, n);
+                    pp = replace_var_to_Paragraph(ps.header_right, mark_dict);
                     pdf_doc.ShowTextAligned(pp,
                   ps.pageSize_Width - ps.margin_footer, ps.pageSize_Height - ps.margin_footer, page_idx, TextAlignment.RIGHT,
                   VerticalAlignment.TOP, 0);//header right TOP
                 }
                 if (!String.IsNullOrEmpty(ps.header_center))
                 {
-                    pp = replace_var_to_Paragraph(ps.header_center, page_idx, n);
+                    pp = replace_var_to_Paragraph(ps.header_center, mark_dict);
                     pdf_doc.ShowTextAligned(pp,
                    ps.pageSize_Width / 2, ps.pageSize_Height - ps.margin_footer, page_idx, TextAlignment.CENTER,
                    VerticalAlignment.TOP, 0); //header CENTER
                 }
                 if (!String.IsNullOrEmpty(ps.footer_center))
                 {
-                    pp = replace_var_to_Paragraph(ps.footer_center, page_idx, n);
+                    pp = replace_var_to_Paragraph(ps.footer_center, mark_dict);
                     pdf_doc.ShowTextAligned(pp,
                    ps.pageSize_Width / 2, ps.margin_footer, page_idx, TextAlignment.CENTER,
                    VerticalAlignment.BOTTOM, 0);//footer CENTER
