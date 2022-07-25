@@ -100,8 +100,10 @@ axios.interceptors.response.use(async res => {
         )
         return ret
     }
-
-    return res.data;
+    if(res.config.needResponse)
+        return res;
+    else
+        return res.data;
 }, error => {
     
     NProgress.done();

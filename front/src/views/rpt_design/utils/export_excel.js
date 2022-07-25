@@ -1,6 +1,25 @@
 import {getLuckyStyle,numToString } from "./util.js"
+import request from '@/router/axios';
 const BitArray = require("./bits");
 let color_convert = require('onecolor');
+
+const getBase64Img = (key) => {
+  return new Promise((resolve,reject) => {
+  request({
+    url:  key,
+    method: 'get',noloading:true,needResponse:true,responseType: 'arraybuffer' 
+  })
+  .then((resp) => {
+  const returnedB64 = `data:${resp.headers['content-type']};base64,${Buffer.from(resp.data).toString('base64')}`
+  resolve(returnedB64)
+  })
+  .catch((err) => 
+  {
+    reject({ error: 'Invalid signature image' })
+  }
+  )
+  })
+  }
 
 //如果使用 FileSaver.js 就不要同时使用以下函数
 function saveAs(obj, fileName) {//当然可以自定义简单的下载文件实现方式 
@@ -139,7 +158,8 @@ export  async function exceljs_inner_exec(_this_result,name_lable_map){
     const wb = new ExcelJS.Workbook();
     let ws ,title,one_obj
     let allSheetNames=new Set()
-    Object.keys( name_lable_map).forEach(one => {
+    //Object.keys( name_lable_map).forEach(one => {
+    for(let one of Object.keys( name_lable_map) ){
         one_obj=name_lable_map[one]
         if(one_obj.component=="luckySheetProxy"){
           title=one_obj.label??one
@@ -167,19 +187,19 @@ export  async function exceljs_inner_exec(_this_result,name_lable_map){
                 tableBitFlag[i]=new BitArray()
             let line_no=0
             let column_nums=Object.keys( cur_table.columnlenArr).length
-            cur_table.tableData.forEach(one_line=>{   
-              
+            //cur_table.tableData.forEach(one_line=>{   
+            for(let one_line of cur_table.tableData ){  
               ws.addRow(one_line.slice(0,column_nums))//添加数据到excel
               let col_no=0
               const row = ws.getRow(line_no+1)// 从1 开始计数，设置行高
               row.height= (cur_table.rowlenArr[line_no]??cur_table.rowlenArr["default"] )*72/96
-
-              one_line.forEach(one_cell => {
+              for(let one_cell of one_line){ 
+              //one_line.forEach(async (one_cell) => {
                 if(col_no>=column_nums)
-                  return   
+                  continue   
                 if(tableBitFlag[line_no].get(col_no))
                 {
-                    return;
+                  continue;
                 }
                 tableBitFlag[line_no].set(col_no ,1)
                 let r_c=find_config_merge(cur_table,line_no,col_no)//config_merge[`${rowNo}_${colNo}`]
@@ -199,8 +219,9 @@ export  async function exceljs_inner_exec(_this_result,name_lable_map){
                       let match_result=script_result[1];
                       if(match_result && match_result.length>0){
                         if(match_result.startsWith("http")){
+                          let img_response=await getBase64Img(match_result)
                           imageId2 = wb.addImage({
-                            filename: match_result,
+                            base64: img_response, 
                             extension: 'png',
                           });
                         }else if(match_result.startsWith("data")){
@@ -236,9 +257,9 @@ export  async function exceljs_inner_exec(_this_result,name_lable_map){
                   }
                 })
                 col_no++
-              });
+              };
               line_no++
-            })                
+            }                
             Object.keys( cur_table.config_merge).forEach(ele_m=>{
               let m=cur_table.config_merge[ele_m]
               ws.mergeCells(numToString(m.c+1) + (m.r+1)+":"+ numToString(m.c+m.cs)+ (m.r+m.rs));
@@ -258,7 +279,7 @@ export  async function exceljs_inner_exec(_this_result,name_lable_map){
         //  title=title+one_obj.gridName
         //XLSX.utils.book_append_sheet(wb, ws, title.replace(/[\\|/|?|*|\[|\]]/,'_'))
         //ws=undefined
-    });
+    };
     const buffer = await wb.xlsx.writeBuffer();
     saveAs(new Blob([buffer], { type: "application/octet-stream"}), "这里是下载的文件名" + ".xlsx");
   }
