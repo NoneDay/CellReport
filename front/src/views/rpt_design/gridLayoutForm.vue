@@ -1,11 +1,11 @@
 <template>
     <div  v-if="true" @click.prevent="click_layout"
-        class="widget-form-container gridLayout" ref='content' 
+        class="widget-form-container gridLayout" ref='layout_div' 
         :style="context.mode=='design'&&defaultsetting.big_screen=='1'?`position: relative;    width: 5000px;    height: 3000px;
     background: url(https://img.alicdn.com/tfs/TB184VLcPfguuRjSspkXXXchpXa-14-14.png) repeat;flex: 1;overflow: auto;`
-    :'position: relative; width: 100%;height: 100%'"
+    :'position: relative; width: 100%;height: 100%'" 
 >
-        <grid-layout :layout.sync="layout" ref="gridLayout"  id="cr_gridLayout"
+        <grid-layout :layout.sync="layout" ref="gridLayout"  id="cr_gridLayout" 
                      :col-num="colNum" 
                      :row-height="row_height"
                      :margin="[margin, margin]"

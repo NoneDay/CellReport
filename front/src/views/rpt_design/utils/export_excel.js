@@ -218,19 +218,21 @@ export  async function exceljs_inner_exec(_this_result,name_lable_map){
                   while ((script_result = http_src_pattern.exec(one_cell)) != null)  {
                       let match_result=script_result[1];
                       if(match_result && match_result.length>0){
-                        if(match_result.startsWith("http")){
-                          let img_response=await getBase64Img(match_result)
-                          imageId2 = wb.addImage({
-                            base64: img_response, 
-                            extension: 'png',
-                          });
-                        }else if(match_result.startsWith("data")){
+                        if(match_result.startsWith("data")){
                           imageId2 = wb.addImage({
                             base64filename: `img/${name}.png`,
                             base64: match_result,
                             extension: 'png'
                           });
                          
+                        }else 
+                        //if(match_result.startsWith("http"))
+                        {
+                          let img_response=await getBase64Img(match_result)
+                          imageId2 = wb.addImage({
+                            base64: img_response, 
+                            extension: 'png',
+                          });
                         }
                       }
                   }

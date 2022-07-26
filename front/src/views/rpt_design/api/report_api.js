@@ -189,7 +189,7 @@ export async function preview_one(_this,createFormParam=false,param_name=null) {
         if(param_name!=null)
             data.append("_param_name_", param_name)
         Object.entries(_this.queryForm).forEach(kv=>{
-            data.append(kv[0], kv[1])    
+            data.append(kv[0], kv[1]??'')    
         })
         request({
         method: 'post',
@@ -207,7 +207,7 @@ export async function preview_one(_this,createFormParam=false,param_name=null) {
             console.info( _this.result)
             response_data.form.forEach(ele=>{
                 let val=ele.value
-                if(ele.data_type=='date')
+                if(ele.data_type=='date' && val!="")
                     val=new Date(ele.value).format("yyyy-MM-dd")
                 _this.$set(_this.queryForm,ele.name,val)
                 _this.$set(_this.queryForm_show,ele.name,false)
@@ -287,7 +287,7 @@ export function run_one(_this,reportFilePath,_param_name_=null,loading_conf=null
         loading_conf=conf_loading_conf
     let data=new FormData();
     Object.entries(_this.queryForm).forEach(kv=>{
-        data.append(kv[0], kv[1])    
+        data.append(kv[0], kv[1]??'')    
     })
     let _fresh_ds=_this.queryForm._fresh_ds
     loading.show(loading_conf)
@@ -326,7 +326,7 @@ export function run_one(_this,reportFilePath,_param_name_=null,loading_conf=null
         }
         response_data.form.forEach(ele=>{
             let val=ele.value
-            if(ele.data_type=='date')
+            if(ele.data_type=='date' && val!="")
                 val=new Date(ele.value).format("yyyy-MM-dd")
             _this.$set(_this.queryForm,ele.name,val)
             _this.$set(_this.queryForm_show,ele.name,false)

@@ -133,9 +133,7 @@
             <el-form-item label="旋转时间" v-if="layout_config.config['is_rotate']">
               <el-input-number v-model="layout_config.config['rotate_second']" @change="handleChange" :min="1" :max="10" label="描述文字"></el-input-number>
             </el-form-item>
-            <!--
-            {{layout_config.layout_item.x}}-{{layout_config.layout_item.y}}-{{layout_config.layout_item.h}}-{{layout_config.layout_item.w}}
-            -->
+            
             <el-form-item label="背景图片">
               <img :src="layout_config.config.backgroundImage==''?'img/bg/bg.png' 
               :layout_config.config.backgroundImage"
@@ -210,7 +208,19 @@
 
           </el-collapse-item>
         </el-collapse>
-        
+        <template v-if="layout_config.layout_item && context.report.defaultsetting.big_screen=='1'">
+          
+          <el-form-item label="横向起始位置">
+            <el-input-number v-model="layout_config.layout_item.x" :min="0" :max="5000" label="描述文字"></el-input-number>
+          </el-form-item>
+          <el-form-item label="竖向启示位置">
+            <el-input-number v-model="layout_config.layout_item.y" :min="0" :max="5000" label="描述文字"></el-input-number>
+          </el-form-item>
+          <el-form-item label="钉住不能拖动">
+            <el-switch v-model="layout_config.layout_item.static" label="描述文字"></el-switch>
+
+          </el-form-item>
+        </template>
     </el-form> 
 
   </el-tab-pane>
