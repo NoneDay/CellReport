@@ -210,16 +210,21 @@
         </el-collapse>
         <template v-if="layout_config.layout_item && context.report.defaultsetting.big_screen=='1'">
           
-          <el-form-item label="横向起始位置">
+          <el-form-item label="横向位置">
             <el-input-number v-model="layout_config.layout_item.x" :min="0" :max="5000" label="描述文字"></el-input-number>
           </el-form-item>
-          <el-form-item label="竖向启示位置">
+          <el-form-item label="竖向位置">
             <el-input-number v-model="layout_config.layout_item.y" :min="0" :max="5000" label="描述文字"></el-input-number>
           </el-form-item>
-          <el-form-item label="钉住不能拖动">
-            <el-switch v-model="layout_config.layout_item.static" label="描述文字"></el-switch>
-
+          <el-form-item label="宽度">
+            <el-input-number v-model="layout_config.layout_item.w" :min="0" :max="5000" label="描述文字"></el-input-number>
           </el-form-item>
+          <el-form-item label="高度">
+            <el-input-number v-model="layout_config.layout_item.h" :min="0" :max="5000" label="描述文字"></el-input-number>
+          </el-form-item>
+          <el-form-item label="固定位置和大小">
+            <el-switch v-model="layout_config.layout_item.static" label="描述文字"></el-switch>
+          </el-form-item>          
         </template>
     </el-form> 
 

@@ -63,7 +63,10 @@ axios.interceptors.response.use(async res => {
       })
       return Promise.reject(res.data)
   }
-  return res.data;
+  if(res.config.needResponse)
+    return res;
+  else
+    return res.data;
 }, error => {
   let err_txt=error.response.data?.message||error.response.statusText
   Message({

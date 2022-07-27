@@ -1,11 +1,11 @@
 import {getLuckyStyle,numToString } from "./util.js"
-import request from '@/router/axios';
+
 const BitArray = require("./bits");
 let color_convert = require('onecolor');
 
 const getBase64Img = (key) => {
   return new Promise((resolve,reject) => {
-  request({
+  axios.request({
     url:  key,
     method: 'get',noloading:true,needResponse:true,responseType: 'arraybuffer' 
   })
@@ -212,7 +212,7 @@ export  async function exceljs_inner_exec(_this_result,name_lable_map){
                     }
                 }
                 let name=numToString(col_no+1)+(line_no+1)      //excel 单元格名字       
-                if(one_cell && one_cell.indexOf("<img")>=0){
+                if(one_cell?.indexOf && one_cell.indexOf("<img")>=0){
                   let imageId2=null
                   let script_result;
                   while ((script_result = http_src_pattern.exec(one_cell)) != null)  {

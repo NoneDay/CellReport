@@ -30,7 +30,10 @@
                     @layout-ready="layoutReady"
         ><!--  -->
             <grid-item v-for="(item,groupIndex) in layout"
-                       :static="item.static" :key="item.i"
+                       :static="item.static" 
+                       :is-draggable="item.draggable"
+                       :is-resizable="item.resizable"
+                       :key="item.i"
                        :x="item.x"
                        :y="item.y"
                        :w="item.w"

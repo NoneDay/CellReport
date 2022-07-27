@@ -170,7 +170,7 @@
           </div>
       </form>
     </div>
-    <div ref="report_pane" class="report_define" v-if="isShow" :style="{'flex-grow': 1,color:result.defaultsetting['COLOR'],background:result.defaultsetting['BACKGROUND-COLOR']}">
+    <div ref="report_pane" class="report_define" v-if="isShow" :style="{'flex-grow': 1,height:'90%',color:result.defaultsetting['COLOR'],background:result.defaultsetting['BACKGROUND-COLOR']}">
         <grid-layout-form v-if="layoutType=='gridLayout'" :layout="layout"  :big_screen_scale="big_screen_scale" :big_screen_scale_x="big_screen_scale_x"
          :big_screen_scale_y="big_screen_scale_y">
         </grid-layout-form>          
