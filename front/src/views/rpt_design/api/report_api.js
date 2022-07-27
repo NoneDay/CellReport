@@ -479,22 +479,22 @@ export function exec_cmd(cmd,from,to) {
 export function grp_list() {
     return request({
         method: 'get',
-        url: `${baseUrl}/api/Rpt_group` ,        
+        url: `${baseUrl}/Rpt_group/getList` ,        
         withCredentials: true
     })
 }
 export function grp_save(data) {
     return request({
-        method: 'put',
-        url: `${baseUrl}/api/Rpt_group/${data.id}` ,    
+        method: 'post',
+        url: `${baseUrl}/Rpt_group/PutRpt_group` ,
         data,    
         withCredentials: true
     })
 }
 export function grp_delete(data) {
     return request({
-        method: 'delete',
-        url: `${baseUrl}/api/Rpt_group/${data.id}` ,    
+        method: 'post',
+        url: `${baseUrl}/Rpt_group/DeleteRpt_group?id=${data.id}` ,    
         data,    
         withCredentials: true
     })
