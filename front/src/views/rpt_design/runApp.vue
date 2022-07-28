@@ -78,6 +78,18 @@
           <el-date-picker v-if="one.data_type=='datetime'||one.data_type=='dateTime'" :value-format="one.dateTimeFormat" :format="one.dateTimeFormat" 
           :type="['yyyyMM','yyyy-MM'].includes(one.dateTimeFormat)?'month':'datetime'"
                     v-model="queryForm[one.name]"></el-date-picker>
+          
+          <el-date-picker v-if="['dates'].includes( one.data_type)" value-format="yyyy-MM-dd" 
+          :type="'dates'" v-model="queryForm[one.name]"></el-date-picker>
+
+          <el-date-picker v-if="['daterange'].includes( one.data_type)" value-format="yyyy-MM-dd" 
+          :type="'daterange'" v-model="queryForm[one.name]"></el-date-picker>
+          
+          <el-date-picker v-if="['monthrange'].includes( one.data_type)" value-format="yyyy-MM" 
+          :type="'monthrange'" v-model="queryForm[one.name]"></el-date-picker>
+          
+          <el-date-picker v-if="['datetimerange'].includes( one.data_type)" :value-format="one.dateTimeFormat" :format="one.dateTimeFormat" 
+          :type="'datetimerange'" v-model="queryForm[one.name]"></el-date-picker>
           </el-form-item>
           
            </div>
@@ -110,18 +122,29 @@
           <nut-textinput v-if="one.data_type=='string' && one.tagValueList.length==0" :label="one.prompt"
           v-model="queryForm[one.name]"></nut-textinput>
           
-           <nut-cell  v-if="['date','datetime','dateTime'].includes( one.data_type)" 
+           <nut-cell  v-if="['date','datetime','dateTime','daterange'].includes( one.data_type)" 
              @click.native="queryForm_show[one.name] = true">
            <span slot="title"><b>{{one.prompt}}</b>: {{queryForm[one.name]}}</span>             
            </nut-cell>
            <nut-datepicker   v-if="['date'].includes( one.data_type) && queryForm_show[one.name]" 
-              :is-visible.sync="queryForm_show[one.name]"
+              :is-visible.sync="queryForm_show[one.name]" :end-date="new Date(new Date().setDate(new Date().getDate()+1)).format('yyyy-MM-dd')"
               :default-value="queryForm[one.name]" :type="one.data_type" 
               @close="queryForm_show[one.name]=false" :title="'请选择'+one.prompt" 
               @choose="val=>{queryForm[one.name]=val[0]+'-'+val[1]+'-'+val[2]
                 submit()
                 }"  
-            > </nut-datepicker >
+            > </nut-datepicker>
+            <!--
+              <div v-if="['daterange'].includes( one.data_type) && queryForm_show[one.name]"  >{{one.data_type}} {{queryForm_show[one.name]}}</div>
+            <nut-calendar  v-if="['daterange'].includes( one.data_type) && queryForm_show[one.name]"  
+               :is-visible.sync="queryForm_show[one.name]" :start-date="null"    :end-date="null" :animation="'nutSlideUp'"
+                :default-value="queryForm[one.name]"  type="range"
+                @close="queryForm_show[one.name]=false" :title="'请选择'+one.prompt" 
+                @choose="val=>{queryForm[one.name]=[val[0][3],val[1][3]];submit();}"
+            >
+            </nut-calendar>
+            
+            -->
            <nut-picker   v-if="['datetime','dateTime'].includes( one.data_type) && queryForm_show[one.name]" 
               :is-visible.sync="queryForm_show[one.name]"
               :list-data="[[(parseInt(queryForm[one.name].substring(0,4))-1).toString(),queryForm[one.name].substring(0,4)],
@@ -197,7 +220,6 @@ export default {
     window.onresize=this.refresh_layout 
   },
   created() {
-    
     Vue.use(install_component)
     let url_arr=window.location.href.split('?')
     
@@ -233,8 +255,8 @@ export default {
         //_this.refresh_layout(null,_this)
       }
       if(this.crisMobile && window.nutui==undefined){
-        load_css_file("cdn/nutui@2.2.15/nutui.min.css")
-        seriesLoadScripts("cdn/nutui@2.2.15/nutui.min.js",null,inner_exec)      
+        load_css_file("cdn/nutui@2.3.10/nutui.min.css")
+        seriesLoadScripts("cdn/nutui@2.3.10/nutui.min.js",null,inner_exec)      
       }
       else
         inner_exec()

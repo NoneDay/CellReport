@@ -99,8 +99,19 @@
           <el-date-picker v-if="['datetime','dateTime'].includes( one.data_type)" :value-format="one.dateTimeFormat" :format="one.dateTimeFormat" 
           :type="['yyyyMM','yyyy-MM'].includes(one.dateTimeFormat)?'month':'datetime'"
                     v-model="queryForm[one.name]"></el-date-picker>
-          </el-form-item>
+          <el-date-picker v-if="['dates'].includes( one.data_type)" value-format="yyyy-MM-dd" 
+          :type="'dates'" v-model="queryForm[one.name]"></el-date-picker>
+
+          <el-date-picker v-if="['daterange'].includes( one.data_type)" value-format="yyyy-MM-dd" 
+          :type="'daterange'" v-model="queryForm[one.name]"></el-date-picker>
           
+          <el-date-picker v-if="['monthrange'].includes( one.data_type)" value-format="yyyy-MM" 
+          :type="'monthrange'" v-model="queryForm[one.name]"></el-date-picker>
+          
+          <el-date-picker v-if="['datetimerange'].includes( one.data_type)" :value-format="one.dateTimeFormat" :format="one.dateTimeFormat" 
+          :type="'datetimerange'" v-model="queryForm[one.name]"></el-date-picker>
+          </el-form-item>
+
            </div>
             <el-form-item>
             <el-button type="primary"  class='form_query_button'  @click="submit">查询</el-button>

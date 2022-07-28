@@ -41,7 +41,8 @@ function sleep (time) {
 axios.interceptors.response.use(async res => {
   const status = Number(res.status) || 200;
   const statusWhiteList = website.statusWhiteList || [];
-  const message = res.data.message || '未知错误'+res.data.toString();
+  const cur_message =function(){return res.data.message || '未知错误'+(res.data.toString?res.data.toString():'') };
+  //const message = res.data.message || '未知错误'+res.data.toString();
   //如果在白名单里则自行catch逻辑处理
   if (statusWhiteList.includes(status)) return Promise.reject(res);
   //如果是401则跳转到登录页面
@@ -58,7 +59,7 @@ axios.interceptors.response.use(async res => {
   // 如果请求为非200否者默认统一处理
   if (status !== 200) {
       Message({
-          message: message,duration:10000,showClose: true,
+          message: cur_message(),duration:10000,showClose: true,
           type: 'error'
       })
       return Promise.reject(res.data)

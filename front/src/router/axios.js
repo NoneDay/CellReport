@@ -19,7 +19,6 @@ import { baseUrl } from '@/config/env';
 import loading from "@/util/loading"
 axios.defaults.timeout = 1000*1000;
 axios.defaults.baseURL = baseUrl;
-
 function sleep (time) {
     return new Promise((resolve) => setTimeout(resolve, time));
   }
@@ -61,12 +60,12 @@ axios.interceptors.response.use(async res => {
     const status = Number(res.status) || 200;
     
     const statusWhiteList = website.statusWhiteList || [];
-    const message = res.data.message || '未知错误'+res.data.toString();
+    const cur_message =function(){return res.data.message || '未知错误'+(res.data.toString?res.data.toString():'') };
     //如果在白名单里则自行catch逻辑处理
     if (statusWhiteList.includes(status)) return Promise.reject(res);
     //如果是401则跳转到登录页面
     if (status === 401){
-        if(res.headers['token-expired']=='true' || message.indexOf("过期")>=0 ){
+        if(res.headers['token-expired']=='true' || cur_message().indexOf("过期")>=0 ){
              // Create new promise to handle exponential backoff
             await store.dispatch("RefreshToken")
             delete res.config.headers.Authorization
@@ -81,7 +80,7 @@ axios.interceptors.response.use(async res => {
     // 如果请求为非200否者默认统一处理
     if (status !== 200) {
         Message({
-            message: message,duration:100000,showClose: true,
+            message: cur_message(),duration:100000,showClose: true,
             type: 'error'
         })
         return Promise.reject(res.data)

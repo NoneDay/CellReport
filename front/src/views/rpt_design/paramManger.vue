@@ -49,19 +49,25 @@
                         <el-option label="日期" value="date"></el-option>
                         <el-option label="时间" value="dateTime"></el-option>
                         <el-option label="数字" value="number"></el-option>
+                        <el-option label="日期范围" value="daterange"></el-option>
+                        <el-option label="月范围" value="monthrange"></el-option>
+                        <el-option label="时间范围" value="datetimerange"></el-option>
+                        <el-option label="多个日期" value="dates"></el-option>
                     </el-select>
                 </el-form-item>
             </el-col>
             </el-row>
-            <el-row>
-                <el-col :span="8">
-                    <el-form-item v-if="['datetime','dateTime'].includes(action_target._data_type)" label="日期格式"><el-input v-model="action_target._dateTimeFormat" placeholder="日期格式"></el-input></el-form-item>
+            <el-row v-if="['dateTime','datetimerange'].includes(action_target._data_type)">
+                <el-col :span="12">
+                    <el-form-item  label="时间格式"><el-input  v-model="action_target._dateTimeFormat" placeholder="日期格式"></el-input></el-form-item>
                 </el-col>
+                <el-col :span="8"><span> 例：yyyy-MM-dd HH:mm</span></el-col>
             </el-row>
             <el-row>
-                <el-col :span="8"><el-form-item ><el-checkbox label="隐藏" true-label="True" border  false-label="False"  v-model="action_target._hide"></el-checkbox></el-form-item></el-col>
-                <el-col :span="8"><el-form-item ><el-checkbox label="内部" true-label="True" border false-label="False" v-model="action_target._inner"></el-checkbox></el-form-item></el-col>
-                <el-col :span="8"><el-form-item ><el-checkbox label="允许多选" true-label="True" border false-label="False" v-model="action_target._allowMutil" ></el-checkbox></el-form-item></el-col>
+                <el-col :span="6"><el-form-item ><el-checkbox label="隐藏" true-label="True" border  false-label="False"  v-model="action_target._hide"></el-checkbox></el-form-item></el-col>
+                <el-col :span="6"><el-form-item ><el-checkbox label="内部" true-label="True" border false-label="False" v-model="action_target._inner"></el-checkbox></el-form-item></el-col>
+                <el-col :span="6"><el-form-item ><el-checkbox label="允许空白" true-label="True" border false-label="False" v-model="action_target._allowSpace" ></el-checkbox></el-form-item></el-col>
+                <el-col :span="6" v-if="['string','number'].includes(action_target._data_type)"><el-form-item ><el-checkbox label="允许多选" true-label="True" border false-label="False" v-model="action_target._allowMutil" ></el-checkbox></el-form-item></el-col>                
             </el-row>
             
             <el-divider></el-divider>
@@ -76,7 +82,7 @@
                             style="padding: 4px;margin-left: 5px"></el-button>
             </div>
             <el-divider></el-divider>
-            <el-row v-if="action_target._hide=='False' && action_target._inner=='False' && action_target._data_type!='date' && action_target._data_type!='datetime'"><el-col :span="24">
+            <el-row v-if="action_target._hide=='False' && action_target._inner=='False' && ['string','number'].includes(action_target._data_type)"><el-col :span="24">
                 <el-tabs v-model="action_target._canUsedValueFrom"
                         stretch
                         @tab-click="handleTabClick">
