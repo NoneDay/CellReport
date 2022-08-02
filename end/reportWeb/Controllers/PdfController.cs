@@ -32,7 +32,7 @@ namespace reportWeb.Controllers
         [AllowAnonymous]
         public IActionResult Index(string report_obj, string paperSetting)
         {
-            
+
             PageSetup ps = null;
             if (!string.IsNullOrEmpty(paperSetting) && "undefined" != paperSetting)
                 ps = JsonSerializer.Deserialize<PageSetup>(paperSetting);
@@ -71,8 +71,8 @@ namespace reportWeb.Controllers
             pdfDocument = new(writer);
             try
             {
-                default_font=CellReport.running.Template.getTemplate("template.xml").Get("FONT").content;
-                default_font=json_root.GetProperty("defaultsetting").GetProperty("FONT").GetString();
+                default_font = CellReport.running.Template.getTemplate("template.xml").Get("FONT").content;
+                default_font = json_root.GetProperty("defaultsetting").GetProperty("FONT").GetString();
                 if (converterProperties == null)
                 {
                     FontProvider fontProvider = new FontProvider(default_font);
@@ -91,9 +91,9 @@ namespace reportWeb.Controllers
                 foreach (var item in json_data.EnumerateObject())
                 {
                     var rg = new ReportGridJSON(item.Value, ps);
-                    rg.output(pdf_doc,ref is_first, addTable);
+                    rg.output(pdf_doc, ref is_first, addTable);
                 }
-                add_header_footer(ps, pdfDocument, pdf_doc,json_root.GetProperty("_zb_var_"));
+                add_header_footer(ps, pdfDocument, pdf_doc, json_root.GetProperty("_zb_var_"));
 
                 //*/
                 pdf_doc.Flush();
@@ -109,12 +109,12 @@ namespace reportWeb.Controllers
         PdfFont sysFont;
         private static ConverterProperties converterProperties = null;
 
-        public  string default_font { get; private set; }
+        public string default_font { get; private set; }
 
         private static Paragraph convert_html_to_paragraph(string html)
         {
             var retpp = new Paragraph();
-            var t_list=HtmlConverter.ConvertToElements(html, converterProperties);
+            var t_list = HtmlConverter.ConvertToElements(html, converterProperties);
             foreach (var one_ele in t_list)
             {
                 retpp.Add(one_ele as IBlockElement);
@@ -122,21 +122,21 @@ namespace reportWeb.Controllers
             return retpp;
         }
         private static Regex r = new(@"&\[(.*?)\]"); //[^\\]#.*#
-        private static Paragraph replace_var_to_Paragraph(string str,Dictionary<String, object> mark_dict=null)
+        private static Paragraph replace_var_to_Paragraph(string str, Dictionary<String, object> mark_dict = null)
         {//&[页码]&[总页数]&[日期]&[时间]
             MatchCollection mc = r.Matches(str);//替换#xxx#为 ?,同时记录位置
             foreach (Match a in mc)
             {
-                str = str.Replace(  a.Value ,mark_dict.GetValueOrDefault(a.Groups[1].Value).ToString());
+                str = str.Replace(a.Value, mark_dict.GetValueOrDefault(a.Groups[1].Value).ToString());
             }
-            
+
             return convert_html_to_paragraph(str);
         }
-        private  void add_header_footer(PageSetup ps, PdfDocument pdf, Document pdf_doc,JsonElement zb_var)
+        private void add_header_footer(PageSetup ps, PdfDocument pdf, Document pdf_doc, JsonElement zb_var)
         {
             zb_var.TryGetProperty("watermark", out var watermark);
-            
-            
+
+
             var pp = new Paragraph();
             int n = pdf.GetNumberOfPages();
             Dictionary<String, object> mark_dict = new Dictionary<string, object>()
@@ -164,9 +164,9 @@ namespace reportWeb.Controllers
             }
             if (watermark.ValueKind == JsonValueKind.Object)
             {
-                foreach(var one in watermark.EnumerateObject())
+                foreach (var one in watermark.EnumerateObject())
                 {
-                    if(one.Value.ValueKind==JsonValueKind.String)
+                    if (one.Value.ValueKind == JsonValueKind.String)
                         mark_dict[one.Name] = one.Value.GetString();
                     if (one.Value.ValueKind == JsonValueKind.Number)
                         mark_dict[one.Name] = one.Value.GetDouble();
@@ -188,8 +188,8 @@ namespace reportWeb.Controllers
             var watermark_color = new DeviceRgb(System.Drawing.ColorTranslator.FromHtml(mark_dict["watermark_color"].ToString())); //水印字体颜色
             var watermark_alpha = float.Parse(mark_dict["watermark_alpha"].ToString()); //水印透明度
             var _font_size = mark_dict["watermark_fontsize"].ToString();
-            
-            var watermark_fontsize = float.Parse(_font_size[0..^2])* (_font_size[^2..].ToLower()=="px"?0.75f:1); //水印字体大小
+
+            var watermark_fontsize = float.Parse(_font_size[0..^2]) * (_font_size[^2..].ToLower() == "px" ? 0.75f : 1); //水印字体大小
             var watermark_font = mark_dict["watermark_font"].ToString(); //水印字体
             var watermark_width = float.Parse(mark_dict["watermark_width"].ToString()); //水印宽度
             var watermark_height = float.Parse(mark_dict["watermark_height"].ToString());//水印长度
@@ -256,7 +256,7 @@ namespace reportWeb.Controllers
             }
         }
 
-        private  Table addTable(ReportGridJSON rg, List<int> row_list, List<int> col_list)
+        private Table addTable(ReportGridJSON rg, List<int> row_list, List<int> col_list)
         {
             List<BitArray> tableBitFlag = new();
             for (int i = 0; i < rg.tableData.Length; i++)
@@ -284,7 +284,7 @@ namespace reportWeb.Controllers
                             .SetMinWidth(rg.columnlenArr[colNo]).SetMaxWidth(rg.columnlenArr[colNo])
                             .SetMinHeight(0).SetMaxHeight(0).SetBorder(Border.NO_BORDER)
                             .SetPadding(0);// 不设置为0 ，将导致高度和设置的不同 缺省padding =2
-  
+
 
                 pdf_table.AddCell(pdf_cell);
             }
@@ -318,7 +318,7 @@ namespace reportWeb.Controllers
                     var max_width = rg.columnlenArr[colNo];
                     var r_c = rg.find_config_merge(rowNo, colNo);
                     int rowSpan = 1, colSpan = 1;
-                    
+
                     bool is_lastcol_split_cell = false;
                     bool is_lastrow_split_cell = false;
                     if (r_c == null)
@@ -444,28 +444,28 @@ namespace reportWeb.Controllers
                     var cur_str = cell_value == null ? "" : cell_value.ToString();
                     if (cur_str.StartsWith("<"))
                     {
-                        var t_str=cur_str.Replace("width:100%", $"width:{max_width}pt").Replace("height:100%", $"height:{max_height}pt");
+                        var t_str = cur_str.Replace("width:100%", $"width:{max_width}pt").Replace("height:100%", $"height:{max_height}pt");
                         var t_list = HtmlConverter.ConvertToElements($"<div style='width:{max_width}pt;height:{max_height}pt'>{t_str}</div>", converterProperties);
                         if (t_list.Count == 1 && t_list[0] is IBlockElement)
                         {
-                            cur_pp = (t_list[0] as  iText.Layout.Element.Div).SetFont(sysFont).SetFontSize(11);
+                            cur_pp = (t_list[0] as iText.Layout.Element.Div).SetFont(sysFont).SetFontSize(11);
                             //(t_list[0] as iText.Layout.Element.Div).SetFontFamily(default_font).SetFontSize(11).GetRenderer();
                             //cur_pp.SetProperty(Property.AUTO_SCALE,)
                             //cur_pp.SetProperty(Property.HEIGHT, max_height);
                             //cur_pp.SetProperty(Property.WIDTH, max_width);
                         }
                         else
-                            cur_pp = new Paragraph(cur_str) ;
+                            cur_pp = new Paragraph(cur_str);
                     }
                     else
                     {
-                        if(rowNo==0 && colNo == 0)
+                        if (rowNo == 0 && colNo == 0)
                         {
                             //max_width = 0;
-                        //    var new_font_size=shrinkFontSize(cur_str, max_width, max_height);
-                        //    pdf_cell.SetFontSize(new_font_size);
+                            //    var new_font_size=shrinkFontSize(cur_str, max_width, max_height);
+                            //    pdf_cell.SetFontSize(new_font_size);
                         }
-                        cur_pp = new Paragraph(cur_str) ;
+                        cur_pp = new Paragraph(cur_str);
                     }
                     pdf_cell.Add(cur_pp)
                             //replace_var_to_Paragraph(cell_value.ToString(),0,0)
@@ -483,7 +483,7 @@ namespace reportWeb.Controllers
             return pdf_table;
         }
 
-        private float shrinkFontSize(string content,float width,float height)
+        private float shrinkFontSize(string content, float width, float height)
         {
             Text lineTxt = new Text(content);
 

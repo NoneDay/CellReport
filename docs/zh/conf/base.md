@@ -219,6 +219,26 @@ window.luckysheet_alternateformat_save='{"cellrange":{"row":[0,8],"column":[-1,-
 ``` tip
 水印设置，请在后端运行前设置中，加代码`_zb_var_.watermark="abcdr"; //设置水印,可以动态赋值，方便设置工号姓名之类的动态水印`
 ```
+**缺省水印配置**
+``` js
+_zb_var_.watermark={
+        watermark_txt: "text",
+        watermark_x: 20, //水印起始位置x轴坐标
+        watermark_y: 20, //水印起始位置Y轴坐标
+        watermark_rows: 20, //水印行数
+        watermark_cols: 20, //水印列数
+        watermark_x_space: 100, //水印x轴间隔
+        watermark_y_space: 50, //水印y轴间隔
+        watermark_color: '#aaa', //水印字体颜色
+        watermark_alpha: 0.4, //水印透明度
+        watermark_fontsize: '15px', //水印字体大小
+        watermark_font: '微软雅黑', //水印字体
+        watermark_width: 110, //水印宽度
+        watermark_height: 40, //水印长度
+        watermark_angle: 20 //水印倾斜度数
+    }
+
+```
 
 ## 前端动态模板数据设置
 ### 动态模板中可能会用到的数据转换
@@ -417,3 +437,4 @@ hasOption 是为了动态初始化option，他总是返回true。
 1、标签间的模板一定要用{{  }} 包起来
 2、标签属性中使用模板，一定使用双引号。因为在做模板替换的时候，字符串将会用单引号。
 :::
+

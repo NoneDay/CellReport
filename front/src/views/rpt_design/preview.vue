@@ -58,13 +58,11 @@
   </div>
   <template v-else>
     <div id="report_app" style="display:flex;flex-direction:column;height:100%" >
-    <div ref="form"> 
-      <el-form :inline="true" v-if="previewFormParam.form">
+    <div ref="div_form"> 
+      <el-form ref="form" inline  v-if="previewFormParam.form" :model="queryForm">
         <input hidden v-for="one in previewFormParam.form.filter(x=>x.hide=='True')" :key="one.name" v-model="queryForm[one.name]"/>
-        
-      
-        <div style="display:inline" v-for="one in previewFormParam.form.filter(x=>x.hide=='False')" :key="one.name">
-          <el-form-item :label="one.prompt">
+        <el-form-item :label="one.prompt" v-for="one in previewFormParam.form.filter(x=>x.hide=='False')" :key="one.name"
+           :prop="one.name" :rules="result.defaultsetting.cr_front_validate=='true' && one.allowSpace=='False'? {required: true, message: '请选择', trigger: 'change' } :null">
           <el-input v-if="one.data_type=='string' && one.tagValueList.length==0 && one.canUsedValueFrom!='Query' " v-model="queryForm[one.name]"></el-input>
           <el-select v-if="['string','int'].includes(one.data_type) && one.canUsedValueFrom!='Query' && one.tagValueList.length>0 " v-model="queryForm[one.name]" 
             collapse-tags @change="change_param(one.name)" clearable filterable  
@@ -112,7 +110,7 @@
           :type="'datetimerange'" v-model="queryForm[one.name]"></el-date-picker>
           </el-form-item>
 
-           </div>
+          
             <el-form-item>
             <el-button type="primary"  class='form_query_button'  @click="submit">查询</el-button>
                    
@@ -150,6 +148,7 @@ import {convert_array_to_json,arrayToTree,seriesLoadScripts} from './utils/util.
 import {preview_one,get_pdf} from "./api/report_api"
 import {exceljs_inner_exec,xlsxjs_inner_exec} from './utils/export_excel.js'
 import paperSetting  from './paperSetting.vue'
+import { Loading } from 'element-ui';
 export default {
     name: 'preview',  
     props:["grpId"],
@@ -215,7 +214,7 @@ export default {
       if(newVal==false){
         setTimeout(() => {
             _this.$nextTick(x=>{
-                let form_h=_this.$refs.form.clientHeight+4
+                let form_h=_this.$refs.div_form.clientHeight+4
                 _this.$refs.report_pane.style.height=`calc(100%)`// - ${form_h}px
                 if(_this.result.defaultsetting.big_screen=='1'){
                   _this.big_screen_scale_y=100*_this.$refs.report_pane.clientHeight/parseInt(_this.result.defaultsetting.screen_height)
@@ -228,6 +227,9 @@ export default {
     },
   },
   computed: {
+    cr_front_validate(){
+      return window.cr_front_validate
+    },
     tableData(){
       let ret=this.context.report_result?.dataSet[this.show_type]
       if(ret)
@@ -260,17 +262,23 @@ export default {
     },
     submit(){
       let _this=this
-      _this.exec_log=""
-      _this.showLog=true
-      _this.executed = false
-      setTimeout(async function(){
-        await preview_one(_this,false)
-      })
-      
+      _this.$refs.form.validate((valid) => {
+          if (valid) {
+            _this.exec_log=""
+            _this.showLog=true
+            _this.executed = false
+            setTimeout(async function(){
+              await preview_one(_this,false)
+            })
+          } else {
+            _this.$message.error('必填项目没填内容!!');
+            return false;
+          }
+        });
     },
     change_param(param_name){
       let _this=this
-      if(this.context.report_result.param_liandong.includes(param_name)){
+      if(this.context.report_result.param_liandong?.includes(param_name)){
         console.info(_this.queryForm)
         setTimeout(async function(){
           await preview_one(_this,true,param_name)
@@ -294,11 +302,26 @@ export default {
       let _this=this
       if(command=="exceljs")
         seriesLoadScripts('cdn/exceljs/exceljs.min.js',null,function (){
-          exceljs_inner_exec(_this.result,_this.name_lable_map)
+          let loadingInstance = _this.$loading({ lock: true,
+          text: '正在导出',
+          spinner: 'el-icon-loading',
+          background: 'rgba(0, 0, 0, 0.7)' });
+          setTimeout(async () => { // 以服务的方式调用的 Loading 需要异步关闭
+            await exceljs_inner_exec(_this.result,_this.name_lable_map)
+            loadingInstance.close();
+          },100);
+          
         })
       else if(command=="xlsxjs")
           seriesLoadScripts('cdn/xlsx/dist/xlsx.full.min.js',null,function (){
-            xlsxjs_inner_exec(_this,_this.name_lable_map)
+            let loadingInstance = _this.$loading({ lock: true,
+          text: '正在导出',
+          spinner: 'el-icon-loading',
+          background: 'rgba(0, 0, 0, 0.7)' });
+            setTimeout(() => { // 以服务的方式调用的 Loading 需要异步关闭
+              xlsxjs_inner_exec(_this,_this.name_lable_map)
+              loadingInstance.close();
+            },100);            
         })
     },
     export_excel(){

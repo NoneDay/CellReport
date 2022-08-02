@@ -12,17 +12,17 @@ using reportWeb;
 
 namespace reportWeb.Controllers
 {
-
+    
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-
-    public class Rpt_groupController : Controller
+    
+    public class Rpt_groupController : Controller 
     {
         private readonly ReportDbContext _context;
-
+        
         public Rpt_groupController(ReportDbContext context)
         {
             _context = context;
-
+            
         }
         private String cur_userid { get { return HttpContext.User.Claims.FirstOrDefault(x => x.Type == "userid").Value; } }
         // GET: api/Rpt_group
@@ -30,20 +30,19 @@ namespace reportWeb.Controllers
         public async Task<ActionResult<IEnumerable<Rpt_group>>> getList()
         {
             var grp_register = await _context.Rpt_group.Include(x => x.db_connection_list).ToListAsync();
-            var rpt_config = _context.Rpt_config.FirstOrDefault();
+            var rpt_config=_context.Rpt_config.FirstOrDefault();
             if (cur_userid != "admin")
                 grp_register = grp_register.FindAll(x => x.owner == cur_userid);
-            var zc_dict = CellReport.util.KeyAndPassword.yan_zheng_zcm(rpt_config?.zcm);
-            return new JsonResult(new
-            {
+            var zc_dict=CellReport.util.KeyAndPassword.yan_zheng_zcm(rpt_config?.zcm);
+            return new JsonResult ( new {
                 grp_register,
-                login_script = rpt_config?.login_script,
+                login_script= rpt_config?.login_script,
                 machine_key = CellReport.util.KeyAndPassword.getMachine_key(),
                 zc_dict = zc_dict,
-                zcm = rpt_config?.zcm,
-                version = CellReport.util.KeyAndPassword.getVersion(),
-                link_type = DbProviderFactories.GetProviderInvariantNames()
-            });
+                zcm= rpt_config?.zcm,
+                version= CellReport.util.KeyAndPassword.getVersion(),
+                link_type =DbProviderFactories.GetProviderInvariantNames()
+        } );
         }
 
         // PUT: api/Rpt_group/5
@@ -55,7 +54,7 @@ namespace reportWeb.Controllers
             {
                 one.grp_id = rpt_group.Id;
             });
-            if (cur_userid != "admin" && rpt_group.owner != cur_userid)
+            if (cur_userid != "admin" && rpt_group.owner!= cur_userid)
             {
                 throw new Exception("非管理员不能修改管理员信息。如果需要，请通知管理员修改。");
             }
@@ -87,7 +86,7 @@ namespace reportWeb.Controllers
                 else
                     _context.Entry(one).State = EntityState.Added;
             });
-
+            
             //_context.Rpt_group.Update(rpt_group);
             try
             {
@@ -137,14 +136,14 @@ namespace reportWeb.Controllers
         [HttpPost]
         public async Task<IActionResult> DeleteRpt_group(string id)
         {
-            var rpt_group = _context.Rpt_group.Include(x => x.db_connection_list).Where(x => x.Id == id).First();
+            var rpt_group = _context.Rpt_group.Include(x=>x.db_connection_list).Where(x=>x.Id==id).First();
             if (rpt_group == null)
             {
                 return NotFound();
             }
             rpt_group.db_connection_list.Clear();
             _context.Rpt_group.Remove(rpt_group);
-
+            
             await _context.SaveChangesAsync();
 
             return new JsonResult(new { errcode = 0, message = "成功" });

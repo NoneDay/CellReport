@@ -3,24 +3,44 @@ import {getLuckyStyle,numToString } from "./util.js"
 const BitArray = require("./bits");
 let color_convert = require('onecolor');
 
-const getBase64Img = (key) => {
-  return new Promise((resolve,reject) => {
-  axios.request({
-    url:  key,
-    method: 'get',noloading:true,needResponse:true,responseType: 'arraybuffer' 
+  const getBase64Img_old = (key) => {
+    return new Promise((resolve,reject) => {
+    axios.request({
+      url:  key, headers: {
+        "Cross-Method":'CORS',
+      },
+      method: 'get',noloading:true,needResponse:true,responseType: 'arraybuffer' 
+    })
+    .then((resp) => {
+    const returnedB64 = `data:${resp.headers['content-type']};base64,${Buffer.from(resp.data).toString('base64')}`
+    resolve(returnedB64)
+    })
+    .catch((err) => 
+    {
+      reject({ error: 'Invalid signature image' })
+    }
+    )
+    })
+    }
+    const getBase64Img = (imgsrc) => {
+      return new Promise((resolve,reject) =>    {
+        const image =  document.createElementNS( 'http://www.w3.org/1999/xhtml', 'img' );;
+      // 解决跨域 Canvas 污染问题      
+      image.crossOrigin= '*';
+      image.crossOrigin= 'anonymous';
+      image.src = imgsrc;
+      image.onload = function () {
+          const canvas = document.createElement('canvas');
+          canvas.width = image.width;
+          canvas.height = image.height;
+          const context = canvas.getContext('2d');
+          context.drawImage(image, 0, 0, image.width, image.height);
+          const url = canvas.toDataURL('image/png');
+          resolve(url)
+      };
+      
   })
-  .then((resp) => {
-  const returnedB64 = `data:${resp.headers['content-type']};base64,${Buffer.from(resp.data).toString('base64')}`
-  resolve(returnedB64)
-  })
-  .catch((err) => 
-  {
-    reject({ error: 'Invalid signature image' })
   }
-  )
-  })
-  }
-
 //如果使用 FileSaver.js 就不要同时使用以下函数
 function saveAs(obj, fileName) {//当然可以自定义简单的下载文件实现方式 
     var tmpa = document.createElement("a");
@@ -56,18 +76,18 @@ function find_style(tbl,rowNo,colNo,cur_tbl_class_dict){
           case "background-color":
             i_idx=one_pair[1].indexOf("!")
             if(i_idx>0)
-              ccc=color_convert(one_pair[1].substring(0,i_idx))
+              ccc=color_convert(one_pair[1].substring(0,i_idx).trim())
             else
-            ccc=color_convert(one_pair[1])
+            ccc=color_convert(one_pair[1].trim())
             if(ccc)
               ret['fill']['fgColor']={argb:ccc.hex().substring(1)}
             break
           case "color":
             i_idx=one_pair[1].indexOf("!")
             if(i_idx>0)
-              ccc=color_convert(one_pair[1].substring(0,i_idx))
+              ccc=color_convert(one_pair[1].substring(0,i_idx).trim())
             else
-            ccc=color_convert(one_pair[1])
+            ccc=color_convert(one_pair[1].trim())
             if(ccc)
               ret['font']['color']={argb:ccc.hex().substring(1)}
             break
@@ -228,6 +248,10 @@ export  async function exceljs_inner_exec(_this_result,name_lable_map){
                         }else 
                         //if(match_result.startsWith("http"))
                         {
+                          
+                          //let resp=await fetch(match_result,{mode: 'no-cors',redirect: 'follow',})
+                          //let bbb=await resp.blob()
+                          //const returnedB64 = `data:${resp.headers['content-type']};base64,${Buffer.from(bbb).toString('base64')}`
                           let img_response=await getBase64Img(match_result)
                           imageId2 = wb.addImage({
                             base64: img_response, 
