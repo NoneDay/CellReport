@@ -530,7 +530,9 @@ html, body, #report_app {
 .el-form-item--mini.el-form-item, .el-form-item--small.el-form-item {
     margin-bottom: 1px;
 }
-
+.el-date-editor:not(.el-range-editor).el-input, .el-date-editor:not(.el-range-editor).el-input__inner {
+    width: 174px;
+}
 .nut-button.circle {
     margin-right: 20px;
 }

@@ -23,10 +23,8 @@
 	<export_key>true</export_key>
 
 	<cr_front_validate>false</cr_front_validate>
-	<!-- 前端校验 ,注意是全小写 -->
 
 	<cr_auto_line_height>false</cr_auto_line_height>
-	<!-- 自动行高 -->
 
 	<convert_col_to_button>false</convert_col_to_button>
 	<out_keys>cr_front_validate,cr_auto_line_height,convert_col_to_button,BACKGROUND-COLOR,COLOR,FONT,FONT-SIZE,border_box,layout_mode,show_form,layout_row_height,layout_colNum,layout_margin,layout_pan_height,row_col_gutter,backgroundImage,big_screen,screen_width,screen_height</out_keys>

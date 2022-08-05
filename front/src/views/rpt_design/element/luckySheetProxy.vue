@@ -308,6 +308,7 @@ export default {
                 function(evt){
                   let real_row_no=_this.TABLEOBJ.tableData_bridge[$(evt.currentTarget).data("n")]
                   let cur_row=_this.TABLEOBJ.param_grid.tableData[real_row_no]
+                  let cur_col=_this.TABLEOBJ.param_grid.columns[  $(evt.target.parentElement).data("c")]
                   let ret={"KEY":cur_row[cur_row.length-1]}
                   for(let idx=0;idx<cur_row.length-1;idx++){
                     ret[numToString(idx+1)]=cur_row[idx]
@@ -315,7 +316,7 @@ export default {
                 
                   ret=convert_array_to_json([_this.TABLEOBJ.param_grid.columns,cur_row])[0]
                   console.info(ret) 
-                  _this.$set(_this.context.clickedEle,_this.self.gridName,{data:ret,cell:null,column:null,self:_this.self})
+                  _this.$set(_this.context.clickedEle,_this.self.gridName,{data:ret,cell:ret[cur_col],column:cur_col,self:_this.self})
                   _this.click_fresh(_this.context.clickedEle[_this.self.gridName])
                   // 点击后的活动行
                   $(this).siblings('tr').removeClass('active-row');

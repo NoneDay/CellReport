@@ -166,6 +166,14 @@ export default {
             t_params.push({"name":ele.name,"value":p_data.data[ele.value]})
             data.append(ele.name,p_data.data[ele.value])
             return;
+          }else if(ele.value=="点击的列名"){
+            t_params.push({"name":ele.name,"value":p_data['cell']})
+            data.append(ele.name,p_data['cell'])
+            return;
+          }else if(ele.value=="点击的值"){
+            t_params.push({"name":ele.name,"value":p_data['column']})
+            data.append(ele.name,p_data['column'])
+            return;
           }
           // 使用缺省原始参数
           let default_param=Enumerable.from(_this.context.report_result.form).first(x=>x.name==ele.name)
