@@ -1,6 +1,6 @@
 import x2js from 'x2js' 
-import loading from "@/util/loading"
 const x2jsone=new x2js(); //实例
+import loading from "@/util/loading"
 import {request} from 'axios'
 import {load_css_js} from '../utils/util'
 let baseUrl=""
@@ -14,6 +14,8 @@ export function open_template(grpId,path) {
         withCredentials: true
   })
 }
+
+
 export function save_template(grpId,path,content) {
     let data=new FormData();
     
@@ -181,9 +183,8 @@ export async function preview_one(_this,createFormParam=false,param_name=null) {
     }
     signalR_connection.invoke('GetConnectionId').then(function(connectionId){
         let data=new FormData();
-        console.info(_this.context.report)
-        data.append("_content", x2jsone.js2xml({report:_this.context.report}) )
         data.append("_connectionId", connectionId)
+        data.append("_content", x2jsone.js2xml({report:_this.context.report}) )
         data.append("reportName", _this.context.report.reportName)
         data.append("_createFormParam", createFormParam??false)
         if(param_name!=null)
@@ -350,6 +351,7 @@ export function run_one(_this,reportFilePath,_param_name_=null,loading_conf=null
             //_this.result.fresh_dataset=Object.keys( response_data.dataSet??{})
         }
         _this.last_js_cript=load_css_js(_this.result.footer2,"report_back_css")
+        let tool=require('../utils/util.js')
         eval("(function(){\n"+_this.last_js_cript+"\n})()")
         _this.setTimeout_function=eval("(function(){\n return "+_this.setTimeout_function.toString()+"\n})()")
         if(_fresh_ds){
@@ -551,3 +553,4 @@ export function getImgFileList(path) {
         withCredentials: true
     })
 }
+

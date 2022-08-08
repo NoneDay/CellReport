@@ -615,7 +615,7 @@ export default class ResultGrid2HtmlTable{
                     disp=`<img style="width: 100%;height: 100%;" src='${disp}'>`
                 }//max-height:${max_height-1}px;
                 let style=`style="max-width:${max_width*this.ratio-4}px;width:${max_width*this.ratio-4}px;`
-                if(!this.setting.auto_line_height && !this.defaultsetting.cr_auto_line_height=='true')
+                if(!this.setting.auto_line_height || this.defaultsetting.cr_auto_line_height=='true')
                     style=style+`max-height:${max_height-1}px;`// 不能设置height，否则就不会上下居中了
                 style=style+'"'
                 if(this.optimize && cell_sort!=undefined){

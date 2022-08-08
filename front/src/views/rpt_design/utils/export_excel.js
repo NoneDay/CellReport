@@ -1,18 +1,23 @@
-import {getLuckyStyle,numToString } from "./util.js"
+import {getLuckyStyle,numToString,call_server_func } from "./util.js"
 
 const BitArray = require("./bits");
 let color_convert = require('onecolor');
 
-  const getBase64Img_old = (key) => {
+  const getBase64Img_server = (key,_this) => {
     return new Promise((resolve,reject) => {
-    axios.request({
-      url:  key, headers: {
-        "Cross-Method":'CORS',
-      },
-      method: 'get',noloading:true,needResponse:true,responseType: 'arraybuffer' 
-    })
+    //axios.request({
+    //  url:  key, headers: {
+    //    "Cross-Method":'CORS',
+    //  },
+    //  method: 'get',noloading:true,needResponse:true,responseType: 'arraybuffer' 
+    //})
+    call_server_func("download_img",key,_this)
     .then((resp) => {
-    const returnedB64 = `data:${resp.headers['content-type']};base64,${Buffer.from(resp.data).toString('base64')}`
+      if(resp.errcode){
+        resolve( resp.message )  
+        return
+      }
+    const returnedB64 = `data:${resp.type};base64,${(resp.data)}`
     resolve(returnedB64)
     })
     .catch((err) => 
@@ -22,7 +27,7 @@ let color_convert = require('onecolor');
     )
     })
     }
-    const getBase64Img = (imgsrc) => {
+    const getBase64Img_client = (imgsrc) => {
       return new Promise((resolve,reject) =>    {
         const image =  document.createElementNS( 'http://www.w3.org/1999/xhtml', 'img' );;
       // 解决跨域 Canvas 污染问题      
@@ -174,7 +179,8 @@ function find_config_merge(result_tbl,rowNo,colNo){
   }
 }  
 const http_src_pattern=/<img [^>]*src=['"]([^'"]+)[^>]*>/gi  
-export  async function exceljs_inner_exec(_this_result,name_lable_map){
+export  async function exceljs_inner_exec(_this,name_lable_map){
+    let _this_result=_this.result
     const wb = new ExcelJS.Workbook();
     let ws ,title,one_obj
     let allSheetNames=new Set()
@@ -235,6 +241,7 @@ export  async function exceljs_inner_exec(_this_result,name_lable_map){
                 if(one_cell?.indexOf && one_cell.indexOf("<img")>=0){
                   let imageId2=null
                   let script_result;
+                  let img_response
                   while ((script_result = http_src_pattern.exec(one_cell)) != null)  {
                       let match_result=script_result[1];
                       if(match_result && match_result.length>0){
@@ -252,20 +259,31 @@ export  async function exceljs_inner_exec(_this_result,name_lable_map){
                           //let resp=await fetch(match_result,{mode: 'no-cors',redirect: 'follow',})
                           //let bbb=await resp.blob()
                           //const returnedB64 = `data:${resp.headers['content-type']};base64,${Buffer.from(bbb).toString('base64')}`
-                          let img_response=await getBase64Img(match_result)
-                          imageId2 = wb.addImage({
-                            base64: img_response, 
-                            extension: 'png',
-                          });
+                          if(_this.result.defaultsetting.excel_img_func=='server')
+                            img_response=await getBase64Img_server(match_result,_this)
+                          else
+                            img_response=await getBase64Img_client(match_result,_this)
+                          if(!img_response.startsWith("data"))
+                            ws.getCell(name).value=img_response
+                          else
+                            imageId2 = wb.addImage({
+                              base64: img_response, 
+                              extension: 'png',
+                            });
                         }
                       }
                   }
-                  ws.getCell(name).value=""
+                  
                   let m=cur_table.config_merge[`${line_no}_${col_no}`]
-                  if(m){
-                    ws.addImage(imageId2, numToString(m.c+1) + (m.r+1)+":"+ numToString(m.c+m.cs)+ (m.r+m.rs));
-                  }else{                  
-                    ws.addImage(imageId2, name+":"+name);
+                  if(imageId2!=null){
+                    ws.getCell(name).value=""
+                    if(m){
+                      ws.addImage(imageId2, numToString(m.c+1) + (m.r+1)+":"+ numToString(m.c+m.cs)+ (m.r+m.rs));
+                    }else{                  
+                      ws.addImage(imageId2, name+":"+name);
+                    }
+                  }else{
+                    
                   }
                   //ws.addBackgroundImage(imageId2);
                 }

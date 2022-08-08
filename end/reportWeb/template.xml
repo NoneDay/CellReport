@@ -21,17 +21,35 @@
 	<screen_width>1920</screen_width>
 	<BORDER_STYLE><![CDATA[0.5pt solid #000;]]></BORDER_STYLE>
 	<export_key>true</export_key>
-
+	
 	<cr_front_validate>false</cr_front_validate>
-
-	<cr_auto_line_height>false</cr_auto_line_height>
-
+	
+	
+	<cr_auto_line_height>false</cr_auto_line_height>	
+	
+	
 	<convert_col_to_button>false</convert_col_to_button>
-	<out_keys>cr_front_validate,cr_auto_line_height,convert_col_to_button,BACKGROUND-COLOR,COLOR,FONT,FONT-SIZE,border_box,layout_mode,show_form,layout_row_height,layout_colNum,layout_margin,layout_pan_height,row_col_gutter,backgroundImage,big_screen,screen_width,screen_height</out_keys>
+	<excel_img_func>server</excel_img_func>
+	<out_keys>excel_img_func,cr_front_validate,cr_auto_line_height,convert_col_to_button,BACKGROUND-COLOR,COLOR,FONT,FONT-SIZE,border_box,layout_mode,show_form,layout_row_height,layout_colNum,layout_margin,layout_pan_height,row_col_gutter,backgroundImage,big_screen,screen_width,screen_height</out_keys>
 	<TABLE_APPEND><![CDATA[ x:str cellSpacing=0 cellPadding=0  style="TABLE-LAYOUT: fixed; MARGIN: 0px; FONT-SIZE: 11px; Z-INDEX: -5;  BORDER-COLLAPSE: collapse;"]]></TABLE_APPEND>
 	<sql_max_rows>500000</sql_max_rows>
-	<footer2>
+	<before_exec_script>
 		<![CDATA[
+		function download_img(url){
+   var result= web_request({'url':url,'raw':true}) ;  
+  	if(result.GetType().ToString().Contains("Exception"))
+      return {'errcode':-1,'message':result.Message };
+	var content_type=result.response.Content.Headers['ContentType']['MediaType'] ;
+	if(content_type.StartsWith('image/'))
+		return {'data':result.content,  'type':content_type  } ;   
+	else
+		return {'errcode':-1,'message':"不是图片类型" };
+}
+		]]>
+	</before_exec_script>
+	
+	<footer2>
+<![CDATA[
 <script>
 window.luckysheet_conditionformat=[
 		{column_match:".*(占比|率)\$" ,val:'{"type":"colorGradation","cellrange":[{ "row":[0,1],"column":[1,1] }],"format":["rgb(248, 105, 107)", "rgb(255, 235, 132)", "rgb(99, 190, 123)"] }' },

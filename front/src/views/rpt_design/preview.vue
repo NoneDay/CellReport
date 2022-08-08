@@ -166,6 +166,7 @@ export default {
           report:this.context?.report,
           report_result:this.result,
           mode:"preview",
+          grpId:this.grpId,
           event:{},
           queryForm:this.queryForm,
           allElementSet:this.context.allElementSet,
@@ -307,7 +308,7 @@ export default {
           spinner: 'el-icon-loading',
           background: 'rgba(0, 0, 0, 0.7)' });
           setTimeout(async () => { // 以服务的方式调用的 Loading 需要异步关闭
-            await exceljs_inner_exec(_this.result,_this.name_lable_map)
+            await exceljs_inner_exec(_this,_this.name_lable_map)
             loadingInstance.close();
           },100);
           
@@ -321,7 +322,7 @@ export default {
             setTimeout(() => { // 以服务的方式调用的 Loading 需要异步关闭
               xlsxjs_inner_exec(_this,_this.name_lable_map)
               loadingInstance.close();
-            },100);            
+            },100);
         })
     },
     export_excel(){

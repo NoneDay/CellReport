@@ -340,7 +340,7 @@ export default {
       let ret=new Set()
       this.report.dataSets.dataSet.forEach(x=>{ret.add(x._name)})
       return ret
-    },
+    }
   },
   data(){
       return {    

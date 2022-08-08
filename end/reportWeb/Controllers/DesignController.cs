@@ -76,12 +76,12 @@ namespace reportWeb.Controllers
             else
                 return null;
         }
-        public async Task<IActionResult> Preview(String _content,String _ConnectionId,string reportName,
-            String _fresh_ds,String _fresh_params,bool _createFormParam,String _param_name_)
+        public async Task<IActionResult> Preview(String _content, String _ConnectionId, string reportName,
+            String _fresh_ds, String _fresh_params, bool _createFormParam, String _param_name_)
         {
             List<String> calcDsNames = null;
             List<String> calcGridNames = null;
-            
+
             if (!String.IsNullOrEmpty(_fresh_ds))
             {
                 foreach (var item in JsonDocument.Parse(_fresh_ds).RootElement.EnumerateArray())
@@ -119,30 +119,31 @@ namespace reportWeb.Controllers
                 long start = DateTime.Now.Ticks;
                 System.Xml.XmlDocument xmlDoc = new System.Xml.XmlDocument();
                 xmlDoc.LoadXml(_content);
-                if (reportName!=null && reportName.Contains(":"))
+                if (reportName != null && reportName.Contains(":"))
                     reportName = reportName.Split(":")[1];
-                var reportDefine = await XmlReport.loadReportFromXmlDoc(xmlDoc, this.rpt_group.report_path, reportName??"temp.cr");
+                var reportDefine = await XmlReport.loadReportFromXmlDoc(xmlDoc, this.rpt_group.report_path, reportName ?? "temp.cr");
+                var report_env = reportDefine.getEnv();
                 if (!String.IsNullOrEmpty(_fresh_ds))
                 {
-                    reportDefine.getEnv().getExprFaced().addVariable("_fresh_ds", _fresh_ds);
+                    report_env.getExprFaced().addVariable("_fresh_ds", _fresh_ds);
                 }
-                reportDefine.getEnv().logger = 
+                report_env.logger =
                     new Logger(x => MessageQueueBlock<DemoMessage>
-                        .Add(new DemoMessage() 
-                        { 
-                            hubContext= hubContext,
-                            User=this.HttpContext.User,
+                        .Add(new DemoMessage()
+                        {
+                            hubContext = hubContext,
+                            User = this.HttpContext.User,
                             ConnectionId = _ConnectionId,
-                            Body = x 
-                        } 
+                            Body = x
+                        }
                     )
                 );
-                
+
                 foreach (var one in this.rpt_group.db_connection_list)
                 {
-                    reportDefine.getEnv().addDataSource(one.name, one.conn_str, one.db_type, "0");
+                    report_env.addDataSource(one.name, one.conn_str, one.db_type, "0");
                 }
-                ParamDefineDataSet pds = reportDefine.getEnv().getParamDefineDataSet();
+                ParamDefineDataSet pds = report_env.getParamDefineDataSet();
                 foreach (var row in pds.Rows)
                 {
                     String param_name = row.getData("name").ToString();
@@ -150,32 +151,32 @@ namespace reportWeb.Controllers
                         continue;
                     String default_value = CellReport.dataSet.DotNetDataSet.convertValue(pds.getDefaultValueForRow(row));
                     if (param_name != "reportName")
-                        reportDefine.getEnv().addParam(param_name, default_value);
+                        report_env.addParam(param_name, default_value);
                     if (getQueryValue(param_name) != null)
-                        reportDefine.getEnv().addParam(param_name, getQueryValue(param_name));
+                        report_env.addParam(param_name, getQueryValue(param_name));
                     if (getFormValue(param_name) != null)
-                        reportDefine.getEnv().addParam(param_name, getFormValue(param_name));
+                        report_env.addParam(param_name, getFormValue(param_name));
                 }
                 if (!String.IsNullOrEmpty(_fresh_params))
                 {
                     foreach (var item in JsonDocument.Parse(_fresh_params).RootElement.EnumerateArray())
                     {
-                        reportDefine.getEnv().addParam(item.GetProperty("name").GetString(),
-                            item.GetProperty("value").ValueKind== JsonValueKind.Number
+                        report_env.addParam(item.GetProperty("name").GetString(),
+                            item.GetProperty("value").ValueKind == JsonValueKind.Number
                             ? item.GetProperty("value").GetDecimal()
                             : item.GetProperty("value").GetString());
                     }
                 }
                 reportDefine.calcGridNames = calcGridNames?.ToArray();
-                if(calcDsNames!=null)
-                    reportDefine.calcDsNames = new HashSet<String>( calcDsNames );
-                var exprFaced=reportDefine.getEnv().getExprFaced();
-                exprFaced.getVariableDefine("_user_").value= null;
-                exprFaced.getVariableDefine("_zb_url_").value=configuration["zb_url"];
+                if (calcDsNames != null)
+                    reportDefine.calcDsNames = new HashSet<String>(calcDsNames);
+                var exprFaced = report_env.getExprFaced();
+                exprFaced.getVariableDefine("_user_").value = null;
+                exprFaced.getVariableDefine("_zb_url_").value = configuration["zb_url"];
                 exprFaced.getVariableDefine("_zb_user_").value = rpt_group.zb_user;
                 exprFaced.getVariableDefine("_zb_password_").value = rpt_group.zb_password;
                 exprFaced.getVariableDefine("_rpt_group_").value = rpt_group;
-                exprFaced.getVariableDefine("_need_dataset_").value = (_createFormParam!=true);
+                exprFaced.getVariableDefine("_need_dataset_").value = (_createFormParam != true);
 
                 if (_createFormParam == true)
                 {
@@ -185,7 +186,7 @@ namespace reportWeb.Controllers
                 exprFaced.addVariable("__page__", HttpContext.Request);
                 Engine engine = new Engine(reportDefine);
                 long end = DateTime.Now.Ticks;
-                reportDefine.getEnv().logger.Debug($"分析xml耗时：{(DateTime.Now.Ticks - start) / 10000000.0}秒");
+                report_env.logger.Debug($"分析xml耗时：{(DateTime.Now.Ticks - start) / 10000000.0}秒");
                 Exception cur_exception = null;
                 Func<Task> my_out_act = async () =>
                 {
@@ -193,10 +194,10 @@ namespace reportWeb.Controllers
                     {
                         while (cur_exception.InnerException != null)
                         {
-                            reportDefine.getEnv().logger.Error(cur_exception.Message);
+                            report_env.logger.Error(cur_exception.Message);
                             cur_exception = cur_exception.InnerException;
                         }
-                        
+
                     }
                     using (var Report = engine.getResult())
                     {
@@ -208,11 +209,12 @@ namespace reportWeb.Controllers
                                 try
                                 {
                                     await Report.exportJson(jsonWriter);
-                                }catch(Exception ex)
+                                }
+                                catch (Exception ex)
                                 {
                                     cur_exception = ex;
                                 }
-                                
+
                                 if (cur_exception != null)
                                 {
                                     reportWeb.Pages.ReportModel.output_expection(cur_exception, Report.getEnv().logger, Report.getEnv());
@@ -225,26 +227,45 @@ namespace reportWeb.Controllers
                                     jsonWriter.Write(",\"errcode\":1,\"message\":");
                                     jsonWriter.Write(JsonSerializer.Serialize(sb.ToString(), json_option));
                                 }
-                                
+
                                 jsonWriter.Write("\n}");
-                                await jsonWriter.FlushAsync();                               
+                                await jsonWriter.FlushAsync();
                                 jsonStream.Position = 0;
                                 await jsonStream.CopyToAsync(Response.Body);
                             }
                         }
                     }
                 };
-                try
+                if (Request.HasFormContentType && (Request.Form.ContainsKey("__call_func")))
                 {
-                    await engine.calcReportAsync();
-                    //GC.Collect(2, GCCollectionMode.Forced);
+                    var func_json = JsonDocument.Parse(Request.Form["__call_func"].ToString()).RootElement;
+                    if (func_json.TryGetProperty("func_name", out var func_name) && func_json.TryGetProperty("func_params", out var func_params))
+                    {
+                        if (null != exprFaced.getVariable(func_name.GetString()))
+                        {
+                            var result = exprFaced.calculate($"={func_name.GetString()}({func_params.GetRawText()})");
+                            await Response.WriteAsJsonAsync(result, report_env.getJsonOption());
+                        }
+                        else
+                            await Response.WriteAsJsonAsync(new { errcode = -1, message = $"没有自定义函数{func_name}" }, report_env.getJsonOption());
+                    }
+                    else
+                        await Response.WriteAsJsonAsync(new { errcode = -1, message = $"客户端调用函数{func_name}，没有定义func_name或func_params" }, report_env.getJsonOption());
                 }
-                catch (Exception ex)
+                else
                 {
-                    cur_exception = ex;
-                }                
-                await my_out_act();
-                reportDefine.getEnv().logger.Debug($"输出用时：{(DateTime.Now.Ticks - start) / 10000000.0}秒");
+                    try
+                    {
+                        await engine.calcReportAsync();
+                        //GC.Collect(2, GCCollectionMode.Forced);
+                    }
+                    catch (Exception ex)
+                    {
+                        cur_exception = ex;
+                    }
+                    await my_out_act();
+                }
+                report_env.logger.Debug($"输出用时：{(DateTime.Now.Ticks - start) / 10000000.0}秒");
                 //if (String.IsNullOrEmpty(fresh_ds))
                 //{
                 //}
@@ -263,12 +284,13 @@ namespace reportWeb.Controllers
                 //    await Response.Body.FlushAsync();
                 //}
                 return new EmptyResult();
-            }catch(Exception ex)
+            }
+            catch (Exception ex)
             {
-                return Json(new { errcode = 1, message = ex.Message,stacktrace=ex.StackTrace });
+                return Json(new { errcode = 1, message = ex.Message, stacktrace = ex.StackTrace });
             }
         }
-        
+
         public IActionResult test_expr(String expr)
         {
             try
@@ -278,20 +300,20 @@ namespace reportWeb.Controllers
                 CommonTokenStream tokens = new CommonTokenStream(lex);
                 tokens.GetTokens();
                 var parser = new ExprParser(tokens);
-                var exprNodes = expr.StartsWith("=")?parser.assignExpr().Tree: parser.statement_block().Tree;
+                var exprNodes = expr.StartsWith("=") ? parser.assignExpr().Tree : parser.statement_block().Tree;
                 return Json(new { errcode = 0, message = "" });
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 return Json(new { errcode = 1, message = ex.Message });
             }
         }
-        
+
         public IActionResult exec_expr(String expr)
         {
             try
             {
-                var exprFaced=new ExprFaced2();
+                var exprFaced = new ExprFaced2();
                 exprFaced.addNewScopeForScript();
                 exprFaced.addVariable("env", new Env());
                 exprFaced.addVariable("__env__", new Env());
@@ -303,15 +325,15 @@ namespace reportWeb.Controllers
                 exprFaced.addVariable("_rpt_group_", rpt_group);
 
                 var exec_result = exprFaced.calculate("{\n" + expr + "\n}", null);
-                if(exec_result is Exception ex)
+                if (exec_result is Exception ex)
                 {
                     throw ex;
                 }
-                return Json(new { errcode = 0, message = "",result= exec_result }, json_option);
+                return Json(new { errcode = 0, message = "", result = exec_result }, json_option);
             }
             catch (Exception ex)
             {
-                return Json(new { errcode = 1, message = ex.Message },json_option);
+                return Json(new { errcode = 1, message = ex.Message }, json_option);
             }
         }
         public IActionResult exec_cmd(String cmd, string from, string to)
@@ -323,7 +345,7 @@ namespace reportWeb.Controllers
                 if (String.IsNullOrEmpty(target))
                     throw new Exception("非法路径:" + file_type);
                 var where_id = target.Split(":")[0];
-                var grp = reportDb.Rpt_group.Where(x=>x.Id == where_id).FirstOrDefault().report_path;
+                var grp = reportDb.Rpt_group.Where(x => x.Id == where_id).FirstOrDefault().report_path;
                 target = target.Split(":")[1];
                 if (target.StartsWith("/"))
                     target = target.Substring(1);
@@ -385,9 +407,12 @@ namespace reportWeb.Controllers
                 {
                     return Json(new { errcode = 0, message = "文件不存在" });
                 }
-                return Json(new { errcode = 0, message = "文件存在" ,
-                    data= Convert.ToBase64String(System.IO.File.ReadAllBytes(from_path+".jpg"))
-                });                
+                return Json(new
+                {
+                    errcode = 0,
+                    message = "文件存在",
+                    data = Convert.ToBase64String(System.IO.File.ReadAllBytes(from_path + ".jpg"))
+                });
             }
             else
             {
@@ -398,12 +423,12 @@ namespace reportWeb.Controllers
 
         }
         [HttpPost]
-        public async Task<IActionResult> Open(String reportName,string zb_dict_str,string zb_param)
+        public async Task<IActionResult> Open(String reportName, string zb_dict_str, string zb_param)
         {
             if (reportName.StartsWith("/"))
                 reportName = reportName.Substring(1);
             var file_path = Path.Combine(this.rpt_group.report_path, reportName);
-            if (file_path.StartsWith(this.rpt_group.report_path) 
+            if (file_path.StartsWith(this.rpt_group.report_path)
                 && System.IO.File.Exists(file_path))
             {
                 Env parent_env = new Env();
@@ -411,7 +436,7 @@ namespace reportWeb.Controllers
                 var xmlDoc = (await XmlReport.getReportXmlDoc(this.rpt_group.report_path, reportName)).xml;
                 //var ret = XmlReport.reportToXmlDocumnt(XmlReport.loadReport(file_path), false).OuterXml;
                 //var report_content = await System.IO.File.ReadAllTextAsync(file_path, System.Text.Encoding.UTF8);
-                var conn_list =from x in this.rpt_group.db_connection_list select x.name;
+                var conn_list = from x in this.rpt_group.db_connection_list select x.name;
                 var ttt = await range_level(xmlDoc.OuterXml, reportName);
                 return Json(new
                 {
@@ -419,13 +444,13 @@ namespace reportWeb.Controllers
                     conn_list,
                     range_level = ttt.range_level,
                     defaultsetting = ttt.defaultsetting,
-                    parent_defaultsetting=new Dictionary<String, String>((from x in parent_env.TemplateGet("out_keys").Split(",") select new KeyValuePair<string, string>(x, parent_env.TemplateGet(x))))
+                    parent_defaultsetting = new Dictionary<String, String>((from x in parent_env.TemplateGet("out_keys").Split(",") select new KeyValuePair<string, string>(x, parent_env.TemplateGet(x))))
                 }
                 );
             }
             return Json(new { errcode = 1, message = "路径错误" });
         }
-        private async Task insert_ds_param(string reportName, string zb_dict_str,string zb_param)
+        private async Task insert_ds_param(string reportName, string zb_dict_str, string zb_param)
         {
             var file_path = Path.Combine(this.rpt_group.report_path, reportName);
             var xmlDoc = (await XmlReport.getReportXmlDoc(this.rpt_group.report_path, reportName)).xml;
@@ -493,7 +518,7 @@ namespace reportWeb.Controllers
 
                 }
                 xmlDoc.SelectSingleNode("//zb_var").InnerText = JsonSerializer.Serialize(zb_var, json_option);
-                
+
             }
 
             if (!String.IsNullOrEmpty(zb_param))
@@ -555,13 +580,14 @@ namespace reportWeb.Controllers
             if (!Directory.Exists(this.rpt_group.report_path))
                 Directory.CreateDirectory(this.rpt_group.report_path);
             var file_path = Path.Combine(this.rpt_group.report_path, reportName);
-            if (file_path.StartsWith(this.rpt_group.report_path)){
+            if (file_path.StartsWith(this.rpt_group.report_path))
+            {
                 var fileInfo = new FileInfo(file_path);
                 if (!Directory.Exists(fileInfo.DirectoryName))
                     Directory.CreateDirectory(fileInfo.DirectoryName);
                 if (imgFile != null)
                 {
-                    using (var stream = System.IO.File.Create(file_path+".jpg"))
+                    using (var stream = System.IO.File.Create(file_path + ".jpg"))
                     {
                         await imgFile.CopyToAsync(stream);
                     }
@@ -569,7 +595,7 @@ namespace reportWeb.Controllers
                 }
                 if (!fileInfo.Exists || (fileInfo.Exists && String.IsNullOrEmpty(zb_dict_str)))
                 {
-                    content=content.Replace("><", ">\n<");
+                    content = content.Replace("><", ">\n<");
                     //content = Regex.Replace(content, @"<defaultsetting>.*?</defaultsetting>", "");
                     //content = Regex.Replace(content, @"<parsererror>.*?</parsererror>", "");
                     //content = Regex.Replace(content, @"<parent_defaultsetting>.*?</parent_defaultsetting>", "");
@@ -578,13 +604,13 @@ namespace reportWeb.Controllers
                 }
                 if (!String.IsNullOrEmpty(zb_dict_str))
                 {
-                    await insert_ds_param( reportName,  zb_dict_str, zb_param);
+                    await insert_ds_param(reportName, zb_dict_str, zb_param);
                 }
                 return Json(new { errcode = 0, message = "保存成功" });
             }
             return Json(new { errcode = 1, message = "路径错误" });
         }
-        
+
         public async Task<IActionResult> open_template(String path)
         {
             if (!Directory.Exists(this.rpt_group.report_path))
@@ -592,17 +618,19 @@ namespace reportWeb.Controllers
             if (string.IsNullOrEmpty(path))
                 path = "template.xml";
             else if (path.StartsWith("/"))
-                path = path.Substring(1)+ "/template.xml";
+                path = path.Substring(1) + "/template.xml";
             else
                 path = path + "/template.xml";
             var file_path = Path.Combine(this.rpt_group.report_path, path);
             Env parent_env = new Env();
-            await XmlReport.templateValue2Env(this.rpt_group.report_path, path, parent_env,true);
+            await XmlReport.templateValue2Env(this.rpt_group.report_path, path, parent_env, true);
 
             if (file_path.StartsWith(this.rpt_group.report_path) && System.IO.File.Exists(file_path))
             {
                 var content = await System.IO.File.ReadAllTextAsync(file_path, System.Text.Encoding.UTF8);
-                return Json(new { content,
+                return Json(new
+                {
+                    content,
                     parent_defaultsetting = new Dictionary<String, String>((from x in parent_env.TemplateGet("out_keys").Split(",") select new KeyValuePair<string, string>(x, parent_env.TemplateGet(x))))
                 });
             }
@@ -625,19 +653,19 @@ namespace reportWeb.Controllers
             }
             return Json(new { errcode = 1, message = "路径错误" });
         }
-        private async Task<(System.Collections.IEnumerable range_level, object defaultsetting)> range_level(String content,string reportName)
+        private async Task<(System.Collections.IEnumerable range_level, object defaultsetting)> range_level(String content, string reportName)
         {
             System.Xml.XmlDocument xmlDoc = new System.Xml.XmlDocument();
             xmlDoc.LoadXml(content);
-            var report = await XmlReport.loadReportFromXmlDoc(xmlDoc, this.rpt_group.report_path, reportName??"temp.cr");
+            var report = await XmlReport.loadReportFromXmlDoc(xmlDoc, this.rpt_group.report_path, reportName ?? "temp.cr");
             Engine engine = new Engine(report);
             engine.buildRelation();
             engine.prepareCalcLevelForCell();
             var b_l = from x in engine.getResult().getAllCell()
                       where x.getExtendDirection() != CellReport.cell.Direction.none
-                      select new { band = ((CellReport.cell.ExtendCell)x).getRangeOfGroup(), level = x.getCalcLevel(),gridName=x.getGrid().Name };
-            var env=report.getEnv();
-            
+                      select new { band = ((CellReport.cell.ExtendCell)x).getRangeOfGroup(), level = x.getCalcLevel(), gridName = x.getGrid().Name };
+            var env = report.getEnv();
+
             return ((
                 from x in b_l
                 select new
@@ -651,10 +679,10 @@ namespace reportWeb.Controllers
                 }
             ).ToList(),
             new Dictionary<String, String>((from x in env.TemplateGet("out_keys").Split(",") select new KeyValuePair<string, string>(x, env.TemplateGet(x))))
-            );  
+            );
         }
-        
-        public async Task<IActionResult> grid_range_level(String content,string reportName)
+
+        public async Task<IActionResult> grid_range_level(String content, string reportName)
         {
             return Json((await range_level(content, reportName)).range_level);
         }
@@ -672,19 +700,23 @@ namespace reportWeb.Controllers
             public String LastAccessTime { get; set; }
             public String LastWriteTime { get; set; }
             public long Length { get; set; }
-            public string Img { get {
+            public string Img
+            {
+                get
+                {
                     if (isFile == true && new FileInfo(local_name + ".jpg").Exists)
                         return Convert.ToBase64String(System.IO.File.ReadAllBytes(local_name + ".jpg"));
                     else
                         return "";
-                } }
+                }
+            }
             public bool _menu { get; set; } = false;
             public List<MyFileInfo> children { get; set; }
         }
-        public IActionResult List(String loc_path=".")
+        public IActionResult List(String loc_path = ".")
         {
-            loc_path=Path.Combine(this.rpt_group.report_path, loc_path);
-            if(!loc_path.StartsWith(this.rpt_group.report_path))
+            loc_path = Path.Combine(this.rpt_group.report_path, loc_path);
+            if (!loc_path.StartsWith(this.rpt_group.report_path))
                 return Json(new { errcode = 1, message = "路径错误" });
 
             //List<MyFileInfo> ret = new List<MyFileInfo>();
@@ -693,15 +725,15 @@ namespace reportWeb.Controllers
             var ret = new MyFileInfo(loc_path);
             ret.Directory = parent.FullName.Substring(len);
             ret.children = new List<MyFileInfo>();
-            if(!parent.Exists)
+            if (!parent.Exists)
                 return Json(ret);
             //遍历文件夹
             foreach (DirectoryInfo NextFolder in parent.GetDirectories())
             {
-                ret.children.Add(new MyFileInfo( NextFolder.FullName)
+                ret.children.Add(new MyFileInfo(NextFolder.FullName)
                 {
                     FileName = NextFolder.Name,
-                    FullPathFileName = NextFolder.FullName.Substring(len + 1).Replace("\\","/"),
+                    FullPathFileName = NextFolder.FullName.Substring(len + 1).Replace("\\", "/"),
                     isFile = false
                 });
             }
@@ -713,12 +745,12 @@ namespace reportWeb.Controllers
                     FullPathFileName = NextFile.FullName.Substring(len + 1).Replace("\\", "/"),
                     LastAccessTime = NextFile.LastAccessTime.ToString("s"),
                     LastWriteTime = NextFile.LastWriteTime.ToString("s"),
-                    Length=NextFile.Length,
-                    isFile = true, 
+                    Length = NextFile.Length,
+                    isFile = true,
                 });
             var options = new JsonSerializerOptions();
             options.DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull;
-            
+
             return Json(ret, options);
         }
         public IActionResult ListForAllGroup()
@@ -726,22 +758,22 @@ namespace reportWeb.Controllers
             //Request.HttpContext.Connection.RemoteIpAddress.ToString();
             //HttpContext.RequestServices.GetService(typeof(Pages._Pages_Default));
             HttpContext.GetEndpoint();
-            var userid=HttpContext.User.Claims.FirstOrDefault(x => x.Type == "userid").Value;
-            var ret = (from x1 in this.reportDb.Rpt_group where x1.owner==userid || x1.members.Contains(userid) select x1);
+            var userid = HttpContext.User.Claims.FirstOrDefault(x => x.Type == "userid").Value;
+            var ret = (from x1 in this.reportDb.Rpt_group where x1.owner == userid || x1.members.Contains(userid) select x1);
             return Json(ret, json_option);
         }
         public IActionResult getAllWidget(string action)
         {
             var userid = HttpContext.User.Claims.FirstOrDefault(x => x.Type == "userid").Value;
-            var file_path = Path.Combine(Environment.CurrentDirectory, "widgets", userid+".json");
+            var file_path = Path.Combine(Environment.CurrentDirectory, "widgets", userid + ".json");
             String self_txt = "{}";
             if (System.IO.File.Exists(file_path))
-                self_txt = System.IO.File.ReadAllText(file_path,encoding:Encoding.UTF8);
+                self_txt = System.IO.File.ReadAllText(file_path, encoding: Encoding.UTF8);
 
             var admin_file_path = Path.Combine(Environment.CurrentDirectory, "widgets", "admin.json");
             string admin_txt = "{}";
-            if (userid!="admin" && System.IO.File.Exists(admin_file_path))
-                admin_txt =System.IO.File.ReadAllText(admin_file_path, encoding: Encoding.UTF8);
+            if (userid != "admin" && System.IO.File.Exists(admin_file_path))
+                admin_txt = System.IO.File.ReadAllText(admin_file_path, encoding: Encoding.UTF8);
 
             return Json(new { admin_json = JsonDocument.Parse(admin_txt), self_json = JsonDocument.Parse(self_txt) }, json_option);
         }
@@ -761,18 +793,18 @@ namespace reportWeb.Controllers
         }
         public IActionResult getImgFileList(string path)
         {
-            if (path.Contains(".") || path.Contains("/") || !Path.Combine(this.reportGrp.WebHostEnvironment.WebRootPath, "img",path).StartsWith(reportGrp.WebHostEnvironment.WebRootPath))
+            if (path.Contains(".") || path.Contains("/") || !Path.Combine(this.reportGrp.WebHostEnvironment.WebRootPath, "img", path).StartsWith(reportGrp.WebHostEnvironment.WebRootPath))
                 return Json(new { errcode = 1, message = "非法地址" });
             var ret = new List<string>();
-            var sourceDirectory=Path.Combine(this.reportGrp.WebHostEnvironment.WebRootPath, "../static", path);
-            foreach (var one in  Directory.EnumerateFiles(sourceDirectory))
+            var sourceDirectory = Path.Combine(this.reportGrp.WebHostEnvironment.WebRootPath, "../static", path);
+            foreach (var one in Directory.EnumerateFiles(sourceDirectory))
             {
                 string fileName = one.Substring(sourceDirectory.Length + 1);
-                ret.Add("static/"+ path+ "/" +fileName);
+                ret.Add("static/" + path + "/" + fileName);
             }
             return Json(new { errcode = 0, data = ret, message = "成功" }); ;
         }
-        public IActionResult putFile(IFormFile file,string file_type)
+        public IActionResult putFile(IFormFile file, string file_type)
         {
             string static_path = configuration["static_path"];
             if (String.IsNullOrEmpty(static_path))
@@ -785,11 +817,11 @@ namespace reportWeb.Controllers
             var webRootPath = Directory.GetCurrentDirectory();//获取项目路径
             try
             {
-                
+
                 //创建每日存储文件夹
-                if (!Directory.Exists(Path.Combine( static_path ,file_type)))
+                if (!Directory.Exists(Path.Combine(static_path, file_type)))
                 {
-                    Directory.CreateDirectory(Path.Combine(static_path , file_type));
+                    Directory.CreateDirectory(Path.Combine(static_path, file_type));
                 }
                 if (file != null)
                 {
@@ -807,7 +839,7 @@ namespace reportWeb.Controllers
                         fs.Flush();
                     }
                     //完整的文件路径
-                    
+
                     return new JsonResult(new { errcode = 0, message = "上传成功", completeFilePath = completeFilePath });
                 }
                 else
@@ -822,8 +854,8 @@ namespace reportWeb.Controllers
                     isSuccess = false,
                     resultMsg = "文件保存失败，异常信息为：" + ex.Message
                 });
-            }            
+            }
         }
-        
+
     }
 }
