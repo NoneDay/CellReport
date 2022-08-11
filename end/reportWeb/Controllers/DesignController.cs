@@ -26,6 +26,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Antlr.Runtime;
 using CellReport.core.expr;
 using System.Text.RegularExpressions;
+using reportWeb.Pages;
 
 namespace reportWeb.Controllers
 {
@@ -38,8 +39,11 @@ namespace reportWeb.Controllers
         ReportDbContext reportDb;
         JsonSerializerOptions json_option;
         ScopedObj reportGrp;
+
+        public MyLogger logger { get; }
+
         public DesignController(IConfiguration configuration,
-            IHubContext<ChatHub> hubContext, ReportDbContext reportDb,
+            IHubContext<ChatHub> hubContext, ReportDbContext reportDb, ILogger<UserController> logger,
             ScopedObj reportGrp)
         {
             this.configuration = configuration;
@@ -47,7 +51,7 @@ namespace reportWeb.Controllers
             this.rpt_group = reportGrp.rpt_group;
             this.reportDb = reportDb;
             this.reportGrp = reportGrp;
-
+            this.logger = new Pages.MyLogger(logger);
             json_option = new JsonSerializerOptions()
             {
                 DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull,
@@ -315,8 +319,14 @@ namespace reportWeb.Controllers
             {
                 var exprFaced = new ExprFaced2();
                 exprFaced.addNewScopeForScript();
-                exprFaced.addVariable("env", new Env());
-                exprFaced.addVariable("__env__", new Env());
+                var report_env = new Env();
+                report_env.logger = logger;
+                foreach (var one in this.rpt_group.db_connection_list)
+                {
+                    report_env.addDataSource(one.name, one.conn_str, one.db_type, "0");
+                }
+                exprFaced.addVariable("env", report_env);
+                exprFaced.addVariable("__env__", report_env);
                 exprFaced.addVariable("_user_", null);
                 exprFaced.addVariable("_zb_url_", configuration["zb_url"]);
                 exprFaced.addVariable("_zb_user_", rpt_group.zb_user);

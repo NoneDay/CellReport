@@ -1291,14 +1291,14 @@ export function call_server_func(func_name,func_params,_this) {
     let data=new FormData();
     data.append("__call_func",JSON.stringify({func_name,func_params}))    
     let run_url
-    if(["preview","design"].includes( _this.mode) || ["preview","design"].includes( _this.context.mode)){
+    if(["preview","design"].includes( _this.mode) || ["preview","design"].includes( _this.context?.mode)){
         const x2jsone=new x2js(); //实例
         data.append("_content", x2jsone.js2xml({report:_this.context.report}) )
         data.append("reportName", _this.context.report.reportName)
         let grpId=_this.context.report.reportName.split(":")[0]
         run_url=`${baseUrl}/design/preview${grpId==0?"":":"+grpId}`
     }
-    else if(_this.mode=="run"| _this.context.mode=="run"){
+    else if(_this.mode=="run"| _this.context?.mode=="run"){
         if(window.location.pathname.endsWith("run.html"))
             run_url=`${baseUrl}/run:${window.location.hash.substring(1)}`
         else// if(window.location.pathname.endsWith("run"))

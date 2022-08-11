@@ -65,6 +65,9 @@
                             <el-form-item label="舍弃数值全零的行">  <el-checkbox v-model="action_target._FilterZero"></el-checkbox></el-form-item> 
                         </el-col>
                         <el-button  type="primary" v-if="['memory','sql','userDefine'].includes(action_target._type)"  @click="preview">取数</el-button>
+                        <!--
+                        <el-button  type="primary" v-if="['memory','sql','userDefine'].includes(action_target._type)"  @click="manger_script">相关脚本</el-button> 
+-->
                         <el-button type="primary" v-if="action_target._type=='cr'" @click="cr_run">取数</el-button> 
                         <el-button type="primary" v-if="action_target._type=='api'" @click="api_run">取数</el-button> 
                     </el-row>
@@ -620,6 +623,38 @@ innerReport(); //设计好的报表页面选中有关单元格，复制粘贴到
           type: 'success'
         });
          
+    },
+    manger_script(){
+        let _this=this
+        this.action_target.script
+        _this.$DialogForm.show({
+            title: '弹窗页面',  width: '80%',  menuPosition:'right',
+            data:{script:'xxxxx'},
+            option:{
+                submitText: '完成',span:24,
+                column: [
+                    {label: '多选',prop: 'pri_key',type: 'checkbox',span:24, min:1,dicData:JSON.parse(this.action_target._fields).map(x=>{ return {label:x,value:x } })
+                    ,rules: [{required: true,message: "请输入",trigger: "blur"}]
+                    },
+                    {label:'多文本框',  minRows: 18,  prop:'script',type:'textarea'}]
+            },
+            beforeClose: (done) => {
+                _this.$message.success('关闭前方法')
+                done()
+            },
+            callback:(res)=>{
+                console.log(res.data);
+                _this.$message.success('关闭等待框')
+                setTimeout(() => {
+                res.done()
+                setTimeout(() => {
+                    _this.$message.success('关闭弹窗')
+                    res.close()
+                }, 1000)
+                }, 1000)
+            }            
+        })
+            
     },
     choose_file(file) {
       this.file = file.raw;//这是element的导入数据选择，必须要添加.raw才能获取，其他表单不需要
