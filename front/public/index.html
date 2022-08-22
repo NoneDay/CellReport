@@ -20,7 +20,10 @@
   <script src="<%= BASE_URL %>cdn/FileSaver.min.js"></script>  
   <script src="<%= BASE_URL %>js/linq.min.js"></script> 
   <link rel="stylesheet" href="<%= BASE_URL %>cdn/font-awesome-4.7.0/css/font-awesome.min.css">
-  <script>window.cr_login_verfiy_code_type='text';</script>
+  <script>
+  if(window.cellreport==undefined) window.cellreport={}
+  window.cellreport.cr_login_verfiy_code_type='text';
+  </script>
   <!--
   <script src="https://cdn.bootcss.com/html2canvas/0.5.0-beta4/html2canvas.min.js"></script> -->
   <title>CellReport 报表快速开发</title>

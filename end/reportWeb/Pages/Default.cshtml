@@ -11,7 +11,7 @@
     [IgnoreAntiforgeryToken(Order = 2000)]
     public class DefaultModel : ReportModel
     {
-
+        
         public DefaultModel(IConfiguration configuration, ILogger<ReportModel> logger, ScopedObj scopedObj) : base(configuration, logger, scopedObj)
         {
         }
@@ -29,5 +29,6 @@
         await Response.WriteAsync("请使用开始菜单中的chrome81浏览器才可以正常浏览报表，否则报表无法加载");
         return;
     }
+    
     await Model.Page_Load();
 }

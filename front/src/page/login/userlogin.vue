@@ -116,7 +116,7 @@ export default {
         src: "",
         value: "",
         len: 4,
-        type: window.cr_login_verfiy_code_type??"text"
+        type: window.cellreport.cr_login_verfiy_code_type??"text"
       },
       loginRules: {
         username: [

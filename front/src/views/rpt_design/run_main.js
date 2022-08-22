@@ -47,7 +47,7 @@ axios.interceptors.response.use(async res => {
   if (statusWhiteList.includes(status)) return Promise.reject(res);
   //如果是401则跳转到登录页面
   if (status === 401) store.dispatch('FedLogOut').then(() => router.push({ path: '/login' }));
-  if(res.data.message!=undefined && res.data.message.search('正在刷新缓存')>=0){
+  if(res.data?.message && res.data.message.search('正在刷新缓存')>=0){
       {
           loading.show(res.config)
           await sleep(5000);  

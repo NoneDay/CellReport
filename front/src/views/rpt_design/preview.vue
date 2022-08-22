@@ -65,7 +65,7 @@
            :prop="one.name" :rules="result.defaultsetting.cr_front_validate=='true' && one.allowSpace=='False'? {required: true, message: '请选择', trigger: 'change' } :null">
           <el-input v-if="one.data_type=='string' && one.tagValueList.length==0 && one.canUsedValueFrom!='Query' " v-model="queryForm[one.name]"></el-input>
           <el-select v-if="['string','int'].includes(one.data_type) && one.canUsedValueFrom!='Query' && one.tagValueList.length>0 " v-model="queryForm[one.name]" 
-            collapse-tags @change="change_param(one.name)" clearable filterable  
+            collapse-tags @change="change_param(one.name)" clearable filterable default-first-option :allow-create="one.allowCreate=='True'"
             :multiple="one.allowMutil=='False'?false:true">
              <el-option
                 v-for="item in one.tagValueList"
@@ -76,7 +76,7 @@
           </el-select>  
           
           <el-select v-if="['string','int'].includes(one.data_type) && one.canUsedValueFrom=='Query' && one.parent_valueField_kyz=='' " v-model="queryForm[one.name]" 
-            collapse-tags @change="change_param(one.name)" clearable filterable
+            collapse-tags @change="change_param(one.name)" clearable filterable default-first-option :allow-create="one.allowCreate=='True'"
             :multiple="one.allowMutil=='False'?false:true">
              <el-option
                 v-for="item in convert_param_array_to_json(previewFormParam.dataSet[one.dataSetName_kyz][0],one)"
@@ -228,9 +228,6 @@ export default {
     },
   },
   computed: {
-    cr_front_validate(){
-      return window.cr_front_validate
-    },
     tableData(){
       let ret=this.context.report_result?.dataSet[this.show_type]
       if(ret)

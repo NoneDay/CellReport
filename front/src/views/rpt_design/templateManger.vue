@@ -46,13 +46,17 @@
             </el-col>
              </el-row>
             <el-row style="height: 60px;">
-                <el-col :span="12">
-            <el-form-item label="显示form">
-                <el-radio v-model="tmp_css['show_form']" label="true">显示form</el-radio>
-                <el-radio v-model="tmp_css['show_form']" label="false">隐藏form</el-radio>
-            </el-form-item>
-            </el-col>
-                </el-row>
+                <el-col :span="6">
+                    <el-form-item   >
+                        <el-checkbox label="显示form" border true-label="true"  false-label="false" v-model="tmp_css['show_form']"></el-checkbox>
+                    </el-form-item>
+                </el-col>
+                <el-col :span="6">
+                    <el-form-item   >
+                        <el-checkbox label="首次载入不查询" border true-label="true"  false-label="false" v-model="tmp_css['firstNoQuery']"></el-checkbox>
+                    </el-form-item>
+                </el-col>
+            </el-row>
             <el-row style="height: 60px;">
                 <el-col >
             <el-form-item label="布局">
@@ -144,7 +148,7 @@ export default {
             tab_value:"notebook",
             tmp_css:{'BACKGROUND-COLOR':'#FFF','COLOR':'#000','FONT-SIZE':'11','FONT':'微软雅黑','layout_mode':'','border_box':'div',
             'show_form':'true',layout_row_height:"30",layout_colNum:24,layout_margin:"10",layout_pan_height:"100%",'row_col_gutter':'10'
-            
+            ,'firstNoQuery':'false'
             },
             temp_props:[
                 {'name':'notebook','mode':"javascript",'label':'记事本','val':"11"},                

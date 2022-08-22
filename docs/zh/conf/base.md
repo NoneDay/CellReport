@@ -312,7 +312,7 @@ console.info(_this) //d打印_this的内容到控制台。这仅仅是测试，�
 
 ### 定时刷新
 点报表设置，选 前端页面css和js脚本 ，添加内容，：
-
+``` js
 <script>
   _this.setTimeout_second=10 //刷新间隔10秒
   _this.setTimeout_function=function(p_this){
@@ -321,6 +321,7 @@ console.info(_this) //d打印_this的内容到控制台。这仅仅是测试，�
       console.info("xxx")
  }
 </script>
+```
 
 ## 前端动态模板
 - 在页面上添加的动态模板，内部脚本是经过简化的vue格式。主要区别是：script中定义的data、methods、computed会直接注入当前模板中，其他vue属性暂时不支持。

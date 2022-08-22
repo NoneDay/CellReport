@@ -293,6 +293,8 @@ export function run_one(_this,reportFilePath,_param_name_=null,loading_conf=null
     let _fresh_ds=_this.queryForm._fresh_ds
     loading.show(loading_conf)
     data.append("reportName", reportFilePath)
+    data.append("_createFormParam", window.cellreport.exec_num==0)
+    window.cellreport.exec_num++
     if(_param_name_!=null)
         data.append("_param_name_", _param_name_)
     let url

@@ -143,19 +143,22 @@ export default {
        */
       
       click_fresh(p_data){
-        
+        let _this=this
         this.fresh_ele.splice(0) 
         this.fresh_ele.push("元素选中行:"+this.self.gridName)//: Date.now() + '_' + Math.ceil(Math.random() * 99999});
         if(this.self.fresh_ds.length==0) //没有需要刷新的对象，就返回
+        {
+          if(window.cellreport[`cr_click_${this.self.gridName}`]){
+            window.cellreport[`cr_click_${this.self.gridName}`](p_data,this)
+          }
           return;
+        }
         if(this.context.in_exec_url.stat){
           this.$notify({title: '提示',message: "已经在执行一个查询！",type: 'error',duration:3000});
           return
         }
-        let x2jsone=new x2js(); //实例
-        let _this=this
-        let data=new FormData();
-        data.append("_content", x2jsone.js2xml({report:_this.context.report}) )
+        let x2jsone=new x2js(); //实例        
+        let data=new FormData();        
         data.append("_createFormParam", false )
         let all_gridname=Object.keys(_this.context.report_result.data)
         let real_fresh_ds=this.self.fresh_ds.filter(x=>x.split(":")[0]!='表格'  ||( x.split(":")[0]=='表格'  && all_gridname.includes( x.split(":")[1] )) )
@@ -187,6 +190,7 @@ export default {
         {
           url=_this.context.in_exec_url.run_url
         }else{
+          data.append("_content", x2jsone.js2xml({report:_this.context.report}) )
           let grpid=_this.context.report.reportName.split(":")[0]
           url= `${baseUrl}/design/preview:${grpid}`
           data.append("_fresh_params", JSON.stringify(t_params))
@@ -218,7 +222,10 @@ export default {
               _this.fresh_ele.push("表格:"+name);
             });
           }
-          if(!window.cr_close_fresh_message)
+          if(window.cellreport[`cr_click_${_this.self.gridName}`]){
+            window.cellreport[`cr_click_${_this.self.gridName}`](p_data,_this)
+          }
+          if(!window.cellreport.cr_close_fresh_message)
             _this.$notify({title: '提示',type: 'success',message: _this.fresh_ele,position: 'bottom-right',duration: 3000});
         }).catch(error=> { 
           _this.context.in_exec_url.stat=false;

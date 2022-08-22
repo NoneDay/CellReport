@@ -33,9 +33,6 @@
             <el-col :span="6">
                 <el-button type="primary"  @click="load_usedParam">装入使用的参数</el-button>
             </el-col>
-            <el-col :offset="2" :span="6">
-                
-            </el-col>
         </el-row> 
         <el-divider></el-divider>
         <el-form :inline="true" class="demo-form-inline" v-if="action_target">
@@ -68,8 +65,7 @@
                 <el-col :span="6"><el-form-item ><el-checkbox label="内部" true-label="True" border false-label="False" v-model="action_target._inner"></el-checkbox></el-form-item></el-col>
                 <el-col :span="6"><el-form-item ><el-checkbox label="允许空白" true-label="True" border false-label="False" v-model="action_target._allowSpace" ></el-checkbox></el-form-item></el-col>
                 <el-col :span="6" v-if="['string','number'].includes(action_target._data_type)"><el-form-item ><el-checkbox label="允许多选" true-label="True" border false-label="False" v-model="action_target._allowMutil" ></el-checkbox></el-form-item></el-col>                
-            </el-row>
-            
+                  </el-row>
             <el-divider></el-divider>
             <div>
                缺省值：<el-input v-model="action_target._default_value" style="width:75%" 
@@ -82,6 +78,10 @@
                             style="padding: 4px;margin-left: 5px"></el-button>
             </div>
             <el-divider></el-divider>
+            <el-row>
+            <el-col :span="6" v-if="(action_target.tagValue!=null && action_target.tagValue.length>0) || action_target._dataSetName_kyz ">   
+                <el-form-item ><el-checkbox label="允许用户添加新的下拉选项" true-label="True" border false-label="False" v-model="action_target._allowCreate" ></el-checkbox></el-form-item></el-col>
+            </el-row>
             <el-row v-if="action_target._hide=='False' && action_target._inner=='False' && ['string','number'].includes(action_target._data_type)"><el-col :span="24">
                 <el-tabs v-model="action_target._canUsedValueFrom"
                         stretch

@@ -77,7 +77,7 @@
                         <div v-if="dataLengthList(action_target._name).length>1">
                             <el-tag v-for="(one,index) in dataLengthList(action_target._name)" :key="one+index" 
                                 @click="url_choose_get(index)"
-                                :style="{'font-weight':(action_target.get==index?'bold':'')}">
+                                :style="{'margin-left': '10px','font-weight':(action_target.get==index?'bold':'')}">
                                 {{index }}
                             </el-tag>
                         </div>     
@@ -101,12 +101,12 @@
                             </el-col>
                     </el-row>
                     
-                    <el-row v-if="['api','csv','cr'].includes(action_target._type)"><el-col :span="10">
+                    <el-row v-if="['api','csv','cr'].includes(action_target._type)"><el-col :span="24">
                         <div v-if="action_target._path_list">
                             <el-tag v-for="(one,index) in JSON.parse(action_target._path_list)" 
                             :key="one+index" type="danger" 
                             @click="url_choose_get(one)"  
-                            :style="{'font-weight':(action_target.get==one?'bold':'')}">{{one }}</el-tag>
+                            :style="{'margin-left': '10px','font-weight':(action_target.get==one?'bold':'')}">{{one }}</el-tag>
                             
                         </div>  
                     </el-col>

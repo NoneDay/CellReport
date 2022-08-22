@@ -1287,7 +1287,7 @@ export function randomRgbColor() { //随机生成RGB颜色
   }
 import {request} from 'axios'
 import x2js from 'x2js' 
-export function call_server_func(func_name,func_params,_this) {
+export function call_server_func(func_name,func_params,_this,get_post='post') {
     let data=new FormData();
     data.append("__call_func",JSON.stringify({func_name,func_params}))    
     let run_url
@@ -1304,6 +1304,7 @@ export function call_server_func(func_name,func_params,_this) {
         else// if(window.location.pathname.endsWith("run"))
             run_url=window.location.href
     }
+    //if(get_post=='post')
     return request({
         method: 'post',
         data,
@@ -1311,6 +1312,7 @@ export function call_server_func(func_name,func_params,_this) {
         withCredentials: true
   })
 }
+window.cellreport.call_server_func=call_server_func
 export {
     designGrid2LuckySheet,luckySheet2ReportGrid,resultGrid2LuckySheet,
     loadFile,watermark

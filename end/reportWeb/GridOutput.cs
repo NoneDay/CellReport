@@ -125,7 +125,7 @@ namespace CellReport
                 if (getFormValue(one)!=null)
                     exprfaced.addVariable(one, System.Net.WebUtility.UrlDecode(getFormValue(one)));
             }
-            
+            exprfaced.addNewScopeForScript();
             ParamDefineDataSet pds = reportDefine.getEnv().getParamDefineDataSet();
             
             foreach (var row in pds.Rows)
@@ -148,9 +148,10 @@ namespace CellReport
                     if (t_val != null)
                         default_value = t_val;
                 }
+                exprfaced.addVariable("param_obj", row);
                 if (exprfaced.getVariableDefine("resetDefaultParam") != null)
                 {
-                    var t_val= exprfaced.calculate($"=resetDefaultParam('{param_name}')", reportDefine.getEnv().getDataSetResultMap())?.ToString();
+                    var t_val= exprfaced.calculate($"=resetDefaultParam('{param_name}',param_obj)", reportDefine.getEnv().getDataSetResultMap())?.ToString();
                     if(t_val!=null)
                         default_value = t_val;
                 }
@@ -176,9 +177,10 @@ namespace CellReport
                     default_value=lastSetParam(param_name);
                     this.addParam(param_name, default_value);
                 }
+                
                 if (exprfaced.getVariableDefine("lastSetParam") != null)
                 {
-                    var t_val = exprfaced.calculate($"=lastSetParam('{param_name}')", reportDefine.getEnv().getDataSetResultMap())?.ToString();
+                    var t_val = exprfaced.calculate($"=lastSetParam('{param_name}',param_obj)", reportDefine.getEnv().getDataSetResultMap())?.ToString();
                     if (t_val != null)
                         this.addParam(param_name, t_val);
                 }
@@ -188,6 +190,7 @@ namespace CellReport
                 //    this.addParam(param_name, default_value);
                 //}
             }
+            exprfaced.popCurrentScope();
         }
         public Exception currentException;
 

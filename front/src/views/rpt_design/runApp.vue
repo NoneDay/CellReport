@@ -46,7 +46,7 @@
           :prop="one.name" :rules="result.defaultsetting.cr_front_validate=='true' && one.allowSpace=='False'? {required: true, message: '请选择', trigger: 'change' } :null">
           <el-input v-if="one.data_type=='string' && one.tagValueList.length==0 && one.canUsedValueFrom!='Query' " v-model="queryForm[one.name]"></el-input>
           <el-select v-if="['string','int'].includes(one.data_type) && one.canUsedValueFrom!='Query' && one.tagValueList.length>0" v-model="queryForm[one.name]" 
-            collapse-tags  @change="change_param(one.name)" clearable filterable 
+            collapse-tags  @change="change_param(one.name)" clearable filterable default-first-option :allow-create="one.allowCreate=='True'"
             :multiple="one.allowMutil=='False'?false:true">
              <el-option
                 v-for="item in one.tagValueList"
@@ -57,7 +57,7 @@
           </el-select>  
           
           <el-select v-if="['string','int'].includes(one.data_type) && one.canUsedValueFrom=='Query' && one.parent_valueField_kyz=='' " v-model="queryForm[one.name]" 
-            collapse-tags  @change="change_param(one.name)" clearable filterable 
+            collapse-tags  @change="change_param(one.name)" clearable filterable default-first-option :allow-create="one.allowCreate=='True'"
             :multiple="one.allowMutil=='False'?false:true">
              <el-option
                 v-for="item in convert_param_array_to_json(result.dataSet[one.dataSetName_kyz][0],one)"
@@ -427,6 +427,8 @@ export default {
           background: 'rgba(0, 0, 0, 0.7)' });
           setTimeout(async () => { // 以服务的方式调用的 Loading 需要异步关闭
             await exceljs_inner_exec(_this,_this.name_lable_map)
+            if(window.cellreport.cr_export_excel_func)
+              window.cellreport.cr_export_excel_func(_this)
             loadingInstance.close();
           },100);
           
@@ -439,6 +441,8 @@ export default {
           background: 'rgba(0, 0, 0, 0.7)' });
             setTimeout(() => { // 以服务的方式调用的 Loading 需要异步关闭
               xlsxjs_inner_exec(_this,_this.name_lable_map)
+              if(window.cellreport.cr_export_excel_func)
+                window.cellreport.cr_export_excel_func(_this)
               loadingInstance.close();
             },100);            
         })
@@ -465,9 +469,6 @@ export default {
     }
   },
   computed: {
-    cr_front_validate(){
-      return window.cr_front_validate
-    },
     parentCompent(){ return this},
     crisMobile(){
         let flag = navigator.userAgent.match(/(phone|pad|pod|iPhone|iPod|ios|iPad|Android|Mobile|BlackBerry|IEMobile|MQQBrowser|JUC|Fennec|wOSBrowser|BrowserNG|WebOS|Symbian|Windows Phone)/i)

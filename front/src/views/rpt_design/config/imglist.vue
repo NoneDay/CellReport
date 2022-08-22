@@ -53,7 +53,7 @@ export default {
     },
     headers() {
       return {
-        'asoco-token': ''//cookies.get(ASOCO_TOKEN)
+        
       }
     }
   },

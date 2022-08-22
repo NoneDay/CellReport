@@ -808,8 +808,8 @@ export default class ResultGrid2HtmlTable{
         */
         sb.append(".reportDefaultCss{").append(this.param_grid.reportDefaultCss)
         .append(`}
-        tr.hover-row>td ${window.cr_hover_row||'{background-color:lightgray!important;}'}
-        tr.active-row>td  ${window.cr_active_row || '{background-color: #7cbcfc!important;}'}
+        tr.hover-row>td ${window.cellreport.cr_hover_row||'{background-color:lightgray!important;}'}
+        tr.active-row>td  ${window.cellreport.cr_active_row || '{background-color: #7cbcfc!important;}'}
             .cr-cell {margin: 0;box-sizing: border-box;
                 padding: 0 2px;
                 white-space: wrap;
