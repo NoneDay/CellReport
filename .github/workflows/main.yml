@@ -37,11 +37,11 @@ jobs:
       # 如果缓存没有命中，安装依赖
       - name: Install dependencies
         if: steps.yarn-cache.outputs.cache-hit != 'true'
-        run: npm install -D vuepress
+        run: yarn add  -D vuepress
 
       # 运行构建脚本
       - name: Build VuePress site
-        run: npm run docs:build
+        run: yarn docs:build
 
       # 查看 workflow 的文档来获取更多信息
       # @see https://github.com/crazy-max/ghaction-github-pages
