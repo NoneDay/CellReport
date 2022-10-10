@@ -72,7 +72,7 @@ function find_style(tbl,rowNo,colNo,cur_tbl_class_dict){
   let default_css
   function parse_elelment(x_ele){
     let ccc,i_idx
-    let ret={'font':{},'alignment':{},'border':{},'fill':{}};
+    let ret={'font':{},'alignment':{wrapText: true},'border':{},'fill':{}};
     x_ele.split(";").forEach(element => {
         if(element=="")
           return
@@ -220,11 +220,15 @@ export  async function exceljs_inner_exec(_this,name_lable_map){
               const row = ws.getRow(line_no+1)// 从1 开始计数，设置行高
               row.height= (cur_table.rowlenArr[line_no]??cur_table.rowlenArr["default"] )*72/96
               for(let one_cell of one_line){ 
+                console.info(one_cell)
               //one_line.forEach(async (one_cell) => {
-                if(col_no>=column_nums)
+                if(col_no>=column_nums){
+                  col_no++
                   continue   
+                }
                 if(tableBitFlag[line_no].get(col_no))
                 {
+                  col_no++
                   continue;
                 }
                 tableBitFlag[line_no].set(col_no ,1)
@@ -396,3 +400,25 @@ export  async function exceljs_inner_exec(_this,name_lable_map){
       "这里是下载的文件名" + ".xlsx");
 
     }
+import   ResultGrid2HtmlTable2   from './resultGrid2HtmlTable.js'    
+export  async function docx_inner_exec(_this,name_lable_map){
+      let ws ,title,one_obj,htmlString
+      Object.keys( name_lable_map).forEach(one => {
+          one_obj=name_lable_map[one]
+          if(one_obj.component=="luckySheetProxy"){
+            if (_this.result.data[one].type== "common"){
+              let cur_grid=_this.result.data[one]
+              let TABLEOBJ=new ResultGrid2HtmlTable2(cur_grid,{clientWidth:10000000},{no_use_parent_css:true,fit:false,page_size:10000},_this.result.defaultsetting)
+              htmlString=TABLEOBJ.show(1,10000)
+            }
+          }          
+      });
+      const fileBuffer = await HTMLtoDOCX(htmlString, null, {
+        table: { row: { cantSplit: true } },
+        footer: true,
+        pageNumber: true,
+      });
+
+      saveAs(new Blob([s2ab(fileBuffer)], { type: "application/octet-stream"}), 
+      "这里是下载的文件名" + ".docx");      
+}

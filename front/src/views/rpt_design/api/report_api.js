@@ -192,13 +192,14 @@ export async function preview_one(_this,createFormParam=false,param_name=null) {
         Object.entries(_this.queryForm).forEach(kv=>{
             data.append(kv[0], kv[1]??'')    
         })
+        let _fresh_ds=_this.queryForm._fresh_ds
         request({
         method: 'post',
         url: `${baseUrl}/design/preview${_this.grpId==0?"":":"+_this.grpId}`,
         data
         ,withCredentials: true,noloading:true
         }).then(response_data => {
-            
+            delete _this.queryForm._fresh_ds
             if(response_data.errcode==1){
                 _this.$notify({title: '提示',message: response_data.message,type: 'error',duration:0});
                 return
@@ -225,7 +226,13 @@ export async function preview_one(_this,createFormParam=false,param_name=null) {
                 _this.context.report_result.form=_this.result.form
             }
             else{
-                Object.assign(_this.context.report_result,_this.result)
+                if(_fresh_ds){
+                    Object.assign(_this.context.report_result.dataSet,response_data.dataSet)
+                    Object.assign(_this.context.report_result.data,response_data.data)
+                }
+                else
+                    Object.assign(_this.context.report_result,_this.result)
+
                 _this.context.report.dataSets.dataSet.forEach(element => {
                     let define_ds= _this.context.report_result.dataSet[element._name]               
                     if(define_ds)
@@ -251,7 +258,7 @@ export async function preview_one(_this,createFormParam=false,param_name=null) {
             }
             _this.executed =true
             _this.showLog=false
-            if(createFormParam)
+            if(createFormParam || _fresh_ds)
                 return
             if(_this.context.report_result.layout)
             {

@@ -30,7 +30,9 @@ namespace reportWeb.Pages
         
         public override void Info(Object info)
         {
+            
             _logger.LogInformation(info?.ToString());
+            
         }
         public override void Warn(Object info)
         {
@@ -99,7 +101,8 @@ namespace reportWeb.Pages
                 Request.Form.Keys.Contains("__deleted"))
                 )
                 needType = "json";
-            if (needType == "json")
+            string str_call_func = Request.Query["__call_func"].ToString();
+            if (needType == "json" || !String.IsNullOrEmpty(str_call_func))
             {
                 Response.ContentType = "application/json";
             }
@@ -197,10 +200,12 @@ namespace reportWeb.Pages
                 Response.Body.Flush();
                 this.HttpContext.Response.RegisterForDispose(reportDefineForWeb);
             }
-            catch (System.Exception e)
+            catch (System.Exception ex)
             {
-                output_expection(e, logger,report_env);
-                throw;
+                while (ex.InnerException != null)
+                    ex = ex.InnerException;
+                output_expection(ex, logger,report_env);
+                throw ex;
             }
             finally
             {
@@ -209,7 +214,7 @@ namespace reportWeb.Pages
             }
         }
 
-        internal static void output_expection(Exception e, CellReport.running.Logger logger, CellReport.running.Env report_env)
+        internal static void output_expection(Exception e, CellReport.running.Logger logger, CellReport.running.Env report_env, HttpRequest Request = null)
         {
             logger.Error("-----------------------------------");
             String curCellName = "`0";
@@ -223,6 +228,24 @@ namespace reportWeb.Pages
                     if (kv.Key == "reportName")
                         continue;
                     sb.Append("\t" + kv.Key + "='" + kv.Value + "'");
+                }
+                if (Request != null)
+                {
+                    sb.Append("\nQuery：");
+                    foreach (var kv in Request.Query)
+                    {
+                        if (kv.Key == "reportName")
+                            continue;
+                        sb.Append("\t" + kv.Key + "='" + kv.Value + "'");
+                    }
+                    sb.Append("\nForm：");
+                    if (Request.HasFormContentType)
+                        foreach (var kv in Request.Form)
+                        {
+                            if (kv.Key == "reportName")
+                                continue;
+                            sb.Append("\t" + kv.Key + "='" + kv.Value + "'");
+                        }
                 }
                 logger.Error("当前报表："
                     + report_env.getExprFaced().calculate("=_rpt_group_.Id").ToString()
@@ -239,8 +262,9 @@ namespace reportWeb.Pages
                 if (inner_e.StackTrace != null)
                     break;
                 inner_e = inner_e.InnerException;
-            }            
+            }
         }
+
 
         private void parse_fresh_ds()
         {
@@ -320,21 +344,30 @@ namespace reportWeb.Pages
                     async(jsonWrite) => await calc_output(jsonWrite));
                 
                 await Response.Body.FlushAsync();
-                await Response.WriteAsync(",\"notebook\":");
-                await Response.WriteAsync(System.Text.Json.JsonSerializer.Serialize(report_env.TemplateGet("notebook"), report_env.getJsonOption()));
                 //await Response.WriteAsync(",\"footer2\":");
                 //await Response.WriteAsync(System.Text.Json.JsonSerializer.Serialize(report_env.TemplateGet("footer2"), report_env.getJsonOption()));
-
+                var exprFaced = report_env.getExprFaced();
                 if (this.myCache != null )
                 {
                     this.tips = this.tips
                          + "\n刷新标记是：" + this.myCache.fresh_flag
                         + "\n刷新标记取得时间:" + this.myCache.global_time.ToString("yyyy-MM-dd hh:mm:ss fff")
                          + "\n本报表计算时间：" + this.myCache.fresh_time.ToString("yyyy-MM-dd hh:mm:ss fff");
-
                     this.tips = System.Text.Json.JsonSerializer.Serialize(this.tips, report_env.getJsonOption());
                     await Response.WriteAsync($",\"cache_key\":\"{myCache.cacheKey(tmpFileName)}\" ,\"tips\":{this.tips}");
                 }
+                await Response.WriteAsync(",\"_zb_var_\":");
+                if (exprFaced.getVariable("_zb_var_") != null)
+                {
+                    await Response.WriteAsync(JsonSerializer.Serialize(exprFaced.getVariable("_zb_var_"), report_env.getJsonOption()));
+                }
+                else
+                {
+                    await Response.WriteAsync("{}");
+                }
+                await Response.WriteAsync(",\"notebook\":");
+                await Response.WriteAsync(System.Text.Json.JsonSerializer.Serialize(report_env.TemplateGet("notebook"), report_env.getJsonOption()));
+
                 await Response.WriteAsync("\n}");
             }
         }
@@ -375,27 +408,32 @@ namespace reportWeb.Pages
                         reportDefineForWeb.CurrentReportDefine.calcGridNames = new String[] { };
                         reportDefineForWeb.CurrentReportDefine.calcDsNames = new ();
                     }
-
-                    if (Request.HasFormContentType && (Request.Form.ContainsKey("__call_func")))
+                    //string str_call_func=Request.Query["__call_func"].ToString();
+                    //if (!String.IsNullOrEmpty(str_call_func))
+                    //{
+                    //    Object result = CellReport.core.expr.ExprHelper.calc_client_func(report_env, str_call_func);
+                    //    htmlWrite.Write(JsonSerializer.Serialize(result, report_env.getJsonOption()));
+                    //}
+                    else if (Request.HasFormContentType && (Request.Form.ContainsKey("__call_func")))
                     {
+                        var __call_func = Request.Form["__call_func"].ToString();
+                        var func_json = JsonDocument.Parse(__call_func).RootElement;
+                        Object result = CellReport.core.expr.ExprHelper.calc_client_func(report_env, func_json);
                         
-                        var func_json = JsonDocument.Parse(Request.Form["__call_func"].ToString()).RootElement;
-                        if (func_json.TryGetProperty("func_name", out var func_name) && func_json.TryGetProperty("func_params", out var func_params))
-                        {
-                            if (null != exprFaced.getVariable(func_name.GetString()))
-                            {
-                                var result = exprFaced.calculate($"={func_name.GetString()}({func_params.GetRawText()})", report_env.getDataSetResultMap());
-                                htmlWrite.Write(JsonSerializer.Serialize(result, report_env.getJsonOption()));
-                            }
-                            else
-                                htmlWrite.Write(JsonSerializer.Serialize(new { errcode = -1, message = $"没有自定义函数{func_name}" }, report_env.getJsonOption()));
-                        }
-                        else
-                            htmlWrite.Write(JsonSerializer.Serialize(new { errcode = -1, message = $"客户端调用函数{func_name}，没有定义func_name或func_params" }, report_env.getJsonOption()));
+                        htmlWrite.Write(JsonSerializer.Serialize(result, report_env.getJsonOption()));
                     }
                     else
                     {
                         await calc_output(htmlWrite);
+                        htmlWrite.Write(",\"_zb_var_\":");
+                        if (exprFaced.getVariable("_zb_var_") != null)
+                        {
+                            htmlWrite.Write(JsonSerializer.Serialize(exprFaced.getVariable("_zb_var_"), report_env.getJsonOption()));
+                        }
+                        else
+                        {
+                            htmlWrite.Write("{}");
+                        }
                         htmlWrite.Write(",\"notebook\":");
                         htmlWrite.Write(System.Text.Json.JsonSerializer.Serialize(report_env.TemplateGet("notebook"), report_env.getJsonOption()));
                         //htmlWrite.Write(",\"footer2\":");
@@ -409,9 +447,9 @@ namespace reportWeb.Pages
             }
         }
 
-        private async Task calc_output(MyTextWrite jsonWrite)
+        private async Task calc_output(MyTextWrite htmlWrite)
         {
-            await this.reportDefineForWeb.calcReport(jsonWrite);//命令格式：(g表格|d数据集|u修改数据)，
+            await this.reportDefineForWeb.calcReport(htmlWrite);//命令格式：(g表格|d数据集|u修改数据)，
             if (reportDefineForWeb.Report == null)
                 if (reportDefineForWeb.currentException != null)
                 {
@@ -419,8 +457,9 @@ namespace reportWeb.Pages
                 }
             if (Request.Query["_fresh_ds"].ToString() == "")
             {
-                await reportDefineForWeb.Report.exportJson(jsonWrite);
+                await reportDefineForWeb.Report.exportJson(htmlWrite);
             }
+            
         }
         /// MD5　32位加密
         /// &lt;/summary&gt;

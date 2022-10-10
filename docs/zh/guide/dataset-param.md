@@ -111,3 +111,6 @@ SELECT 产品.产品ID, 产品.产品名称 FROM 产品 where 类别ID=$leibie$
  select * from xxx
  xxx in ('A','B','C')
 ```
+::: tips
+var \_ExecSqlTimeOut_=120;  //可以调整sql 执行查询超时时间。在后端脚本里面加上
+:::

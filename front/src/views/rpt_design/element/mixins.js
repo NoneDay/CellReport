@@ -133,6 +133,38 @@ export default {
           ds=test_data
           return ds.slice(from,to)
       },
+      findElelment(name,prop_dict){
+        if(this.context?.report_result){
+          let ret=this.context?.report_result.layout.concat(
+            this.context?.report_result.layout_hidden||[]).filter(x=>x.element.gridName==name)
+          if(ret!=null)
+            return Object.assign({}, ret[0].element,prop_dict||{})
+        }
+      },
+      find_item(item){
+        if(this.context.mode!='design' || this.selectWidget.type=='layout')
+            return false;
+        if(this.selectWidget.type=='layout_item' && item.i==this.selectWidget.item_i)
+        {
+            return true;
+        }
+        if(item==this.selectWidget || item.element==this.selectWidget)
+        {
+            return true;
+        }
+        let children=item.element?.children?.column || item.children?.column
+        if(children)
+        {
+            for(let one in children){
+                let in_child=this.find_item(children[one])
+                if(in_child)
+                {
+                    return true;
+                }
+            }
+        }        
+        return false;
+    },
       /**
        * 刷新机制：context.clickedEle 中存放每个元素的点击数据
        * 在点击grid或report或图等元素时，需要设置 clickedEle.然后调用click_fresh，参数为点击元素的选中数据p_data

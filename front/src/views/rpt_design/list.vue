@@ -67,7 +67,8 @@
           </div>
         </div>
     </div>
-    <el-table v-else :data="grp.tableData.children"
+    <el-table v-else  
+        :data="grp.tableData.children"  
         style="width: 100%;margin-bottom: 20px;"
         row-key="FullPathFileName" :height="'90%'"
         border @cell-click="row_click"
@@ -98,6 +99,14 @@
         <el-table-column  prop="Length" sortable label="Length" :width="100"/>
 
     </el-table>
+    <!--
+    <el-pagination     .slice((currentPage - 1) * pageSize, currentPage*pageSize)
+        :current-page.sync="currentPage"
+        :page-sizes="[20, 50, 100, 200]"
+        :page-size.sync="pageSize"
+        layout="total, sizes, prev, pager, next, jumper"
+        :total.sync="grp.tableData.children.length">
+    </el-pagination> -->
   </div>
   </el-tab-pane>
   <templateManger v-if="template_dialog_visible" @submit="template_handleSubmit"
@@ -154,7 +163,9 @@ export default {
             template_xml:{},
             parent_defaultsetting:{},
             search_file_name:"",
-            cur_pre_copy_file:""
+            cur_pre_copy_file:"",
+            currentPage:1,
+            pageSize:20,
         }
     },
     watch:{

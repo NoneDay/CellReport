@@ -23,11 +23,18 @@ using iText.Kernel.Pdf.Canvas;
 using iText.Layout.Layout;
 using iText.Kernel.Pdf.Xobject;
 using System.Text.RegularExpressions;
+using iText.Html2pdf.Resolver.Font;
+using Microsoft.Extensions.Configuration;
 
 namespace reportWeb.Controllers
 {
     public class PdfController : Controller
     {
+        private IConfiguration configuration;
+        public PdfController(IConfiguration configuration)
+        {
+            this.configuration = configuration;
+        }
         [HttpPost]
         [AllowAnonymous]
         public IActionResult Index(string report_obj, string paperSetting)
@@ -73,14 +80,38 @@ namespace reportWeb.Controllers
             {
                 default_font = CellReport.running.Template.getTemplate("template.xml").Get("FONT").content;
                 default_font = json_root.GetProperty("defaultsetting").GetProperty("FONT").GetString();
+                converterProperties = null;
                 if (converterProperties == null)
                 {
-                    FontProvider fontProvider = new FontProvider(default_font);
+                    // 如果发现字体显示不对，就需要调整字体顺序。
+                    FontProvider fontProvider = new DefaultFontProvider(true, true, false);
+                    int idx = 0;
+                    for (; idx < 1000; idx++)
+                    {
+                        var cur_font = configuration["pdf_fonts" + ":" + idx] ;
+                        if (cur_font == null)
+                            break;
+                        FontProgram fontProgram = FontProgramFactory.CreateFont(cur_font);
+                        fontProvider.AddFont(fontProgram);
+                    }
                     fontProvider.AddSystemFonts();
+                    //PdfFontFactory.RegisterDirectory("c:/windows/fonts");
+                    ////PdfFontFactory.RegisterDirectory("/usr/share/fonts");
+                    //foreach (var one in Directory.GetFiles("c:/windows/fonts"))
+                    //{
+                    //    
+                    //    if (one.EndsWith(".ttf") || one.EndsWith(".ttc"))
+                    //        fontProvider.AddFont(one);
+                    //}
+                    //String[] fonts = new string[] { "c:/windows/fonts/simfang.ttf" };
+                    
+
+
+
                     converterProperties = new ConverterProperties();
                     converterProperties.SetFontProvider(fontProvider);
                     converterProperties.SetCharset("utf-8");
-                    converterProperties.SetBaseUri("http://127.0.0.1:5000/");
+                    converterProperties.SetBaseUri($"http://127.0.0.1:{HttpContext.Connection.LocalPort}/");
                 }
                 Document pdf_doc = new(pdfDocument, new PageSize(ps.pageSize_Width, ps.pageSize_Height)
                     , false);
@@ -160,7 +191,7 @@ namespace reportWeb.Controllers
             };
             foreach (var item in zb_var.EnumerateObject())
             {
-                mark_dict[item.Name] = item.Value.GetString();
+                mark_dict[item.Name] = item.Value.ToString();
             }
             if (watermark.ValueKind == JsonValueKind.Object)
             {
@@ -469,9 +500,10 @@ namespace reportWeb.Controllers
                     }
                     pdf_cell.Add(cur_pp)
                             //replace_var_to_Paragraph(cell_value.ToString(),0,0)
-                            .SetMinWidth(max_width - deta).SetMaxWidth(max_width - deta)
-                            .SetMinHeight(max_height - deta).SetMaxHeight(max_height - deta)
-                            .SetPadding(0)// 不设置为0 ，将导致高度和设置的不同 缺省padding =2
+                            .SetMinWidth(max_width - deta).SetMaxWidth(max_width - deta);
+                    if (rg.auto_line_height == false)
+                        pdf_cell.SetMinHeight(max_height - deta).SetMaxHeight(max_height - deta);
+                    pdf_cell.SetPadding(0)// 不设置为0 ，将导致高度和设置的不同 缺省padding =2
                                           .SetMargin(0)
 
                             ;

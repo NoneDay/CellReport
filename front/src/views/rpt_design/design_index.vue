@@ -1071,11 +1071,13 @@ export default {
       save_one(this.report)
       //console.info(x2jsone.js2xml({report:this.report}))
     },
-    run_report(url){
+    async run_report(url){
       // console.log(url)
       this.save_fix()
       this.save_layout(this.layout_mode)
       save_one(this.report)
+      if(navigator?.clipboard)
+        await navigator.clipboard.writeText(url)
       let newA = document.createElement('a');
       newA.target = '_blank';
       newA.href = url;

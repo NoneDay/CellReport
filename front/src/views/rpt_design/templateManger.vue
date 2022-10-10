@@ -14,15 +14,14 @@
             style="height:100%"
             v-model="one.val" 
           :options="{tabSize: 4, mode: one.mode,
-           styleActiveLine: true,lineWrapping: true,
+           styleActiveLine: true,lineWrapping: true,lineNumbers: true,line: true,
             theme: 'cobalt',showCursorWhenSelecting: true, cursorBlinkRate:0 }" 
             @ready="editor_ready(one.name)"
          />
         
     </el-tab-pane>
     <el-tab-pane label='缺省值'>
-        <el-form labelPosition="left" label-suffix="：" :label-position="'right'"
-             labelWidth="100px">
+        <el-form labelPosition="left" label-suffix="："  labelWidth="100px">
             <el-row style="height: 60px;">
                 <el-col :span="6">
             <el-form-item label="字体">
@@ -54,6 +53,11 @@
                 <el-col :span="6">
                     <el-form-item   >
                         <el-checkbox label="首次载入不查询" border true-label="true"  false-label="false" v-model="tmp_css['firstNoQuery']"></el-checkbox>
+                    </el-form-item>
+                </el-col>
+                <el-col :span="6">
+                    <el-form-item   >
+                        <el-checkbox label="前端校验" border true-label="true"  false-label="false" v-model="tmp_css['cr_front_validate']"></el-checkbox>
                     </el-form-item>
                 </el-col>
             </el-row>
@@ -145,15 +149,16 @@ export default {
         return {
             data_ready:false,
             //['notebook','before_exec_script','footer2','luckysheet_conditionformat',]
-            tab_value:"notebook",
+            tab_value:"before_exec_script",
             tmp_css:{'BACKGROUND-COLOR':'#FFF','COLOR':'#000','FONT-SIZE':'11','FONT':'微软雅黑','layout_mode':'','border_box':'div',
             'show_form':'true',layout_row_height:"30",layout_colNum:24,layout_margin:"10",layout_pan_height:"100%",'row_col_gutter':'10'
-            ,'firstNoQuery':'false'
+            ,'firstNoQuery':'false','cr_front_validate':'false'
             },
             temp_props:[
-                {'name':'notebook','mode':"javascript",'label':'记事本','val':"11"},                
+                            
                 {'name':'before_exec_script','mode':"javascript",'label':'后端运行前脚本','val':"11"},            
                 {'name':'footer2','mode':"javascript",'label':'前端页面css和js脚本','val':"22"},
+                {'name':'notebook','mode':"javascript",'label':'记事本','val':"11"},    
             ],
             action_name:"",
             dialogVisible:false,

@@ -79,9 +79,15 @@
             </div>
             <el-divider></el-divider>
             <el-row>
-            <el-col :span="6" v-if="(action_target.tagValue!=null && action_target.tagValue.length>0) || action_target._dataSetName_kyz ">   
-                <el-form-item ><el-checkbox label="允许用户添加新的下拉选项" true-label="True" border false-label="False" v-model="action_target._allowCreate" ></el-checkbox></el-form-item></el-col>
+            <el-col :span="12" v-if="(action_target.tagValue!=null && action_target.tagValue.length>0) || action_target._dataSetName_kyz ">   
+                <el-form-item ><el-checkbox label="允许用户添加新的下拉选项" true-label="True" border false-label="False" v-model="action_target._allowCreate" ></el-checkbox></el-form-item>
+            </el-col>
+            
+            <el-col :span="12" v-if="action_target._dataSetName_kyz && action_target._parent_valueField_kyz">   
+                <el-form-item ><el-checkbox label="树状仅显示最后一级" true-label="False" border false-label="True" v-model="action_target._showAllLevels" ></el-checkbox></el-form-item>
+            </el-col>
             </el-row>
+
             <el-row v-if="action_target._hide=='False' && action_target._inner=='False' && ['string','number'].includes(action_target._data_type)"><el-col :span="24">
                 <el-tabs v-model="action_target._canUsedValueFrom"
                         stretch
@@ -193,6 +199,10 @@ export default {
     methods:{
         select_action_target(item){
             this.action_target=item
+             if(item.tagValue && !Array.isArray(item.tagValue))
+                item.tagValue=[item.tagValue]   
+            
+
             if(!this.report.dataSets.dataSet.find(x=>x._name==[this.action_target._dataSetName_kyz])){
                 this.action_target._dataSetName_kyz=''
             }

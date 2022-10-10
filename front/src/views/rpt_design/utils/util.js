@@ -191,7 +191,10 @@ export const build_chart_data=function (ds_name_source,report_result,clickedEle_
     ds_name=ds_name.length>1?ds_name[1]:ds_name[0]
     let real_data
     if(ds_name_source.startsWith("数据集")){
-        real_data= JSON.parse(JSON.stringify(report_result.dataSet[ds_name][0]))
+        if(report_result.dataSet[ds_name])
+            real_data= JSON.parse(JSON.stringify(report_result.dataSet[ds_name][0]))
+        else 
+            return [[],[],[]];
     } 
     else if(ds_name_source.startsWith("元素")){
         let cur_grid=report_result.data[ds_name]
@@ -1287,32 +1290,38 @@ export function randomRgbColor() { //随机生成RGB颜色
   }
 import {request} from 'axios'
 import x2js from 'x2js' 
-export function call_server_func(func_name,func_params,_this,get_post='post') {
-    let data=new FormData();
-    data.append("__call_func",JSON.stringify({func_name,func_params}))    
-    let run_url
-    if(["preview","design"].includes( _this.mode) || ["preview","design"].includes( _this.context?.mode)){
+function getUrl(_this,data){
+    if(typeof(_this)=="string")
+        return _this
+    else if(["preview","design"].includes( _this.mode) || ["preview","design"].includes( _this.context?.mode)){
         const x2jsone=new x2js(); //实例
         data.append("_content", x2jsone.js2xml({report:_this.context.report}) )
         data.append("reportName", _this.context.report.reportName)
         let grpId=_this.context.report.reportName.split(":")[0]
-        run_url=`${baseUrl}/design/preview${grpId==0?"":":"+grpId}`
+        return `${baseUrl}/design/preview${grpId==0?"":":"+grpId}`
     }
-    else if(_this.mode=="run"| _this.context?.mode=="run"){
+    else  if(_this.mode=="run"| _this.context?.mode=="run"){
         if(window.location.pathname.endsWith("run.html"))
-            run_url=`${baseUrl}/run:${window.location.hash.substring(1)}`
+        return `${baseUrl}/run:${window.location.hash.substring(1)}`
         else// if(window.location.pathname.endsWith("run"))
-            run_url=window.location.href
+        return window.location.href
     }
-    //if(get_post=='post')
-    return request({
-        method: 'post',
-        data,
-        url: run_url,
-        withCredentials: true
-  })
+}
+export function call_server_func(func_name,func_params,_this,get_post='post') {
+    let data=new FormData();
+    data.append("__call_func",JSON.stringify({func_name,func_params}))    
+    let run_url=getUrl(_this,data)
+    if(run_url)
+        return request({method: 'post',data,url: run_url,withCredentials: true
+    })
+    else{
+        return new Promise((resolve,reject) => {
+            reject(`call_server_func 远程调用${func_name}，没有定义url`);
+        })
+    }    
 }
 window.cellreport.call_server_func=call_server_func
+
 export {
     designGrid2LuckySheet,luckySheet2ReportGrid,resultGrid2LuckySheet,
     loadFile,watermark

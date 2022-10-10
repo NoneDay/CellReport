@@ -19,6 +19,7 @@
     "classlist-polyfill": "^1.2.0",
     "codemirror": "^5.59.2",
     "crypto-js": "^4.0.0",
+    "echarts": "^5.3.3",
     "element-resize-detector": "^1.2.1",
     "element-ui": "^2.15.0",
     "js-cookie": "^2.2.1",

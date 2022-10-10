@@ -20,7 +20,13 @@
         </div>
 
     </el-dialog> 
-
+    <el-dialog v-draggable v-if="dync_item_dialogVisible" style="text-align: left;" class="report_define"
+          :visible.sync="dync_item_dialogVisible" :title="dync_item.title" 
+          :close-on-click-modal="false"   :fullscreen="dync_item.fullscreen||false"
+          direction="btt" append-to-body 
+        > 
+      <widget-form-item  :self="dync_item"  >  </widget-form-item>
+    </el-dialog> 
     <paperSetting :target_obj="paperSetting" @submit="paperSetting_submit"
     :visible.sync="paper_setting_dialogVisible" />
         
@@ -48,6 +54,10 @@
           <el-select v-if="['string','int'].includes(one.data_type) && one.canUsedValueFrom!='Query' && one.tagValueList.length>0" v-model="queryForm[one.name]" 
             collapse-tags  @change="change_param(one.name)" clearable filterable default-first-option :allow-create="one.allowCreate=='True'"
             :multiple="one.allowMutil=='False'?false:true">
+            <li v-if="one.allowMutil=='False'?false:true" class="el-select-dropdown__item">
+              <el-link type="primary" style="float: left" @click="queryForm[one.name]=one.tagValueList.map(x=>x[1])"> 全选</el-link>
+              <el-link type="primary"  style="float: right; color: #8492a6; font-size: 13px" @click="queryForm[one.name]=[]"> 全不选</el-link>
+            </li>
              <el-option
                 v-for="item in one.tagValueList"
                 :key="item[1]"
@@ -59,6 +69,10 @@
           <el-select v-if="['string','int'].includes(one.data_type) && one.canUsedValueFrom=='Query' && one.parent_valueField_kyz=='' " v-model="queryForm[one.name]" 
             collapse-tags  @change="change_param(one.name)" clearable filterable default-first-option :allow-create="one.allowCreate=='True'"
             :multiple="one.allowMutil=='False'?false:true">
+            <li v-if="one.allowMutil=='False'?false:true" class="el-select-dropdown__item">
+              <el-link type="primary" style="float: left" @click="queryForm[one.name]=convert_param_array_to_json(result.dataSet[one.dataSetName_kyz][0],one).map(x=>x[one.valueField_kyz]+'')"> 全选</el-link>
+              <el-link type="primary"  style="float: right; color: #8492a6; font-size: 13px" @click="queryForm[one.name]=[]"> 全不选</el-link>
+            </li>
              <el-option
                 v-for="item in convert_param_array_to_json(result.dataSet[one.dataSetName_kyz][0],one)"
                 :key="item[one.valueField_kyz]+''"
@@ -68,7 +82,7 @@
           </el-select>  
 
         <el-cascader v-if="['string','int'].includes(one.data_type) && one.canUsedValueFrom=='Query' && one.parent_valueField_kyz!='' " v-model="queryForm[one.name]" 
-            collapse-tags clearable  @change="change_param(one.name)"
+            collapse-tags clearable  filterable @change="change_param(one.name)" :show-all-levels="one.showAllLevels!='False'"
             :multiple="one.allowMutil=='False'?false:true" :options="convert_param_array_to_tree(result.dataSet[one.dataSetName_kyz][0],one)"
                 :props="{checkStrictly:true, emitPath:false,multiple:one.allowMutil=='False'?false:true,value:one.valueField_kyz,label:one.tagField_kyz}"
                 >
@@ -76,7 +90,7 @@
           <el-date-picker v-if="one.data_type=='date'" value-format="yyyy-MM-dd" 
                     v-model="queryForm[one.name]"></el-date-picker> 
           <el-date-picker v-if="one.data_type=='datetime'||one.data_type=='dateTime'" :value-format="one.dateTimeFormat" :format="one.dateTimeFormat" 
-          :type="['yyyyMM','yyyy-MM'].includes(one.dateTimeFormat)?'month':'datetime'"
+          :type="one.dateTimeFormat=='yyyy'?'year':( ['yyyyMM','yyyy-MM'].includes(one.dateTimeFormat)?'month':'datetime')"
                     v-model="queryForm[one.name]"></el-date-picker>
           
           <el-date-picker v-if="['dates'].includes( one.data_type)" value-format="yyyy-MM-dd" 
@@ -101,6 +115,7 @@
               <el-dropdown-menu slot="dropdown">
                 <el-dropdown-item command="exceljs">小数据量（带格式）</el-dropdown-item>
                 <el-dropdown-item  command="xlsxjs">大数据量（无格式）</el-dropdown-item>
+             <!--   <el-dropdown-item  command="docx">word文档</el-dropdown-item> -->
               </el-dropdown-menu>
             </el-dropdown>
             <el-button type="primary" class='form_query_button' @click="export_pdf">PDF预览</el-button>            
@@ -157,11 +172,8 @@
             <div  style="display: flex;flex: 0 0 auto;overflow-x: auto;"  v-if=" one.data_type=='string' && one.tagValueList.length>0 && one.allowMutil=='False'">
               <div style="display: relative; word-break: keep-all; font-size: 14px;   padding-left: 10px; margin-right: 20px;"> <b>{{one.prompt}}</b></div>
               <div style="position:relative;    word-break: keep-all;" v-for="item in one.tagValueList" :key="item[1]">
-              <nut-button  :type="queryForm[one.name]==item[1]?'primary':'lightred'"
-               shape="circle"   small  style="margin-right: 2px;"
-               
-              @click.prevent=" queryForm[one.name]=item[1]
-              submit()"> {{item[0]}}</nut-button>
+              <nut-button  :type="queryForm[one.name]==item[1]?'primary':'lightred'" shape="circle"   small  style="margin-right: 2px;"
+                  @click.prevent="queryForm[one.name]=item[1]; result.param_liandong.includes(one.name)?change_param(one.name):submit()"> {{item[0]}}</nut-button>
               </div>
             </div>
 
@@ -209,7 +221,7 @@ import {convert_array_to_json,arrayToTree,seriesLoadScripts,load_css_file,waterm
 import install_component from './install_component'
 import dyncTemplate from './element/dyncTemplate.vue'
 import paperSetting  from './paperSetting.vue'
-import {exceljs_inner_exec,xlsxjs_inner_exec} from './utils/export_excel.js'
+import {exceljs_inner_exec,xlsxjs_inner_exec,docx_inner_exec} from './utils/export_excel.js'
 export default {
   name: 'App', //CellReportFormDesign
   components:{dyncTemplate,widgetForm,paperSetting},
@@ -313,6 +325,8 @@ export default {
         big_screen_scale:100,
         big_screen_scale_x:100,
         big_screen_scale_y:100,
+        dync_item_dialogVisible:false,
+        dync_item:{},
         paperSetting:{pageSize_name:'A5',}
     }
   },
@@ -446,14 +460,9 @@ export default {
               loadingInstance.close();
             },100);            
         })
-    },
-    export_excel(){
-       let _this=this
-        //seriesLoadScripts('cdn/exceljs/exceljs.min.js',null,function (){
-        //  exceljs_inner_exec(_this.result)
-        //})
-          seriesLoadScripts('cdn/xlsx/dist/xlsx.full.min.js',null,function (){
-            xlsxjs_inner_exec(_this,_this.name_lable_map)
+      else if(command=="docx")
+        seriesLoadScripts('cdn/html-to-docx/dist/html-to-docx.umd.js',null,function (){
+            docx_inner_exec(_this,_this.name_lable_map)
         })
     },
     async export_pdf(){

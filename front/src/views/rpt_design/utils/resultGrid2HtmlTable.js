@@ -213,12 +213,12 @@ function build_col_arr(s_col,e_col){
     return ret
 }
 export default class ResultGrid2HtmlTable{
-    constructor(param_grid,el,setting,footer2,defaultsetting){
+    constructor(param_grid,el,setting,defaultsetting){
         let {name,tableData,extend_lines,rowlenArr,hyperlink,conditionformat,
             columnlenArr,styles,loc_style,colName_lines,my_sort,columns,
             config_merge,reportDefaultCss,optimize,abs_to_design} ={...param_grid}
         this.el=el
-        this.footer2=footer2
+        
         this.sort_col={"col":-1,"isAsc":0}
         this.setting=setting
         this.defaultsetting=defaultsetting
@@ -569,8 +569,9 @@ export default class ResultGrid2HtmlTable{
                 row_type='isComment'
             else
                 row_type='isComment isAfterExtend'
+            let row_h=rowlenArr[rowNo]??rowlenArr["default"]
             sb.append(`<tr ${row_type} data-n=${rowNo} data-old="${row_pr&& row_pr!=0?'none':'table-row'}"
-            style='display:${row_pr&& row_pr!=0?'none':'table-row'}; height:${rowlenArr[rowNo]??rowlenArr["default"]}px' >`)
+                style='display:${(row_h==0 || (row_pr&& row_pr!=0 ) )?'none':'table-row'}; height:${row_h}px' >`)
             
             rowData.forEach((cell,colNo)=>{
                 if(false== col_arr.includes(colNo)){
@@ -615,7 +616,7 @@ export default class ResultGrid2HtmlTable{
                     disp=`<img style="width: 100%;height: 100%;" src='${disp}'>`
                 }//max-height:${max_height-1}px;
                 let style=`style="max-width:${max_width*this.ratio-4}px;width:${max_width*this.ratio-4}px;`
-                if(!this.setting.auto_line_height || this.defaultsetting.cr_auto_line_height=='true')
+                if(!this.param_grid.auto_line_height )
                     style=style+`max-height:${max_height-1}px;`// 不能设置height，否则就不会上下居中了
                 style=style+'"'
                 if(this.optimize && cell_sort!=undefined){

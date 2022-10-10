@@ -62,7 +62,7 @@ namespace reportWeb.Controllers
             json_option.Converters.Add(new CellReport.math.BigDecimalConverter());
             json_option.Converters.Add(new CellReport.util.DateConverter());
             json_option.Converters.Add(new CellReport.util.DateTimeConverter());
-
+            json_option.Converters.Add(new CellReport.util.DBNullConverter());
         }
         private String getFormValue(string name)
         {
@@ -121,8 +121,8 @@ namespace reportWeb.Controllers
             try
             {
                 long start = DateTime.Now.Ticks;
-                System.Xml.XmlDocument xmlDoc = new System.Xml.XmlDocument();
-                xmlDoc.LoadXml(_content);
+                System.Xml.XmlDocument xmlDoc =Content2XmlDoc(_content);
+                
                 if (reportName!=null && reportName.Contains(":"))
                     reportName = reportName.Split(":")[1];
                 var reportDefine = await XmlReport.loadReportFromXmlDoc(xmlDoc, this.rpt_group.report_path, reportName??"temp.cr");
@@ -131,7 +131,8 @@ namespace reportWeb.Controllers
                 {
                     report_env.getExprFaced().addVariable("_fresh_ds", _fresh_ds);
                 }
-                report_env.logger = 
+                
+                report_env.logger = _ConnectionId==null ? logger :
                     new Logger(x => MessageQueueBlock<DemoMessage>
                         .Add(new DemoMessage() 
                         { 
@@ -230,7 +231,15 @@ namespace reportWeb.Controllers
                                     jsonWriter.Write(",\"errcode\":1,\"message\":");
                                     jsonWriter.Write(JsonSerializer.Serialize(sb.ToString(), json_option));
                                 }
-                                
+                                jsonWriter.Write(",\"_zb_var_\":");
+                                if (exprFaced.getVariable("_zb_var_") != null)
+                                {
+                                    jsonWriter.Write(JsonSerializer.Serialize(exprFaced.getVariable("_zb_var_"), report_env.getJsonOption()));
+                                }
+                                else
+                                {
+                                    jsonWriter.Write("{}");
+                                }
                                 jsonWriter.Write("\n}");
                                 await jsonWriter.FlushAsync();                               
                                 jsonStream.Position = 0;
@@ -242,18 +251,8 @@ namespace reportWeb.Controllers
                 if (Request.HasFormContentType && (Request.Form.ContainsKey("__call_func")))
                 {
                     var func_json = JsonDocument.Parse(Request.Form["__call_func"].ToString()).RootElement;
-                    if (func_json.TryGetProperty("func_name", out var func_name) && func_json.TryGetProperty("func_params", out var func_params))
-                    {
-                        if (null != exprFaced.getVariable(func_name.GetString()))
-                        {
-                            var result = exprFaced.calculate($"={func_name.GetString()}({func_params.GetRawText()})");
-                            await Response.WriteAsJsonAsync(result, report_env.getJsonOption());
-                        }
-                        else
-                            await Response.WriteAsJsonAsync(new { errcode = -1, message = $"没有自定义函数{func_name}" }, report_env.getJsonOption());
-                    }
-                    else
-                        await Response.WriteAsJsonAsync(new { errcode = -1, message = $"客户端调用函数{func_name}，没有定义func_name或func_params" }, report_env.getJsonOption());
+                    Object result = CellReport.core.expr.ExprHelper.calc_client_func(report_env, func_json);
+                    await Response.WriteAsJsonAsync(result, report_env.getJsonOption());
                 }
                 else
                 {
@@ -289,6 +288,8 @@ namespace reportWeb.Controllers
                 return new EmptyResult();
             }catch(Exception ex)
             {
+                while (ex.InnerException != null)
+                    ex = ex.InnerException;
                 return Json(new { errcode = 1, message = ex.Message,stacktrace=ex.StackTrace });
             }
         }
@@ -332,7 +333,7 @@ namespace reportWeb.Controllers
                 exprFaced.addVariable("_zb_var_", new Dictionary<String, object>());
                 exprFaced.addVariable("_rpt_group_", rpt_group);
 
-                var exec_result = exprFaced.calculate("{\n" + expr + "\n}", null);
+                var exec_result = exprFaced.calculate("{  " + expr + "\n}", new());
                 if(exec_result is Exception ex)
                 {
                     throw ex;
@@ -341,6 +342,8 @@ namespace reportWeb.Controllers
             }
             catch (Exception ex)
             {
+                while (ex.InnerException != null)
+                    ex = ex.InnerException;
                 return Json(new { errcode = 1, message = ex.Message },json_option);
             }
         }
@@ -438,7 +441,7 @@ namespace reportWeb.Controllers
             {
                 Env parent_env = new Env();
                 await XmlReport.templateValue2Env(this.rpt_group.report_path, reportName, parent_env);
-                var xmlDoc = (await XmlReport.getReportXmlDoc(this.rpt_group.report_path, reportName)).xml;
+                var xmlDoc = (await XmlReport.getReportXmlDoc(this.rpt_group.report_path, reportName,isDesign:true)).xml;
                 //var ret = XmlReport.reportToXmlDocumnt(XmlReport.loadReport(file_path), false).OuterXml;
                 //var report_content = await System.IO.File.ReadAllTextAsync(file_path, System.Text.Encoding.UTF8);
                 var conn_list =from x in this.rpt_group.db_connection_list select x.name;
@@ -458,7 +461,7 @@ namespace reportWeb.Controllers
         private async Task insert_ds_param(string reportName, string zb_dict_str,string zb_param)
         {
             var file_path = Path.Combine(this.rpt_group.report_path, reportName);
-            var xmlDoc = (await XmlReport.getReportXmlDoc(this.rpt_group.report_path, reportName)).xml;
+            var xmlDoc = (await XmlReport.getReportXmlDoc(this.rpt_group.report_path, reportName,isDesign:true)).xml;
             //var ret = XmlReport.reportToXmlDocumnt(XmlReport.loadReport(file_path), false).OuterXml;
             //var report_content = await System.IO.File.ReadAllTextAsync(file_path, System.Text.Encoding.UTF8);
             var xml_elem_root = xmlDoc.SelectSingleNode("//report");
@@ -599,11 +602,9 @@ namespace reportWeb.Controllers
                 }
                 if (!fileInfo.Exists || (fileInfo.Exists && String.IsNullOrEmpty(zb_dict_str)))
                 {
-                    content=content.Replace("><", ">\n<");
-                    //content = Regex.Replace(content, @"<defaultsetting>.*?</defaultsetting>", "");
-                    //content = Regex.Replace(content, @"<parsererror>.*?</parsererror>", "");
-                    //content = Regex.Replace(content, @"<parent_defaultsetting>.*?</parent_defaultsetting>", "");
-                    await System.IO.File.WriteAllTextAsync(file_path, content, System.Text.Encoding.UTF8);
+                    System.Xml.XmlDocument xmlDoc = Content2XmlDoc(content);
+
+                    xmlDoc.Save(file_path);
                     XmlReport.MemoryCacheInstance.Remove(file_path);
                 }
                 if (!String.IsNullOrEmpty(zb_dict_str))
@@ -613,8 +614,34 @@ namespace reportWeb.Controllers
                 return Json(new { errcode = 0, message = "保存成功" });
             }
             return Json(new { errcode = 1, message = "路径错误" });
+
+           
         }
-        
+        static System.Xml.XmlDocument Content2XmlDoc(string content)
+        {
+            var xmlDoc = new System.Xml.XmlDocument();
+            xmlDoc.LoadXml(content);
+            var xml_report = xmlDoc.SelectSingleNode("//report");
+            foreach (var one in new String[] { "parsererror", "parent_defaultsetting" , "range_level", "functions",
+                        "canExecuteExpr","inner_script" })
+            {
+                var cur_node_list = xmlDoc.SelectNodes($"//report/{one}");
+                if (cur_node_list != null)
+                {
+                    foreach (System.Xml.XmlNode cur_node in cur_node_list)
+                        xml_report.RemoveChild(cur_node);
+                }
+            }
+            StringBuilder sb = new();
+            foreach (Match one in new Regex(@"/\*\s*服务器脚本\s*\\n(.*?)结束\s*\*/").Matches(content))
+            {
+                sb.AppendLine(one.Groups[1].Value);
+            }
+            var xmlNode = xmlDoc.CreateElement("inner_script");
+            xmlNode.InnerText = ExprHelper.extractString(System.Net.WebUtility.HtmlDecode(sb.ToString()));
+            xml_report.AppendChild(xmlNode);
+            return xmlDoc;
+        }
         public async Task<IActionResult> open_template(String path)
         {
             if (!Directory.Exists(this.rpt_group.report_path))

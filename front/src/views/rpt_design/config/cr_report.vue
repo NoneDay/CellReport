@@ -23,8 +23,9 @@
         <el-switch  v-model="cur_grid.as_tree"  active-color="#ff4949" inactive-color="#13ce66"  inactive-text="不使用" active-text="使用"  
         > </el-switch>
     </el-form-item>
-    <el-form-item label="自动行高"> 
-        <el-switch  v-model="data.auto_line_height"  active-color="#ff4949" inactive-color="#13ce66"  inactive-text="不使用" active-text="使用"  
+    <el-form-item label="自动行高">
+        <el-switch  v-model="cur_grid._auto_line_height"  active-color="#ff4949" inactive-color="#13ce66"  inactive-text="不使用" active-text="使用"  
+        active-value="true"    inactive-value="false"
         > </el-switch>
     </el-form-item>
     <el-form-item label="easuyi大数据">

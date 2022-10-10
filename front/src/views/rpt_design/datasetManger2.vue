@@ -38,7 +38,7 @@
         <img v-if="ds._type=='sql' " class="cr_icon" src="img/数据库.svg"/>
         <img v-if="ds._type=='cr'" class="cr_icon" src="img/引用.svg"/>
         <img v-if="ds._type=='from'" class="cr_icon" src="img/引用.svg"/>
-        <div @click="action_target=ds"  style="display: inline-block;width:calc(100% - 50px)">{{ds._name}} </div>
+        <div @click="choose_ds(ds)"  style="display: inline-block;width:calc(100% - 50px)">{{ds._name}} </div>
         <el-button @click="delete_dataset(ds,ds_idx)" circle plain type="danger" size="mini" icon="el-icon-minus"
             style="padding: 4px;margin-left: 5px;float:right">
         </el-button>
@@ -48,6 +48,7 @@
     <el-main>
         <div style="height:100%;display:flex;flex-direction:column" v-if="action_target!=null">
             <div style="height:50%;display:flex;flex-direction:column" >
+            <div style="flex-grow:0">
                 <el-form :inline="true" class="demo-form-inline" >
                     <el-row><el-col :span="6">
                         <el-form-item label="名字"><el-button type="primary" @click="update_name" >{{action_target._name}}</el-button ></el-form-item>
@@ -144,15 +145,15 @@
                         </el-col>
                     </el-row>
                 </el-form>
-               
+            </div>
+            <div style="flex-grow:1;height: 40px;">
                     <codemirror   v-if="['memory','sql','userDefine','api','csv'].includes(action_target._type)"
                                 ref="editor" 
                                 v-model="action_target.__text" 
                                 style="height:100%;border:solid 1px silver;margin-bottom:5px;"
                                 :options="{tabSize: 4, mode: 'text/x-sql', lineNumbers: true,line: true,}"  
                     />
-                   
-                    <el-table stripe border  :height="250" v-if="action_target.url_param" 
+                    <el-table stripe border  :height="250"  v-if="action_target.url_param" 
                             :data="action_target.url_param"  
                         >
                         <el-table-column prop="_prompt" label="参数说明"> </el-table-column>
@@ -171,6 +172,7 @@
                             </template>
                         </el-table-column>
                     </el-table> 
+                </div>
             </div>
             <div style="height:50%;display:flex;flex-direction:column">
                 <el-upload v-if="action_target._type=='csv'" class="upload-demo" action :auto-upload="false" :show-file-list="false" :on-change="choose_file"
@@ -280,11 +282,13 @@ export default {
                     }
                     else
                     {
-                        let data=this.context.report_result.dataSet[cur_ds._name][this.action_target.__text||0]
-                        if (data && data.length>1){
-                            this.action_target._fields=JSON.stringify(data[0])
-                            ret= convert_array_to_json(data)
-                            return ret
+                        if(this.context?.report_result?.dataSet && this.context.report_result.dataSet[cur_ds._name]){
+                            let data=this.context.report_result.dataSet[cur_ds._name][this.action_target.__text||0]
+                            if (data && data.length>1){
+                                this.action_target._fields=JSON.stringify(data[0])
+                                ret= convert_array_to_json(data)
+                                return ret
+                            }
                         }
                     }
                         
@@ -614,9 +618,11 @@ innerReport(); //设计好的报表页面选中有关单元格，复制粘贴到
     save_data_for_init(){
         if(this.context.report.template==undefined)
             this.context.report.template={}
+        let t_d={}
+        this.all_dataSet.filter(x=>x._dataSource!="memory").map(x=>t_d[x._name]=this.context.report_result.dataSet[x._name])
         this.context.report.template.before_exec_script=`
         var _init_dataset_dict_=
-            ${ JSON.stringify(this.context.report_result.dataSet,null).replaceAll("{}",null).replaceAll("],[","],\n[")};
+            ${ JSON.stringify(t_d,null).replaceAll("{}",null).replaceAll("],[","],\n[")};
         `
         this.$message({
           message: '备份成功。下一次报表运算将会离线运行。你可以在设置(后端运行前脚本)中，删除相应备份数据，以恢复正常运行。',
@@ -655,6 +661,12 @@ innerReport(); //设计好的报表页面选中有关单元格，复制粘贴到
             }            
         })
             
+    },
+    choose_ds(ds){
+        if(ds.url_param && Array.isArray(ds.url_param)==false){
+            ds.url_param=[ds.url_param]
+        }
+        this.action_target=ds
     },
     choose_file(file) {
       this.file = file.raw;//这是element的导入数据选择，必须要添加.raw才能获取，其他表单不需要

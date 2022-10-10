@@ -13,7 +13,7 @@ using reportWeb.Pages;
 
 namespace CellReport
 {
-    public class ReportDefineForWeb:IDisposable
+    public class ReportDefineForWeb : IDisposable
     {
         public void Dispose()
         {
@@ -24,7 +24,7 @@ namespace CellReport
         }
 
         //报表路径
-        public String ReportDefinePath{get; set;}
+        public String ReportDefinePath { get; set; }
         //报表定义
         private ReportDefine reportDefine;
         internal MyLogger logger;
@@ -64,20 +64,20 @@ namespace CellReport
 
             String gobal_reportDefinePath = ReportDefinePath;
             String reportName = getQueryValue("reportName");
-             if (reportName != null)
+            if (reportName != null)
                 reportName = reportName.Replace("../", "");
 
             if (reportDefine == null && reportName != null && reportName != ""
                 && gobal_reportDefinePath != null && gobal_reportDefinePath != "")
             {
                 if (!gobal_reportDefinePath.EndsWith(Path.DirectorySeparatorChar))
-                        gobal_reportDefinePath = gobal_reportDefinePath + Path.DirectorySeparatorChar;
+                    gobal_reportDefinePath = gobal_reportDefinePath + Path.DirectorySeparatorChar;
                 {
                     //var load_task=;
                     //load_task.ConfigureAwait(continueOnCapturedContext:false);
                     reportDefine = XmlReport.loadReport(gobal_reportDefinePath, reportName).Result;
                 }
-                    reportDefine.getEnv().logger = logger;
+                reportDefine.getEnv().logger = logger;
                 //reportDefinePath = gobal_reportDefinePath + reportName;
             }
             return reportDefine;
@@ -87,7 +87,7 @@ namespace CellReport
             var ret_sb = new System.Text.StringBuilder(1024);
             foreach (KeyValuePair<String, Object> one in paramSortedDictionary)
             {
-                if (reportDefine.getEnv().getParam(one.Key) == null && "sort"!= one.Key)
+                if (reportDefine.getEnv().getParam(one.Key) == null && "sort" != one.Key)
                     continue;
                 if (ret_sb.Length > 0)
                     ret_sb.Append("&");
@@ -95,7 +95,7 @@ namespace CellReport
             }
             return ret_sb.ToString();
         }
-        public Func<string,string> resetDefaultParam = null;
+        public Func<string, string> resetDefaultParam = null;
         public Func<string, string> lastSetParam = null;
         public Dictionary<String, Object> fixParamValueDict = new Dictionary<string, object>();
         public Dictionary<String, Object> fixDefaultParamValueDict = new Dictionary<string, object>();
@@ -118,16 +118,16 @@ namespace CellReport
         public void putRequestParamForForm()
         {
             ensureReportDefine();
-            var exprfaced=reportDefine.getEnv().getExprFaced();
+            var exprfaced = reportDefine.getEnv().getExprFaced();
             paramSortedDictionary.Clear();
             foreach (var one in new string[] { "__updated", "__inserted", "__deleted", "_d" })
             {
-                if (getFormValue(one)!=null)
+                if (getFormValue(one) != null)
                     exprfaced.addVariable(one, System.Net.WebUtility.UrlDecode(getFormValue(one)));
             }
             exprfaced.addNewScopeForScript();
             ParamDefineDataSet pds = reportDefine.getEnv().getParamDefineDataSet();
-            
+
             foreach (var row in pds.Rows)
             {
                 String param_name = row.getData("name").ToString();
@@ -151,13 +151,13 @@ namespace CellReport
                 exprfaced.addVariable("param_obj", row);
                 if (exprfaced.getVariableDefine("resetDefaultParam") != null)
                 {
-                    var t_val= exprfaced.calculate($"=resetDefaultParam('{param_name}',param_obj)", reportDefine.getEnv().getDataSetResultMap())?.ToString();
-                    if(t_val!=null)
+                    var t_val = exprfaced.calculate($"=resetDefaultParam('{param_name}',param_obj)", reportDefine.getEnv().getDataSetResultMap())?.ToString();
+                    if (t_val != null)
                         default_value = t_val;
                 }
-                if(param_name!="reportName")
+                if (param_name != "reportName")
                     this.addParam(param_name, default_value);
-                if (getQueryValue(param_name)!= null)
+                if (getQueryValue(param_name) != null)
                     this.addParam(param_name, getQueryValue(param_name));
                 if (getFormValue(param_name) != null)
                     this.addParam(param_name, getFormValue(param_name));
@@ -174,10 +174,10 @@ namespace CellReport
                 if (lastSetParam != null)
                 {
                     default_value = paramSortedDictionary[param_name].ToString();
-                    default_value=lastSetParam(param_name);
+                    default_value = lastSetParam(param_name);
                     this.addParam(param_name, default_value);
                 }
-                
+
                 if (exprfaced.getVariableDefine("lastSetParam") != null)
                 {
                     var t_val = exprfaced.calculate($"=lastSetParam('{param_name}',param_obj)", reportDefine.getEnv().getDataSetResultMap())?.ToString();
@@ -198,7 +198,7 @@ namespace CellReport
         public async Task calcReport(CellReport.exporter.MyTextWrite tw)
         {
             if (alreadyCalc)
-                return ;
+                return;
             alreadyCalc = true;
             logger.Debug("===============================");
             ensureReportDefine();
@@ -206,7 +206,7 @@ namespace CellReport
                 return;
             if (Report == null)
             {
-                
+
                 Engine engine = new Engine(reportDefine);
                 //if (this.getParam("_d") != null)
                 //{

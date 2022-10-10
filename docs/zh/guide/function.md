@@ -425,3 +425,10 @@ function 订单ID_count(订单ID,rowno){
       split(源字符串,分割符)
       split("123,456,789", ",")输出为：["123" ,"456","479"], 一个数组列表
 
+### json_parse
+     类似js中的JSON.parse 。将字符串解析为对象
+    json_parse('[{"a":1},{"a":2}]') 
+
+### json_stringify
+      类似js中的JSON.stringify，将对象转换为json字符串
+      json_stringify([{"a":1},{"a":2}])

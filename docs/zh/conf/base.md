@@ -160,21 +160,38 @@ http {
 - 在《设置模板》中设置报表运行前的脚本（后端运行前脚本）添加代码：
  
 ~~~js
-function resetDefaultParam(name){
-	if(name=='branch_no')//如果参数名是branch_no ，那么缺省参数就是改为 xxxxx
-		return 'xxxxx';
-}
+function resetDefaultParam(param_name,param_row){ //param_row 参数可以动态修改参数定义，下面例子是修改下拉可选项
+    __env__.logger.info(param_name+'---'+param_row.getData("value"));
+    if(param_name=="abc"){
+      if(你的判断成立){
+        param_row.setData("allowCreate", true);// 设置为可动态添加
+        param_row.setData("tagValueList", [['A','1'],['B','2']]);// 动态添加可选项
+      }
+      // param_row.setData("Inner", true);// 设置为内部参数，前端将看不到hidden ，但后端是可用的
+      // param_row.setData("default_value", '1');// 设置为缺省值，或者用下行的方式返回缺省值
+      return '1';//返回缺省值
+    }
+     
+  }
 ~~~
 
 ## 参数的最终重置
 
 ~~~js
-function lastSetParam(name){
+function lastSetParam(name,param_row){
 	if(name=='branch_no')//如果参数名是branch_no ，那么最终参数就是改为 xxxxx,不管用户输入的是什么，都改
 		return 'xxxxx';
 }
 ~~~
+## 数据集取数完成后执行的动作
 
+可以定义\_after_calc_dataset_这个函数，使得在数据集取数完成后，执行特定动作：
+``` js
+function _after_calc_dataset_(){
+   _zb_var_.my_ds_cnt= 部位2.count();// 将部位2 数据集的行数存到_zb_var_.my_ds_cnt
+}
+
+```
 ## 前端隔行变色和条件颜色的配置
 
 全局缺省配置，在安装目录的template.xml的footer2中。可以视情况修改
@@ -196,19 +213,21 @@ window.luckysheet_alternateformat_save='{"cellrange":{"row":[0,8],"column":[-1,-
 
 ## 前端的公共数据
 - 前端组件的《编辑内容》中，可以使用以下参数引用后端传过来的数据.可以通过添加《动态模板》，将以下代码片段复制到内容里面做测试，以便找到适合自己使用的代码。
+- 在组件中调用全局数据要使用 _this.context
 ~~~js
-    context.clickedEle['test'] //点击test 元素后选中的数据，这里的元素指的是页面上的可点击单元。
+    _this.context.clickedEle['test'] //点击test 元素后选中的数据，这里的元素指的是页面上的可点击单元。
     //结构为:{data:deepClone(cur_data[0]),cell:cell.innerText,column}
     
-    context.report_result.dataSet //sql 结果数据，只有在设计预览状态，或设置变量_need_dataset_=True时才会有这个数据 
+    _this.context.report_result.dataSet //sql 结果数据，只有在设计预览状态，或设置变量_need_dataset_=True时才会有这个数据 
     // 内部为多个array ，每一个代表的都是数据集。如 context.report_result.dataSet['test'][0] 是数组。 里面才是真正的数据,第一行是表头，其他是数据
     // 可以简写：
-	dataset('累计')
-
-    context.report_result.data['main'] //页面上名字叫main 的报表数据。
+	  _this.dataset('累计')
+    
+    _this.context.report_result.data['main'] //页面上名字叫main 的报表数据。
     // 格式为：{columns:[],tableData:[],colName_lines:[0,2],extend_lines:[4,22]} ,
     // tableData 存放的所有单元格的数据。colName_lines 列标题起止范围，extend_lines 明细行起止范围
-    
+    _this.context.queryForm //当前报表参数，可以修改，然后调用下面的submit提交
+    _this.context.rpt_this.submit() //提交查询
     self 配置
     
 ~~~
@@ -247,6 +266,9 @@ _zb_var_.watermark={
 |`dataset('累计')[0]`  | 取数据集：累计 的列名 |
 | `dataset('累计').slice(1)` | 取数据集的数据 |
 |`Enumerable.from(dataset('累计')).skip(1).select(x=> {return {'name':x[0],value:x[1]} }).toArray()` | 转换数据集累计中的数据为对象：name属性对应第一列，value对应第二列 ，最后转换为数组返回|
+
+
+
 ~~~html
 <dv-scroll-board :config="{
             header: dataset('累计')[0],

@@ -22,6 +22,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using System.Security.Cryptography;
+using reportWeb.Pages;
 
 namespace reportWeb.Controllers
 {
@@ -31,12 +32,15 @@ namespace reportWeb.Controllers
         IConfiguration configuration;
         JsonSerializerOptions json_option;
         ReportDbContext reportDbContext;
+        private readonly MyLogger logger;
+
         public UserController(IConfiguration configuration,
-             ReportDbContext reportDbContext,
+             ReportDbContext reportDbContext, ILogger<UserController> logger,
             ScopedObj reportGrp)
         {
             this.configuration = configuration;
             this.reportDbContext = reportDbContext;
+            this.logger = new MyLogger(logger);
             json_option = new JsonSerializerOptions()
             {
                 DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull,
@@ -80,8 +84,10 @@ namespace reportWeb.Controllers
             
             var ef = new CellReport.core.expr.ExprFaced2();
             ef.addNewScopeForScript();
-            ef.addVariable("env", new Env());
-            ef.addVariable("__env__", new Env());
+            var report_env = new Env(); 
+            report_env.logger = logger;
+            ef.addVariable("env", report_env);
+            ef.addVariable("__env__", report_env);
             ef.addVariable("userid", test_user);
             ef.addVariable("password", test_password);
             var result = ef.addNewScopeForScript(login_script) as IDictionary<Object, Object>;            
@@ -262,6 +268,11 @@ namespace reportWeb.Controllers
                         icon = "el-icon-document",
                         component = "",
                         label = "组件管理"
+                    },new{
+                        path = "/crud_template/index",
+                        icon = "el-icon-document",
+                        component = "",
+                        label = "CRUD代码生成"
                     }
                 }
             }
@@ -363,7 +374,9 @@ namespace reportWeb.Controllers
         [AllowAnonymous]
         public IActionResult VerifyCode(string userid, string verfiy_code,int code_len)
         {
-            var verfiy_code_script = configuration["verfiy_code_script"];
+            var verfiy_code_script = new CellReport.running.Env().TemplateGet("verfiy_code_script");
+            if (string.IsNullOrEmpty(verfiy_code_script))
+                verfiy_code_script = configuration["verfiy_code_script"];
             if (string.IsNullOrEmpty(verfiy_code_script))
                 return new JsonResult(new { errcode = 1, message = "没有设置验证码发送脚本" });
             if (string.IsNullOrEmpty(userid))
@@ -380,8 +393,10 @@ namespace reportWeb.Controllers
             HttpContext.Session.SetString("send_time", DateTime.Now.Ticks.ToString());
             var ef = new CellReport.core.expr.ExprFaced2();
             ef.addNewScopeForScript();
-            ef.addVariable("env", new Env());
-            ef.addVariable("__env__", new Env());
+            var report_env = new Env();
+            report_env.logger = logger;
+            ef.addVariable("env", report_env);
+            ef.addVariable("__env__", report_env);
             ef.addVariable("userid", userid);
             ef.addVariable("verfiy_code", verfiy_code);
             var result = ef.addNewScopeForScript(verfiy_code_script) as IDictionary<Object, Object>;

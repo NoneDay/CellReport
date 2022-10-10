@@ -64,11 +64,7 @@ new Vue({
 }).$mount('#app')
 
 if (String.prototype.replaceAll===undefined){
-String.prototype.replaceAll = function (targetStr, newStr) {
-  var sourceStr = this.valueOf();
-  while (sourceStr.indexOf(targetStr) !== -1) {
-    sourceStr = sourceStr.replace(targetStr, newStr);
+  String.prototype.replaceAll = function(s1, s2) {                   
+    return this.replace(new RegExp(s1, "gm"), s2);
   }
-  return sourceStr;
-};
 }

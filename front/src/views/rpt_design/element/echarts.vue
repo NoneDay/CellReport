@@ -1151,7 +1151,7 @@ function map_option (self,_this,__valid_data__) {
         return res;
         };
     //$.ajaxSettings.async = false;
-    function map_inner_exec(result) 
+    function map_inner_exec(calc_cnt) 
     {
 
         _this.geoCoordMap=JSON.parse(JSON.stringify(self.geoCoordMap)) 
@@ -1234,6 +1234,7 @@ function map_option (self,_this,__valid_data__) {
               layoutCenter: ["50%", "50%"],
               layoutSize: 1200,
               roam: self.option.roam,
+              regions:[],
               label: {
                 show: true,
                 fontSize: self.option.fontSize,
@@ -1347,20 +1348,21 @@ function map_option (self,_this,__valid_data__) {
             if (_this.zoomData < 1) _this.zoomData = 1;
         });
         let _myChart=_this.myChart
-        _this.myChart.setOption(option);
+        
+        _this.myChart.setOption(option,true);//重绘是true
+        
+        _this.myChart.resize();
         eval("option=(function(option,myChart,_this){"+self.content+"\n return option})(option,_myChart,_this)")                    
         return option
     }
     if(window.echarts.getMap(_this.real_map_url()))
-        return map_inner_exec()
+        return map_inner_exec(0)
     else
     {
-        $.get(_this.real_map_url(),function(result){
+        $.get(_this.real_map_url(),function(result){//map 方式，必须先下载注册地图再初始化myChart实例才行，否则会找不到地图
             window.echarts.registerMap(_this.real_map_url(), result);
-            let option=map_inner_exec()
-            _this.myChart.setOption(option,true);
-            _this.myChart.resize();
-            _this.myChart.setOption(option, true);  
+            _this.myChart = echarts.init(_this.$refs.main);// 不重新初始话的话，会报错 echarts.vue?3bfd:1356 TypeError: Cannot read properties of undefined (reading 'regions')
+            let option=map_inner_exec(0)
             
         })
         return {}

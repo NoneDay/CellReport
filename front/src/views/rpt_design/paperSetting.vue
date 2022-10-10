@@ -120,7 +120,7 @@ export default {
                 fitToPage:true,
                 scale:100,
                 fitToWidth:'1',
-                fitToHeight:'1',
+                fitToHeight:'1000',
                 margin_top:36,
                 margin_bottom:36,
                 margin_left:36,

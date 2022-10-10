@@ -57,7 +57,21 @@ export default [{
     component: () =>
       import( /* webpackChunkName: "views_rpt_desgin" */ '@/views/rpt_design/manger')
   }]
-},{
+}
+,{
+  path: '/crud_template',
+  component: Layout,
+  children: [{
+    path: 'index',
+    name: 'CRUD代码生成', 
+    meta: {
+      keepAlive: true,
+    },
+    component: () =>
+      import( /* webpackChunkName: "views_rpt_desgin" */ '@/views/rpt_design/crud_template')
+  }]
+}
+,{
   path: '/widget',
   component: Layout,
   children: [{

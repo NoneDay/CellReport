@@ -22,6 +22,14 @@
         </div>
 
     </el-dialog> 
+    <el-dialog v-draggable v-if="dync_item_dialogVisible" style="text-align: left;" class="report_define"
+          :visible.sync="dync_item_dialogVisible" :title="dync_item.title" 
+          :close-on-click-modal="false"   :fullscreen="dync_item.fullscreen||true"
+          direction="btt" append-to-body  
+        > 
+      <widget-form-item  :self="dync_item"  >  </widget-form-item>
+    </el-dialog> 
+
     <div style="position: absolute;right:40px;top:10px;">
     <div v-if="!executed || showLog" style="display:inline-block;">  
       <div v-for="([key,val]) in Object.entries(ds_log)" :key="key" style="display:inline-block;padding-right:20px">
@@ -65,8 +73,13 @@
            :prop="one.name" :rules="result.defaultsetting.cr_front_validate=='true' && one.allowSpace=='False'? {required: true, message: '请选择', trigger: 'change' } :null">
           <el-input v-if="one.data_type=='string' && one.tagValueList.length==0 && one.canUsedValueFrom!='Query' " v-model="queryForm[one.name]"></el-input>
           <el-select v-if="['string','int'].includes(one.data_type) && one.canUsedValueFrom!='Query' && one.tagValueList.length>0 " v-model="queryForm[one.name]" 
-            collapse-tags @change="change_param(one.name)" clearable filterable default-first-option :allow-create="one.allowCreate=='True'"
+            collapse-tags @change="change_param(one.name)" clearable filterable default-first-option 
+            :allow-create="one.allowCreate=='True'" 
             :multiple="one.allowMutil=='False'?false:true">
+            <li v-if="one.allowMutil=='False'?false:true" class="el-select-dropdown__item">
+              <el-link type="primary" style="float: left" @click="queryForm[one.name]=one.tagValueList.map(x=>x[1])"> 全选</el-link>
+              <el-link type="primary"  style="float: right; color: #8492a6; font-size: 13px" @click="queryForm[one.name]=[]"> 全不选</el-link>
+            </li>
              <el-option
                 v-for="item in one.tagValueList"
                 :key="item[1]"
@@ -76,8 +89,13 @@
           </el-select>  
           
           <el-select v-if="['string','int'].includes(one.data_type) && one.canUsedValueFrom=='Query' && one.parent_valueField_kyz=='' " v-model="queryForm[one.name]" 
-            collapse-tags @change="change_param(one.name)" clearable filterable default-first-option :allow-create="one.allowCreate=='True'"
+            collapse-tags @change="change_param(one.name)" clearable filterable default-first-option 
+            :allow-create="one.allowCreate=='True'" 
             :multiple="one.allowMutil=='False'?false:true">
+            <li v-if="one.allowMutil=='False'?false:true" class="el-select-dropdown__item">
+              <el-link type="primary" style="float: left" @click="queryForm[one.name]=convert_param_array_to_json(previewFormParam.dataSet[one.dataSetName_kyz][0],one).map(x=>x[one.valueField_kyz]+'')"> 全选</el-link>
+              <el-link type="primary"  style="float: right; color: #8492a6; font-size: 13px" @click="queryForm[one.name]=[]"> 全不选</el-link>
+            </li>
              <el-option
                 v-for="item in convert_param_array_to_json(previewFormParam.dataSet[one.dataSetName_kyz][0],one)"
                 :key="item[one.valueField_kyz]+''"
@@ -86,7 +104,7 @@
               </el-option>
           </el-select>  
         <el-cascader v-if="['string','int'].includes(one.data_type) && one.canUsedValueFrom=='Query' && one.parent_valueField_kyz!='' " v-model="queryForm[one.name]" 
-            collapse-tags clearable @change="change_param(one.name)"
+            collapse-tags clearable filterable @change="change_param(one.name)" :show-all-levels="one.showAllLevels!='False'"
             :multiple="one.allowMutil=='False'?false:true" :options="convert_param_array_to_tree(previewFormParam.dataSet[one.dataSetName_kyz][0],one)"
                 :props="{checkStrictly:true, emitPath:false,multiple:one.allowMutil=='False'?false:true,value:one.valueField_kyz,label:one.tagField_kyz}"
                 >
@@ -95,7 +113,7 @@
           <el-date-picker v-if="one.data_type=='date'" value-format="yyyy-MM-dd" 
                     v-model="queryForm[one.name]"></el-date-picker> 
           <el-date-picker v-if="['datetime','dateTime'].includes( one.data_type)" :value-format="one.dateTimeFormat" :format="one.dateTimeFormat" 
-          :type="['yyyyMM','yyyy-MM'].includes(one.dateTimeFormat)?'month':'datetime'"
+          :type="one.dateTimeFormat=='yyyy'?'year':( ['yyyyMM','yyyy-MM'].includes(one.dateTimeFormat)?'month':'datetime')"
                     v-model="queryForm[one.name]"></el-date-picker>
           <el-date-picker v-if="['dates'].includes( one.data_type)" value-format="yyyy-MM-dd" 
           :type="'dates'" v-model="queryForm[one.name]"></el-date-picker>
@@ -112,7 +130,7 @@
 
           
             <el-form-item>
-            <el-button type="primary"  class='form_query_button'  @click="submit">查询</el-button>
+            <el-button type="primary"  class='form_query_button'  @click="validate_submit">查询</el-button>
                    
             <el-dropdown style="margin: 2px;" v-if='Object.keys(result.data)!=0' @command="ExcelCommand($event, node,data)">
               <el-button type="primary" class='form_query_button' >
@@ -169,6 +187,7 @@ export default {
           grpId:this.grpId,
           event:{},
           queryForm:this.queryForm,
+          rpt_this:this,
           allElementSet:this.context.allElementSet,
           clickedEle:this.clickedEle,
           //不放到这里，会导致动态runtime-template重算，如果是有滚动行的，会每次都重新跑到顶部
@@ -185,6 +204,8 @@ export default {
         name_lable_map:{},
         paper_setting_dialogVisible:false,
         pdf_output_dialogVisible:false,
+        dync_item_dialogVisible:false,
+        dync_item:{},
         preview_dialogVisible:false,
         previewFormParam:{},
         queryForm:{},
@@ -258,7 +279,7 @@ export default {
       let datauri = URL.createObjectURL(pdf_data)
       document.getElementById("pdf_output").data =datauri
     },
-    submit(){
+    validate_submit(){
       let _this=this
       _this.$refs.form.validate((valid) => {
           if (valid) {
@@ -273,6 +294,9 @@ export default {
             return false;
           }
         });
+    },
+    submit(){
+      preview_one(this,false)
     },
     change_param(param_name){
       let _this=this

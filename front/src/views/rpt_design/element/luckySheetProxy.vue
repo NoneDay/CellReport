@@ -263,7 +263,7 @@ export default {
               sortArr?.off('click',this.sortFunc)
           }
           if(this.TABLEOBJ==null)
-            this.$set(this,'TABLEOBJ',new ResultGrid2HtmlTable2(cur_grid,this.$el,this.self,_this.context.report_result.footer2,_this.context.report_result.defaultsetting))
+            this.$set(this,'TABLEOBJ',new ResultGrid2HtmlTable2(cur_grid,this.$el,this.self,_this.context.report_result.defaultsetting))
           this.pager_height=this.TABLEOBJ!=undefined && (parseInt(this.self.page_size)<=this.TABLEOBJ.total() )?32:0
           this.html_table=this.TABLEOBJ.show(this.cur_page,this.self.page_size)
           
@@ -288,19 +288,29 @@ export default {
               target.scrollTop=_this.scrollTop
               // 设置表头的行高和主体表的行高一致
               $(`#reportDiv${_this.gridName}Top tr`).each(function() {
-                  let main_td_arr=$(this).find("td")
-                  $.each( $(`#reportDiv${_this.gridName}TopLeft tr[data-n=${this.dataset['n']}]`).find("td")
-                  ,function(i,val){// 每个对应的单元格都设置行高
-                    $(val).height( $(main_td_arr[i]).height() )
-                  })
+                  //if(!this.param_grid.auto_line_height || this.defaultsetting.cr_auto_line_height!='true')
+                  $(`#reportDiv${_this.gridName}TopLeft tr[data-n=${this.dataset['n']}]`).height( $(this).height() )
+                  cur_grid.rowlenArr[this.dataset['n']]=$(this).height() //设置真正行高到原始数组,pdf 生成时就可以使用了
               })
               $(`#reportDiv${_this.gridName} tr`).each(function() {
-                  let main_td_arr=$(this).find("td")
-                  $.each( $(`#reportDiv${_this.gridName}Left tr[data-n=${this.dataset['n']}]`).find("td")
-                  ,function(i,val){
-                    $(val).height( $(main_td_arr[i]).height() )
-                  })
+                  $(`#reportDiv${_this.gridName}Left tr[data-n=${this.dataset['n']}]`).height( $(this).height() )
+                  cur_grid.rowlenArr[this.dataset['n']]=$(this).height() //设置真正行高到原始数组,pdf 生成时就可以使用了
               })
+
+              //$(`#reportDiv${_this.gridName}Top tr`).each(function() {
+              //    let main_td_arr=$(this).find("td")
+              //    $.each( $(`#reportDiv${_this.gridName}TopLeft tr[data-n=${this.dataset['n']}]`).find("td")
+              //    ,function(i,val){// 每个对应的单元格都设置行高
+              //      $(val).height( $(main_td_arr[i]).height() )
+              //    })
+              //})
+              //$(`#reportDiv${_this.gridName} tr`).each(function() {
+              //    let main_td_arr=$(this).find("td")
+              //    $.each( $(`#reportDiv${_this.gridName}Left tr[data-n=${this.dataset['n']}]`).find("td")
+              //    ,function(i,val){
+              //      $(val).height( $(main_td_arr[i]).height() )
+              //    })
+              //})
               
               //点击，发送数据到clickedEle
               $(`#reportDiv${_this.gridName} .cr-table__body tr`).unbind()
@@ -633,13 +643,18 @@ export default {
             }//end if      
           } 
           function buildReport(){
+              if (String.prototype.replaceAll===undefined){
+                String.prototype.replaceAll = function(s1, s2) {                   
+                  return this.replace(new RegExp(s1, "gm"), s2);
+                }
+              }
               luckysheet.create({
                     container: 'report',lang: 'zh',forceCalculation:false,showsheetbar:false,
                     showstatisticBarConfig:{count: false,  view: false,   zoom: false,  },
                     enableAddBackTop:false,enableAddRow:false,sheetFormulaBar:false,
                     showinfobar:false,
                     data:[${sheet_data}],
-                    hook:{rangeSelect:selectChange,                      
+                    hook:{rangeSelect:selectChange,
                       updated:lucky_updated,
                       cellUpdateBefore:cellUpdateBefore,
                       rangePasteBefore:rangePasteBefore,
