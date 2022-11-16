@@ -122,20 +122,12 @@
           
         </el-col>
         <el-col span="12" style="height: 100%">
-          <codemirror
-            ref="editor" @ready="editor_ready()" style="height: 100%"
-            v-model="edit_item.content"
-            :options="{
-              tabSize: 4,
-              mode: 'javascript',
-              styleActiveLine: true,
-              lineWrapping: true,
-              theme: 'cobalt',
-              showCursorWhenSelecting: true,
-              cursorBlinkRate: 0,
-            }"
-            
-          />
+          <MonacoEditor   v-if="edit_tab_value=='组件内容'" ref="editor"  theme="vs-dark" v-model="edit_item.content"
+              language="html"  style="height:100%;border:solid 1px silver;margin-bottom:5px;"
+              :options="{folding:false,lineNumbers:'off', minimap: { // 关闭代码缩略图
+                      enabled: false // 是否启用预览图
+                      },}"  >
+        </MonacoEditor>
         </el-col>
       </el-row>
       </el-tab-pane>
@@ -157,19 +149,13 @@
           
         </el-col>
         <el-col span="12" style="height: 100%">
-          <codemirror
-            ref="editor2" @ready="editor_ready2()" style="height: 100%"
-            v-model="edit_visual_design.content"
-            :options="{
-              tabSize: 4,
-              mode: 'javascript',
-              styleActiveLine: true,
-              lineWrapping: true,
-              theme: 'cobalt',
-              showCursorWhenSelecting: true,
-              cursorBlinkRate: 0,
-            }"
-          />
+          <MonacoEditor ref="editor2" v-if="edit_tab_value=='可视化配置器'" theme="vs-dark" v-model="edit_visual_design.content"
+              language="html"  style="height:100%;border:solid 1px silver;margin-bottom:5px;"
+              :options="{folding:false,lineNumbers:'off', minimap: { // 关闭代码缩略图
+                      enabled: false // 是否启用预览图
+                      },}"  >
+        </MonacoEditor>
+          
         </el-col>
       </el-row>
       </el-tab-pane>
@@ -183,12 +169,12 @@
 </template>
 
 <script>
-import codemirror from "./element/vue-codemirror.vue";
+import MonacoEditor from './element/MonacoEditor';
 import { getAllWidget, saveWidget } from "./api/report_api";
 import dyncTemplate from './element/dyncTemplate.vue'
 export default {
   name: "widgetManager",
-  components: { codemirror ,dyncTemplate},
+  components: { MonacoEditor ,dyncTemplate},
   async mounted() {
     if(window.cr_allWidget==undefined)
       window.cr_allWidget=await getAllWidget('design_rpt');
@@ -411,7 +397,7 @@ export default {
         })
         .then(async () => {
           field.list.splice(index, 1);
-          let resp = await saveWidget(JSON.stringify(this.t_fields, null, 4));
+          let resp = await saveWidget(JSON.stringify({visual_design_arr:this.visual_design_arr,fields:this.t_fields}, null, 4));
           console.info(resp);
           this.$message({
             type: "success",
@@ -428,20 +414,8 @@ export default {
     async click_clone(field, item, index) {
       this.cur_item = item;
       field.list.push(JSON.parse(JSON.stringify(item)));
-      let resp = await saveWidget(JSON.stringify(this.t_fields, null, 4));
+      let resp = await saveWidget(JSON.stringify({visual_design_arr:this.visual_design_arr,fields:this.t_fields}, null, 4));
       console.info(resp);
-    },
-    editor_ready() {
-      let _this = this;
-      setTimeout(() => {
-        _this.$refs["editor"].codemirror.setSize("100%", "100%");
-      });
-    },
-    editor_ready2() {
-      let _this = this;
-      setTimeout(() => {
-        _this.$refs["editor2"].codemirror.setSize("100%", "100%");
-      });
     },
   },
   watch:{

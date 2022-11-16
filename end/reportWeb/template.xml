@@ -40,7 +40,7 @@
 	if(content_type.StartsWith('image/'))
 		return {'data':result.content,  'type':content_type  } ;   
 	else
-		return {'errcode':-1,'message':"不是图片类型" };
+		return {'errcode':-1,'message':"不是图片类型："+content_type };
 }
 		]]>
 	</before_exec_script>
@@ -248,6 +248,145 @@ function buildTemplate(para){
      var where_str=para.keys.select(x => `[${x}]='\${crud_obj.${x}\}'`).JoinAsString(" and ") ;
      var list_where=iif(para.parent_table==null," 1=1 `",para.parent_table.select(x=>`${x.self_key}='\${p.${x.parent_key}}'` ).joinAsString(' and ')  );
        //-------------------------------- 
+    var opendb_template=`
+   function 插入_${para.table}(p_obj){
+    	var col_list=[ ${col_list} ];
+      var key_list=[${para.keys}];
+      var 插入语句=\`insert into ${para.table} ( 
+         ${col_list.where(x=>x not in para.auto_incr_cols).select(x => '['+x+']').JoinAsString() }
+    	) values (
+         ${col_list.where(x=>x not in para.auto_incr_cols).select(x => '\'\${p_obj.'+x +'\}\'').JoinAsString() }
+        );
+        ${iif(para.auto_incr_cols.count()==0,'',cur_schema.auto_incr_sql)} 
+      \`;
+      trace(插入语句);
+
+		 var db=openDb("${para.ds_link}");
+      //这里需要按照具体数据库修改主键获取。缺省是按只有一个字段的自增主键。
+       var 结果=db.select(插入语句);  
+       db.close();
+       ${ iif(para.auto_incr_cols.count()==1,'para.'+para.auto_incr_cols[0]+'=结果.key;','//多主键，自己把握修改') }
+       	return {errcode:0,result:para};
+    }
+	function 修改_${para.table}(p_obj){
+      var col_list=[ ${col_list} ];
+      var key_list=[${para.keys}];
+      var crud_obj=p_obj.new_val.Except(p_obj.old_val).ToDictionary($.key,$.value);//过滤掉相同值
+
+      if(crud_obj.select(x=>x.Key).count(x=>x in key_list) >0)
+              return {errcode:1,message:"新旧对象的主键不一致列表"};
+
+      key_list.forEach(x=> {crud_obj[x]= p_obj.old_val[x];} );//将主键值放回来，前面要判断新旧对象的主键是否一致
+      var para_col_list=crud_obj.select(x=>x.Key).tolist();
+      if(para_col_list.where(x=>x not in key_list ).count()==0)
+      	  return {errcode:2,message:"没有需要更改的数据 "};
+       var 修改语句=\`update ${para.table} set \` +
+        para_col_list.where(x=>x not in key_list ).select(x => \`[\${x}]='\`+crud_obj[\`\${x}\`]+"'").JoinAsString(",") 
+        +\` where  ${where_str}\` ;
+      trace(修改语句);
+      var db=openDb("${para.ds_link}");
+      var 结果=db.execute(修改语句);  
+      db.close();
+      return {errcode:0,结果,result:crud_obj};
+    }  
+    function 删除_${para.table}(crud_obj){
+      var key_list=[${para.keys}];
+      var 删除语句=\`delete from ${para.table} where  ${where_str} \` ;
+		 trace(删除语句);
+      var db=openDb("${para.ds_link}");
+      var 结果=db.execute(删除语句);
+      db.close();
+      return {errcode:0,结果};
+    }
+    function 清单_${para.table}(p){
+       var key_list= ${json_stringify(iif(para.parent_table==null,[],para.parent_table)) };
+       var where_str=iif(p!=null,p.select(x => \`[\${x.key\}]='\${x.value\}'\`).JoinAsString(" and "),'') ;
+       var last_statement=\`select * from ${para.table} where 
+       ${ iif(para.parent_table==null,'1=1 \`',"\`+ iif(p==null,' 1=0 ',\`"+list_where +"\`)") }
+	       + (where_str||' and 1=1 ' );
+       trace(last_statement);
+       
+       var db=openDb("${para.ds_link}");
+       var result=db.select(last_statement);//  
+       db.close();
+       return result;
+    }
+	function 字典_${para.table}(){
+       var db=openDb("${para.ds_link}");
+       ${para.allDict.select(x=>
+            'var '
+            +x.table 
+            +'=db.select("select * from '+x.table+'").Rows.select(x=>{value:x.'
+            +x.key 
+            +',label:\`'
+            + x.columns.select('\${x.'+$+'\}').JoinAsString('_') 
+            +'\`\});'
+          ).JoinAsString('\n       ')
+        }
+       db.close();
+       return {${para.allDict.select(x=>x.table).JoinAsString(',')} };
+    }
+    `;
+    var kata_template=`
+function 插入_${para.table}(p_obj){
+  var col_list=[ ${col_list} ];
+  var key_list=[${para.keys}];
+  var db=kata("${para.ds_link}");
+  //这里需要按照具体数据库修改主键获取。缺省是按只有一个字段的自增主键。
+   var 结果=db.Query('${para.table}').InsertGetId(p_obj);  
+   
+   ${ iif(para.auto_incr_cols.count()==1,'p_obj.'+para.auto_incr_cols[0]+'=结果;','//多主键，自己把握修改') }
+       return {errcode:0,result:p_obj};
+}
+function 修改_${para.table}(p_obj){
+  var col_list=[ ${col_list} ];
+  var key_list=[${para.keys}];
+  var crud_obj=p_obj.new_val.Except(p_obj.old_val).ToDictionary($.key,$.value);//过滤掉相同值
+
+  if(crud_obj.select(x=>x.Key).count(x=>x in key_list) >0)
+          return {errcode:1,message:"新旧对象的主键不一致列表"};
+  if(crud_obj.count()==0)
+      return {errcode:2,message:"没有需要更改的数据 "};
+  
+  var key_cols={};
+  key_list.forEach(x=> {key_cols[x]= p_obj.old_val[x];} );//主键条件
+  
+  var db=kata("${para.ds_link}");
+  var 结果=db.Query('${para.table}').where(key_cols).Update(crud_obj);  
+  
+  return {errcode:0,结果,result:crud_obj};
+}  
+function 删除_${para.table}(crud_obj){
+  var key_list=[${para.keys}];
+  var key_cols={};
+  key_list.forEach(x=> {key_cols[x]= crud_obj[x];} );//主键条件
+  
+  var db=kata("${para.ds_link}");
+  var 结果=db.Query('${para.table}').where(key_cols).Delete();  
+  return {errcode:0,结果};
+}
+function 清单_${para.table}(p){
+   var key_list= ${json_stringify(iif(para.parent_table==null,[],para.parent_table)) };  
+   var db=kata("${para.ds_link}");
+   var result=db.Query('${para.table}').where(p||{}).Get();//  
+   return result;
+}
+function 字典_${para.table}(){
+   var db=kata("${para.ds_link}");
+   ${para.allDict.select(x=>
+        'var '
+        +x.table 
+        +'=db.Query("'+x.table+'").Get().select(x=>{value:x.'
+        +x.key 
+        +',label:\`'
+        + x.columns.select('\${x.'+$+'\}').JoinAsString('_') 
+        +'\`\});'
+      ).JoinAsString('\n       ')
+    }   
+   return {${para.allDict.select(x=>x.table).JoinAsString(',')} };
+}  
+    
+    `;
     var 最终模板=`
   <template>
     <div style="width:100%;height:calc(100% - 120px);display: flex;" ref="main" v-if="cr_init">
@@ -258,7 +397,7 @@ function buildTemplate(para){
       <!--
       <template slot="infoForm" > 
         <widget-form-item  v-if="cur_obj.订单ID!=''" 这里加上当前主键是否为空的判断，否则新增也会将子表显示出来
-            :self="findElelment('这里用元素名称替换',{parent_obj:cur_obj}) "  >
+            :self="findElelment('这里用元素名称替换',{parent_obj:cur_keys}) "  >
         </widget-form-item>
       </template>  -->
       </avue-crud>
@@ -346,9 +485,14 @@ function buildTemplate(para){
         }
         return ret;
       },
+      cur_keys(){
+        let ret={}
+        Enumerable.from([${para.keys}]).forEach(x=>ret[x]=this.cur_obj[x] );
+        return ret;
+      },
        cr_init(){
           let _this=this
-          cellreport.call_server_func("allDict",null,this).then(res=>{
+          cellreport.call_server_func("字典_${para.table}",null,this).then(res=>{
             if(res.errcode){
               _this.$message({message: res.message,type: "error"});
               return
@@ -361,83 +505,7 @@ function buildTemplate(para){
     }
   }  
   /* 服务器脚本  
-    function 插入_${para.table}(p_obj){
-    	var col_list=[ ${col_list} ];
-      var key_list=[${para.keys}];
-      var 插入语句=\`insert into ${para.table} ( 
-         ${col_list.where(x=>x not in para.auto_incr_cols).select(x => '['+x+']').JoinAsString() }
-    	) values (
-         ${col_list.where(x=>x not in para.auto_incr_cols).select(x => '\'\${p_obj.'+x +'\}\'').JoinAsString() }
-        );
-        ${iif(para.auto_incr_cols.count()==0,'',cur_schema.auto_incr_sql)} 
-      \`;
-      trace(插入语句);
-
-		 var db=openDb("${para.ds_link}");
-      //这里需要按照具体数据库修改主键获取。缺省是按只有一个字段的自增主键。
-       var 结果=db.select(插入语句);  
-       db.close();
-       ${ iif(para.auto_incr_cols.count()==1,'para.'+para.auto_incr_cols[0]+'=结果.key;','//多主键，自己把握修改') }
-       	return {errcode:0,result:para};
-    }
-	function 修改_${para.table}(p_obj){
-      var col_list=[ ${col_list} ];
-      var key_list=[${para.keys}];
-      var crud_obj=p_obj.new_val.Except(p_obj.old_val).ToDictionary($.key,$.value);//过滤掉相同值
-
-      if(crud_obj.select(x=>x.Key).count(x=>x in key_list) >0)
-              return {errcode:1,message:"新旧对象的主键不一致列表"};
-
-      key_list.foreach(x=> {crud_obj[x]= p_obj.old_val[x];} );//将主键值放回来，前面要判断新旧对象的主键是否一致
-      var para_col_list=crud_obj.select(x=>x.Key).tolist();
-      if(para_col_list.where(x=>x not in key_list ).count()==0)
-      	  return {errcode:2,message:"没有需要更改的数据 "};
-       var 修改语句=\`update ${para.table} set \` +
-        para_col_list.where(x=>x not in key_list ).select(x => \`[\${x}]='\`+crud_obj[\`\${x}\`]+"'").JoinAsString(",") 
-        +\` where  ${where_str}\` ;
-      trace(修改语句);
-      var db=openDb("${para.ds_link}");
-      var 结果=db.execute(修改语句);  
-      db.close();
-      return {errcode:0,结果,result:crud_obj};
-    }  
-    function 删除_${para.table}(crud_obj){
-      var key_list=[${para.keys}];
-      var 删除语句=\`delete from ${para.table} where  ${where_str} \` ;
-		 trace(删除语句);
-      var db=openDb("${para.ds_link}");
-      var 结果=db.execute(删除语句);
-      db.close();
-      return {errcode:0,结果};
-    }
-    function 清单_${para.table}(p){
-       var key_list= ${json_stringify(iif(para.parent_table==null,[],para.parent_table)) };
-       var where_str=iif(p!=null,p.select(x => \`[\${x.key\}]='\${x.value\}'\`).JoinAsString(" and "),'') ;
-       var last_statement=\`select * from ${para.table} where 
-       ${ iif(para.parent_table==null,'1=1 \`',"\`+ iif(p==null,' 1=0 ',\`"+list_where +"\`)") }
-	       + (where_str||' and 1=1 ' );
-       trace(last_statement);
-       
-       var db=openDb("${para.ds_link}");
-       var result=db.select(last_statement);//  
-       db.close();
-       return result;
-    }
-	function allDict(){
-       var db=openDb("${para.ds_link}");
-       ${para.allDict.select(x=>
-            'var '
-            +x.table 
-            +'=db.select("select * from '+x.table+'").Rows.select(x=>{value:x.'
-            +x.key 
-            +',label:\`'
-            + x.columns.select('\${x.'+$+'\}').JoinAsString('_') 
-            +'\`\});'
-          ).JoinAsString('\n       ')
-        }
-       db.close();
-       return {${para.allDict.select(x=>x.table).JoinAsString(',')} };
-    }
+ ${kata_template}
      结束 */       
   </script>     
 <style>

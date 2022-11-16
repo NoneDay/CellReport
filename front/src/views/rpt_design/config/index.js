@@ -21,11 +21,11 @@ import cr_echarts from './cr_echarts.vue'
 import cr_report from './cr_report.vue'
 import cr_text from './cr_text.vue'
 import cr_span from './cr_span.vue'
-import codemirror from "../element/vue-codemirror.vue";
+import monacoeditor from "../element/MonacoEditor";
 
 const components = [
   Custom,cr_htmltext,cr_echarts,cr_report,cr_text,cr_span,
-  codemirror,
+  monacoeditor,
   Input,
   Textarea,
   Number,

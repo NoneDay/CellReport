@@ -251,7 +251,7 @@ namespace reportWeb.Controllers
                 if (Request.HasFormContentType && (Request.Form.ContainsKey("__call_func")))
                 {
                     var func_json = JsonDocument.Parse(Request.Form["__call_func"].ToString()).RootElement;
-                    Object result = CellReport.core.expr.ExprHelper.calc_client_func(report_env, func_json);
+                    Object result = await CellReport.core.expr.ExprHelper.calc_client_func(report_env, func_json);
                     await Response.WriteAsJsonAsync(result, report_env.getJsonOption());
                 }
                 else

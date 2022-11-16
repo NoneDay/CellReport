@@ -6,7 +6,7 @@
       :inline="true"
       :visible.sync="dialogVisible"
       v-if="dialogVisible"
-      :title="'编辑内容'"
+      :title="'编辑内容（html）'"
       :close-on-click-modal="false"
       :modal="false"
       direction="btt"
@@ -14,23 +14,11 @@
       append-to-body
     >
     <el-row style="height: 100%"><el-col span="12"  style="height: 100%; border: 1px solid gray">
-      
-        <codemirror
-          v-model="test_content"
-          @ready="editor_ready()"
-          ref="editor"
-          style="height: 100%"
-          :options="{
-            tabSize: 4,
-            mode: 'text/javascript',
-            styleActiveLine: true,
-            lineWrapping: true,
-            theme: 'cobalt',lineNumbers: true,line: true,
-            showCursorWhenSelecting: true,
-            cursorBlinkRate: 0,
-          }"
-        />
-      
+      <MonacoEditor  ref="editor"  theme="vs" v-model="test_content"
+              language="html"  style="height:100%;border:solid 1px silver;margin-bottom:5px;"
+              :options="{}"  >
+        </MonacoEditor>
+        
       </el-col>
         <el-col span="12" style="height: 100%; border: 1px solid gray; position: relative"
           :style="{'background-color':context.report.defaultsetting['BACKGROUND-COLOR'],
@@ -60,7 +48,9 @@
           </el-row>
           </div>
     </el-dialog>
+    <el-form-item label="模板">
     <el-button @click="reset_contnet();dialogVisible = true" type="primary">编辑模板</el-button>
+  </el-form-item>
     <div>
       <span>依赖数据：</span>
       <el-select
@@ -81,10 +71,10 @@
   </div>
 </template>
 <script>
-import codemirror from "../element/vue-codemirror.vue";
+import MonacoEditor from '../element/MonacoEditor';
 export default {
   name: "config-html-text",
-  components: { codemirror },
+  components: { MonacoEditor },
   inject: ["context"],
   provide() {
     let _this=this
@@ -119,12 +109,6 @@ export default {
     },
     save_template_content(){
       this.data.content=this.test_content
-    },
-    editor_ready() {
-      let _this = this;
-      setTimeout(() => {
-        _this.$refs["editor"].codemirror.setSize("100%", "100%");
-      });
     },
   },
   computed: {

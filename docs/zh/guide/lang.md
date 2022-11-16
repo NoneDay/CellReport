@@ -501,7 +501,7 @@ trace(test_join);
 将列表中的每一项取ToString(),然后用参数指定的字符串连接起来，如果没提供，就用逗号链接
 ``` js
 [ "one", "two", "three" ].joinAsString();//one,two,three
-[ "one", "two", "three" ].joinAsString(',');//one','two','three
+[ "one", "two", "three" ].joinAsString('_');//one_two_three
 ```
 ### ToList
 以上所有返回的是序列的函数，内部都是一个枚举对象，使用这个函数，将枚举对象转换为真正的序列列表

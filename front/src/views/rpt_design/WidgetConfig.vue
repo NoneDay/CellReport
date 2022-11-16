@@ -294,7 +294,7 @@ export default {
       //  return prefix + 'custom'
       let result = 'input'
       
-      if (component=="echarts" || ['dv_scroll_ranking_board','锥形柱图','胶囊柱图','dv_scroll_board','ele-grid', 
+      if (component=="echarts" || ['dv_scroll_ranking_board','锥形柱图','胶囊柱图','dv_scroll_board', 'ele-grid',
       'echart','bar','line','pie','radar','gauge','scatter','funnel','map','airBubbleMap'].includes(type)) 
       result = 'echart'
       else if (['dync-template', 'html-text'].includes(component)) result = 'html-text'

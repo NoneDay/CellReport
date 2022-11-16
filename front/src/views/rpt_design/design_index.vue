@@ -165,7 +165,6 @@ import Preview from './preview.vue'
 import simpleGuide from './simpleGuide.vue'
 import Config from './config'
 import install_component from './install_component'
-import  codemirror  from './element/vue-codemirror.vue'
 import templateManger from "./templateManger.vue"
 import widgetDialog from "./widgetDialog.vue"
 import x2js from 'x2js' 
@@ -182,7 +181,7 @@ if(window.cr_allWidget==undefined){
 export default {
   name: "FormDesign",
   mixins: [history],
-  components: {paramManger,ExprEditorDialog,simpleGuide,codemirror,widgetDialog,
+  components: {paramManger,ExprEditorDialog,simpleGuide,widgetDialog,
         Draggable,widgetEmpty,WidgetForm,WidgetConfig,templateManger,
         datasetManger2, Preview, },
   

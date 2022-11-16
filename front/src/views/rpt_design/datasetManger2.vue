@@ -50,11 +50,11 @@
             <div style="height:50%;display:flex;flex-direction:column" >
             <div style="flex-grow:0">
                 <el-form :inline="true" class="demo-form-inline" >
-                    <el-row><el-col :span="6">
+                    <el-row><el-col :span="4">
                         <el-form-item label="名字"><el-button type="primary" @click="update_name" >{{action_target._name}}</el-button ></el-form-item>
                     </el-col>
                     
-                    <el-col v-if="action_target._type=='sql'|| action_target._type=='db'" :span="4">
+                    <el-col v-if="action_target._type=='sql'|| action_target._type=='db'" :span="6">
                         <el-form-item label="数据源">
                             <el-select v-model="action_target._dataSource" placeholder="数据源">
                                 <el-option  v-for="(one,index) in context.report.conn_list" :key="one+index" :label="one" :value="one"></el-option>
@@ -147,12 +147,10 @@
                 </el-form>
             </div>
             <div style="flex-grow:1;height: 40px;">
-                    <codemirror   v-if="['memory','sql','userDefine','api','csv'].includes(action_target._type)"
-                                ref="editor" 
-                                v-model="action_target.__text" 
-                                style="height:100%;border:solid 1px silver;margin-bottom:5px;"
-                                :options="{tabSize: 4, mode: 'text/x-sql', lineNumbers: true,line: true,}"  
-                    />
+                <MonacoEditor  v-if="['memory','sql','userDefine','api','csv'].includes(action_target._type)"
+                    theme="vs" v-model="action_target.__text" style="height:100%;border:solid 1px silver;margin-bottom:5px;"
+                    :language="['userDefine','api'].includes(action_target._type)? 'javascript': 'sql'"   :options="{}"  >
+                </MonacoEditor>                
                     <el-table stripe border  :height="250"  v-if="action_target.url_param" 
                             :data="action_target.url_param"  
                         >
@@ -206,16 +204,15 @@
 </template>
 
 <script>
-
-import  codemirror  from './element/vue-codemirror.vue'
 import ExprEditorDialog from './ExprEditorDialog.vue'
 import {request} from 'axios'
 import {baseUrl} from './api/report_api'
 import x2js from 'x2js' 
+import MonacoEditor from './element/MonacoEditor';
 import {convert_csv_to_json,convert_array_to_json,parse_json,json_by_path,getObjType } from "./utils/util"
 export default {
     name: "datasetManger2",
-    components: {codemirror,ExprEditorDialog},
+    components: {ExprEditorDialog,MonacoEditor},
     props: { visible: Boolean},
     inject: ["context"],
     data(){
@@ -229,7 +226,6 @@ export default {
             ExprEditorDialog_visible:false,
             currentPage: 1,
             pageSize: 10
-            
         }
     },watch:{
         dialogVisible(val) {
@@ -702,7 +698,7 @@ innerReport(); //设计好的报表页面选中有关单元格，复制粘贴到
       };
       //读取文件
       fileReader.readAsBinaryString(file);
-    },
+    }
     }
 }
 </script>

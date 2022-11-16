@@ -120,13 +120,12 @@
 
 <script>
 import {rptList,rptGrpList,save_one,open_template,save_template,exec_cmd} from "./api/report_api"
-import  codemirror  from './element/vue-codemirror.vue'
 import templateManger from "./templateManger.vue"
 import { baseUrl } from '@/config/env'; 
 import x2js from 'x2js' 
 const x2jsone=new x2js(); //实例
 export default {
-    components: {codemirror,templateManger},
+    components: {templateManger},
     async mounted(){
         let _this=this
         let result=await rptGrpList()

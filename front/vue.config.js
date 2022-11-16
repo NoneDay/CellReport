@@ -1,5 +1,5 @@
 const  path = require('path')
-
+//const MonacoWebpackPlugin = require('monaco-editor-webpack-plugin')
 function resolve(dir){
     return path.join(__dirname, dir)
 }
@@ -8,6 +8,7 @@ let baseUrl = './'
 const port = process.env.port || process.env.npm_config_port || 8080 // dev port
 // const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin
 module.exports = {
+  
   publicPath: baseUrl, // 根据你的实际情况更改这里
     lintOnSave: false,
     outputDir:"../publish_release/wwwroot",
@@ -84,6 +85,18 @@ module.exports = {
       }
     },//*/
     chainWebpack: (config) => {
+      //config.plugin('monaco-editor').use(MonacoWebpackPlugin, [
+      //  {
+      //    languages: ["json", "typescript", "javascript", "html", "sql"],
+      //  // 若不加 hash，会报错（区别于前面 output.filename 配置）：
+      //  // `Conflict: Multiple assets emit different content to the same filename json.worker.js`
+      //  // 参考：https://github.com/microsoft/monaco-editor/tree/v0.30.1/monaco-editor-webpack-plugin#options
+      //  filename: "[name].[hash].worker.js",
+      //  //output:'./js/monaco-editor'
+      //  }
+      //])
+
+
       // 移除 prefetch 插件
       //config.plugins.delete('prefetch');
       // 移除 preload 插件，避免加载多余的资源
@@ -102,13 +115,15 @@ module.exports = {
             'CodeMirror':'CodeMirror',
             'vue-grid-layout':'VueGridLayout',
             "xlsx":"xlsx",//很大的一个包
-            'monaco-editor':'monaco-editor',
+            //'monaco-editor':'monaco-editor',
             'echarts':'echarts',
         })
+        
         config
         .plugin('webpack-bundle-analyzer')
         .use(require('webpack-bundle-analyzer').BundleAnalyzerPlugin)
-
+        
+        
         //const entry = config.entry('app')
         //entry
         //    .add('babel-polyfill')
@@ -121,6 +136,11 @@ module.exports = {
         //    .end()
     },
     configureWebpack:config => {
+      
+        //config.plugins.push(
+        //  new MonacoWebpackPlugin({
+        //    languages: ['json', 'javascript', 'html', 'css','sql']
+        //  }))
         return
         // config.plugins.push(["equire"]);
         if (process.env.NODE_ENV !== 'development') {

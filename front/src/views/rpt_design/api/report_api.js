@@ -67,9 +67,11 @@ export function open_one(reportName,zb_dict,zb_param) {
         withCredentials: true
   })
 }
-export function test_expr(expr) {
+export function test_expr(expr,line,column) {
     let data=new FormData();
     data.append('expr',expr)
+    data.append('line',line)
+    data.append('column',column)
     return request({
         method: 'post',data,
         url: `${baseUrl}/design/test_expr`,       
@@ -330,7 +332,7 @@ export function run_one(_this,reportFilePath,_param_name_=null,loading_conf=null
         }
         if(response_data.zb_var) //兼容老写法
             response_data._zb_var_=response_data.zb_var
-        if(response_data._zb_var_.watermark){
+        if(response_data._zb_var_?.watermark){
             $(".mask_div").remove()
             _this.watermark(response_data._zb_var_.watermark);
         }

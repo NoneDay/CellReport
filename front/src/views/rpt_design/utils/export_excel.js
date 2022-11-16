@@ -220,7 +220,7 @@ export  async function exceljs_inner_exec(_this,name_lable_map){
               const row = ws.getRow(line_no+1)// 从1 开始计数，设置行高
               row.height= (cur_table.rowlenArr[line_no]??cur_table.rowlenArr["default"] )*72/96
               for(let one_cell of one_line){ 
-                console.info(one_cell)
+                //console.info(one_cell)
               //one_line.forEach(async (one_cell) => {
                 if(col_no>=column_nums){
                   col_no++

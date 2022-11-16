@@ -5,12 +5,12 @@
           direction="btt" append-to-body  
     > 
 <div style="height: 500px;;display:flex;flex-direction:column">
-  <codemirror v-if='dialogVisible' ref="editor"    v-model="obj[prop.val]" 
-          :options="{tabSize: 4, mode: 'text/javascript', styleActiveLine: true,lineWrapping: true,lineNumbers: true,line: true,
-            theme: 'cobalt',showCursorWhenSelecting: true, cursorBlinkRate:0 }" 
-            style="height:33%;border:solid 1px silver;margin-bottom:5px;"
-           
-         />
+         <MonacoEditor  v-if="dialogVisible" ref="editor"  theme="vs" v-model="obj[prop.val]"
+              language="javascript"  style="height:100%;border:solid 1px silver;margin-bottom:5px;"
+              :options="{folding:false,lineNumbers:'off', minimap: { // 关闭代码缩略图
+                      enabled: false // 是否启用预览图
+                      },}"  >
+                </MonacoEditor>
   <div style="height:67%">
 
     <div style="height:100%;width:100%;display:flex;justify-content: space-between;">
@@ -99,13 +99,12 @@
 <script>
 import {loadFile} from './utils/util.js'
 import {test_expr} from "./api/report_api.js"
-import  codemirror  from './element/vue-codemirror.vue'
-
+import MonacoEditor from './element/MonacoEditor';
 //import MonacoEditor from 'vue-monaco'
 import x2js from 'x2js' 
 const x2jsone=new x2js(); //实例
 export default {
-    components: {codemirror},
+    components: {MonacoEditor},
     
     mounted() {
       this.func_xml=x2jsone.xml2js(loadFile('func.xml'))["functions"]["catalogy"]
@@ -177,21 +176,27 @@ export default {
     close(){
       this.$emit('update:visible', false)      
     },
-    onCmReady(cm) {
-      console.log('the editor is readied!', cm)
-    },
-    onCmFocus(cm) {
-      console.log('the editor is focused!', cm)
-    },
-    onCmCodeChange(newCode) {
-      console.log('this is new code', newCode)
-      this.obj = newCode
-    },   
+    
     change_func_xml(prop,data){
       this[prop]=data
     },
     choose_func(name){
       alert(name)
+    },
+    insertContent (text) {
+      let editor=this.$refs.editor.editor
+      if (editor) {
+        editor.focus()
+        let selection = editor.getSelection()
+        let range = new monaco.Range(selection.startLineNumber, selection.startColumn, selection.endLineNumber, selection.endColumn)
+        let id = { major: 1, minor: 1 }
+        let op = {identifier: id, range: range, text: text, forceMoveMarkers: true}
+        editor.executeEdits(this.root, [op])
+        selection.selectionStartColumn=(selection.positionColumn+=text.indexOf("(")+1)
+        
+        editor.setSelection(selection)
+        editor.focus()
+      }
     },
     insert_func(name){
       let prefix=''
@@ -210,14 +215,13 @@ export default {
       }
       else
         insrt_str=`${prefix}${name}`
-      this.$refs.editor.codemirror.replaceSelection(insrt_str)
-      
-      this.$refs.editor.codemirror.focus();
-      let pos1 = this.$refs.editor.codemirror.getCursor();
-      let pos2 = {};
-      pos2.line = pos1.line;
-      pos2.ch = pos1.ch-(insrt_str.length-insrt_str.indexOf("(") - 1);
-      this.$refs.editor.codemirror.setCursor(pos2);
+      this.insertContent(insrt_str)
+      console.info('xx')
+      //let pos1 = this.editor.getCursor();
+      //let pos2 = {};
+      //pos2.line = pos1.line;
+      //pos2.ch = pos1.ch-(insrt_str.length-insrt_str.indexOf("(") - 1);
+      //this.editor.setCursor(pos2);
       
     },
     choose_field(ds,field){
@@ -228,13 +232,9 @@ export default {
       this.cur_ds=ds
       this.cur_field=field
       if(this.$refs.editor.value && this.$refs.editor.value.trim()!="")
-        this.$refs.editor.codemirror.replaceSelection(ds._name+"."+field)
+        this.insertContent(ds._name+"."+field)
       else
-        this.$refs.editor.codemirror.replaceSelection("="+ds._name+"."+field)
-      this.$refs.editor.codemirror.focus();
-    },
-    editor_ready(){
-      this.$refs.editor.codemirror.setSize('auto','150px')
+        this.insertContent("="+ds._name+"."+field)
     }
   },
   computed:{

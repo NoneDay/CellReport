@@ -93,7 +93,7 @@ export const parseParam=function(one_ds__text){
             }
         })
     }
-    return params
+    return Enumerable.from(params).where(x=>x!="" && x!=null).toArray()
 }
 export const build_layout=function(AllGrids){
     let layout_item_arr =[]
@@ -1120,7 +1120,17 @@ const load_script_list=[]
 
         HEAD.appendChild(s[i]);
     };
-    recursiveLoad(0);
+    let old_define //没有这里，exceljs等外部库将不能被挂载到window上。没有这里，将会按amd方式调用
+    if('function'==typeof define)
+        old_define=define
+    try{
+        recursiveLoad(0);
+    }
+    finally
+    {
+        if(old_define!=undefined)
+            define=old_define
+    }
 }
 export function load_css_file(url){
     var doc = document;

@@ -9,16 +9,11 @@
     <el-tab-pane :label="one.label" :name="one.name" v-for="one in temp_props" 
     :key="one.name"  style="height:100%">
         <!-- <edmitormd v-if="tab_value=='notebook' &&  one.name=='notebook' "  v-model="one.val"/> -->
-        
-        <codemirror v-if="tab_value==one.name  " ref="editor"
-            style="height:100%"
-            v-model="one.val" 
-          :options="{tabSize: 4, mode: one.mode,
-           styleActiveLine: true,lineWrapping: true,lineNumbers: true,line: true,
-            theme: 'cobalt',showCursorWhenSelecting: true, cursorBlinkRate:0 }" 
-            @ready="editor_ready(one.name)"
-         />
-        
+        <MonacoEditor  v-if="tab_value==one.name" ref="editor"  theme="vs" v-model="one.val"
+              :language="one.mode"  style="height:100%;border:solid 1px silver;margin-bottom:5px;"
+              :options="{}"  >
+        </MonacoEditor>
+       
     </el-tab-pane>
     <el-tab-pane label='缺省值'>
         <el-form labelPosition="left" label-suffix="："  labelWidth="100px">
@@ -122,12 +117,12 @@
 </template>
 
 <script>
-import  codemirror  from './element/vue-codemirror.vue'
+import MonacoEditor from './element/MonacoEditor';
 import  edmitormd  from './element/edmitormd.vue'
 import {test_expr} from "./api/report_api.js"
 export default {
     name: "templateManger",
-    components: {codemirror,edmitormd},
+    components: {MonacoEditor,edmitormd},
     props: [ "visible","action_target","parent_defaultsetting"],
     inject: ["context"],
     mounted(){
@@ -157,8 +152,8 @@ export default {
             temp_props:[
                             
                 {'name':'before_exec_script','mode':"javascript",'label':'后端运行前脚本','val':"11"},            
-                {'name':'footer2','mode':"javascript",'label':'前端页面css和js脚本','val':"22"},
-                {'name':'notebook','mode':"javascript",'label':'记事本','val':"11"},    
+                {'name':'footer2','mode':"html",'label':'前端页面css和js脚本','val':"22"},
+                {'name':'notebook','mode':"",'label':'记事本','val':"11"},    
             ],
             action_name:"",
             dialogVisible:false,
@@ -214,16 +209,7 @@ export default {
             })
         
         },
-        editor_ready(name){
-            let _this=this
-            setTimeout(() => {
-                _this.$refs["editor"].forEach(x=>{
-                    x.codemirror.setSize('100%','100%')     
-                })
-                
-            } );
-           
-        }, 
+        
     }
 }
 </script>

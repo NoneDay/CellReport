@@ -123,13 +123,13 @@ export default [
               return tableData;
       },
       cr_init(){
-          if(this.context.mode=='design' && this.self.datasource!='示例')
-              return true
-          this.$nextTick(() => {
-              let old_default=localStorage.getItem(key) || ''
-              if(!this.validatenull(old_default))
-                  this.defaults = JSON.parse(localStorage.getItem(key) || '')
-          })
+          //if(this.context.mode=='design' && this.self.datasource!='示例')
+          //    return true
+          //this.$nextTick(() => {
+          //    let old_default=localStorage.getItem(key) || ''
+          //    if(!this.validatenull(old_default))
+          //        this.defaults = JSON.parse(localStorage.getItem(key) || '')
+          //})
           return true
       }
   }

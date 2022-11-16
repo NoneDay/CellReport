@@ -6,7 +6,7 @@
       :inline="true"
       :visible.sync="dialogVisible"
       v-if="dialogVisible"
-      :title="'编辑内容'"
+      :title="'编辑内容(JS)'"
       :close-on-click-modal="false"
       :modal="false"
       direction="btt"
@@ -14,23 +14,10 @@
       append-to-body
     >
     <el-row style="height: 100%"><el-col span="12"  style="height: 100%; border: 1px solid gray">
-      
-        <codemirror
-          v-model="test_content"
-          @ready="editor_ready()"
-          ref="editor"
-          style="height: 100%"
-          :options="{
-            tabSize: 4,
-            mode: 'text/javascript',
-            styleActiveLine: true,
-            lineWrapping: true,
-            theme: 'cobalt',lineNumbers: true,line: true,
-            showCursorWhenSelecting: true,
-            cursorBlinkRate: 0,
-          }"
-        />
-      
+        <MonacoEditor   theme="vs" v-model="test_content"
+              language="html"  style="height:100%;border:solid 1px silver;margin-bottom:5px;"
+              :options="{}"  >
+        </MonacoEditor>
       </el-col>
         <el-col span="12" style="height: 100%; border: 1px solid gray; position: relative"
           :style="{'background-color':context.report.defaultsetting['BACKGROUND-COLOR'],
@@ -65,26 +52,18 @@
       style="text-align: left"
       :inline="true"
       :visible.sync="json_dialogVisible"
-      :title="'编辑内容'"
+      :title="'编辑内容（json）'"
       :close-on-click-modal="false"
       :modal="false"
       direction="btt"
       append-to-body
     >
-      <div>
-        <codemirror
-          v-model="optionData"
-          style="height: 100%"
-          :options="{
-            tabSize: 4,
-            mode: 'text/javascript',
-            styleActiveLine: true,
-            lineWrapping: true,
-            theme: 'cobalt',
-            showCursorWhenSelecting: true,
-            cursorBlinkRate: 0,
-          }"
-        />
+      <div style="height: 300px;">
+        <MonacoEditor   theme="vs" v-model="optionData"
+              language="json"  style="height:100%;border:solid 1px silver;margin-bottom:5px;"
+              :options="{}"  >
+        </MonacoEditor>
+        
       </div>
       <span slot="footer" class="dialog-footer">
         <el-button size="small" @click="json_dialogVisible = false"
@@ -190,14 +169,14 @@
   </div>
 </template>
 <script>
-import codemirror from "../element/vue-codemirror.vue";
+import MonacoEditor from '../element/MonacoEditor';
 import { test_data } from "../utils/util";
 import crSetFresh from "./cr_set_fresh.vue";
 import echartMain from "./echarts/main.vue";
 import { dicOption } from "./config";
 export default {
   name: "config-echart",
-  components: { codemirror, crSetFresh, echartMain },
+  components: { MonacoEditor, crSetFresh, echartMain },
   inject: ["context"],
   props: ["data"],
   mounted() {
@@ -280,14 +259,7 @@ export default {
     },
     save_template_content(){
       this.data.content=this.test_content
-    },
-    editor_ready() {
-      let _this = this;
-      setTimeout(() => {
-        _this.$refs["editor"].codemirror.setSize("100%", "100%");
-      });
-    },
-    
+    },     
     param_setting(item) {
       this.current_item=item
       this.act_item=JSON.parse(JSON.stringify(item))
@@ -307,6 +279,7 @@ export default {
       try {
         
         this.data.optionData = JSON.parse(this.optionData);
+        this.change_ds("静态数据")
       } catch (ex) {
         this.$alert("JSON不合法");
         return;

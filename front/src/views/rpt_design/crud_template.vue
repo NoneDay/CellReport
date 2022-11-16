@@ -30,15 +30,17 @@
         <div class="avue-crud__menu">
             <div class="avue-crud__left">
                 <el-button-group>
-                <el-button type="primary" size="mini" icon="el-icon-edit" @click="open('table','表格配置')">表格配置</el-button>
-                <el-button type="primary" size="mini" icon="el-icon-s-fold" @click="open('menu','操作配置')">操作配置</el-button>
-                <el-button type="primary" size="mini" icon="el-icon-s-order" @click="open('dialog','弹框配置')">弹框配置</el-button>
-                <el-button type="primary" size="mini" icon="el-icon-magic-stick" @click="open('btn','按钮配置')">按钮配置</el-button>
+                    <el-button type="primary" size="mini" icon="el-icon-edit" @click="open('table','表格配置')">表格配置</el-button>
+                    <el-button type="primary" size="mini" icon="el-icon-s-fold" @click="open('menu','操作配置')">操作配置</el-button>
+                    <el-button type="primary" size="mini" icon="el-icon-s-order" @click="open('dialog','弹框配置')">弹框配置</el-button>
+                    <el-button type="primary" size="mini" icon="el-icon-magic-stick" @click="open('btn','按钮配置')">按钮配置</el-button>
+                    <el-checkbox v-model="as_parent">包含明细表</el-checkbox>
                 </el-button-group>
             </div>
             <div class="avue-crud__right">
+                
                 <el-button type="text" size="mini" icon="el-icon-document" @click="handleAvueDoc">Avue文档</el-button>
-                <el-button type="text" size="mini" icon="el-icon-download" @click="handleGenerateJson">生成JSON</el-button>
+                <el-button type="text" size="mini" icon="el-icon-download" @click="handleGenerateJson">生成代码</el-button>
                 
             </div>
         </div>
@@ -57,20 +59,13 @@
     </el-drawer>
 
     <!-- 生成JSON -->
-    <el-drawer title="生成JSON"
+    <el-drawer title="将代码复制到对应报表组报表的模板中"
                append-to-body
                :visible.sync="generateJsonVisible"
                size="100%"
-               destroy-on-close>
-        <codemirror  ref="editor"
-            style="height:100%"
-            v-model="widgetFormPreview" 
-          :options="{tabSize: 4, mode: 'javascript',
-           styleActiveLine: true,lineWrapping: true,lineNumbers: true,line: true,
-            theme: 'cobalt',showCursorWhenSelecting: true, cursorBlinkRate:0 }" 
-            
-         />
-
+               destroy-on-close> 
+<MonacoEditor theme="vs" v-model="widgetFormPreview" 
+    language="html"   :options="{}"  ></MonacoEditor>
       <div class="drawer-foot">
         <el-button size="mini"
                    type="primary"
@@ -88,7 +83,6 @@
 </div>
 </template>
 <script>
-import  codemirror  from './element/vue-codemirror.vue'
 import {call_server_func } from "./utils/util"
 import {rptGrpList} from "./api/report_api"
 let dicList = [{label: '输入框',value: 'input'},  
@@ -231,9 +225,13 @@ let tableOption =   {menuBtn: false,labelWidth: 110,
         {label:"可Null",prop:"is_nullable",editDisabled:true,display: false},
     ],
   }
+import { baseUrl } from '@/config/env';   
+
+import MonacoEditor from './element/MonacoEditor';
+
 export default {
     name: "datasetManger2",
-    components: {codemirror},
+    components: {MonacoEditor},
     props: { visible: Boolean},
     inject: ["context"],
     async mounted(){
@@ -260,11 +258,13 @@ export default {
                 in_exec_url: false,
                 defaultsetting: {'BACKGROUND-COLOR':'#012545','COLOR':'#fff'},
                 fresh_ele: [],
+                
             }
         };
     },
     data(){
         return {
+            as_parent:false,
             rptgrps:[],
             datasource:[],
             tables:[],
@@ -295,10 +295,6 @@ export default {
         }
     },
     computed: {
-        
-        codemirror () {
-            return this.$refs.myCm.codemirror
-        },
         codeList () {
             let list = [];
             //const Mock = window.Mock;
@@ -319,13 +315,19 @@ export default {
             }
             return list
         },
+        server_url(){
+            if(baseUrl == `/report5`)
+                return `run:${this.data.grp}?reportName=/`
+            else
+                return `${baseUrl}/run:${this.data.grp}?reportName=/`
+        }
   },
     methods:{
         handleAvueDoc () {
             window.open('https://avuejs.com/crud/crud-doc/', '_blank')
         },
         async grp_change (val){
-            this.datasource=await call_server_func("AllDataSource",null,`run:${this.data.grp}?reportName=/`)
+            this.datasource=await call_server_func("AllDataSource",null,this.server_url)
             this.data.datasource=""
             this.tables=[]
             this.cloumn_list=[]
@@ -333,7 +335,7 @@ export default {
         },
         async datasource_change (val){
             
-            let data=await call_server_func(`db_tables`,this.data.datasource,`run:${this.data.grp}?reportName=/`)
+            let data=await call_server_func(`db_tables`,this.data.datasource,this.server_url)
             this.tables=data
             this.data.table=""
             this.cloumn_list=[]
@@ -341,12 +343,12 @@ export default {
         async table_change(val){
             let tbl=val.split(".")
             this.all_tbl={}
-            let main_tbl=await call_server_func(`db_tableinfo`,{datasource:this.data.datasource,table_name:tbl[2]},`run:${this.data.grp}?reportName=/`)
+            let main_tbl=await call_server_func(`db_tableinfo`,{datasource:this.data.datasource,table_name:tbl[2]},this.server_url)
             this.all_tbl[tbl[2]]=main_tbl
             for(let x in main_tbl.foreign_info)
             {
                 let cur=main_tbl.foreign_info[x]
-                let one=await call_server_func(`db_tableinfo`,{datasource:this.data.datasource,table_name:cur.table},`run:${this.data.grp}?reportName=/`)
+                let one=await call_server_func(`db_tableinfo`,{datasource:this.data.datasource,table_name:cur.table},this.server_url)
                 this.all_tbl[cur.table]=one
             }
             Object.keys(this.all_tbl).forEach(a=>{
@@ -363,13 +365,17 @@ export default {
                 if(this.all_tbl[x.table].type=='字典表'){
                     let cur_col=main_tbl.columns.filter(y=>y.prop==x.from)[0]
                     cur_col.type='select'
+                    cur_col.filterable=true
                     cur_col.m_dictData=x.table
                     this.allDict.push({table:x.table,key:x.to,columns:Enumerable.from(this.all_tbl[x.table].columns).select(x=>x.prop).toArray() })
                 }
             })
-            console.info(this.all_tbl)
+            
             this.main_tbl=main_tbl
             this.cloumn_list=main_tbl.columns
+            this.cloumn_list.forEach(x=>{
+                if(x.m_dictData)x.dicData=`<!!>this.allDict["${x.m_dictData}"]<!!>`
+            })
         },
         beforeOpen (done) {
             done();
@@ -394,14 +400,15 @@ export default {
                     keys:Enumerable.from(this.cloumn_list).where(x=>x.is_key=='true').select(x=>x.prop).toArray(),
                     auto_incr_cols:Enumerable.from(this.cloumn_list).where(x=>x.auto_incr).select(x=>x.prop).toArray(),
                     crud_option:_this.code(),
-                    allDict:this.allDict
-                },`run:${this.data.grp}?reportName=/`)
+                    allDict:this.allDict,
+                    as_parent:this.as_parent
+                },this.server_url)
                 .then(x=>{
                     if(x.errcode){
                         _this.$message.error(x.message)
                         return
                     }
-                    console.info(x.最终模板)
+                    //console.info(x.最终模板)
                     _this.codeOption=(
                     {type:"ele-grid",'label':'ele_grid',icon: 'icon-table','color':'#fff',display: true, 
                         pageSize:20,
@@ -414,6 +421,7 @@ export default {
                 })
             }
         },
+        
         code () {
             function vaild (option = {}, ele = '') {
                 const result = option[ele] + '' || '';
@@ -424,14 +432,35 @@ export default {
             Object.keys(option).forEach(ele => {
                 if (vaild(option, ele)) delete option[ele];
             })
+            let _this=this
             option.column = this.deepClone(this.cloumn_list || []);
             option.column.forEach(x=>{
-                if(x.auto_incr) {x['editDisabled']=true ;x.addDisabled='true';}
-                if(x.is_nullable=="YES") x.rules=[{required: true,message: "请输入"+x.label,trigger: "blur"}]
-                if(x.m_dictData)x.dicData=`<!!>this.allDict["${x.m_dictData}"]<!!>`
+                if(x.type=='table'){
+                    //delete x.dicData
+                    let tmp_column=Enumerable.from(_this.all_tbl[x.m_dictData].columns).select(t=>{return {label:t.label,prop:t.prop};}).toArray();
+                    console.info(tmp_column)
+                    let key=Enumerable.from(_this.all_tbl[x.m_dictData].columns).first(x=>x.is_key=="true").prop
+                    x.children= { border: true,column:tmp_column}
+                    x.props={value:`${key}`,label:`${_this.all_tbl[x.m_dictData].columns[1].prop}`}
+                    x.formatter=`<!!> (row) => {
+                if(!row.name) return ''
+                return row.name + '-' + row.sex}\n<!!>`
+                    x.onLoad=`<!!>({ page, value,data }, callback) => {
+    cellreport.call_server_func("TableData_${_this.data.table.split(".")[2]}",{page, value,data,table:'${x.m_dictData}',key:'${key}' },this).then(result=>{
+          this.$Log.capsule('TableData', JSON.stringify( result) )   
+          if(result['errcode'] ){
+            this.$message({message: result.message,type: "error"});
+          }
+          else {
+            callback(result)
+          }
+      });                        
+}<!!>`
+              
+                }
             })
-            
-            option.column.push({labelWidth:0,label:'',prop:'info',span:24,hide:true,formslot:true,}  )
+            if(this.as_parent)
+                option.column.push({labelWidth:0,label:'',prop:'_info_',span:24,hide:true,formslot:true,}  )
 
             option.column.forEach(ele => {
                 Object.keys(ele).forEach(key => {

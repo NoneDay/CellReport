@@ -5,8 +5,6 @@ import elementZhLocale from 'element-ui/lib/locale/lang/zh-CN'// element-ui lang
 import enLocale from './en'
 import zhLocale from './zh'
 import { getStore } from '@/util/store'
-import CronInput_zhLocale from 'vue-cron-generator/src/locale/zh-CN'
-import CronInput_enLocale from 'vue-cron-generator/src/locale/en-US'
 
 var Avue = window.AVUE;
 Vue.use(VueI18n)
@@ -15,13 +13,11 @@ const messages = {
     ...enLocale,
     ...elementEnLocale,
     ...Avue.locale.en,
-    ...CronInput_enLocale
   },
   zh: {
     ...zhLocale,
     ...elementZhLocale,
     ...Avue.locale.zh,
-    ...CronInput_zhLocale
   }
 }
 

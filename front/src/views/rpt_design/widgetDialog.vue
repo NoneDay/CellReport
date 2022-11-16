@@ -68,11 +68,11 @@
 </template>
 
 <script>
-import codemirror from "./element/vue-codemirror.vue";
+
 import {getAllWidget} from "./api/report_api"
 export default {
   name: "widgetDialog",
-  components: { codemirror },
+  components: {  },
   props: ["visible", "action_target"],
   inject: ["context","has_name"],
   async mounted() {

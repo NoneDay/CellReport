@@ -136,24 +136,31 @@
   <script src="<%= BASE_URL %>cdn/echarts.min.js" charset="utf-8"></script>
   <script src="<%= BASE_URL %>cdn/crypto-js.min.js" charset="utf-8"></script>
 
-  <script type="text/javascript" src="<%= BASE_URL %>js/toExcel.js?updateTime=-12352" ></script>
   <script src="<%= BASE_URL %>cdn/vue-grid-layout-legacy/dist3/vue-grid-layout.umd.min.js" ></script>  
 
   <script src="<%= BASE_URL %>cdn/signalr/dist/browser/signalr.js"></script>
 <!---->
-  <link rel="stylesheet" href="<%= BASE_URL %>cdn/codemirror-5.58.3/lib/codemirror.css">
-  <link rel="stylesheet" href="<%= BASE_URL %>cdn/codemirror-5.58.3/addon/fold/foldgutter.css" />
-  <script src="<%= BASE_URL %>cdn/codemirror-5.58.3/lib/codemirror.js"></script>
 
-  <script src="<%= BASE_URL %>cdn/codemirror-5.58.3/mode/javascript/javascript.js"></script>
-  <script src="<%= BASE_URL %>cdn/codemirror-5.58.3/mode/sql/sql.js"></script>  
-  <script src="<%= BASE_URL %>cdn/codemirror-5.58.3/mode/xml/xml.js"></script>  
 <!-- 引入组件库 
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@nutui/nutui@2.2.15/dist/nutui.min.css">
 
 <script src="https://cdn.jsdelivr.net/npm/@nutui/nutui@2.2.15/dist/nutui.min.js"></script>-->
  <script src="<%= BASE_URL %>cdn/datav.min.vue.js"></script> 
  
+ <script src="<%= BASE_URL %>cdn/monaco-editor/min/vs/loader.js"></script>
+
+ <script>
+  require.config({ paths: { vs: 'cdn/monaco-editor/min/vs' } });
+  require.config({'vs/nls' : {availableLanguages: {'*': 'zh-cn'}}});
+  require(['vs/editor/editor.main'], function () {
+    
+    //var editor = monaco.editor.create(document.getElementById('container'), {
+    //	value: ['function x() {', '\tconsole.log("Hello world!");', '}'].join('\n'),
+    //	language: 'javascript'
+    //});
+    
+  }); 
+</script>
 </body>
 
 </html>

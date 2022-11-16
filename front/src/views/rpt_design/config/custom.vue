@@ -4,30 +4,24 @@
       <label class="el-form-item__label"
              style="padding: 0;">自定义属性：</label>
       <div >
-          <codemirror     v-model="params" 
-              :options="{tabSize: 4, mode: 'text/javascript', styleActiveLine: true,lineWrapping: true,
-              theme: 'cobalt',showCursorWhenSelecting: true, cursorBlinkRate:0 }" 
-              
-         />
-        <!--<monaco-editor v-model="params"
-                       height="300"
-                       :keyIndex="data.prop"
-                       :options="options"></monaco-editor>
-                       -->
+         <MonacoEditor  theme="vs" v-model="params"
+              language="javascript"  style="height:100%;border:solid 1px silver;margin-bottom:5px;"
+              :options="{folding:false,lineNumbers:'off', minimap: { // 关闭代码缩略图
+                      enabled: false // 是否启用预览图
+                      },}"  >
+        </MonacoEditor>
       </div>
     </div>
     <div class="el-form-item el-form-item--small el-form--label-top">
       <label class="el-form-item__label"
              style="padding: 0;">自定义事件：</label>
       <div>
-        <codemirror    v-model="event"  :keyIndex="data.prop"
-              :options="{tabSize: 4, mode: 'text/javascript', styleActiveLine: true,lineWrapping: true,
-              theme: 'cobalt',showCursorWhenSelecting: true, cursorBlinkRate:0 }" 
-              /><!--
-        <monaco-editor v-model="event"
-                       height="300"
-                       :keyIndex="data.prop"
-                       :options="options"></monaco-editor> -->
+        <MonacoEditor  theme="vs" v-model="data.prop"
+              language="javascript"  style="height:100%;border:solid 1px silver;margin-bottom:5px;"
+              :options="{folding:false,lineNumbers:'off', minimap: { // 关闭代码缩略图
+                      enabled: false // 是否启用预览图
+                      },}"  >
+        </MonacoEditor>
       </div>
     </div>
     <el-form-item label="是否禁用">
@@ -40,10 +34,10 @@
 </template>
 <script>
 
-import  codemirror  from '../element/vue-codemirror.vue'
+import MonacoEditor from '../element/MonacoEditor';
 export default {
   name: 'config-custom',
-  components: { codemirror },
+  components: { MonacoEditor },
   props: ['data'],
   mounted(){
     console.info("=")

@@ -60,6 +60,8 @@ namespace reportWeb
             CellReport.core.expr.ExprHelper.buildFuncMap();
             //CellReport.core.expr.ExprHelper.AddFunc(typeof(CellReport.function.Func_md5));
             CellReport.core.expr.ExprHelper.AddFunc(typeof(CellReport.function.Func_qr_code));
+            CellReport.core.expr.ExprHelper.AddFunc(typeof(CellReport.function.Func_kata));
+            CellReport.core.expr.ExprHelper.AddFunc(typeof(CellReport.function.Func_kata_Variable));
 
             services.AddDbContext<ReportDbContext>(optionsBuilder =>
             {
