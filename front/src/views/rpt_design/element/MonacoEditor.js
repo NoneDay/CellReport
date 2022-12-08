@@ -57,7 +57,7 @@ export default {
     },
 
     value() {
-      this.editor && this.value !== this._getValue() && this._setValue(this.value);
+      this.editor && this.value !== this._getValue() && this._setValue(this.value??"");
     },
 
     language() {

@@ -1,14 +1,14 @@
 import { xlsxjs_inner_exec } from "../utils/export_excel"
 import {seriesLoadScripts,load_css_file,load_css_js,insert_css_to_head,build_chart_data,convert_array_to_json
     ,extract_style_txt,extract_script_txt,select_field_data,test_data } from "../utils/util"
-
+import { baseUrl } from '@/config/env'; 
 export default (function(){ return {
     provide(){
         let ret={
             context: this._context,
             fresh_ele:this._fresh_ele,
             clickedEle:this._clickedEle,
-            
+            baseUrl,
         }
         
         //if(this._context?.report_result?._zb_var_)

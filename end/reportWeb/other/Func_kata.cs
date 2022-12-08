@@ -28,14 +28,19 @@ namespace CellReport.function
 
     public class Func_kata : FunctionUnit
 	{
-		public override Object calculate(IList args)
-		{
+        static Func_kata()
+        {
             ExprHelper.AddCSFuncOperator("kata", DirectCallObjectMethod);
+        }
+        public override SqlKata.Execution.QueryFactory calculate(IList args)
+		{
             if (args.Count == 0)
                 throw new CellReport.core.ReportRuntimeException("kata至少需要一个参数！");
             object expr = args[0];
             Object ret_obj = calcExpr(expr);
             DatasourceStruct ds_struct = (DatasourceStruct)(getEnv().getDataSource(ret_obj.ToString()));
+            if(ds_struct==null)
+                throw new core.ReportRuntimeException($"没有找到数据源：【{ret_obj}】，查看报表组和数据源名称是否正确。");
             var ds_type = ds_struct.ds_type;
             if (args.Count > 1)
                 ds_type=calcExpr(args[1])?.ToString();
@@ -70,6 +75,7 @@ namespace CellReport.function
             return db; 
         }
         private static Type extend_type;
+        
         public static (bool, bool, object) DirectCallObjectMethod(Object obj, string methodName, object[] methodParams, BaseExprFaced exprFaced = null, bool alreadyCalc = false)
         {
             if (obj is QueryFactory queryFactory)
@@ -83,7 +89,7 @@ namespace CellReport.function
             if (obj is not SqlKata.Execution.XQuery)
                 return (false, false, null);
             if (extend_type == null) { 
-                extend_type = ExprHelper.findClass("SqlKata.Execution.QueryExtensions", false);// typeof(SqlKata.Execution.QueryExtensions);
+                extend_type = ExprHelper.findClass("SqlKata.Execution.QueryExtensions", false);// ;
                 if(extend_type == null)
                     throw new core.ReportRuntimeException($"找不到SqlKata.Execution.QueryExtensions类型。");
             }
@@ -103,10 +109,10 @@ namespace CellReport.function
                     else
                     if (one is not string && one is IEnumerable par_list)
                     {
-                        List<object> new_dic = new();
+                        List<String> new_dic = new();
                         foreach (var x in par_list)
                         {
-                            new_dic.Add(x is CellReport.math.BigDecimal val_dec ? val_dec.getCSDecmial() : x);
+                            new_dic.Add(x is CellReport.math.BigDecimal val_dec ? val_dec.getCSDecmial().ToString() : x?.ToString());
                         }
                         methodParams[i] = new_dic;
                     }

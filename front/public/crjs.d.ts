@@ -999,6 +999,23 @@ declare function web_request(p={
     ,'json':null      //使用json提交，json 和data 不能同时有值，至少有一个是null
     ,'headers':null   
     });// 语句必须以逗号结束
+declare class HttpResponseMessage{
+      /** */
+      CurrentPage:PaginationResult
+      /** */
+      FirstPage:PaginationResult
+      /** */
+      GetEnumerator():Enumerable.IEnumerator<T>
+      /** */
+      ToString():String
+  }    
+declare function web_request(p={
+      'url':"API网址"  //用你的地址替换这里
+      ,'method':'post'  //可用方法: get ,post
+      ,'data':null  //使用form提交,不需要的话，用null替换冒号后的内容
+      ,'json':null      //使用json提交，json 和data 不能同时有值，至少有一个是null
+      ,'headers':null   
+      },raw:boolean):HttpResponseMessage;// 语句必须以逗号结束    
 /**
  *  根据布尔表达式的不同结果，返回不同的值
  */    

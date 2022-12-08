@@ -389,7 +389,7 @@ function loadFile (name) { // name为文件所在位置
     let xhr = new XMLHttpRequest(),
         okStatus = document.location.protocol === "file:" ? 0 : 200;
     xhr.open('GET', name, false);
-    xhr.overrideMimeType("text/xml;charset=utf-8");//默认为utf-8
+    xhr.overrideMimeType("text/plain;charset=utf-8");//默认为utf-8
     xhr.send(null);
     return xhr.status === okStatus ? xhr.responseText : null;
 }
@@ -1120,16 +1120,20 @@ const load_script_list=[]
 
         HEAD.appendChild(s[i]);
     };
-    let old_define //没有这里，exceljs等外部库将不能被挂载到window上。没有这里，将会按amd方式调用
-    if('function'==typeof define)
-        old_define=define
+    let old_define=undefined //没有这里，exceljs等外部库将不能被挂载到window上。没有这里，将会按amd方式调用
+    if('function'==typeof window.define){
+        old_define=window.define
+        window.define=undefined
+    }
     try{
         recursiveLoad(0);
     }
     finally
     {
-        if(old_define!=undefined)
-            define=old_define
+        if(old_define!=undefined){
+            window.define=old_define
+            old_define=undefined
+        }
     }
 }
 export function load_css_file(url){
@@ -1332,6 +1336,22 @@ export function call_server_func(func_name,func_params,_this,get_post='post') {
 }
 window.cellreport.call_server_func=call_server_func
 
+export function getBase64(file){  //把图片转成base64编码
+    return new Promise(function(resolve,reject){
+        let reader=new FileReader();
+        let imgResult="";
+        reader.readAsDataURL(file);
+        reader.onload=function(){
+            imgResult=reader.result;
+        };
+        reader.onerror=function(error){
+            reject(error);
+        };
+        reader.onloadend=function(){
+            resolve(imgResult);
+        }
+    })
+}
 export {
     designGrid2LuckySheet,luckySheet2ReportGrid,resultGrid2LuckySheet,
     loadFile,watermark

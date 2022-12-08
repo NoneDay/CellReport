@@ -414,7 +414,7 @@ namespace reportWeb.Pages
                     //    Object result = CellReport.core.expr.ExprHelper.calc_client_func(report_env, str_call_func);
                     //    htmlWrite.Write(JsonSerializer.Serialize(result, report_env.getJsonOption()));
                     //}
-                    else if (Request.HasFormContentType && (Request.Form.ContainsKey("__call_func")))
+                    if (Request.HasFormContentType && (Request.Form.ContainsKey("__call_func")))
                     {
                         var __call_func = Request.Form["__call_func"].ToString();
                         var func_json = JsonDocument.Parse(__call_func).RootElement;

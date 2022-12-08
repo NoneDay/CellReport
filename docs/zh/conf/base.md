@@ -319,7 +319,7 @@ style标签包起来的部分，将会在报表展现前注入当前页面的样
 - 
 ```
 <script> 
-window.after_show_report_hook=function(){
+window.after_show_report_hook=function(){ //这个函数会在显示完报表后调用
   	console.info("function report_after_show exec")
 }
 
@@ -375,7 +375,7 @@ console.info(_this) //d打印_this的内容到控制台。这仅仅是测试，�
            console.info("success")
        })
    }
-   return {
+   export default {
      data:{ 
        my_t_data1:'test_data1',
        my_t_data2:'test_data2',

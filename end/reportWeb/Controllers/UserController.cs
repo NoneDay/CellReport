@@ -23,7 +23,7 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using System.Security.Cryptography;
 using reportWeb.Pages;
-
+using SqlKata.Execution;
 namespace reportWeb.Controllers
 {
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
@@ -31,16 +31,17 @@ namespace reportWeb.Controllers
     {
         IConfiguration configuration;
         JsonSerializerOptions json_option;
-        ReportDbContext reportDbContext;
+        
         private readonly MyLogger logger;
-
-        public UserController(IConfiguration configuration,
-             ReportDbContext reportDbContext, ILogger<UserController> logger,
+        private ReportDbContext reportDb;
+        public UserController(IConfiguration configuration, ReportDbContext reportDb,
+              ILogger<UserController> logger,
             ScopedObj reportGrp)
         {
             this.configuration = configuration;
-            this.reportDbContext = reportDbContext;
+            
             this.logger = new MyLogger(logger);
+            this.reportDb = reportDb;
             json_option = new JsonSerializerOptions()
             {
                 DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull,
@@ -74,8 +75,9 @@ namespace reportWeb.Controllers
             {
                 return Json(new { errcode = 1, message = "验证失败"}, json_option);
             }
-            reportDbContext.Rpt_config.First().zcm = zcm;
-            reportDbContext.SaveChanges();
+            //reportDbContext.Rpt_config.First().zcm = zcm;
+            //reportDbContext.SaveChanges();
+            reportDb.Query("Rpt_config").Update(new { zcm });
             return Json(new { errcode = 0, message = "验证成功", zc_dict = zc_dict }, json_option);
         }
 
@@ -101,8 +103,9 @@ namespace reportWeb.Controllers
         }
         public IActionResult save_config(String login_script)
         {
-            reportDbContext.Rpt_config.First().login_script = login_script;
-            reportDbContext.SaveChanges();
+            //reportDbContext.Rpt_config.First().login_script = login_script;
+            //reportDbContext.SaveChanges();
+            reportDb.Query("Rpt_config").Update(new { login_script });
             return Json(new { errcode = 0, message = "login_script保存成功" }, json_option);
         }
         [AllowAnonymous]
@@ -156,8 +159,9 @@ namespace reportWeb.Controllers
                 ef.addVariable("__env__", new Env());
                 ef.addVariable("userid", username);
                 ef.addVariable("password", password);
-                var conf=reportDbContext.Rpt_config.FirstOrDefault();
-                if(conf!=null && conf.login_script.Trim()!="")
+                var //conf=reportDbContext.Rpt_config.FirstOrDefault();
+                conf=reportDb.Query("Rpt_config").FirstOrDefault<Rpt_config>();
+                if (conf!=null && conf.login_script.Trim()!="")
                     result = ef.addNewScopeForScript(conf.login_script) as IDictionary<Object, Object>;
                 else
                     return Unauthorized(new { message = "用户名或密码错误" });

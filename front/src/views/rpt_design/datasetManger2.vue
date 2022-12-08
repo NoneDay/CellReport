@@ -146,10 +146,10 @@
                     </el-row>
                 </el-form>
             </div>
-            <div style="flex-grow:1;height: 40px;">
+            <div style="flex-grow:1;height: 40px;">  
                 <MonacoEditor  v-if="['memory','sql','userDefine','api','csv'].includes(action_target._type)"
                     theme="vs" v-model="action_target.__text" style="height:100%;border:solid 1px silver;margin-bottom:5px;"
-                    :language="['userDefine','api'].includes(action_target._type)? 'javascript': 'sql'"   :options="{}"  >
+                    :language="['userDefine','api'].includes(action_target._type)? 'javascript': 'sql'"    >
                 </MonacoEditor>                
                     <el-table stripe border  :height="250"  v-if="action_target.url_param" 
                             :data="action_target.url_param"  

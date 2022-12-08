@@ -49,7 +49,7 @@
                 :data="main_tbl.columns" :before-open="beforeOpen"></avue-crud>
   </div>
   <!-- 配置 -->
-  <el-drawer :title="title" show-close append-to-body size="50%" :visible.sync="box">
+  <el-drawer :title="title" show-close append-to-body size="50%" :visible.sync="box" >
       <el-scrollbar height="100%">
         <avue-form :option="tableOption" v-model="tableForm" v-if="type==='table'"></avue-form>
         <avue-form :option="menuOption" v-model="tableForm" v-else-if="type==='menu'"></avue-form>
@@ -176,7 +176,7 @@ let tableOption =   {menuBtn: false,labelWidth: 110,
             {  label: '对其方式',  prop: 'align',  type: 'select',  dicData: alignList}, 
             {  label: '表单标题宽度',  prop: 'labelWidth'}]
   }
-  let option = {dialogType: 'drawer',//dialogWidth: 800,labelWidth: 100,
+  let option = {dialogType: 'drawer',dialogModal:false,//dialogWidth: 800,labelWidth: 100,
   refreshBtn: false,dragHandler: true,sortable: true,height:'400px',
   group: [{  label: '基本参数',  prop: 'jbcs',  
         column: [  {label: '名称',  prop: 'label', rules: [      { required: true, message: '请输入名称', trigger: 'change' }    ]}, 
@@ -389,6 +389,17 @@ export default {
             this.cloumn_list.splice(index, 1, row);
             done();
         },
+        rowDel (row, index) {
+            this.$confirm('是否删除?', '提示', {
+                confirmButtonText: '确定',
+                cancelButtonText: '取消',
+                type: 'warning'
+            }).then(() => {
+                this.cloumn_list.splice(index, 1);
+            }).catch(() => {
+
+            });
+        },
         handleGenerateJson () {
             if(this.data.grp){
                 let _this=this
@@ -464,7 +475,7 @@ export default {
 
             option.column.forEach(ele => {
                 Object.keys(ele).forEach(key => {
-                if (vaild(ele, key) || ['data_type','dflt_value','is_nullable','m_dictData',''].includes(key)) delete ele[key];
+                if (vaild(ele, key) || ['data_type','dflt_value','is_nullable','m_dictData','auto_incr',''].includes(key)) delete ele[key];
                 })
             })
             let jsStr = JSON.stringify(option,).replaceAll("},","}\n,").replaceAll('<!!>"',"").replaceAll('"<!!>',"");

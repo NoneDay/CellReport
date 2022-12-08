@@ -36,10 +36,14 @@ using reportWeb.Model;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using System.Net;
 using Microsoft.AspNetCore.Diagnostics;
-using Microsoft.EntityFrameworkCore;
+
 //using PolarDB.PolarDBClient;
 using Serilog;
 using Microsoft.Extensions.FileProviders;
+using Dapper;
+using SqlKata;
+using SqlKata.Execution;
+using SqlKata.Compilers;
 
 namespace reportWeb
 {
@@ -63,14 +67,19 @@ namespace reportWeb
             CellReport.core.expr.ExprHelper.AddFunc(typeof(CellReport.function.Func_kata));
             CellReport.core.expr.ExprHelper.AddFunc(typeof(CellReport.function.Func_kata_Variable));
 
-            services.AddDbContext<ReportDbContext>(optionsBuilder =>
-            {
-                var folder = Environment.SpecialFolder.LocalApplicationData;
-                var path = Environment.GetFolderPath(folder);
-                var DbPath = $"{path}{System.IO.Path.DirectorySeparatorChar}report.db";
-                //var dataAppSetting = Configuration.GetSection("ConnectionSetting").Get<ConnectionSetting>();
-                optionsBuilder.UseSqlite($"Data Source=report.db");
-            });
+            //IWebHostEnvironment env;
+            //ReportDbContext.EnsureDbExists(env);
+
+            services.AddScoped<ReportDbContext>();
+
+            //services.AddDbContext<ReportDbContext>(optionsBuilder =>
+            //{
+            //    var folder = Environment.SpecialFolder.LocalApplicationData;
+            //    var path = Environment.GetFolderPath(folder);
+            //    var DbPath = $"{path}{System.IO.Path.DirectorySeparatorChar}report.db";
+            //    //var dataAppSetting = Configuration.GetSection("ConnectionSetting").Get<ConnectionSetting>();
+            //    optionsBuilder.UseSqlite($"Data Source=report.db");
+            //});
             //添加身份认证方案
             var jwtConfig = Configuration.GetSection("Jwt").Get<JwtConfig>();
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -213,72 +222,9 @@ namespace reportWeb
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env,ReportDbContext _reportDbContext)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
-            
-            _reportDbContext.Database.EnsureCreated();//数据库不存在的话，会自动创建
-            if (_reportDbContext.Rpt_group.Count() == 0)
-            {
-                var main_path = new DirectoryInfo(Path.Combine(env.ContentRootPath, "..", "reportdefine_root", "default")).FullName; 
-                _reportDbContext.Rpt_group.Add(new Rpt_group()
-                {
-                    Id = "default",
-                    owner = "admin",
-                    default_page = "default",
-                    name = "缺省",
-                    report_path = main_path
-                });
-                if (!Directory.Exists(main_path))
-                    Directory.CreateDirectory(main_path);
-                main_path = new DirectoryInfo(Path.Combine(env.ContentRootPath, "../example")).FullName;
-                _reportDbContext.Rpt_group.Add(new Rpt_group()
-                {
-                    Id = "example",
-                    owner = "admin",
-                    default_page = "default",
-                    name = "例子",
-                    report_path = main_path,
-                    db_connection_list=new List<Rpt_db_connection>()
-                    { 
-                        new Rpt_db_connection() { conn_str=$"Data Source={main_path}/test.db", db_type="Microsoft.Data.Sqlite", name="testsqlite"},
-                    }
-                });
-                _reportDbContext.SaveChanges();
-            }
-            if (_reportDbContext.Rpt_config.Count() == 0)
-            {
-                _reportDbContext.Rpt_config.Add(new Rpt_config()
-                {
-                    login_script = "",
-                });
-                _reportDbContext.SaveChanges();
-            }
-
-            using (var report_db = SqliteFactory.Instance.CreateConnection())
-            {
-                report_db.ConnectionString = "Data Source=report.db";
-                report_db.Open();
-                using var cmd = report_db.CreateCommand();
-                cmd.CommandText = $"PRAGMA TABLE_INFO(Rpt_config)";
-                using var sr = cmd.ExecuteReader();
-                bool has_license_txt = false;
-                while (sr.Read())
-                {
-                    if (sr[1].ToString() == "zcm")
-                    {
-                        has_license_txt = true;
-                    }
-                }
-                using var cmd2 = report_db.CreateCommand();
-                if (has_license_txt == false)
-                {
-                    cmd2.CommandText = $"alter table Rpt_config add zcm TEXT";
-                    cmd2.ExecuteNonQuery();
-                }
-
-            }
-            var rpt_config=_reportDbContext.Rpt_config.First();
-            CellReport.util.KeyAndPassword.yan_zheng_zcm(rpt_config.zcm);
+            ReportDbContext.EnsureDbExists(env);
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
@@ -356,10 +302,8 @@ namespace reportWeb
                 
                 var scopedObj = context.RequestServices.GetService<ScopedObj>();
                 //scopedObj.rpt_group = context.RequestServices.GetService<ReportDb>().findGroupById(grp);
-                scopedObj.rpt_group = context.RequestServices.GetService <ReportDbContext>().Rpt_group.AsNoTracking()
-                .Include(x=>x.db_connection_list)
-                .Where(i => i.Id == grp)
-                .FirstOrDefault();
+                var query=context.RequestServices.GetService<ReportDbContext>();
+                scopedObj.rpt_group = query.GetRpt_Group(grp);
                 scopedObj.WebHostEnvironment = env;
                 
                 context.Request.Path = seg_arr[0];
@@ -418,5 +362,6 @@ namespace reportWeb
                 }
             });
         }
-    }
+        
+     }
 }

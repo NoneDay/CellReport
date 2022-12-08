@@ -28,8 +28,8 @@
 
 <script>
 //import cookies from "vue-cookies";
-const baseUrl=""
-//import { baseUrl } from '@/config/env'; 
+//const baseUrl=""
+import { baseUrl } from '@/config/env'; 
 import {getImgFileList} from "../api/report_api"
 
 export default {
@@ -61,7 +61,8 @@ export default {
   },
   methods: {
     onSuccess (res) {
-      const url = res.data.link;
+      this.imgList.push(res.url)
+      //const url = res.data.link;
       //this.imgOption[this.imgActive].unshift({
       //  label: url,
       //  value: url

@@ -4,6 +4,7 @@ import install_component from './install_component';
 let ElementUI=window.ELEMENT
 Vue.use(ElementUI, {size: 'mini'})
 Vue.use(install_component)
+Vue.use(window.AVUE, {size: 'mini'})
 Vue.config.productionTip = false
 import loading from "@/util/loading"
 import axios from 'axios'

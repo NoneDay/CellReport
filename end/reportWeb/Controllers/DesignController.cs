@@ -27,7 +27,7 @@ using Antlr.Runtime;
 using CellReport.core.expr;
 using System.Text.RegularExpressions;
 using reportWeb.Pages;
-
+using SqlKata.Execution;
 namespace reportWeb.Controllers
 {
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
@@ -293,17 +293,20 @@ namespace reportWeb.Controllers
                 return Json(new { errcode = 1, message = ex.Message,stacktrace=ex.StackTrace });
             }
         }
-        
-        public IActionResult test_expr(String expr)
+
+        public IActionResult test_expr(String expr, int line, int column, string word)
         {
+            //var lines = expr.Split("\n");
+            //lines[line - 1] = lines[line - 1].Insert(column, ".__HINT_NODE__");
+            //expr = String.Join("\n", lines);
             try
             {
                 var input = new ANTLRStringStream(expr);
                 ExprLexer lex = new ExprLexer(input);
                 CommonTokenStream tokens = new CommonTokenStream(lex);
-                tokens.GetTokens();
-                var parser = new ExprParser(tokens);
-                var exprNodes = expr.StartsWith("=")?parser.assignExpr().Tree: parser.statement_block().Tree;
+                var parser = new ExprParser(tokens );//,true
+                var exprNodes = expr.StartsWith("=") ? parser.assignExpr().Tree : parser.statement_block().Tree;
+                //var hint = exprNodes.findHint();
                 return Json(new { errcode = 0, message = "" });
             }
             catch(Exception ex)
@@ -356,7 +359,8 @@ namespace reportWeb.Controllers
                 if (String.IsNullOrEmpty(target))
                     throw new Exception("非法路径:" + file_type);
                 var where_id = target.Split(":")[0];
-                var grp = reportDb.Rpt_group.Where(x=>x.Id == where_id).FirstOrDefault().report_path;
+                
+                var grp = reportDb.Query("Rpt_group").Where(new { id = where_id }).FirstOrDefault().report_path;
                 target = target.Split(":")[1];
                 if (target.StartsWith("/"))
                     target = target.Substring(1);
@@ -784,7 +788,8 @@ namespace reportWeb.Controllers
             //HttpContext.RequestServices.GetService(typeof(Pages._Pages_Default));
             HttpContext.GetEndpoint();
             var userid=HttpContext.User.Claims.FirstOrDefault(x => x.Type == "userid").Value;
-            var ret = (from x1 in this.reportDb.Rpt_group where x1.owner==userid || x1.members.Contains(userid) select x1);
+            var ret = //(from x1 in this.reportDb.Rpt_group where x1.owner==userid || x1.members.Contains(userid) select x1);
+            reportDb.Query("Rpt_group").Where(new { owner = userid }).OrWhereContains("members", userid).Get();
             return Json(ret, json_option);
         }
         public IActionResult getAllWidget(string action)
@@ -843,8 +848,6 @@ namespace reportWeb.Controllers
             var webRootPath = Directory.GetCurrentDirectory();//获取项目路径
             try
             {
-                
-                //创建每日存储文件夹
                 if (!Directory.Exists(Path.Combine( static_path ,file_type)))
                 {
                     Directory.CreateDirectory(Path.Combine(static_path , file_type));
@@ -866,7 +869,7 @@ namespace reportWeb.Controllers
                     }
                     //完整的文件路径
                     
-                    return new JsonResult(new { errcode = 0, message = "上传成功", completeFilePath = completeFilePath });
+                    return new JsonResult(new { errcode = 0, message = "上传成功", url = "static/" + file_type + "/" + file.FileName });
                 }
                 else
                 {

@@ -169,7 +169,43 @@ function db_tables(datasource){
   return openDb(datasource).GetTables();
 }    
 function db_tableinfo(data){
-  return openDb(data.datasource).GetTableInfo(data.table_name);
+  var db=openDb(data.datasource);
+  //trace("db.DbConnection.ConnectionString:", db.connection.ToString(), db.connection.ConnectionString);
+  //trace(db.connection.ConnectionString.split(";")
+  //  .select(x=>{return x.split("=");})
+  //  .first(x=>{ return x[0]=='Data Source';})[1]
+  //);
+  var ret= db.GetTableInfo(data.table_name);
+  ret.columns.forEach(x=>{
+                if(x.auto_incr) {x['editDisabled']=true ;x.addDisabled='true';}
+                if(!x.auto_incr && x.is_nullable=="NO")
+                 x.rules=[{required: true,message: "请输入"+x.label,trigger: "blur"}];
+                if(x.data_type.ToLower() in ["date"]) {
+                    x.type='date';
+                    x.format='yyyy-MM-dd';
+                    x.valueFormat='yyyy-MM-dd';
+                    }
+                if(x.data_type.ToLower() in ["time","datetime"]) {
+                    x.type='datetime';
+                    x.format='yyyy-MM-dd HH:mm:ss';
+                    x.valueFormat='yyyy-MM-dd HH:mm:ss';
+                    }
+                if(x.is_key=="true") {
+                    x.value=`<!!>_this.self.parent_obj?.${x.prop}<!!>`;
+                    if(!x.auto_incr){
+                        x.editDisabled=`<!!>(_this.self.parent_obj?.${x.prop})!=null<!!>`;
+                        x.addDisabled=`<!!>(_this.self.parent_obj?.${x.prop})!=null<!!>`;
+                    }
+                }
+                if(x.data_type=="bit"){
+                  x.type='switch';
+                  x.dicData=`<!!>[{label:'否',value:0},{label:'是',value:1}]<!!>`;
+                }
+                if(x.m_dictData)
+                  x.dicData=`<!!>this.allDict["${x.m_dictData}"]<!!>`;
+               // trace(x);
+            });
+  return ret;
 }
 var schema_kind={
   "Microsoft.Data.SqlClient.SqlClientFactory":{
@@ -202,10 +238,10 @@ var schema_kind={
                   INNER JOIN sys.columns AS C   ON   T.object_id = C.OBJECT_ID
                       INNER JOIN sys.types AS tp   ON  C.user_type_id = tp.user_type_id   
                 where T.name='$table$'`,
-                `=cur.select(x=>{prop:x.column_name, label:x.column_name,type:"input",auto_incr:x.auto_incr,
-                  is_nullable:iif(x.is_nullable==1,'NO','YES'),dflt_value:'',is_key:iif(x.is_key!=0,'true',''),
-                  data_type:x.data_type})` ],
-            auto_incr_sql:'select @@IDENTITY as key;',
+                `=cur.select(x=>{prop:x.column_name, label:x.column_name,type:"input",auto_incr:iif(x.auto_incr==1,true,false),
+                  is_nullable:iif(x.is_nullable==1,'YES','NO'),dflt_value:'',is_key:iif(x.is_key!=0,'true',''),
+                  data_type:x.data_type}).toList()` ],
+           
           },
   "Microsoft.Data.Sqlite.SqliteFactory":{
             tables:`SELECT '' TABLE_CATALOG  ,'' TABLE_SCHEMA,tbl_name TABLE_NAME FROM "main".sqlite_master where type='table';`,
@@ -214,11 +250,56 @@ var schema_kind={
             columns:[`
                  SELECT *,case when pk=1 and EXISTS (SELECT 1 FROM "sqlite_sequence" where name='$table$') then 1 else 0 end auto_incr
                  FROM pragma_table_info('$table$')`,
-                 `=cur.select(x=>{prop:x.name, label:x.name,type:"input",auto_incr:x.auto_incr,
+                 `=cur.select(x=>{prop:x.name, label:x.name,type:"input",auto_incr:iif(x.auto_incr==1,true,false),
                             is_nullable:iif(x.notnull==1,'NO','YES'),dflt_value:x.dflt_value,is_key:iif(x.pk!=0,'true',''),
-                            data_type:x.type})`],
-            auto_incr_sql:'select last_insert_rowid() as key;',
-          },   
+                            data_type:x.type}).toList()`],
+            
+          },  
+   "MySql.Data.MySqlClient.MySqlClientFactory":{
+            tables:`select '' TABLE_CATALOG, TABLE_SCHEMA, table_name AS TABLE_NAME from information_schema.tables where table_schema='$Database$';`,
+            foreign:[
+                    `SELECT
+                      O.TABLE_SCHEMA AS base_schema_name,
+                      O.TABLE_NAME AS base_table_name,
+                      O.COLUMN_NAME AS base_column_name,
+                      O.REFERENCED_TABLE_SCHEMA AS unique_schema_name,
+                      O.REFERENCED_TABLE_NAME AS unique_table_name,
+                      O.REFERENCED_COLUMN_NAME AS unique_column_name
+                    FROM
+                      (
+                      SELECT
+                        K.CONSTRAINT_SCHEMA,
+                        K.CONSTRAINT_NAME,
+                        K.TABLE_SCHEMA,
+                        K.TABLE_NAME,
+                        K.COLUMN_NAME,
+                        K.REFERENCED_TABLE_SCHEMA,
+                        K.REFERENCED_TABLE_NAME,
+                        K.REFERENCED_COLUMN_NAME,
+                        R.UPDATE_RULE,
+                        R.DELETE_RULE,
+                        R.UNIQUE_CONSTRAINT_NAME
+                      FROM
+                        (select * from information_schema.KEY_COLUMN_USAGE where TABLE_SCHEMA='$Database$' and TABLE_NAME='$table$') K
+                        LEFT JOIN information_schema.REFERENTIAL_CONSTRAINTS R ON K.CONSTRAINT_NAME = R.CONSTRAINT_NAME
+                      ) AS O
+                      INNER JOIN Information_schema.TABLE_CONSTRAINTS T ON O.Table_Name = T.TABLE_NAME
+                      AND T.CONSTRAINT_NAME = O.CONSTRAINT_NAME
+                      AND T.CONSTRAINT_TYPE = 'FOREIGN KEY'
+                    ORDER BY base_schema_name, base_table_name`	,
+					      `=cur.select(x=>{table:x.unique_table_name, from:x.base_column_name,to:x.unique_column_name})`]		,
+            columns:[`
+                select NULL AS object_id, A.TABLE_SCHEMA AS schema_name, A.TABLE_NAME as table_name,  B.COLUMN_NAME as column_name, B.DATA_TYPE as data_type,
+                  IF(B.IS_NULLABLE='NO', 0,1) AS is_nullable, 0 AS is_rowguidcol, IF(B.EXTRA='auto_increment', 1,0) AS auto_incr,
+                  IF(B.COLUMN_KEY='PRI', 1,0) AS is_key, B.COLUMN_COMMENT as column_comment
+                from (SELECT * FROM information_schema.tables where TABLE_SCHEMA='$Database$' AND TABLE_NAME = '$table$') A
+                INNER JOIN information_schema.COLUMNS B  ON A.TABLE_SCHEMA=B.TABLE_SCHEMA AND  A.TABLE_NAME=B.TABLE_NAME
+                order by B.ORDINAL_POSITION`,
+                `=cur.select(x=>{prop:x.column_name, label:x.column_name,type:"input",auto_incr:iif(x.auto_incr==1,true,false),
+                  is_nullable:iif(x.is_nullable==1,'YES','NO'),dflt_value:'',is_key:iif(x.is_key!=0,'true',''),
+                  data_type:x.data_type}).toList()` ],
+            auto_incr_sql:'select @@IDENTITY as key;',
+          }, 
 }    ;
 
 var tbl_default_filter=`=cur.select(x=>{
@@ -237,96 +318,18 @@ function buildTemplate(para){
      var col_list=para.col_list;//表的所有列名
   	  if(para.keys.count()==0)
         return {errcode:1,message:`没有定义主键`};
-     var key_not_exists=para.keys.where(x=> x not in col_list).JoinAsString();
+     var key_not_exists=para.keys.Where(x=> x not in col_list).JoinAsString();
   		trace("key_not_exists:",key_not_exists);
      if(key_not_exists!='')
        return {errcode:1,message:`${key_not_exists} 不在列表中！（${col_list.JoinAsString()}）`};
     // crud 
-     var crud_cloumns=col_list.where(x=>x in para.keys).select(x => `{label:"${x}",prop:"${x}",span:8,type:"input",editDisabled:true,addDisabled: 'false'}`)
-     .union( col_list.where(x=>x not in para.keys).select(x => `{label:"${x}",prop:"${x}",span:8,type:"input"}`) )
+     var crud_cloumns=col_list.Where(x=>x in para.keys).select(x => `{label:"${x}",prop:"${x}",span:8,type:"input",editDisabled:true,addDisabled: 'false'}`)
+     .union( col_list.Where(x=>x not in para.keys).select(x => `{label:"${x}",prop:"${x}",span:8,type:"input"}`) )
      .JoinAsString(',\\n');
      var where_str=para.keys.select(x => `[${x}]='\${crud_obj.${x}\}'`).JoinAsString(" and ") ;
      var list_where=iif(para.parent_table==null," 1=1 `",para.parent_table.select(x=>`${x.self_key}='\${p.${x.parent_key}}'` ).joinAsString(' and ')  );
        //-------------------------------- 
-    var opendb_template=`
-   function 插入_${para.table}(p_obj){
-    	var col_list=[ ${col_list} ];
-      var key_list=[${para.keys}];
-      var 插入语句=\`insert into ${para.table} ( 
-         ${col_list.where(x=>x not in para.auto_incr_cols).select(x => '['+x+']').JoinAsString() }
-    	) values (
-         ${col_list.where(x=>x not in para.auto_incr_cols).select(x => '\'\${p_obj.'+x +'\}\'').JoinAsString() }
-        );
-        ${iif(para.auto_incr_cols.count()==0,'',cur_schema.auto_incr_sql)} 
-      \`;
-      trace(插入语句);
-
-		 var db=openDb("${para.ds_link}");
-      //这里需要按照具体数据库修改主键获取。缺省是按只有一个字段的自增主键。
-       var 结果=db.select(插入语句);  
-       db.close();
-       ${ iif(para.auto_incr_cols.count()==1,'para.'+para.auto_incr_cols[0]+'=结果.key;','//多主键，自己把握修改') }
-       	return {errcode:0,result:para};
-    }
-	function 修改_${para.table}(p_obj){
-      var col_list=[ ${col_list} ];
-      var key_list=[${para.keys}];
-      var crud_obj=p_obj.new_val.Except(p_obj.old_val).ToDictionary($.key,$.value);//过滤掉相同值
-
-      if(crud_obj.select(x=>x.Key).count(x=>x in key_list) >0)
-              return {errcode:1,message:"新旧对象的主键不一致列表"};
-
-      key_list.forEach(x=> {crud_obj[x]= p_obj.old_val[x];} );//将主键值放回来，前面要判断新旧对象的主键是否一致
-      var para_col_list=crud_obj.select(x=>x.Key).tolist();
-      if(para_col_list.where(x=>x not in key_list ).count()==0)
-      	  return {errcode:2,message:"没有需要更改的数据 "};
-       var 修改语句=\`update ${para.table} set \` +
-        para_col_list.where(x=>x not in key_list ).select(x => \`[\${x}]='\`+crud_obj[\`\${x}\`]+"'").JoinAsString(",") 
-        +\` where  ${where_str}\` ;
-      trace(修改语句);
-      var db=openDb("${para.ds_link}");
-      var 结果=db.execute(修改语句);  
-      db.close();
-      return {errcode:0,结果,result:crud_obj};
-    }  
-    function 删除_${para.table}(crud_obj){
-      var key_list=[${para.keys}];
-      var 删除语句=\`delete from ${para.table} where  ${where_str} \` ;
-		 trace(删除语句);
-      var db=openDb("${para.ds_link}");
-      var 结果=db.execute(删除语句);
-      db.close();
-      return {errcode:0,结果};
-    }
-    function 清单_${para.table}(p){
-       var key_list= ${json_stringify(iif(para.parent_table==null,[],para.parent_table)) };
-       var where_str=iif(p!=null,p.select(x => \`[\${x.key\}]='\${x.value\}'\`).JoinAsString(" and "),'') ;
-       var last_statement=\`select * from ${para.table} where 
-       ${ iif(para.parent_table==null,'1=1 \`',"\`+ iif(p==null,' 1=0 ',\`"+list_where +"\`)") }
-	       + (where_str||' and 1=1 ' );
-       trace(last_statement);
-       
-       var db=openDb("${para.ds_link}");
-       var result=db.select(last_statement);//  
-       db.close();
-       return result;
-    }
-	function 字典_${para.table}(){
-       var db=openDb("${para.ds_link}");
-       ${para.allDict.select(x=>
-            'var '
-            +x.table 
-            +'=db.select("select * from '+x.table+'").Rows.select(x=>{value:x.'
-            +x.key 
-            +',label:\`'
-            + x.columns.select('\${x.'+$+'\}').JoinAsString('_') 
-            +'\`\});'
-          ).JoinAsString('\n       ')
-        }
-       db.close();
-       return {${para.allDict.select(x=>x.table).JoinAsString(',')} };
-    }
-    `;
+  
     var kata_template=`
 function 插入_${para.table}(p_obj){
   var col_list=[ ${col_list} ];
@@ -341,6 +344,7 @@ function 插入_${para.table}(p_obj){
 function 修改_${para.table}(p_obj){
   var col_list=[ ${col_list} ];
   var key_list=[${para.keys}];
+  col_list.Except(p_obj.new_val.Select(x=>x.key)).ForEach(x=>{p_obj.new_val[x]=null;});//补充缺失的字段
   var crud_obj=p_obj.new_val.Except(p_obj.old_val).ToDictionary($.key,$.value);//过滤掉相同值
 
   if(crud_obj.select(x=>x.Key).count(x=>x in key_list) >0)
@@ -352,7 +356,7 @@ function 修改_${para.table}(p_obj){
   key_list.forEach(x=> {key_cols[x]= p_obj.old_val[x];} );//主键条件
   
   var db=kata("${para.ds_link}");
-  var 结果=db.Query('${para.table}').where(key_cols).Update(crud_obj);  
+  var 结果=db.Query('${para.table}').Where(key_cols).Update(crud_obj);  
   
   return {errcode:0,结果,result:crud_obj};
 }  
@@ -362,44 +366,64 @@ function 删除_${para.table}(crud_obj){
   key_list.forEach(x=> {key_cols[x]= crud_obj[x];} );//主键条件
   
   var db=kata("${para.ds_link}");
-  var 结果=db.Query('${para.table}').where(key_cols).Delete();  
+  var 结果=db.Query('${para.table}').Where(key_cols).Delete();  
   return {errcode:0,结果};
 }
 function 清单_${para.table}(p){
    var key_list= ${json_stringify(iif(para.parent_table==null,[],para.parent_table)) };  
    var db=kata("${para.ds_link}");
-   var result=db.Query('${para.table}').where(p||{}).Get();//  
-   return result;
+   var ret=db.Query('${para.table}').Where(p.where||{}).Paginate(p.page.currentPage,p.page.pageSize);
+   return {data:ret.List,total:ret.Count};
+}
+function TableData_${para.table}(p){
+   var db=kata("${para.ds_link}");
+  var result=db.Query(p.table);//  
+   if(p.value!=null)
+      return result.Where(p.key,'=',p.value).Get();
+   if(p.data){
+    p.data.forEach(x=> {result=result.WhereLike(x.key,'%'+$.Value+'%',true); } );
+  }
+   if(p.page)
+    result=result.Paginate(p.page.currentPage,p.page.pageSize);
+   
+   return  {total:result.Count,data:result.List};   
 }
 function 字典_${para.table}(){
-   var db=kata("${para.ds_link}");
-   ${para.allDict.select(x=>
+  ${iif(para.allDict.count()>0,'var db=kata("'+para.ds_link+'");','')}
+  ${para.allDict.select(x=>
         'var '
         +x.table 
-        +'=db.Query("'+x.table+'").Get().select(x=>{value:x.'
+        +'=db.Query("'+x.table+'").Get().select(x=>{return {value:x.'
         +x.key 
         +',label:\`'
         + x.columns.select('\${x.'+$+'\}').JoinAsString('_') 
-        +'\`\});'
-      ).JoinAsString('\n       ')
+        +'\`\};\});'
+      ).JoinAsString('\n  ')
     }   
-   return {${para.allDict.select(x=>x.table).JoinAsString(',')} };
+  return {${para.allDict.select(x=>x.table).JoinAsString(',')} };
 }  
     
     `;
     var 最终模板=`
   <template>
     <div style="width:100%;height:calc(100% - 120px);display: flex;" ref="main" v-if="cr_init">
-      <avue-crud  ref="crud" :option="option"  @row-update="update_row" style="display: flex;flex-direction: column;"
-        @row-del="delete_row" @row-save="insert_row" v-model="cur_obj" :page.sync="page" 
-      :data="tableData.slice((page.currentPage - 1) * page.pageSize, page.currentPage*page.pageSize)"
+      <avue-crud  ref="crud" :option="option"   style="display: flex;flex-direction: column;"
+        v-model="cur_obj" :page.sync="page" 
+        @row-del="delete_row" 
+        @row-save="insert_row"
+        @search-change="searchChange" 
+        @search-reset="resetChange"
+        @on-load="onLoad" 
+        @row-update="update_row"
+        :data="tableData"
       >
-      <!--
-      <template slot="infoForm" > 
-        <widget-form-item  v-if="cur_obj.订单ID!=''" 这里加上当前主键是否为空的判断，否则新增也会将子表显示出来
+      
+      <template slot="_info_Form"  slot-scope="scope" v-if="'${para.as_parent}'=='True'"> 
+        <!--这里加上当前主键是否为空的判断，否则新增也会将子表显示出来-->
+        <widget-form-item  v-if="cur_obj.${para.keys[0]}!=''" 
             :self="findElelment('这里用元素名称替换',{parent_obj:cur_keys}) "  >
         </widget-form-item>
-      </template>  -->
+      </template> 
       </avue-crud>
     </div>
   </template>
@@ -417,8 +441,12 @@ function 字典_${para.table}(){
     	resetChange(item){
         this.$message.success('清空回调')
       },
-      searchChange(params,done) {
-        this.getList(params,done)
+      onLoad(page) {
+          this.getList({where:this.self.parent_obj,page:this.page});
+      },
+      searchChange(params,done) { 
+          this.page.currentPage=1
+          this.getList({where:{...params,...(this.self.parent_obj||{})} ,page:this.page},done);
       },
     	getList(params,done){
          cellreport.call_server_func("清单_${para.table}",params ,this).then(res=>{
@@ -428,18 +456,18 @@ function 字典_${para.table}(){
                this.$message({message: res.message,type: "error"});
                return
              }
-             this.tableData=res;   
-             this.page.total=this.tableData.length
+             this.tableData=res.data;   
+             this.page.total=res.total;
            }).catch((err) => this.$message({message: err,type: "error"}));
        },
-    insert_row(row,done){      
+    insert_row(row,done){ 
       cellreport.call_server_func("插入_${para.table}",row,this).then(result=>{
           this.$Log.capsule('添加返回', JSON.stringify( result) )   
           if(result['errcode']==0 ){
-              this.tableData.splice((this.page.currentPage - 1) * this.page.pageSize,0,result.result);
-                  this.page.total=this.tableData.length  
+              this.tableData.splice(0,0,result.result);
+              this.page.total=this.page.total+1;  
               done();//关闭添加，打开编辑，编辑里面有子表录入
-              this.$nextTick(()=> { this.$refs.crud.rowEdit(result.result,0); });
+              ${iif(para.as_parent,"this.$nextTick(()=> { this.$refs.crud.rowEdit(result.result,0); \});","")}
               return;
           }
           else {
@@ -449,11 +477,11 @@ function 字典_${para.table}(){
       });
     },
     update_row(row,index,done,loading){   
-    	let old_val=this.tableData[(this.page.currentPage - 1) * this.page.pageSize + index]
+    	let old_val=this.tableData[ index]
       cellreport.call_server_func("修改_${para.table}",{old_val,new_val:row},this).then(result=>{
          this.$Log.capsule('服务器脚本返回', JSON.stringify( result) )   
          if(result['errcode']==0 )
-          this.tableData.splice((this.page.currentPage - 1) * this.page.pageSize + index, 1,{...row,...result.result});
+          this.tableData.splice( index, 1,{...row,...result.result});
          else if(result['errcode']!=2 )
            this.$message({message: result.message,type: "error"});
          if(done)
@@ -466,8 +494,8 @@ function 字典_${para.table}(){
           let result=await cellreport.call_server_func("删除_${para.table}",row,this)
              this.$Log.capsule('删除返回', JSON.stringify( result) )   
           if(result['errcode']==0 ){
-            this.tableData.splice((this.page.currentPage - 1) * this.page.pageSize + index, 1);
-            this.page.total=this.tableData.length  
+            this.tableData.splice(index, 1);
+            this.page.total=this.page.total-1;  
           }
           else 
             this.$message({message: result.message,type: "error"});  
@@ -480,7 +508,7 @@ function 字典_${para.table}(){
     },
     computed:{
       option(){
-        let ret={...{height: this.selfHeight-120},
+        let ret={...{height: _this.selfHeight-120},
 ...${para.crud_option} 
         }
         return ret;
@@ -497,8 +525,7 @@ function 字典_${para.table}(){
               _this.$message({message: res.message,type: "error"});
               return
             }
-            _this.allDict=res;  
-            _this.getList(_this.self.parent_obj);
+            _this.allDict=res;              
           });         
          return true
        },
