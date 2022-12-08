@@ -94,7 +94,9 @@ server=ip地址;port=5432;uid=用户;pwd=口令;database=数据库;Pooling=true;
 CellReport使用Apache License 2.0 开源协议
 如果您需要商用，请联系作者获取商业授权
 
-## 报表交流qq群① 860056080
+## 报表交流qq群 
+①群 860056080
+②群 704904302
 
 ## 本软件使用到的的第三方软件，在此一并致谢
 前端： [luckysheet](https://github.com/mengshukeji/Luckysheet) ，vue ，element-ui, [avuejs](http://avuejs.com)
