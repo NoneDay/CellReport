@@ -383,66 +383,73 @@ export function run_one(_this,reportFilePath,_param_name_=null,loading_conf=null
         }
         
         //手机端列表头转按钮
-        if( window.convert_col_to_button &&
-            _this.layout.length==1 && _this.layout[0].element.children.column.length==1 
-            && _this.layout[0].element.children.column[0].type=="luckySheetProxy"
-            && Object.keys(_this.result.data).length==1
-            && _this.result.data[_this.layout[0].element.children.column[0].gridName].optimize)
-        {
-            let grid_result=_this.result.data[_this.layout[0].element.children.column[0].gridName]
-            let all_t_arr=[]
-            for(let line_idx=grid_result.colName_lines[0];line_idx<grid_result.colName_lines[1];line_idx++){
-                let start_str,start_col=Number.parseInt(grid_result.fix_cols)
-                let t_arr=[]
-                all_t_arr.push(t_arr)
-                for(let col_idx=Number.parseInt(grid_result.fix_cols);col_idx<grid_result.tableData[line_idx].length;col_idx++)
-                {
-                    if(start_str ==undefined)
-                        start_str=grid_result.tableData[line_idx][col_idx]
-                    else if(start_str!=grid_result.tableData[line_idx][col_idx]){
-                        t_arr.push({'txt':start_str,col_span:[start_col,col_idx-1],arr:[]})
-                        start_str=grid_result.tableData[line_idx][col_idx]
-                        start_col=col_idx
-                    }
-                }
+        if( window.convert_col_to_button && _this.layout.length==1 && Object.keys(_this.result.data).length==1)
+        { 
+            let grid_result
+            if( _this.layout[0].element.children && _this.layout[0].element.children.column.length==1 
+                && _this.layout[0].element.children.column[0].type=="luckySheetProxy"
+                && _this.result.data[_this.layout[0].element.children.column[0].gridName].optimize)
+            {
+                grid_result=_this.result.data[_this.layout[0].element.children.column[0].gridName]
             }
-            let col_vaild=(all_t_arr.length>0)
-            for(let idx=all_t_arr.length-1;idx>0;idx--) {
-                if(idx==0)
-                break
-                let parent_idx=0
-                for(let i=0;i<all_t_arr[idx].length;i++)
-                {
-                    let parent_col_span=all_t_arr[idx-1][parent_idx].col_span
-                    let cur_span=all_t_arr[idx][i].col_span
-                    if(cur_span[0]>=parent_col_span[0] && cur_span[1]<=parent_col_span[1])
+            else if(_this.layout[0].element.type=="luckySheetProxy" && _this.result.data[_this.layout[0].element.gridName].optimize){
+                grid_result=_this.result.data[_this.layout[0].element.gridName]
+            }
+
+            if(grid_result){
+                let all_t_arr=[]
+                for(let line_idx=grid_result.colName_lines[0];line_idx<grid_result.colName_lines[1];line_idx++){
+                    let start_str,start_col=Number.parseInt(grid_result.fix_cols)
+                    let t_arr=[]
+                    all_t_arr.push(t_arr)
+                    for(let col_idx=Number.parseInt(grid_result.fix_cols);col_idx<grid_result.tableData[line_idx].length;col_idx++)
                     {
-                        all_t_arr[idx-1][parent_idx].arr.push(all_t_arr[idx][i])
-                        continue
+                        if(start_str ==undefined)
+                            start_str=grid_result.tableData[line_idx][col_idx]
+                        else if(start_str!=grid_result.tableData[line_idx][col_idx]){
+                            t_arr.push({'txt':start_str,col_span:[start_col,col_idx-1],arr:[]})
+                            start_str=grid_result.tableData[line_idx][col_idx]
+                            start_col=col_idx
+                        }
                     }
-                    if(cur_span[0]<parent_col_span[0]){
-                        col_vaild=false
-                        break
-                    }
-                    i--
-                    parent_idx++
                 }
-                if(col_vaild==false)
+                let col_vaild=(all_t_arr.length>0)
+                for(let idx=all_t_arr.length-1;idx>0;idx--) {
+                    if(idx==0)
                     break
-            }
-            if(col_vaild ){
-                _this.mobile_col_arr=all_t_arr[0]
-                _this.mobile_col_button_arr=[ {selected:0,arr:_this.mobile_col_arr}]  
-                for(let idx=0;;idx++){
-                    if(_this.mobile_col_button_arr[idx].arr[0].arr.length>0)
-                        _this.click_col_button(idx,0)
-                    else
+                    let parent_idx=0
+                    for(let i=0;i<all_t_arr[idx].length;i++)
+                    {
+                        let parent_col_span=all_t_arr[idx-1][parent_idx].col_span
+                        let cur_span=all_t_arr[idx][i].col_span
+                        if(cur_span[0]>=parent_col_span[0] && cur_span[1]<=parent_col_span[1])
+                        {
+                            all_t_arr[idx-1][parent_idx].arr.push(all_t_arr[idx][i])
+                            continue
+                        }
+                        if(cur_span[0]<parent_col_span[0]){
+                            col_vaild=false
+                            break
+                        }
+                        i--
+                        parent_idx++
+                    }
+                    if(col_vaild==false)
                         break
                 }
-                grid_result.mobile_col_button_arr=_this.mobile_col_button_arr
+                if(col_vaild ){
+                    _this.mobile_col_arr=all_t_arr[0]
+                    _this.mobile_col_button_arr=[ {selected:0,arr:_this.mobile_col_arr}]  
+                    for(let idx=0;;idx++){
+                        if(_this.mobile_col_button_arr[idx].arr[0].arr.length>0)
+                            _this.click_col_button(idx,0)
+                        else
+                            break
+                    }
+                    grid_result.mobile_col_button_arr=_this.mobile_col_button_arr
+                }
             }
         }
-        
 
         _this.isShow=false
         setTimeout(() => {
