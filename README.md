@@ -10,6 +10,7 @@ CellReport 诞生的初衷是为了解决日常快速制作统计报表的需要
  | [Gitee](https://gitee.com/noneday/CellReport)| [Gitee在线文档](https://noneday.gitee.io/CellReport) | [gitee下载](https://gitee.com/NoneDay/CellReport/releases/)  |
  
   **这个链接是[B站教学视频，关注可以及时接收最新教学](https://space.bilibili.com/479725817?spm_id_from=333.337.0.0)** 
+  
   **演示地址(http://52.142.1.200/) 测试用户/密码: test/123456**
 
 ## 主要特点：
