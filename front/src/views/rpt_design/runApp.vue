@@ -347,33 +347,36 @@ export default {
       let datauri = URL.createObjectURL(pdf_data)
       document.getElementById("pdf_output").data =datauri
     },
-    refresh_layout(ddd,_this){  
-      if(_this==undefined)
-        _this=this
-        _this.$set(_this,'isShow',false)
-          setTimeout(() => {
-              _this.$set(_this,'isShow',true)
-              setTimeout(() => {
-                  _this.$nextTick(x=>{
-                     let form_h=_this.$refs.form?_this.$refs.div_form.clientHeight:0
-                      //_this.$refs.report_pane.style.height=`calc(100% - ${form_h}px)`//
-                      if(_this.result.defaultsetting.big_screen=='1'){
-                          _this.big_screen_scale_y=100*_this.$refs.report_pane.clientHeight/parseInt(_this.result.defaultsetting.screen_height)
-                          _this.big_screen_scale_x=100*_this.$refs.report_pane.clientWidth/parseInt(_this.result.defaultsetting.screen_width)
-                          _this.big_screen_scale=Math.min(_this.big_screen_scale_x,_this.big_screen_scale_y)
-                      }
-                      document.title = (_this.result.data[Object.keys(_this.result.data)[0]]?.title)   || 'CellReport'
-                      if(window.after_show_report_hook){window.after_show_report_hook()}
-                  })
-              });
-          });
-      },
+    refresh_layout(ddd,that){  
+    if(that==undefined)
+      that=this
+      that.$set(that,'isShow',false)
+        setTimeout(() => {
+            that.$set(that,'isShow',true)
+            setTimeout(() => {
+                that.$nextTick(x=>{
+                   let form_h=that.$refs.form?that.$refs.div_form.clientHeight:0
+                    //that.$refs.report_pane.style.height=`calc(100% - ${form_h}px)`//
+                    if(that.result.defaultsetting.big_screen=='1'){
+                        that.big_screen_scale_y=100*that.$refs.report_pane.clientHeight/parseInt(that.result.defaultsetting.screen_height)
+                        that.big_screen_scale_x=100*that.$refs.report_pane.clientWidth/parseInt(that.result.defaultsetting.screen_width)
+                        that.big_screen_scale=Math.min(that.big_screen_scale_x,that.big_screen_scale_y)
+                    }
+                    document.title = (that.result.data[Object.keys(that.result.data)[0]]?.title)   || 'CellReport'
+                    if(window.after_show_report_hook){window.after_show_report_hook()}
+                })
+            });
+        });
+    },
     click_col_button(idx,item_idx){
       this.$set(this.mobile_col_button_arr[idx],'selected',item_idx)
       this.mobile_col_button_arr.splice(idx+1)
       if(this.mobile_col_button_arr[idx].arr[item_idx].arr.length>0)
         this.mobile_col_button_arr.push({selected:0,arr:this.mobile_col_button_arr[idx].arr[item_idx].arr })
-      this.refresh_layout(null,this.$parent.$parent)
+      let that=this
+      while(that && that.$el.id!='report_app')
+        that=that.$parent
+      this.refresh_layout(null,that)
     },
     marked(val){
       //seriesLoadScripts("cdn/editor.md-master/lib/marked.min.js")
