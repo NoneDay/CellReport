@@ -13,7 +13,7 @@
                      :is-resizable="context.canDraggable"
                      :vertical-compact="defaultsetting.big_screen!='1'"
                      :use-css-transforms="false"
-                     :responsive="context.mode!='design' && context.crisMobile"
+                     :responsive="context.mode!='design' && context.crisMobile && defaultsetting.big_screen!='1'"
                      :force-absolute="defaultsetting.big_screen=='1'"
                      :style="{ 
                          width:defaultsetting.big_screen=='1'?defaultsetting.screen_width+'px':'100%',
@@ -177,14 +177,15 @@ export default {
             });
             //这时候当前组件还没高度，所以要间接计算。 没有-1 滚动条会闪烁 ，-1.5 倍是为了避免form 如果是多行，当前pane 会撑破页面
             let {x,y,w,h}={...max_row_element}
-            _this.pan_height=_this.$parent.$el.clientHeight-1-
-                (_this.$parent.$el.children.length==1?0:(this.context.crisMobile?1:1)* _this.$parent.$el.children[0].clientHeight)
+            let cur_el=_this.$el //.$parent
+            _this.pan_height=cur_el.clientHeight-1-
+                (cur_el.children.length==1?0:(this.context.crisMobile?1:1)* cur_el.children[0].clientHeight)
                 - _this.margin
             let last_top =Math.round(_this.row_height * y + (y + 1) * _this.margin)
             let last_height= h === Infinity ? h : Math.round(_this.row_height * h + Math.max(0, h - 1) * _this.margin)
             let layout_mode=this.context.report_result?.defaultsetting?.layout_mode
             //layout_mode  : ""高度小于容器高度时自动撑满，大于时保持 "1">保持与设计时一样的高度 "2">强制适配到容器高度
-            if(layout_mode=="" && last_top+last_height < _this.pan_height)
+            if((layout_mode=="0" || layout_mode=="") && last_top+last_height < _this.pan_height)
             {
                 _this.row_height=Math.round((_this.pan_height - Math.max(0, h - 1) * _this.margin - (y + 1) * _this.margin)/(y+h))
                 console.info( _this.row_height)
@@ -258,7 +259,7 @@ background:url("data:image/svg+xml;utf8,<svg t='1641536477492' class='icon' view
         },
         
         find_item(item){
-            if(this.context.mode!='design' || this.selectWidget.type=='layout')
+            if( this.selectWidget.type=='layout') //this.context.mode!='design' ||
                 return false;
             if(this.selectWidget.type=='layout_item' && item.i==this.selectWidget.item_i)
             {
@@ -505,7 +506,7 @@ background:url("data:image/svg+xml;utf8,<svg t='1641536477492' class='icon' view
     box-sizing: border-box;
     cursor: pointer;
 }
-
+                    
 @-webkit-keyframes rotation{
     from {-webkit-transform: rotate(0deg);}
     to {-webkit-transform: rotate(360deg);}

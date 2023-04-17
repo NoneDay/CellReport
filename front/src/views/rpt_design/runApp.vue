@@ -31,7 +31,7 @@
     :visible.sync="paper_setting_dialogVisible" />
         
     
-    <el-popover v-if="false && !crisMobile && isShow" style='position: fixed;z-index: 5;right: 40px;top: 100px;'
+    <el-popover v-if="false && !crisMobile && isShow" style='position:fixed;z-index:5;right:40px;top:100px;'
       placement="top-start" title="标题" width="200" trigger="hover" >
       <el-button slot="reference" style="background-color: rgb(229 200 200);width: 40px;height: 40px;
           border-radius: 50%;color: #409eff;display: flex;align-items: center;justify-content: center;font-size: 20px;
@@ -122,12 +122,18 @@
           </el-form-item>
       </el-form>
     </div>
-    <div  ref="div_form" v-if=" crisMobile && isShow && result.defaultsetting.big_screen!='1' && result.defaultsetting['show_form']=='true'"> 
+    <span style="position: absolute;right: 0px;top: 0px;z-index: 10;width: 30px;height: 30px;background-image: url(img/expand.png)" 
+        :style="{'transform':(expand_form?'rotate(-180deg)':'')}"
+          v-if="crisMobile && isShow && result.defaultsetting.big_screen!='1' && result.defaultsetting['show_form']=='true'"
+          @click="expand_form=!expand_form;refresh_layout()">
+    </span>
+    <div  ref="div_form" v-if="expand_form && crisMobile && isShow && result.defaultsetting.big_screen!='1' && result.defaultsetting['show_form']=='true'" > 
+      
       <dyncTemplate :parentCompent="parentCompent" :self="{type:'pc_form',content:result.mobile_form,gridName:'pc_form'}" v-if="result.mobile_form">
       </dyncTemplate>
       <form v-else ref="form" >  <!--img/battle_2021.jpg-->
         <input hidden v-for="one in result.form.filter(x=>x.hide=='True')" :key="one.name" v-model="queryForm[one.name]"/>
-        <img :src="result._zb_var_.mobile_img_for_less_one_param" style="height: 80px;width: 100%;" 
+        <img :src="result._zb_var_.mobile_img_for_less_one_param" style="height: 180px;width: 100%;" 
         v-if="result._zb_var_.mobile_img_for_less_one_param && result.form.filter(x=>x.hide=='False').length<=1">
         
         <div v-for="one in result.form.filter(x=>x.hide=='False')" :key="one.name">
@@ -202,8 +208,9 @@
             </div>
           </div>
       </form>
+       
     </div>
-    <div ref="report_pane" class="report_define" v-if="isShow" :style="{'flex-grow': 1,height:'90%',color:result.defaultsetting['COLOR'],background:result.defaultsetting['BACKGROUND-COLOR']}">
+    <div ref="report_pane" class="report_define" v-if="isShow" :style="{'flex-grow': 1,height:'90px',color:result.defaultsetting['COLOR'],background:result.defaultsetting['BACKGROUND-COLOR']}">
         <grid-layout-form v-if="layoutType=='gridLayout'" :layout="layout"  :big_screen_scale="big_screen_scale" :big_screen_scale_x="big_screen_scale_x"
          :big_screen_scale_y="big_screen_scale_y">
         </grid-layout-form>          
@@ -282,6 +289,7 @@ export default {
           report:this.context?.report,
           report_result:this.result,
           mode:'run',
+          selectWidget:this.selectWidget, 
           event:{},
           queryForm:this.queryForm,
           clickedEle:this.clickedEle,
@@ -297,9 +305,11 @@ export default {
   },  
   data () {
     return { 
+        expand_form:window.cellreport["expand_form"]??true,
         name_lable_map:{},
         isShow:false,
         grpId:0,
+        selectWidget:'{"prop":"--"}',
         reportName:"",
         queryPara:"",
         queryForm:{},

@@ -795,7 +795,7 @@ export default class ResultGrid2HtmlTable{
         //sb.append("\n</style>\n")  
         //sb.append("<style >\n")
         Object.entries(this.param_grid.styles).forEach(([key, value])=>{
-            sb.append(".").append(key).append(' {')
+            sb.append(`#cr_id_${grid_id} .`).append(key).append(' {')
             //if(is_Safari)
             sb.append(value.replaceAll("0.5pt ",'1px '))
             //else sb.append(value)

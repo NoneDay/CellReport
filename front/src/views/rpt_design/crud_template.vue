@@ -27,7 +27,7 @@
     </el-form> 
     </div>
     <div class="crud" style="height:100%;flex:1">
-        <div class="avue-crud__menu">
+        <div class="avue-crud__header">
             <div class="avue-crud__left">
                 <el-button-group>
                     <el-button type="primary" size="mini" icon="el-icon-edit" @click="open('table','表格配置')">表格配置</el-button>
@@ -99,7 +99,7 @@ let dicList = [{label: '输入框',value: 'input'},
 {label: '多个日期',value: 'dates'},  {label: '月',value: 'month'},  
 {label: '周',value: 'week'},  {label: '年',value: 'year'}]
   
-let ynList = [{label: '否',value: 'false'},  {label: '是',value: 'true'  }]
+let ynList = [{label: '否',value: false},  {label: '是',value: true  }]
 
 let alignList = [{label: '居左',value: 'left'},{label: '居中',value: 'center'},{label: '居右',value: 'right'  }]
 
@@ -277,7 +277,7 @@ export default {
             widgetFormPreview: {},
             title: '',
             box: false,
-            tableForm:{"addBtn":"true","editBtn":"true","viewBtn":"true","delBtn":"true"},
+            tableForm:{"addBtn":true,"editBtn":true,"viewBtn":true,"delBtn":true},
             type: '',
             tableOption: tableOption,
             menuOption: menuOption,

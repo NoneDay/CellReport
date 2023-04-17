@@ -135,7 +135,7 @@ export default {
       else return `请输入 ${label}`;
     },
     handleSelectWidget (index) {
-      if(this.context.mode=="design")
+      //if(this.context.mode=="design")
           this.selectWidget = this.self
     },
     

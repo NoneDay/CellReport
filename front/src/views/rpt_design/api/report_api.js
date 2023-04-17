@@ -97,6 +97,7 @@ export function save_one(report,zb_data,imgFile) {
     let arr=report.reportName.split(":")
     let grpId=arr[0]
     let reportFilePath=arr[1]
+    report.dataSets.dataSet.forEach(x=>x.__text=x.__text.replaceAll("\r",""))
     let data=new FormData();
     data.append('reportName',reportFilePath)
     data.append('content',x2jsone.js2xml({report}))

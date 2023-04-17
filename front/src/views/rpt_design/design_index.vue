@@ -417,6 +417,7 @@ export default {
         clickedEle:this.clickedEle,
         in_exec_url:this.in_exec_url,
         mode:"design",
+        rpt_this:this,
         allElementSet:this.allElementSet,
         all_sheet_windows:this.all_sheet_windows,
         parent_defaultsetting:this.report.parent_defaultsetting,
@@ -1075,7 +1076,7 @@ export default {
       this.save_fix()
       this.save_layout(this.layout_mode)
       save_one(this.report)
-      if(navigator?.clipboard)
+      if(navigator?.clipboard && navigator.clipboard.writeText)
         await navigator.clipboard.writeText(url)
       let newA = document.createElement('a');
       newA.target = '_blank';

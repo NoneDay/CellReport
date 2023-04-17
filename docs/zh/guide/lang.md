@@ -309,28 +309,28 @@ arr.forEach(t=>{ if(t % 2 ==0) trace(t); });
  第二个参数可选：如果没有，就是将同组的元素放到一个List序列中。如果有，对同组的元素都调用这个处理函数，返回新元素组成新的List序列
  第三个参数：对结果进一步出来，处理函数接收两个参数(Key,中间List序列),作为最终结果返回。如果没有这个参数，就将(Key,中间List序列) 作为最终结果返回
 ``` js
-var arr = [{Name:"A", Val:1}, {Name:"A", Val:1}, {Name:"C", Val:3}, {Name:"C", Val:4}]; 
+var arr = [{Name:"A", Val:1}, {Name:"A", Val:2}, {Name:"C", Val:3}, {Name:"C", Val:4}]; 
 var res = arr.groupBy( function(t){ return t.Name; } ); 
 res.forEach(function(t){ 
-    trace("Key: " + t.Key, "OBJ: ", t); 
+    trace("Key: " + t.Key, "OBJ: ", t); //有Key属性
 });
-// Key: A OBJ:  {"Key":"A","Value":[{"Name":"A","Val":1},{"Name":"A","Val":2}]}
-// Key: C OBJ:  {"Key":"C","Value":[{"Name":"C","Val":3},{"Name":"C","Val":4}]}
-var res = arr.groupBy( function(t){ return t.Name; } ,$.Val); 
+// Key: A OBJ: [{"Name":"A","Val":1},{"Name":"A","Val":2}]
+// Key: C OBJ: [{"Name":"C","Val":3},{"Name":"C","Val":4}]
+var res = arr.groupBy( t=>{ return t.Name; } ,$.Val); 
 res.forEach(function(t){ 
-    trace("Key: " + t.Key, "OBJ: ", t); 
+    trace("Key: " + t.Key, "OBJ: ", t); //有Key属性
 }); 
-// Key: A OBJ:  {"Key":"A","Value":[1,2]}
-// Key: C OBJ:  {"Key":"C","Value":[3,4]}
+// Key: A OBJ:  [1,2]
+// Key: C OBJ:  [3,4]
 var res = arr.groupBy( x=>x.Name  ,v=>v,  (k,v)=>{ return {k,cnt:v.Count(),min:v.min($.Val),sum:v.sum(x=>x.Val) }; } ); 
 res.forEach(function(t){ 
-    trace("Key: " + t.Key, "OBJ: ", t); 
+    trace("Key: " + t.Key, "OBJ: ", t);  //无Key属性
 }); 
-// Key: A OBJ:  {"Key":"A","Value":{"k":"A","cnt":2,"min":1,"sum":3}}
-// Key: C OBJ:  {"Key":"C","Value":{"k":"C","cnt":2,"min":3,"sum":7}}
+// Key:  OBJ:  {"k":"A","cnt":2,"min":1,"sum":3}
+// Key:  OBJ:  {"k":"C","cnt":2,"min":3,"sum":7}
 ```
 ### ToDictionary
-转换为Dictionary
+转换为Dictionary。实例化。
 第一个参数：key选择器
 第二个参数可选
 ``` js

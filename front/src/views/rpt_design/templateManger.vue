@@ -59,7 +59,7 @@
             <el-row style="height: 60px;">
                 <el-col >
             <el-form-item label="布局">
-                <el-radio v-model="tmp_css['layout_mode']" label="">高度小于容器高度时自动撑满，大于时保持</el-radio>
+                <el-radio v-model="tmp_css['layout_mode']" label="0">高度小于容器高度时自动撑满，大于时保持</el-radio>
                 <el-radio v-model="tmp_css['layout_mode']" label="1">保持与设计时一样的高度</el-radio>
                 <el-radio v-model="tmp_css['layout_mode']" label="2">强制适配到容器高度</el-radio>
             </el-form-item>
@@ -145,7 +145,7 @@ export default {
             data_ready:false,
             //['notebook','before_exec_script','footer2','luckysheet_conditionformat',]
             tab_value:"before_exec_script",
-            tmp_css:{'BACKGROUND-COLOR':'#FFF','COLOR':'#000','FONT-SIZE':'11','FONT':'微软雅黑','layout_mode':'','border_box':'div',
+            tmp_css:{'BACKGROUND-COLOR':'#FFF','COLOR':'#000','FONT-SIZE':'11','FONT':'微软雅黑','layout_mode':'0','border_box':'div',
             'show_form':'true',layout_row_height:"30",layout_colNum:24,layout_margin:"10",layout_pan_height:"100%",'row_col_gutter':'10'
             ,'firstNoQuery':'false','cr_front_validate':'false'
             },

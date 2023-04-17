@@ -114,10 +114,10 @@
                     </el-row>
 
                     <el-row v-if="action_target._type=='from'"><el-col :span="8">
-                        挑选数据集
+                        挑选数据集  
                         <el-select v-model="action_target._dataSource" >
                             <el-option  v-for="(ds,index) in all_dataSet.filter(x=> 
-                                    ['db','sql','cr'].includes(x._type) 
+                                    ['db','sql','cr','csv'].includes(x._type) 
                                     && ((x._type!='cr' 
                                     && dataLengthList(x._name).length>1) )|| x._type=='cr')" 
                                 :key="ds._name+index" :label="ds._name" :value="ds._name"></el-option>
@@ -130,7 +130,7 @@
                         <el-col :span="8">
                             挑选内部数据集
                             <el-select v-model="action_target.__text" 
-                                    v-if="this.action_target._dataSource!=''  && ['db','sql'].includes(all_dataSet.find(a=>a._name==action_target._dataSource)._type)  " 
+                                    v-if="this.action_target._dataSource!=''  && ['db','sql','csv'].includes(all_dataSet.find(a=>a._name==action_target._dataSource)._type)  " 
                             >
                                 <el-option v-for="(one,index) in dataLengthList(action_target._dataSource).slice(1)" 
                                     :key="index" type="success" @click="url_choose_get(one)"  :label="one" :value="one" >{{one }}</el-option>
@@ -257,8 +257,9 @@ export default {
                 if(this.action_target._type=="csv" && this.action_target.get)
                 {
                     ret=JSON.parse(this.action_target.data) [this.action_target.get]
-                    if(ret.length>0 && getObjType(ret[0])=="array" )
-                        ret=convert_array_to_json(ret)                    
+                    if(ret && ret.length>0 && getObjType(ret[0])=="array" )
+                        ret=convert_array_to_json(ret)     
+                    else return []               
                     return ret
                 }
                 else if(this.action_target._type=="from" && this.action_target._dataSource!="" && this.action_target.__text!="")
@@ -270,6 +271,13 @@ export default {
                         if(ret==undefined)
                             ret= []
                         return ret
+                    }
+                    if(cur_ds._type=='csv'){
+                        ret= json_by_path(JSON.parse( cur_ds.data) ,this.action_target.__text)
+                        if(ret==undefined)
+                            ret= []
+                        console.info(ret)
+                        return convert_array_to_json (ret)
                     }
                     if(cur_ds.report_result){
                         ret=this.choose_cr_ds(cur_ds.report_result,this.action_target.__text)
@@ -393,6 +401,10 @@ export default {
         dataLengthList(ds_name){
             let ret=[]
             let i=0
+            var cur_ds=this.all_dataSet.filter(x=>x._name==ds_name)[0]
+            if(cur_ds._type=='csv'){
+               return Object.keys(JSON.parse(cur_ds.data) )
+            }
             if (ds_name!='' && Object.keys(this.context.report_result).length>1){
                 this.context.report_result.dataSet[ds_name]?.forEach(one=>
                     {
@@ -663,6 +675,7 @@ innerReport(); //设计好的报表页面选中有关单元格，复制粘贴到
             ds.url_param=[ds.url_param]
         }
         this.action_target=ds
+        //if(this.action_target.__text)this.action_target.__text=this.action_target.__text.replaceAll("\r",'')
     },
     choose_file(file) {
       this.file = file.raw;//这是element的导入数据选择，必须要添加.raw才能获取，其他表单不需要
@@ -693,7 +706,7 @@ innerReport(); //设计好的报表页面选中有关单元格，复制粘贴到
           //console.log(_this.excelTableData)//未转换key值的数据
           // this.changeKey(excelData)//调用转换key值
         } catch (e) {
-          this.$message.danger('文件类型不正确');
+          _this.$message.danger(`文件类型不正确:${e}`);
         }
       };
       //读取文件

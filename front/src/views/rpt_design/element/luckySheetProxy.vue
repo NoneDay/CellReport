@@ -1,6 +1,6 @@
 <template>
   <div :style="{width:'100%',height:height||'100%','display':'flex','flex-direction': 'column'}" >
-    <span v-if='TABLEOBJ && TABLEOBJ.param_grid.optimize' style="position: absolute;right: 0px;top: 0px;z-index: 10;"
+    <span v-if='!context.crisMobile && TABLEOBJ && TABLEOBJ.param_grid.optimize' style="position: absolute;right: 0px;top: 0px;z-index: 10;"
      @click="searchDialogVisible=true">
         <img src='img/search.png'>
       </span>

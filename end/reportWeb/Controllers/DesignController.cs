@@ -202,7 +202,6 @@ namespace reportWeb.Controllers
                             report_env.logger.Error(cur_exception.Message);
                             cur_exception = cur_exception.InnerException;
                         }
-                        
                     }
                     using (var Report = engine.getResult())
                     {
@@ -216,7 +215,8 @@ namespace reportWeb.Controllers
                                     await Report.exportJson(jsonWriter);
                                 }catch(Exception ex)
                                 {
-                                    cur_exception = ex;
+                                    //if (cur_exception == null)
+                                        cur_exception = ex;
                                 }
                                 
                                 if (cur_exception != null)
@@ -606,8 +606,7 @@ namespace reportWeb.Controllers
                 }
                 if (!fileInfo.Exists || (fileInfo.Exists && String.IsNullOrEmpty(zb_dict_str)))
                 {
-                    System.Xml.XmlDocument xmlDoc = Content2XmlDoc(content);
-
+                    System.Xml.XmlDocument xmlDoc = Content2XmlDoc(content.Replace("\r",""));
                     xmlDoc.Save(file_path);
                     XmlReport.MemoryCacheInstance.Remove(file_path);
                 }

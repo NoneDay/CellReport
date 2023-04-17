@@ -182,7 +182,7 @@ const http_src_pattern=/<img [^>]*src=['"]([^'"]+)[^>]*>/gi
 export  async function exceljs_inner_exec(_this,name_lable_map){
     let _this_result=_this.result
     const wb = new ExcelJS.Workbook();
-    let ws ,title,one_obj
+    let ws ,title,one_obj,file_name
     let allSheetNames=new Set()
     //Object.keys( name_lable_map).forEach(one => {
     for(let one of Object.keys( name_lable_map) ){
@@ -190,6 +190,7 @@ export  async function exceljs_inner_exec(_this,name_lable_map){
         if(one_obj.component=="luckySheetProxy"){
           title=one_obj.label??one
           let cur_table=_this_result.data[one]
+          file_name=file_name??cur_table.title??"这里是下载的文件名"
           let cur_tbl_class_dict=parse_class(cur_table)
           if (cur_table.type== "common"){
             //if(cur_table.optimize==true &&
@@ -329,7 +330,7 @@ export  async function exceljs_inner_exec(_this,name_lable_map){
         //ws=undefined
     };
     const buffer = await wb.xlsx.writeBuffer();
-    saveAs(new Blob([buffer], { type: "application/octet-stream"}), "这里是下载的文件名" + ".xlsx");
+    saveAs(new Blob([buffer], { type: "application/octet-stream"}), (file_name??"这里是下载的文件名" )+ ".xlsx");
   }
   function s2ab(s) {
     if (typeof ArrayBuffer !== 'undefined') {
@@ -346,7 +347,7 @@ export  async function exceljs_inner_exec(_this,name_lable_map){
   export function xlsxjs_inner_exec(_this,name_lable_map){
       const wb = XLSX.utils.book_new()
       
-      let ws ,title,one_obj
+      let ws ,title,one_obj,file_name
       Object.keys( name_lable_map).forEach(one => {
           one_obj=name_lable_map[one]
           if(one_obj.component=="ele-grid"){
@@ -372,6 +373,7 @@ export  async function exceljs_inner_exec(_this,name_lable_map){
           }
           else if(one_obj.component=="luckySheetProxy"){
             if (_this.result.data[one].type== "common"){
+              file_name=file_name??_this.result.data[one].title??"这里是下载的文件名"
               ws= XLSX.utils.aoa_to_sheet(_this.result.data[one].tableData)
               ws['!merges']=[]
               Object.keys( _this.result.data[one].config_merge).forEach(ele_m=>{
@@ -396,8 +398,7 @@ export  async function exceljs_inner_exec(_this,name_lable_map){
           ws=undefined
       });
       const wopts = { bookType: 'xlsx', bookSST: true, type: 'binary' };//这里的数据是用来定义导出的格式类型 
-      saveAs(new Blob([s2ab(XLSX.write(wb, wopts))], { type: "application/octet-stream"}), 
-      "这里是下载的文件名" + ".xlsx");
+      saveAs(new Blob([s2ab(XLSX.write(wb, wopts))], { type: "application/octet-stream"}), (file_name??"这里是下载的文件名") + ".xlsx");
 
     }
 import   ResultGrid2HtmlTable2   from './resultGrid2HtmlTable.js'    
