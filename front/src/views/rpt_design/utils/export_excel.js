@@ -190,7 +190,8 @@ export  async function exceljs_inner_exec(_this,name_lable_map){
         if(one_obj.component=="luckySheetProxy"){
           title=one_obj.label??one
           let cur_table=_this_result.data[one]
-          file_name=file_name??cur_table.title??"这里是下载的文件名"
+          if(cur_table.title && cur_table.title!="")
+            file_name=file_name??cur_table.title??"这里是下载的文件名"
           let cur_tbl_class_dict=parse_class(cur_table)
           if (cur_table.type== "common"){
             //if(cur_table.optimize==true &&
@@ -373,7 +374,8 @@ export  async function exceljs_inner_exec(_this,name_lable_map){
           }
           else if(one_obj.component=="luckySheetProxy"){
             if (_this.result.data[one].type== "common"){
-              file_name=file_name??_this.result.data[one].title??"这里是下载的文件名"
+              if(_this.result.data[one].title && _this.result.data[one].title!="")
+                file_name=file_name??_this.result.data[one].title??"这里是下载的文件名"
               ws= XLSX.utils.aoa_to_sheet(_this.result.data[one].tableData)
               ws['!merges']=[]
               Object.keys( _this.result.data[one].config_merge).forEach(ele_m=>{

@@ -85,7 +85,7 @@ export const parseParam=function(one_ds__text){
             let param_result=one_stat.match(/param\.[^ \t\v\n\r\f\+\*-\/\(\)\{\}\.\"\']*/img)
             if(param_result){
                 param_result.forEach(ele=>{
-                    let new_name=ele.substring(6)
+                    let new_name=ele.substring(6).replace("$","")
                     if(params.find(x=>x==new_name)==null){
                         params.push(new_name)
                     }

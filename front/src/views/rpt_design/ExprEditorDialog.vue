@@ -192,8 +192,10 @@ export default {
         let id = { major: 1, minor: 1 }
         let op = {identifier: id, range: range, text: text, forceMoveMarkers: true}
         editor.executeEdits(this.root, [op])
-        selection.selectionStartColumn=(selection.positionColumn+=text.indexOf("(")+1)
-        
+        if(text.indexOf("(")>=0)
+          selection.selectionStartColumn=(selection.positionColumn+=text.indexOf("(")+1)
+        else
+          selection.selectionStartColumn=(selection.positionColumn+=text.length)
         editor.setSelection(selection)
         editor.focus()
       }
