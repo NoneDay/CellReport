@@ -1140,8 +1140,9 @@ export default {
           break
         }
       }
-      if(this.cur_layout_item==null)
+      if(this.cur_layout_item==null){
         this.$set(this,'cur_layout_item',{type:'layout',config:this.report.defaultsetting})
+      }
       this.cur_select_type='widget'
     },
 //======================

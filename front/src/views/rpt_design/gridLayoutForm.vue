@@ -138,7 +138,7 @@ export default {
         let _this=this
         this.isShow=false
         this.showGridLayout=false
-        if(_this.defaultsetting.height==undefined){
+        if(_this.defaultsetting.screen_height==undefined){
             _this.defaultsetting.screen_height=1080
             _this.defaultsetting.screen_width=1920
         }
