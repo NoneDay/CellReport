@@ -133,13 +133,13 @@ let alignList = [{label: '居左',value: 'left'},{label: '居中',value: 'center
   let btnOption = {menuBtn: false,labelWidth: 100,
     group: [
         {  label: '表格',  prop: 'table',  
-                column: [{    label: '新增按钮',prop: 'addBtn',type: 'select',dicData: ynList,value:'true'}, 
+                column: [{    label: '新增按钮',prop: 'addBtn',type: 'select',dicData: ynList,value:true}, 
             {label: '新增按钮文案',prop: 'addBtnText'}, 
-            {label: '编辑按钮',prop: 'editBtn',type: 'select',dicData: ynList,value:'true'}, 
+            {label: '编辑按钮',prop: 'editBtn',type: 'select',dicData: ynList,value:true}, 
             {label: '编辑按钮文案',prop: 'editBtnText'}, 
-            {label: '查看按钮',prop: 'viewBtn',type: 'select',dicData: ynList,value:'true'}, 
+            {label: '查看按钮',prop: 'viewBtn',type: 'select',dicData: ynList,value:true}, 
             {label: '查看按钮文案',prop: 'viewBtnText'}, 
-            {label: '删除按钮',prop: 'delBtn',type: 'select',dicData: ynList,value:'true'}, 
+            {label: '删除按钮',prop: 'delBtn',type: 'select',dicData: ynList,value:true}, 
             {label: '删除按钮文案',prop: 'delBtnText'}]
         }, 
         {  label: '搜索',  prop: 'search',  
@@ -194,7 +194,7 @@ let tableOption =   {menuBtn: false,labelWidth: 110,
         {label: 'size',prop: 'size'}]}, 
 
     {  label: '表格属性',  prop: 'bgsx',  
-        column: [  {label: '宽度',  prop: 'width',  type: 'input'}, 
+        column: [  {label: '宽度',  prop: 'width',  type: 'number'}, 
         {  label: '最小宽度',  prop: 'minwidth',  type: 'input'}, 
         {  label: '对其方式',  prop: 'align',  type: 'select',  dicData: alignList}, 
         {  label: '冻结',  prop: 'fixed',  type: 'select',  dicData: ynList}, 
@@ -374,7 +374,9 @@ export default {
             this.main_tbl=main_tbl
             this.cloumn_list=main_tbl.columns
             this.cloumn_list.forEach(x=>{
-                if(x.m_dictData)x.dicData=`<!!>this.allDict["${x.m_dictData}"]<!!>`
+                if(x.m_dictData){
+                    x.dicData=`<!!>this.allDict['${x.m_dictData}']<!!>`
+                    }
             })
         },
         beforeOpen (done) {
@@ -475,7 +477,7 @@ export default {
 
             option.column.forEach(ele => {
                 Object.keys(ele).forEach(key => {
-                if (vaild(ele, key) || ['data_type','dflt_value','is_nullable','m_dictData','auto_incr',''].includes(key)) delete ele[key];
+                if (vaild(ele, key) || ['data_type','dflt_value','is_nullable','auto_incr','m_dictData',''].includes(key)) delete ele[key];
                 })
             })
             let jsStr = JSON.stringify(option,).replaceAll("},","}\n,").replaceAll('<!!>"',"").replaceAll('"<!!>',"");

@@ -118,13 +118,13 @@ export default {
 
     _setValue(value) {
       let editor = this._getEditor();
-      if (editor) return editor.setValue(value);
+      if (editor) return editor.setValue(value?.replaceAll("\r",""));
     },
 
     _getValue() {
       let editor = this._getEditor();
       if (!editor) return '';
-      return editor.getValue();
+      return editor.getValue()?.replaceAll("\r","");
     },
 
     _editorBeforeMount() {

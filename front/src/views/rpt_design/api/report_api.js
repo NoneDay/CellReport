@@ -340,6 +340,7 @@ export function run_one(_this,reportFilePath,_param_name_=null,loading_conf=null
             $(".mask_div").remove()
             _this.watermark(response_data._zb_var_.watermark);
         }
+        
         response_data.form.forEach(ele=>{
             let val=ele.value
             if(ele.data_type=='date' && val!="")
@@ -347,7 +348,8 @@ export function run_one(_this,reportFilePath,_param_name_=null,loading_conf=null
             _this.$set(_this.queryForm,ele.name,val)
             _this.$set(_this.queryForm_show,ele.name,false)
         })
-        
+        _this.result.fresh_dataset=Enumerable.from( Object.keys(response_data.dataSet??{})).select(x=>"数据集:"+x).toArray().join(",")
+        _this.result.fresh_report=Enumerable.from( Object.keys(response_data.data??{})).select(x=>"表格:"+x).toArray().join(",")
         if(_param_name_!=null){
             _this.result.dataSet=response_data.dataSet
             _this.result.form=response_data.form
@@ -357,14 +359,11 @@ export function run_one(_this,reportFilePath,_param_name_=null,loading_conf=null
         else if(_fresh_ds){
             Object.assign(_this.result.dataSet,response_data.dataSet)
             Object.assign(_this.result.data,response_data.data)
-            //_this.result.fresh_report=Object.keys( response_data.data??{})
-            //_this.result.fresh_dataset=Object.keys( response_data.dataSet??{})
         }
         else{
             Object.assign(_this.result,response_data)
-            //_this.result.fresh_report=Object.keys( response_data.data??{})
-            //_this.result.fresh_dataset=Object.keys( response_data.dataSet??{})
         }
+        
         _this.last_js_cript=load_css_js(_this.result.footer2,"report_back_css")
         let tool=require('../utils/util.js')
         eval("(function(){\n"+_this.last_js_cript+"\n})()")

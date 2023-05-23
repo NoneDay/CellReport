@@ -86,8 +86,9 @@ export default {
                 return
               if(val.data && this.self.component=="luckySheetProxy"){
                 if(["run" ,"preview" ].includes( this.context.mode) && this.buildDisplayData && val.data[this.self.gridName]){
-                  if(!this.fresh_ele.includes("表格:"+this.self.gridName))
+                  if(!this.fresh_ele.includes("表格:"+this.self.gridName) && !val.fresh_report.includes("表格:"+this.self.gridName) )
                     return
+                    
                   this.buildDisplayData(true)
                   return
                 }

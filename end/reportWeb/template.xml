@@ -334,12 +334,15 @@ function buildTemplate(para){
 function 插入_${para.table}(p_obj){
   var col_list=[ ${col_list} ];
   var key_list=[${para.keys}];
+  var auto_incr_cols=[${para.auto_incr_cols}];
+  var insert_obj={};
+  col_list.Except(auto_incr_cols).ForEach(x=>{insert_obj[x]=p_obj[x]; });
   var db=kata("${para.ds_link}");
   //这里需要按照具体数据库修改主键获取。缺省是按只有一个字段的自增主键。
-   var 结果=db.Query('${para.table}').InsertGetId(p_obj);  
+   var 结果=db.Query('${para.table}').InsertGetId(insert_obj);  
    
-   ${ iif(para.auto_incr_cols.count()==1,'p_obj.'+para.auto_incr_cols[0]+'=结果;','//多主键，自己把握修改') }
-       return {errcode:0,result:p_obj};
+   ${ iif(para.auto_incr_cols.count()==1,'insert_obj.'+para.auto_incr_cols[0]+'=结果;','//多主键，自己把握修改') }
+   return {errcode:0,result:insert_obj};
 }
 function 修改_${para.table}(p_obj){
   var col_list=[ ${col_list} ];

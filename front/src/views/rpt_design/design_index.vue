@@ -569,7 +569,7 @@ export default {
         this.report.defaultsetting['BACKGROUND-COLOR']="transparent"
       this.report.reportName=reportName
       
-      if(this.report.layout){
+      if(this.report.layout&&this.report.layout!='null'){
         this.widgetForm=JSON.parse(this.report.layout)
           if (!Array.isArray(this.widgetForm))
           this.change_layout()  

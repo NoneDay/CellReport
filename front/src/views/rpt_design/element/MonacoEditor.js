@@ -11,12 +11,13 @@ function noop() { }
 // to the system and how the compiler is told to use ES6 (target=2).
 
 // validation settings
-
 import {loadFile} from '../utils/util.js'
 // extra libraries
 let libSource = loadFile("crjs.d.ts");
 let libUri = 'ts:filename/crjs.d.ts';
-setTimeout(function(){
+let already_init=false;
+function monaco_init(){
+  already_init=true;
   monaco.languages.typescript.javascriptDefaults.setDiagnosticsOptions({
     noSemanticValidation: true,
     noSyntaxValidation: false
@@ -32,7 +33,8 @@ setTimeout(function(){
   // When resolving definitions and references, the editor will try to use created models.
   // Creating a model for the library allows "peek definition/references" commands to work with the library.
   monaco.editor.createModel(libSource, 'typescript', monaco.Uri.parse(libUri));
-},1000)
+}
+//setTimeout(monaco_init,1000)
 export default {
   name: 'MonacoEditor',
   props: {
@@ -57,7 +59,7 @@ export default {
     },
 
     value() {
-      this.editor && this.value !== this._getValue() && this._setValue(this.value??"");
+      this.editor && this.value !== this._getValue() && this._setValue((this.value??"")?.replaceAll("\r",""));
     },
 
     language() {
@@ -106,6 +108,8 @@ export default {
 
   methods: {
     initMonaco() {
+      if(already_init==false)
+        monaco_init()
       const { value, language, theme, options } = this;
       Object.assign(options, this._editorBeforeMount());      //编辑器初始化前
       this.editor = monaco.editor[this.diffEditor ? 'createDiffEditor' : 'create'](this.$el, {
@@ -116,7 +120,8 @@ export default {
       });
       this.diffEditor && this._setModel(this.value, this.original);
       this._editorMounted(this.editor);      //编辑器初始化后
-    },
+    
+  },
 
     _getEditor() {
       if(!this.editor) return null;

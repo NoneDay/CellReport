@@ -456,8 +456,30 @@ hasOption 是为了动态初始化option，他总是返回true。
 <dv-water-level-pond :config=" {data: [<t>value</t>]}" style="width:100%;height:100%;" />
 
 ```          
-::: tips
+::: warning
 1、标签间的模板一定要用{{  }} 包起来
 2、标签属性中使用模板，一定使用双引号。因为在做模板替换的时候，字符串将会用单引号。
 :::
 
+## 前端调用后端的自定义函数
+
+如果已定义后端自定义函数：
+``` js
+  //这类函数只接收一个参数。如果是多个参数，可以打包多个参数到一个对象中传递
+  function test_func(para){
+    __env__.logger.info(" 前端调用后端的测试:"+json_stringify(para));
+    return  {a:2,b:3,para};// 测试将这个数据重新传回给前端
+  }
+```
+前端任意可以使用js 的地方，都可以通过call_server_func直接调用到后端函数：
+``` js
+  cellreport.call_server_func(`test_func`,{a:1,desc:'前端'},`/run:example?reportName=/`).then(data=>{
+    console.info(data) // 输出 : {a: 2, b: 3, para: {…}}
+  })
+  
+```
+`call_server_func(func_name,func_params,_this,get_post='post')`
+第一个参数 func_name: 后端已定义的函数名称
+第二个参数 func_params：后端函数需要的参数
+第三个参数 ：如果是字符串，就是将当前字符串作为url 传递给后端(通过这种方式手动执行指定报表组中的函数)，否则，就从_this 中解析出当前网页的url(组件中调用的话，直接传this就行)，传递给后端. 
+第四个参数 get_post : 提交给后台时使用的http 提交方式

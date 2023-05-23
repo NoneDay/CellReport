@@ -300,7 +300,22 @@ export default {
     },
     change_param(param_name){
       let _this=this
-      if(this.context.report_result.param_liandong?.includes(param_name)){
+      function is_depend(name){
+        let cur_dep=_this.context.report_result.param_depend_dic[name]
+        if(cur_dep){
+          if(cur_dep.indexOf(param_name)>=0)  
+            return true
+          return Enumerable.from(cur_dep).any(x=> is_depend(x))
+        }
+      }
+      if(_this.context.report_result.param_liandong?.includes(param_name)){
+        for(let x in _this.queryForm){
+          if(is_depend(x)){
+            _this.queryForm[x]=''
+            _this.previewFormParam.dataSet[x]=[]
+          }
+        }
+        
         console.info(_this.queryForm)
         setTimeout(async function(){
           await preview_one(_this,true,param_name)

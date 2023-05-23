@@ -1117,23 +1117,28 @@ const load_script_list=[]
                 s[i].setAttribute(attr, options[attr]);
             }
         }
-
         HEAD.appendChild(s[i]);
     };
-    let old_define=undefined //没有这里，exceljs等外部库将不能被挂载到window上。没有这里，将会按amd方式调用
-    if('function'==typeof window.define){
-        old_define=window.define
-        window.define=undefined
-    }
+    
+    let old_define={_amdLoaderGlobal:window._amdLoaderGlobal,
+        _commonjsGlobal:window._commonjsGlobal,AMDLoader:window.AMDLoader,define:window.define,require:window.require} //没有这里，exceljs等外部库将不能被挂载到window上。没有这里，将会按amd方式调用
+    
+    window._amdLoaderGlobal=undefined
+    window._commonjsGlobal=undefined
+    window.AMDLoader=undefined
+    window.define=undefined
+    window.require=undefined
+
     try{
         recursiveLoad(0);
     }
     finally
     {
-        if(old_define!=undefined){
-            window.define=old_define
-            old_define=undefined
-        }
+        //window._amdLoaderGlobal=old_define._amdLoaderGlobal
+        //window._commonjsGlobal=old_define._commonjsGlobal
+        //window.AMDLoader=old_define.AMDLoader
+        //window.define=old_define.define
+        //window.require=old_define.require
     }
 }
 export function load_css_file(url){

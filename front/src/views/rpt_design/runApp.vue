@@ -31,17 +31,22 @@
     :visible.sync="paper_setting_dialogVisible" />
         
     
-    <el-popover v-if="false && !crisMobile && isShow" style='position:fixed;z-index:5;right:40px;top:100px;'
-      placement="top-start" title="标题" width="200" trigger="hover" >
-      <el-button slot="reference" style="background-color: rgb(229 200 200);width: 40px;height: 40px;
+    <el-popover v-if="!crisMobile && isShow && show_tips " style='position:fixed;z-index:5;right:10px;top:10px;'
+      placement="top-start" title="提示信息" width="300" trigger="hover" >
+      <el-button slot="reference" style="width: 40px;height: 40px;
           border-radius: 50%;color: #409eff;display: flex;align-items: center;justify-content: center;font-size: 20px;
           box-shadow: 0 0 6px rgb(0 0 0 / 12%);cursor: pointer;" class="el-icon-edit">
       </el-button>
       <div>
-        <div v-html="marked(result.tips)" ></div>
-        <div v-html="marked(result.notebook)"></div>
+        <div v-html="result.tips?.replaceAll('\n','<p>')" ></div>
+        <div v-html="result.notebook?.replaceAll('\n','<p>')"></div>
       </div>
     </el-popover>
+    <span v-if="crisMobile && isShow && result.defaultsetting.big_screen!='1' && result.defaultsetting['show_form']=='true'"
+        style="position: absolute;right: 0px;top: 0px;z-index: 10;width: 30px;height: 30px;background-image: url(img/expand.png)" 
+        :style="{'transform':(expand_form?'rotate(-180deg)':'')}"
+        @click="expand_form=!expand_form;refresh_layout()">
+    </span>
 
     <div ref="div_form" v-if="!crisMobile && isShow && result.defaultsetting.big_screen!='1' && result.defaultsetting['show_form']=='true'"> 
       <dyncTemplate :parentCompent="parentCompent" :self="{type:'pc_form',content:result.pc_form,gridName:'pc_form'}"  v-if="result.pc_form">
@@ -122,11 +127,6 @@
           </el-form-item>
       </el-form>
     </div>
-    <span style="position: absolute;right: 0px;top: 0px;z-index: 10;width: 30px;height: 30px;background-image: url(img/expand.png)" 
-        :style="{'transform':(expand_form?'rotate(-180deg)':'')}"
-          v-if="crisMobile && isShow && result.defaultsetting.big_screen!='1' && result.defaultsetting['show_form']=='true'"
-          @click="expand_form=!expand_form;refresh_layout()">
-    </span>
     <div  ref="div_form" v-if="expand_form && crisMobile && isShow && result.defaultsetting.big_screen!='1' && result.defaultsetting['show_form']=='true'" > 
       
       <dyncTemplate :parentCompent="parentCompent" :self="{type:'pc_form',content:result.mobile_form,gridName:'pc_form'}" v-if="result.mobile_form">
@@ -430,7 +430,21 @@ export default {
     },
     change_param(param_name){
       let _this=this
+      function is_depend(name){
+        let cur_dep=_this.result.param_depend_dic[name]
+        if(cur_dep){
+          if(cur_dep.indexOf(param_name)>=0)  
+            return true
+          return Enumerable.from(cur_dep).any(x=> is_depend(x))
+        }
+      } 
       if(this.result.param_liandong.includes(param_name)){
+        for(let x in _this.queryForm){
+          if(is_depend(x)){
+            _this.queryForm[x]=''
+            _this.result.dataSet[x]=[[]]
+          }
+        }
         setTimeout(async function(){
           run_one(_this,_this.reportName,param_name)
         })        
@@ -491,6 +505,7 @@ export default {
     }
   },
   computed: {
+    show_tips(){return window.cellreport.show_tips},
     parentCompent(){ return this},
     crisMobile(){
         let flag = navigator.userAgent.match(/(phone|pad|pod|iPhone|iPod|ios|iPad|Android|Mobile|BlackBerry|IEMobile|MQQBrowser|JUC|Fennec|wOSBrowser|BrowserNG|WebOS|Symbian|Windows Phone)/i)

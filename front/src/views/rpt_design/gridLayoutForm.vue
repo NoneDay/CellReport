@@ -473,6 +473,8 @@ background:url("data:image/svg+xml;utf8,<svg t='1641536477492' class='icon' view
     font-size: 11px;
     font-weight: bold;
 }
+.vue-grid-layout {transition: none;}
+.vue-grid-item {transition: none;}
 .vue-grid-item .resizing {
     opacity: 0.9;
 }

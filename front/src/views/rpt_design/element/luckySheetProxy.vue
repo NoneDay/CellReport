@@ -141,8 +141,7 @@ export default {
                 "margin_right":36}`
         )
 
-        this.$refs.iframe?.contentWindow.jQuery("#luckysheet_paper_width").css('left',
-        `${paperSetting.pageSize_Width - paperSetting.margin_left - paperSetting.margin_right}pt`)
+        this.$refs.iframe?.contentWindow.jQuery("#luckysheet_paper_width").css('left',`${paperSetting.pageSize_Width - paperSetting.margin_left - paperSetting.margin_right}pt`)
         if(paperSetting.print_template_background){
           this.$refs.iframe?.contentWindow.jQuery("#luckysheet_background_img").show()
           this.$refs.iframe?.contentWindow.jQuery("#luckysheet_background_img img").attr("src",paperSetting.print_template_background)
@@ -393,7 +392,7 @@ export default {
               this.click_fresh(this.context.clickedEle[this.self.gridName])
           }
     },
-    buildDisplayData(is_run=false)
+    buildDisplayData()
     {
       let _this=this
       if(_this.context.mode=='run' ||( _this.context.mode!='design' && this.useHtml)){
