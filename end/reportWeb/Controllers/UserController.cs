@@ -92,7 +92,7 @@ namespace reportWeb.Controllers
             ef.addVariable("__env__", report_env);
             ef.addVariable("userid", test_user);
             ef.addVariable("password", test_password);
-            var result = ef.addNewScopeForScript(login_script) as IDictionary<Object, Object>;            
+            var result = ef.addNewScopeForScript(login_script) as CR_Object;            
             if(result == null)
                 return Json(new { errcode = 1, message = "测试失败", result="不是正常返回对象，请仔细看说明要求" }, json_option);
             if (!"0".Equals(result["errcode"]?.ToString()))
@@ -117,7 +117,7 @@ namespace reportWeb.Controllers
         public IActionResult login([FromBody] UserInfo userinfo)
         {
 
-            IDictionary<Object, Object> result = new Dictionary<Object, Object>() { { "errcode", 1 }, {"message" ,"用户名或密码错误" } };
+            CR_Object result = new CR_Object() { { "errcode", 1 }, {"message" ,"用户名或密码错误" } };
             var verfiy_code_script = configuration["verfiy_code_script"];
             if (!string.IsNullOrEmpty(verfiy_code_script))
             {
@@ -143,7 +143,7 @@ namespace reportWeb.Controllers
             if (username == configuration["admin_user"]) { 
                 if(password == configuration["admin_password"])
                 {
-                    result = new Dictionary<Object, Object>()
+                    result = new CR_Object()
                     {
                         { "errcode", 0 },
                         { "userid", username },
@@ -162,7 +162,7 @@ namespace reportWeb.Controllers
                 var //conf=reportDbContext.Rpt_config.FirstOrDefault();
                 conf=reportDb.Query("Rpt_config").FirstOrDefault<Rpt_config>();
                 if (conf!=null && conf.login_script.Trim()!="")
-                    result = ef.addNewScopeForScript(conf.login_script) as IDictionary<Object, Object>;
+                    result = ef.addNewScopeForScript(conf.login_script) as CR_Object;
                 else
                     return Unauthorized(new { message = "用户名或密码错误" });
             }
@@ -403,7 +403,7 @@ namespace reportWeb.Controllers
             ef.addVariable("__env__", report_env);
             ef.addVariable("userid", userid);
             ef.addVariable("verfiy_code", verfiy_code);
-            var result = ef.addNewScopeForScript(verfiy_code_script) as IDictionary<Object, Object>;
+            var result = ef.addNewScopeForScript(verfiy_code_script) as CR_Object;
             //var result = new Dictionary<String, string>() { { "errcode", "0" },{ "message","发送成功" } };
             if (!"0".Equals(result["errcode"]?.ToString()))
             {

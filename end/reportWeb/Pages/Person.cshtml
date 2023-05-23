@@ -22,7 +22,7 @@
         public PersonModel(IConfiguration configuration, ILogger<ReportModel> logger, ScopedObj scopedObj) : base(configuration, logger, scopedObj)
         {
         }
-        protected override bool pre_page_load(IDictionary<Object, Object> before_exec_result = null)
+        protected override bool pre_page_load(CR_Object before_exec_result = null)
         {
             var exprFaced = reportDefineForWeb.CurrentReportDefine.getEnv().getExprFaced();
             string worker_no = reportWeb.Controllers.UserController.ValidateJwtToken(HttpContext, HttpContext.Request.Cookies["access_token"])?.userid

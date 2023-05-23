@@ -406,9 +406,9 @@ export default class ResultGrid2HtmlTable{
     }
     total(){
         let ret= this.tableData_bridge.length -  (this.param_grid.tableData.length - this.param_grid.extend_lines[1]) - this.param_grid.extend_lines[0] + 1
-        console.info(ret +"--"+(this.param_grid.extend_lines[1]- this.param_grid.extend_lines[0] + 1))
+        //console.info(ret +"--"+(this.param_grid.extend_lines[1]- this.param_grid.extend_lines[0] + 1))
         return ret
-        return this.param_grid.extend_lines[1]- this.param_grid.extend_lines[0] + 1
+        //return this.param_grid.extend_lines[1]- this.param_grid.extend_lines[0] + 1
     }
     handleSizeChange(){
 

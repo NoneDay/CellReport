@@ -203,7 +203,7 @@ function db_tableinfo(data){
                 }
                 if(x.m_dictData)
                   x.dicData=`<!!>this.allDict["${x.m_dictData}"]<!!>`;
-               // trace(x);
+                trace(x);
             });
   return ret;
 }
@@ -238,8 +238,8 @@ var schema_kind={
                   INNER JOIN sys.columns AS C   ON   T.object_id = C.OBJECT_ID
                       INNER JOIN sys.types AS tp   ON  C.user_type_id = tp.user_type_id   
                 where T.name='$table$'`,
-                `=cur.select(x=>{prop:x.column_name, label:x.column_name,type:"input",auto_incr:iif(x.auto_incr==1,true,false),
-                  is_nullable:iif(x.is_nullable==1,'YES','NO'),dflt_value:'',is_key:iif(x.is_key!=0,'true',''),
+                `=cur.select(x=>{prop:x.column_name, label:x.column_name,type:"input",auto_incr:iif(x.auto_incr==true || x.auto_incr==1,true,false),
+                  is_nullable:iif(x.is_nullable==true || x.is_nullable==1,'YES','NO'),dflt_value:'',is_key:iif(x.is_key!=0,'true',''),
                   data_type:x.data_type}).toList()` ],
            
           },
@@ -547,5 +547,22 @@ function 字典_${para.table}(){
   }
 ]]>
 	</template_script>
-
+	<type_var_def>
+		Array,System.Array,
+		Math, System.Math,
+		Convert, System.Convert,
+		String, System.String,
+		DateTime, System.DateTime,
+		Date, System.DateOnly,
+		DateTimeOffset, System.DateTimeOffset,
+		DateTimeKind, System.DateTimeKind,
+		Double, System.Double,
+		Decimal, System.Decimal,
+		Bool, System.Boolean,
+		Int, System.Int32,
+		Int64, System.Int64,
+		DynObject,System.Dynamic.ExpandoObject,
+		Guid,System.Guid,
+		RandomNumber,System.Security.Cryptography.RandomNumberGenerator
+	</type_var_def>
 </template>

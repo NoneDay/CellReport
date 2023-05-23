@@ -97,7 +97,7 @@ namespace CellReport.function
             if (exprFaced != null && obj is not GroupReturnList)//&& obj is not Group
                 foreach (var one in ExprHelper.convertListRealValueToNetType(exprFaced, methodParams, alreadyCalc))
                 {
-                    if (one is Dictionary<object, object> par_dic)
+                    if (one is CR_Object par_dic)
                     {
                         Dictionary<String, object> new_dic = new();
                         foreach (var x in par_dic)
@@ -109,12 +109,49 @@ namespace CellReport.function
                     else
                     if (one is not string && one is IEnumerable par_list)
                     {
-                        List<String> new_dic = new();
-                        foreach (var x in par_list)
+                        foreach (var x1 in par_list)
                         {
-                            new_dic.Add(x is CellReport.math.BigDecimal val_dec ? val_dec.getCSDecmial().ToString() : x?.ToString());
+                            //if (x1 is not string && x1 is IDictionary child_list2)
+                            //{
+                            //    List<KeyValuePair<String, object>> new_dic = new();
+                            //    foreach (Dictionary<object, object> x2 in par_list)
+                            //    {
+                            //        KeyValuePair<String, object> t_list = new();
+                            //        new_dic.Add(t_list);
+                            //        foreach (var x3 in x2)
+                            //        {
+                            //            t_list.Add(new KeyValuePair(x3.Key.ToString(), x3.Value is CellReport.math.BigDecimal val_dec ? val_dec.getCSDecmial() : x3.Value));
+                            //        }
+                            //    }
+                            //    methodParams[i] = new_dic;
+                            //}
+                            //else 
+                            if (x1 is not string && x1 is IEnumerable child_list)
+                            {
+                                List<List<Object>> new_dic = new();
+                                foreach (IEnumerable x2 in par_list)
+                                {
+                                    List<Object> t_list = new();
+                                    new_dic.Add(t_list);
+                                    foreach (var x3 in x2)
+                                    {
+                                        t_list.Add(x3 is CellReport.math.BigDecimal val_dec ? val_dec.getCSDecmial().ToString() : x3?.ToString());
+                                    }
+                                }
+                                methodParams[i] = new_dic;
+                            }
+                            else
+                            {
+                                List<String> new_dic = new();
+                                foreach (var x in par_list)
+                                {
+                                    new_dic.Add(x is CellReport.math.BigDecimal val_dec ? val_dec.getCSDecmial().ToString() : x?.ToString());
+                                }
+                                methodParams[i] = new_dic;
+                            }
+                            break;
                         }
-                        methodParams[i] = new_dic;
+                        
                     }
                     else
                         methodParams[i] = one;

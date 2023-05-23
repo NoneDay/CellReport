@@ -75,7 +75,7 @@ namespace reportWeb.Pages
         private String mc_report_id;
         private String tmpFileName;
         public string tips = "";
-        protected virtual bool pre_page_load(IDictionary<Object, Object> before_exec_result=null)
+        protected virtual bool pre_page_load(CR_Object before_exec_result =null)
         {
             return true;
         }
@@ -161,11 +161,10 @@ namespace reportWeb.Pages
                 var start_time = DateTime.Now;
                 reportDefineForWeb.putRequestParamForForm();
 
-                IDictionary<Object, Object> before_exec_result=null;
+                CR_Object before_exec_result =null;
                 if (exprFaced.hasVariable("before_exec"))
                 {
-                    before_exec_result =exprFaced.calculate("=before_exec()", report_env.getDataSetResultMap())
-                        as IDictionary<Object, Object>;
+                    before_exec_result =exprFaced.calculate("=before_exec()", report_env.getDataSetResultMap()) as CR_Object;
                     if (before_exec_result != null)
                     {
                         exprFaced.addVariable("before_exec_result", before_exec_result);
