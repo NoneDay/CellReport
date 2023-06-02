@@ -1,4 +1,4 @@
-import {getLuckyStyle,numToString,call_server_func } from "./util.js"
+import {getLuckyStyle,numToString,call_server_func,s2ab,saveAs } from "./util.js"
 
 const BitArray = require("./bits");
 let color_convert = require('onecolor');
@@ -46,16 +46,7 @@ let color_convert = require('onecolor');
       
   })
   }
-//如果使用 FileSaver.js 就不要同时使用以下函数
-function saveAs(obj, fileName) {//当然可以自定义简单的下载文件实现方式 
-    var tmpa = document.createElement("a");
-    tmpa.download = fileName || "下载";
-    tmpa.href = URL.createObjectURL(obj); //绑定a标签
-    tmpa.click(); //模拟点击实现下载
-    setTimeout(function () { //延时释放
-        URL.revokeObjectURL(obj); //用URL.revokeObjectURL()来释放这个object URL
-    }, 100);
-}
+
 
 function find_style(tbl,rowNo,colNo,cur_tbl_class_dict){        
     for(let idx=0;idx<tbl.abs_to_design.length;idx++){
@@ -333,18 +324,6 @@ export  async function exceljs_inner_exec(_this,name_lable_map){
     const buffer = await wb.xlsx.writeBuffer();
     saveAs(new Blob([buffer], { type: "application/octet-stream"}), (file_name??"这里是下载的文件名" )+ ".xlsx");
   }
-  function s2ab(s) {
-    if (typeof ArrayBuffer !== 'undefined') {
-        var buf = new ArrayBuffer(s.length);
-        var view = new Uint8Array(buf);
-        for (var i = 0; i != s.length; ++i) view[i] = s.charCodeAt(i) & 0xFF;
-        return buf;
-    } else {
-        var buf = new Array(s.length);
-        for (var i = 0; i != s.length; ++i) buf[i] = s.charCodeAt(i) & 0xFF;
-        return buf;
-    }
-}
   export function xlsxjs_inner_exec(_this,name_lable_map){
       const wb = XLSX.utils.book_new()
       

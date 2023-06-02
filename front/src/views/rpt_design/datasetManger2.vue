@@ -65,7 +65,7 @@
                         <el-col v-if="action_target._type=='sql'|| action_target._type=='db'" :span="4">
                             <el-form-item label="舍弃数值全零的行">  <el-checkbox v-model="action_target._FilterZero"></el-checkbox></el-form-item> 
                         </el-col>
-                        <el-button  type="primary" v-if="['memory','sql','userDefine'].includes(action_target._type)"  @click="preview">取数</el-button>
+                        <el-button  type="primary" v-if="['memory','sql','userDefine'].includes(action_target._type)"  @click="sql_run">取数</el-button>
                         <!--
                         <el-button  type="primary" v-if="['memory','sql','userDefine'].includes(action_target._type)"  @click="manger_script">相关脚本</el-button> 
 -->
@@ -340,15 +340,9 @@ export default {
        
     },
     
-    methods:{        
-        preview(){
-            if(this.context.in_exec_url.stat){
-                this.$notify({title: '提示',message: "已经在执行一个查询！",type: 'error',duration:3000});
-                return
-            }
+    methods:{ 
+        report_content(){
             let x2jsone=new x2js(); //实例
-            let _this=this
-            let data=new FormData();
             let t_content_json=JSON.parse(JSON.stringify(this.context.report))
             this.all_dataSet.forEach(one=>{
                 if(['cr','api'].includes( one._type)){
@@ -360,7 +354,16 @@ export default {
             JSON.parse(JSON.stringify(this.all_dataSet)).forEach(ele=>{
                 t_content_json.dataSets.dataSet.push(ele)
             })
-            data.append("_content", x2jsone.js2xml({report:t_content_json}) )
+            return x2jsone.js2xml({report:t_content_json})
+        },    
+        sql_run(){
+            if(this.context.in_exec_url.stat){
+                this.$notify({title: '提示',message: "已经在执行一个查询！",type: 'error',duration:3000});
+                return
+            }
+            let _this=this
+            let data=new FormData();
+            data.append("_content", this.report_content())
             data.append("_createFormParam", false )
             data.append("_fresh_ds", JSON.stringify(['数据集:'+this.action_target._name]))
             _this.context.in_exec_url.stat=true;
@@ -447,6 +450,7 @@ export default {
                     background: 'rgba(0, 0, 0, 0.7)'
                     });
             let data=new FormData();
+            data.append("report_content", this.report_content())
             data.append("expr", `return web_request({'url':'${this.action_target._dataSource}','headers':{'needType':'json' } } );`)
             let grpid=_this.context.report.reportName.split(":")[0]
             request({
@@ -482,6 +486,7 @@ export default {
         api_run(){
             let _this=this
             let data=new FormData();
+            data.append("report_content", this.report_content())
             data.append("expr", this.action_target.__text )
             let grpid=_this.context.report.reportName.split(":")[0]
             request({

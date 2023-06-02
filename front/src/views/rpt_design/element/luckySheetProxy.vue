@@ -686,9 +686,7 @@ export default {
     flex: 1;
     width: 100%;
     max-width: 100%;
-    background-color: #fff;
-    font-size: 14px;
-    color: #606266;
+    
 }
 .cr-table--border {
     border-right: none;

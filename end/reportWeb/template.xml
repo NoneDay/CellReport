@@ -348,7 +348,7 @@ function 修改_${para.table}(p_obj){
   var col_list=[ ${col_list} ];
   var key_list=[${para.keys}];
   col_list.Except(p_obj.new_val.Select(x=>x.key)).ForEach(x=>{p_obj.new_val[x]=null;});//补充缺失的字段
-  var crud_obj=p_obj.new_val.Except(p_obj.old_val).ToDictionary($.key,$.value);//过滤掉相同值
+  var crud_obj=p_obj.new_val.Except(p_obj.old_val).Where(x=>x.key in col_list).ToDictionary($.key,$.value);//过滤掉相同值
 
   if(crud_obj.select(x=>x.Key).count(x=>x in key_list) >0)
           return {errcode:1,message:"新旧对象的主键不一致列表"};

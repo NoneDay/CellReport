@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Collections;
 using SqlKata;
 using SqlKata.Execution;
-using System.Data.SqlClient; 
+using System.Data.SqlClient;
 using CellReport.running;
 using System.Data.Common;
 using SqlKata.Compilers;
@@ -27,25 +27,25 @@ namespace CellReport.function
     }
 
     public class Func_kata : FunctionUnit
-	{
+    {
         static Func_kata()
         {
             ExprHelper.AddCSFuncOperator("kata", DirectCallObjectMethod);
         }
         public override SqlKata.Execution.QueryFactory calculate(IList args)
-		{
+        {
             if (args.Count == 0)
                 throw new CellReport.core.ReportRuntimeException("kata至少需要一个参数！");
             object expr = args[0];
             Object ret_obj = calcExpr(expr);
             DatasourceStruct ds_struct = (DatasourceStruct)(getEnv().getDataSource(ret_obj.ToString()));
-            if(ds_struct==null)
+            if (ds_struct == null)
                 throw new core.ReportRuntimeException($"没有找到数据源：【{ret_obj}】，查看报表组和数据源名称是否正确。");
             var ds_type = ds_struct.ds_type;
             if (args.Count > 1)
-                ds_type=calcExpr(args[1])?.ToString();
+                ds_type = calcExpr(args[1])?.ToString();
 
-            SqlKata.Compilers.Compiler compiler=null;
+            SqlKata.Compilers.Compiler compiler = null;
             switch (ds_type.ToLower())
             {
                 case "sqlserver":
@@ -72,10 +72,10 @@ namespace CellReport.function
             //db.Query("Users").Get();
             //db.Query("Books").Where().OrderBy("Date").Paginate(1)
             this.getEnv().Disposables.Add(db);
-            return db; 
+            return db;
         }
         private static Type extend_type;
-        
+
         public static (bool, bool, object) DirectCallObjectMethod(Object obj, string methodName, object[] methodParams, BaseExprFaced exprFaced = null, bool alreadyCalc = false)
         {
             if (obj is QueryFactory queryFactory)
@@ -88,21 +88,22 @@ namespace CellReport.function
             }
             if (obj is not SqlKata.Execution.XQuery)
                 return (false, false, null);
-            if (extend_type == null) { 
+            if (extend_type == null)
+            {
                 extend_type = ExprHelper.findClass("SqlKata.Execution.QueryExtensions", false);// ;
-                if(extend_type == null)
+                if (extend_type == null)
                     throw new core.ReportRuntimeException($"找不到SqlKata.Execution.QueryExtensions类型。");
             }
             int i = 0;
             if (exprFaced != null && obj is not GroupReturnList)//&& obj is not Group
                 foreach (var one in ExprHelper.convertListRealValueToNetType(exprFaced, methodParams, alreadyCalc))
                 {
-                    if (one is CR_Object par_dic)
+                    if (one is IDictionary par_dic)
                     {
                         Dictionary<String, object> new_dic = new();
-                        foreach (var x in par_dic)
+                        foreach (var x in par_dic.Keys)
                         {
-                            new_dic.Add(x.Key.ToString(), x.Value is CellReport.math.BigDecimal val_dec ? val_dec.getCSDecmial() : x.Value);
+                            new_dic.Add(x.ToString(), par_dic[x] is CellReport.math.BigDecimal val_dec ? val_dec.getCSDecmial() : par_dic[x]);
                         }
                         methodParams[i] = new_dic;
                     }
@@ -151,15 +152,15 @@ namespace CellReport.function
                             }
                             break;
                         }
-                        
+
                     }
                     else
                         methodParams[i] = one;
                     i++;
                 };
-            var ret= ExprHelper.CallObjectMethod_for_extendClass(extend_type, obj, methodName, methodParams, exprFaced, alreadyCalc);
+            var ret = ExprHelper.CallObjectMethod_for_extendClass(extend_type, obj, methodName, methodParams, exprFaced, alreadyCalc);
             return (ret.Item1, true, ret.Item3);
         }
-        
-    }   
+
+    }
 }

@@ -16,6 +16,7 @@ import {loadFile} from '../utils/util.js'
 let libSource = loadFile("crjs.d.ts");
 let libUri = 'ts:filename/crjs.d.ts';
 let already_init=false;
+let old_define
 function monaco_init(){
   already_init=true;
   monaco.languages.typescript.javascriptDefaults.setDiagnosticsOptions({
@@ -101,6 +102,7 @@ export default {
   },
 
   render (h) {
+    
     return (
       <div class="monaco_editor_container" style={this.style}></div>
     );
@@ -112,6 +114,16 @@ export default {
         monaco_init()
       const { value, language, theme, options } = this;
       Object.assign(options, this._editorBeforeMount());      //编辑器初始化前
+      if(old_define && old_define.define){
+        window._amdLoaderGlobal=old_define._amdLoaderGlobal
+        window._commonjsGlobal=old_define._commonjsGlobal
+        window.AMDLoader=old_define.AMDLoader
+        window.define=old_define.define
+        window.require=old_define.require
+      }else{
+        if(window.define)
+        old_define={_amdLoaderGlobal:window._amdLoaderGlobal,_commonjsGlobal:window._commonjsGlobal,AMDLoader:window.AMDLoader,define:window.define,require:window.require} 
+      }
       this.editor = monaco.editor[this.diffEditor ? 'createDiffEditor' : 'create'](this.$el, {
         value: value,
         language: language,

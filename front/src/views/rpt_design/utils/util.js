@@ -1075,6 +1075,26 @@ const load_script_list=[]
  * @return {Array} 所有生成的脚本元素对象数组
  */
  export function seriesLoadScripts(scripts, options, callback) {
+    function clear_define(){
+        if(!old_define && window.define){
+            old_define={_amdLoaderGlobal:window._amdLoaderGlobal,_commonjsGlobal:window._commonjsGlobal,AMDLoader:window.AMDLoader,define:window.define,require:window.require} 
+            window._amdLoaderGlobal=undefined
+            window._commonjsGlobal=undefined
+            window.AMDLoader=undefined
+            window.define=undefined
+            window.require=undefined
+        }
+    }
+    function restore_define(){
+        if(old_define && old_define.define){
+            window._amdLoaderGlobal=old_define._amdLoaderGlobal
+            window._commonjsGlobal=old_define._commonjsGlobal
+            window.AMDLoader=old_define.AMDLoader
+            window.define=old_define.define
+            window.require=old_define.require
+          }
+    }
+    let old_define
     if (typeof (scripts) !== 'object') {
         var scripts = [scripts];
     }
@@ -1087,8 +1107,10 @@ const load_script_list=[]
             if (i !== last) {
                 recursiveLoad(i + 1);
             } else if (typeof (callback) === 'function') {
+                clear_define()
                 callback()
             };
+            restore_define()
             return;
         }
         
@@ -1104,8 +1126,10 @@ const load_script_list=[]
                 if (i !== last) {
                     recursiveLoad(i + 1);
                 } else if (typeof (callback) === 'function') {
+                    clear_define()
                     callback()
                 };
+                restore_define()
             }
         }
         // 同步
@@ -1119,27 +1143,8 @@ const load_script_list=[]
         }
         HEAD.appendChild(s[i]);
     };
-    
-    let old_define={_amdLoaderGlobal:window._amdLoaderGlobal,
-        _commonjsGlobal:window._commonjsGlobal,AMDLoader:window.AMDLoader,define:window.define,require:window.require} //没有这里，exceljs等外部库将不能被挂载到window上。没有这里，将会按amd方式调用
-    
-    window._amdLoaderGlobal=undefined
-    window._commonjsGlobal=undefined
-    window.AMDLoader=undefined
-    window.define=undefined
-    window.require=undefined
-
-    try{
-        recursiveLoad(0);
-    }
-    finally
-    {
-        //window._amdLoaderGlobal=old_define._amdLoaderGlobal
-        //window._commonjsGlobal=old_define._commonjsGlobal
-        //window.AMDLoader=old_define.AMDLoader
-        //window.define=old_define.define
-        //window.require=old_define.require
-    }
+    clear_define()
+    recursiveLoad(0);
 }
 export function load_css_file(url){
     var doc = document;
@@ -1356,6 +1361,28 @@ export function getBase64(file){  //把图片转成base64编码
             resolve(imgResult);
         }
     })
+}
+export function s2ab(s) {
+    if (typeof ArrayBuffer !== 'undefined') {
+        var buf = new ArrayBuffer(s.length);
+        var view = new Uint8Array(buf);
+        for (var i = 0; i != s.length; ++i) view[i] = s.charCodeAt(i) & 0xFF;
+        return buf;
+    } else {
+        var buf = new Array(s.length);
+        for (var i = 0; i != s.length; ++i) buf[i] = s.charCodeAt(i) & 0xFF;
+        return buf;
+    }
+}
+//如果使用 FileSaver.js 就不要同时使用以下函数
+export function saveAs(obj, fileName) {//当然可以自定义简单的下载文件实现方式 
+    var tmpa = document.createElement("a");
+    tmpa.download = fileName || "下载";
+    tmpa.href = URL.createObjectURL(obj); //绑定a标签
+    tmpa.click(); //模拟点击实现下载
+    setTimeout(function () { //延时释放
+        URL.revokeObjectURL(obj); //用URL.revokeObjectURL()来释放这个object URL
+    }, 100);
 }
 export {
     designGrid2LuckySheet,luckySheet2ReportGrid,resultGrid2LuckySheet,
