@@ -188,7 +188,7 @@ namespace reportWeb.Controllers
                     exprFaced.addVariable("_createFormParam_", _createFormParam);
                     exprFaced.addVariable("_param_name_", _param_name_);
                 }
-                exprFaced.addVariable("__page__", HttpContext.Request);
+                //exprFaced.getVariableDefine("__page__").value = HttpContext.Request;
                 Engine engine = new Engine(reportDefine);
                 long end = DateTime.Now.Ticks;
                 report_env.logger.Debug($"分析xml耗时：{(DateTime.Now.Ticks - start) / 10000000.0}秒");
@@ -336,6 +336,14 @@ namespace reportWeb.Controllers
                     exprFaced.addNewScopeForScript();
                     report_env = new Env();
                     cur_GroupMap = new();
+                    exprFaced.addVariable("env", report_env);
+                    exprFaced.addVariable("__env__", report_env);
+                    exprFaced.addVariable("_user_", null);
+                    exprFaced.addVariable("_zb_url_", configuration["zb_url"]);
+                    exprFaced.addVariable("_zb_user_", rpt_group.zb_user);
+                    exprFaced.addVariable("_zb_password_", rpt_group.zb_password);
+                    exprFaced.addVariable("_zb_var_", new Dictionary<String, object>());
+                    exprFaced.addVariable("_rpt_group_", rpt_group);
                 }
                 else
                 {
@@ -353,14 +361,6 @@ namespace reportWeb.Controllers
                 {
                     report_env.addDataSource(one.name, one.conn_str, one.db_type, "0");
                 }
-                exprFaced.addVariable("env", report_env);
-                exprFaced.addVariable("__env__", report_env);
-                exprFaced.addVariable("_user_", null);
-                exprFaced.addVariable("_zb_url_", configuration["zb_url"]);
-                exprFaced.addVariable("_zb_user_", rpt_group.zb_user);
-                exprFaced.addVariable("_zb_password_", rpt_group.zb_password);
-                exprFaced.addVariable("_zb_var_", new Dictionary<String, object>());
-                exprFaced.addVariable("_rpt_group_", rpt_group);
 
                 var exec_result = exprFaced.calculate("{  " + expr + "\n}", cur_GroupMap);
                 if (exec_result is Exception ex)

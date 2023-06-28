@@ -1,5 +1,8 @@
 <template>
-  <div>
+  <div v-if="cr.home" style="height: 100%;width: 100%;">
+    <iframe :src="cr.home" style="height: 100%;width: 100%;"></iframe>
+  </div>
+  <div v-else>
     <div class="wel__header">
       <div class="wel__info">
         <img :src="userInfo.avatar"
@@ -66,6 +69,9 @@ export default {
   },
   computed: {
     ...mapGetters(["userInfo"]),
+    cr(){ 
+      return window.cellreport;
+     },
     option1 () {
       return {
         span: 6,

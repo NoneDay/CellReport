@@ -15,7 +15,7 @@
     >
     <el-row style="height: 100%"><el-col span="12"  style="height: 100%; border: 1px solid gray">
         <MonacoEditor   theme="vs" v-model="test_content"
-              language="html"  style="height:100%;border:solid 1px silver;margin-bottom:5px;"
+              language="javascript"  style="height:100%;border:solid 1px silver;margin-bottom:5px;"
               :options="{}"  >
         </MonacoEditor>
       </el-col>

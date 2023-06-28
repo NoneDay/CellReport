@@ -47,7 +47,7 @@ using SqlKata.Compilers;
 
 namespace reportWeb
 {
-     public class Startup
+    public class Startup
     {
         public Startup(IConfiguration configuration)
         {
@@ -55,7 +55,7 @@ namespace reportWeb
         }
 
         public IConfiguration Configuration { get; }
-        
+
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
@@ -94,16 +94,16 @@ namespace reportWeb
            })*/
            .AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, option =>
            {
-               option.SaveToken = true;              
+               option.SaveToken = true;
                option.Events = new JwtBearerEvents()
                {
                    OnMessageReceived = context =>
                    {
-                       if(context.Request.Headers["Authorization"].ToString()=="" && context.Request.Cookies["access_token"]!=null)
-                            context.Token = context.Request.Cookies["access_token"];
+                       if (context.Request.Headers["Authorization"].ToString() == "" && context.Request.Cookies["access_token"] != null)
+                           context.Token = context.Request.Cookies["access_token"];
                        return Task.CompletedTask;
                    },
-                   OnChallenge= context =>
+                   OnChallenge = context =>
                    {
                        context.HandleResponse();
                        context.Response.WriteAsJsonAsync(new { code = -1, message = "token过期" });
@@ -111,7 +111,7 @@ namespace reportWeb
                    },
                    OnAuthenticationFailed = context =>
                    {
-                       
+
                        //ASP.NET Core Web Api之JWT刷新Token(三)
                        //https://blog.csdn.net/weixin_30483013/article/details/99642627?utm_medium=distribute.pc_relevant_download.none-task-blog-baidujs-1.nonecase&depth_1-utm_source=distribute.pc_relevant_download.none-task-blog-baidujs-1.nonecase
                        // 如果过期，则把<是否过期>添加到，返回头信息中
@@ -153,14 +153,14 @@ namespace reportWeb
                {
                    ValidIssuer = jwtConfig.Issuer,
                    ValidAudience = jwtConfig.Audience,
-                   ValidateAudience=false,
-                   ValidateIssuer = false,                   
+                   ValidateAudience = false,
+                   ValidateIssuer = false,
                    ValidateLifetime = true,//jwtConfig.ValidateLifetime,
                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtConfig.SigningKey)),
                    //缓冲过期时间，总的有效时间等于这个时间加上jwt的过期时间
                    ClockSkew = TimeSpan.FromSeconds(0)
                };
-           }); 
+           });
             //================================
             // If using Kestrel:
             services.Configure<KestrelServerOptions>(options =>
@@ -169,7 +169,7 @@ namespace reportWeb
             });
             services.AddScoped<ScopedObj>();
             services.AddSingleton<JwtConfig>(jwtConfig);
-            
+
             // If using IIS:
             services.Configure<IISServerOptions>(options =>
             {
@@ -187,10 +187,10 @@ namespace reportWeb
             services.AddCors(op => {
                 op.AddPolicy("CorsTest",
                     set => {
-                    set.SetIsOriginAllowed(origin => true)
-                                   .AllowAnyHeader()
-                                   .AllowAnyMethod()
-                                   .AllowCredentials();//这是是重要的，没有他就会有跨域问题
+                        set.SetIsOriginAllowed(origin => true)
+                                       .AllowAnyHeader()
+                                       .AllowAnyMethod()
+                                       .AllowCredentials();//这是是重要的，没有他就会有跨域问题
                     });
             });
             services.AddSignalR();
@@ -205,18 +205,18 @@ namespace reportWeb
             services.AddDataProtection().PersistKeysToFileSystem(new DirectoryInfo(Directory.GetCurrentDirectory() + Path.DirectorySeparatorChar + "DataProtection"));
 
             CellReport.Redis_Cache.redis_str = Configuration["redis_str"];
-            if(!String.IsNullOrEmpty( CellReport.Redis_Cache.redis_str ))
+            if (!String.IsNullOrEmpty(CellReport.Redis_Cache.redis_str))
             {
                 CSRedisClient redisClient = new CSRedisClient(CellReport.Redis_Cache.redis_str);
                 RedisHelper.Initialization(redisClient);
             }
             DbProviderFactories.RegisterFactory("Microsoft.Data.Sqlite", SqliteFactory.Instance);
-            foreach(var one in Configuration.GetSection("DbProviderFactories").Get<DbProviderCfg[]>())
+            foreach (var one in Configuration.GetSection("DbProviderFactories").Get<DbProviderCfg[]>())
             {
-                var ass = System.Reflection.Assembly.Load( one.DllName);
+                var ass = System.Reflection.Assembly.Load(one.DllName);
                 DbProviderFactory f = ass.GetType(one.FactoryClass).GetField(one.InstanceName).GetValue(null) as DbProviderFactory;
-                DbProviderFactories.RegisterFactory(one.Name, f );
-                
+                DbProviderFactories.RegisterFactory(one.Name, f);
+
             }
 
         }
@@ -257,10 +257,17 @@ namespace reportWeb
                             //System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
                             WriteIndented = true
                         };
+                        System.Exception inner_e = ex;
+                        StringBuilder sb = new();
+                        while (inner_e != null)
+                        {
+                            sb.Append("【").AppendLine(inner_e.Message).Append("】");
+                            inner_e = inner_e.InnerException;
+                        }
                         var errObj = JsonSerializer.Serialize(new
                         {
                             errocode = -1,
-                            message = ex.Message,
+                            message = sb.ToString(),
                             stackerr = ex.StackTrace
                         }, json_option);
                         await context.Response.WriteAsync(errObj);
@@ -273,7 +280,7 @@ namespace reportWeb
             string static_path = Configuration["static_path"];
             if (String.IsNullOrEmpty(static_path))
                 static_path = Path.Combine(env.WebRootPath, "../static");
-            if(!(new DirectoryInfo(static_path).Exists))
+            if (!(new DirectoryInfo(static_path).Exists))
             {
                 Directory.CreateDirectory(static_path);
             }
@@ -295,17 +302,17 @@ namespace reportWeb
                 }
                 var seg_arr = cur_path.Split(":");
                 string grp = "default";
-                if (seg_arr.Length>=2)
+                if (seg_arr.Length >= 2)
                 {
-                    grp=seg_arr[1];
+                    grp = seg_arr[1];
                 }
-                
+
                 var scopedObj = context.RequestServices.GetService<ScopedObj>();
                 //scopedObj.rpt_group = context.RequestServices.GetService<ReportDb>().findGroupById(grp);
-                var query=context.RequestServices.GetService<ReportDbContext>();
+                var query = context.RequestServices.GetService<ReportDbContext>();
                 scopedObj.rpt_group = query.GetRpt_Group(grp);
                 scopedObj.WebHostEnvironment = env;
-                
+
                 context.Request.Path = seg_arr[0];
                 if (context.Request.Path == "/run")
                 {
@@ -315,7 +322,7 @@ namespace reportWeb
                         context.Response.ContentType = "application/json";
                         return context.Response.WriteAsync("{ \"errcode\":1, \"message\":\"grp没有定义\" }");
                     }
-                    var rn=context.Request.Query["reportName"];
+                    var rn = context.Request.Query["reportName"];
                     if (rn.Count == 1)
                     {
                         context.Request.Path = "/" + scopedObj.rpt_group.getPageNameByReportName(rn[0]);
@@ -333,13 +340,13 @@ namespace reportWeb
             app.UseAuthentication();//认证(Authentication)  
             app.UseAuthorization(); //授权 (Authorization)
 
-            app.UseSession(); 
+            app.UseSession();
 
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapRazorPages();
                 endpoints.MapHub<ChatHub>("/chathub");
-                endpoints.MapControllerRoute(name: "default",pattern: "{controller=user}/{action=Index}/{id?}");
+                endpoints.MapControllerRoute(name: "default", pattern: "{controller=user}/{action=Index}/{id?}");
                 //endpoints.MapDynamicPageRoute<GrpRouteTransformer>("{page}/{**grp}");
                 //endpoints.MapDynamicControllerRoute<GrpRouteTransformer>("{area}/{controller=Home}/{action=Index}/{id:int?}");
                 //endpoints.Map(RoutePatternFactory.Parse("/run/{act}/{grp}/{a0}/{a1}"), rpt_execute);
@@ -352,8 +359,8 @@ namespace reportWeb
                     try
                     {
                         var m = MessageQueueBlock<DemoMessage>.Take();//Client(m.ConnectionId)
-                        if(m.ConnectionId!=null)
-                            await m.hubContext.Clients.Client(m.ConnectionId)?.SendAsync("ReceiveMessage",m.ConnectionId,m.Body);                    
+                        if (m.ConnectionId != null)
+                            await m.hubContext.Clients.Client(m.ConnectionId)?.SendAsync("ReceiveMessage", m.ConnectionId, m.Body);
                     }
                     catch (Exception ex)
                     {
@@ -362,6 +369,6 @@ namespace reportWeb
                 }
             });
         }
-        
-     }
+
+    }
 }

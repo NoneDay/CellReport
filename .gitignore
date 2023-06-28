@@ -374,3 +374,4 @@ report.db-shm
 report.db-wal
 publish_release/
 
+end/CellReport.dll

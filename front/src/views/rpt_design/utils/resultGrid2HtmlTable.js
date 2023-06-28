@@ -318,7 +318,7 @@ export default class ResultGrid2HtmlTable{
                 rowData=rowData.slice(0,-1)
             rowData.forEach((cell,colNo)=>{
                 let m
-                if(rowNo<=this.param_grid.colName_lines[1])
+                if(window.cellreport.hn_old && rowNo<=this.param_grid.colName_lines[1])
                     m=cell
                 else
                     m=this.param_grid.hyperlink[`${rowNo}_${colNo}`]??cell
@@ -357,7 +357,7 @@ export default class ResultGrid2HtmlTable{
             
             rowData.slice(0,-1).forEach((cell,colNo)=>{
                 let m
-                if(rowNo<=this.param_grid.colName_lines[1])
+                if(window.cellreport.hn_old && rowNo<=this.param_grid.colName_lines[1])
                     m=cell
                 else
                     m=this.param_grid.hyperlink[`${rowNo}_${colNo}`]??cell
