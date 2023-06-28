@@ -32,22 +32,26 @@
 	<sql_max_rows>500000</sql_max_rows>
 	<before_exec_script>
 		<![CDATA[
-		function download_img(url){
-   var result= web_request({'url':url,'raw':true}) ;  
-  	if(result.GetType().ToString().Contains("Exception"))
-      return {'errcode':-1,'message':result.Message };
-	var content_type=result.response.Content.Headers['ContentType']['MediaType'] ;
-	if(content_type.StartsWith('image/'))
-		return {'data':result.content,  'type':content_type  } ;   
-	else
-		return {'errcode':-1,'message':"不是图片类型："+content_type };
+function download_img(url){
+    try{
+        var result= web_request({'url':url,'raw':true}) ;  
+  	    //if(result.GetType().ToString().Contains("Exception"))
+        //  return {'errcode':-1,'message':result.Message };
+	    var content_type=result.response.Content.Headers['ContentType']['MediaType'] ;
+	    if(content_type.StartsWith('image/'))
+		    return {'data':result.content,  'type':content_type  } ;   
+	    else
+		    return {'errcode':-1,'message':"不是图片类型："+content_type };
+	}catch(ex){
+	    return {'errcode':-1,'message':`不是图片类型：${ex.Message}` };
+	}
 }
 		]]>
 	</before_exec_script>
 	<footer2>
 		<![CDATA[
 <script>
-
+window.cellreport.show_tips=true;
 window.luckysheet_conditionformat=[
 		{column_match:".*(占比|率)\$" ,val:'{"type":"colorGradation","cellrange":[{ "row":[0,1],"column":[1,1] }],"format":["rgb(248, 105, 107)", "rgb(255, 235, 132)", "rgb(99, 190, 123)"] }' },
   		//{column_match:".*(累计)" ,val:'{"type":"dataBar","cellrange":[{"left":283,"width":88,"top":117,"height":25,"left_move":283,"width_move":88,"top_move":117,"height_move":25,"row":[4,4],"column":[3,3],"row_focus":4,"column_focus":3}],"format":["red","#ffffff"]}' },
@@ -563,6 +567,8 @@ function 字典_${para.table}(){
 		Int64, System.Int64,
 		DynObject,System.Dynamic.ExpandoObject,
 		Guid,System.Guid,
-		RandomNumber,System.Security.Cryptography.RandomNumberGenerator
+		Exception,System.Exception,
+		Task,System.Threading.Tasks.Task,
+		RandomNumber,System.Security.Cryptography.RandomNumberGenerator,
 	</type_var_def>
 </template>
