@@ -21,8 +21,8 @@
   <ItemGroup>
     <PackageReference Include="Antlr3.Runtime" Version="3.5.2-rc1" />
     <PackageReference Include="CSRedisCore" Version="3.6.6" />
-    <PackageReference Include="itext7" Version="8.0.0" />
-    <PackageReference Include="itext7.pdfhtml" Version="5.0.0" />
+	<PackageReference Include="itext7" Version="7.2.1" />
+	<PackageReference Include="itext7.pdfhtml" Version="4.0.1" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="6.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" Version="6.0.0" />
     <PackageReference Include="Microsoft.Data.SqlClient" Version="3.0.1" />

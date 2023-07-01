@@ -177,7 +177,7 @@ export default {
             let _this=this
             let test_obj=this.temp_props.filter(x=>x.name=='before_exec_script')[0]
             if(test_obj.val.trim()!=""){
-                let resp=await test_expr('{' + test_obj.val +' }')
+                let resp=await test_expr('{' + test_obj.val +' \n}')
                 if(resp.errcode!=0)
                 {
                     this.$message.error(resp.message)
