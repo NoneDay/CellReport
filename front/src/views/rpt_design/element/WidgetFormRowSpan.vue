@@ -7,7 +7,7 @@
                   @add="handleWidgetGroupAdd($event, self)"
                   @end="$emit('change')">
             <div :key="groupIndex"  
-                v-for="(item, groupIndex) in self.children.column" 
+                v-for="(item, groupIndex) in col_items" 
                 class="widget-form-group__item"
                 :style="{
                   'flex-shrink':item['flex-shrink'],
@@ -55,7 +55,16 @@ export default {
     SubComponent(){
       return this.page_type[ "tabs"].sub
     },
-    
+    col_items(){
+      let idx=0
+      this.self.children.column?.forEach(x=>{
+        if(x.idx==undefined)
+          x.idx=idx
+        idx++;
+      })
+      this.self.children.column?.sort((obj1, obj2) => obj1.idx - obj2.idx)
+      return this.self.children.column
+    }
   },
   watch:{
     editableTabsValue:function(val){
@@ -106,6 +115,7 @@ export default {
       if (newIndex == 1 && newIndex > this.self.children.column.length - 1) newIndex = 0
 
       const data = this.deepClone(this.self.children.column[newIndex]);
+      
       if (!data.prop) data.prop = Date.now() + '_' + Math.ceil(Math.random() * 99999)
       
       data.span = 24

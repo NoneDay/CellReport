@@ -6,7 +6,7 @@
     :editable="context.canDraggable" 
     @edit="handleTabsEdit"> 
           <component :is="SubComponent"  :key="groupIndex"  style="height:100%" 
-                v-for="(item, groupIndex) in self.children.column"
+                v-for="(item, groupIndex) in col_items"
                   :md="item.span || 12" :name="groupIndex"
                   :xs="24" :label="item.label" 
                   :offset="item.offset || 0">
@@ -47,7 +47,16 @@ export default {
     SubComponent(){
       return this.page_type[ "tabs"].sub
     },
-    
+    col_items(){
+      let idx=0
+      this.self.children.column?.forEach(x=>{
+        if(x.idx==undefined)
+          x.idx=idx
+        idx++;
+      })
+      this.self.children.column?.sort((obj1, obj2) => obj1.idx - obj2.idx)
+      return this.self.children.column
+    }
   },
   watch:{
     editableTabsValue:function(val){
@@ -99,7 +108,7 @@ export default {
 
       const data = this.deepClone(this.self.children.column[newIndex]);
       if (!data.prop) data.prop = Date.now() + '_' + Math.ceil(Math.random() * 99999)
-      
+      data.idx=newIndex
       data.span = 24
       this.$set(this.self.children.column, newIndex, { ...data })
       this.selectWidget = this.self.children.column[newIndex]

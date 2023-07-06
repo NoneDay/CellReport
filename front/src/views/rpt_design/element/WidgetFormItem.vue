@@ -182,6 +182,7 @@ export default {
         data.style.width="100%"
         data.style.height="100%"
       }
+      data.idx=newIndex 
       data['flex-shrink']=1
       data['flex-grow']=1
       data['align-self']='auto'

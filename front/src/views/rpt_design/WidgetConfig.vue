@@ -60,6 +60,13 @@
                              placeholder="宽度"
                              ></avue-input>
           </el-form-item>
+          <el-form-item label="容器内序号"  v-if="data['idx']!=undefined">
+            <avue-input-number style="width:100%;" 
+                             v-model="data['idx']"
+                             controls-position="right"
+                             placeholder="序号"
+                             ></avue-input-number>
+          </el-form-item>
           <el-form-item label="必要时动态收缩"  v-if="data['flex-shrink']!=undefined">
             <avue-input-number style="width:100%;" 
                              v-model="data['flex-shrink']"
