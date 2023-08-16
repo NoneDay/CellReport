@@ -1,5 +1,6 @@
 <template>
   <div id="report_app" style="display:flex;flex-direction:column;height:100%" :style="{'overflow':result.defaultsetting.big_screen=='1'?'hidden':''}"> 
+    <iframe id="printIframe" style="display:none"></iframe>
     <el-dialog v-draggable v-if="pdf_output_dialogVisible" style="text-align: left;" class="report_define"
         :visible.sync="pdf_output_dialogVisible" :title="'PDF导出和打印预览'" 
             :close-on-click-modal="false"   :fullscreen="true"
@@ -13,7 +14,7 @@
           <el-button type="primary" @click="pdf_print">打印</el-button>     
         </div>
          <div id="pdf_wrapper" class="pure-u-1 pure-u-md-4-5" style="height: 100%;width: 100%;">
-            <iframe id="printIframe" style="display:none"></iframe>
+            
             <object id="pdf_output" type="application/pdf" style="height: 100%;width: 100%;">
                 <p>It appears you don't have PDF support in this web browser. <a href="#" id="download-link">Click here to download the PDF</a>.</p>
             </object>
@@ -120,7 +121,8 @@
               <el-dropdown-menu slot="dropdown">
                 <el-dropdown-item command="exceljs">小数据量（带格式）</el-dropdown-item>
                 <el-dropdown-item  command="xlsxjs">大数据量（无格式）</el-dropdown-item>
-             <!--   <el-dropdown-item  command="docx">word文档</el-dropdown-item> -->
+              <!--  <el-dropdown-item  command="backend_fast_excel">后端下载大数据量（无格式）</el-dropdown-item>
+                <el-dropdown-item  command="docx">word文档</el-dropdown-item> -->
               </el-dropdown-menu>
             </el-dropdown>
             <el-button type="primary" class='form_query_button' @click="export_pdf">PDF预览</el-button>            
@@ -223,7 +225,7 @@
 <script>
 import widgetForm from './WidgetForm'
 import {dateToString} from './utils/resultGrid2HtmlTable.js'
-import {run_one,get_pdf} from "./api/report_api"
+import {run_one,get_pdf,run_download} from "./api/report_api"
 import {convert_array_to_json,arrayToTree,seriesLoadScripts,load_css_file,watermark } from "./utils/util"
 import install_component from './install_component'
 import dyncTemplate from './element/dyncTemplate.vue'
@@ -343,15 +345,6 @@ export default {
   watch:{
   },
   methods:{
-    pdf_print(){
-      let iframe_print=document.getElementById("printIframe");
-      iframe_print.setAttribute("src",document.getElementById("pdf_output").data)
-      //兼容谷歌，不兼容ie8，效果可以自己试下（谷歌浏览器推荐使用这种，效果会比较好）
-      setTimeout(() => {
-        $("#printIframe")[0].contentWindow.print(); 
-      },500);
-      
-    },
     async paperSetting_submit(val){
       let pdf_data=await get_pdf(this.result,val)
       let datauri = URL.createObjectURL(pdf_data)
@@ -416,6 +409,18 @@ export default {
       if(_this.$refs.form){
       _this.$refs.form.validate((valid) => {
           if (valid) {
+            if(window.cellreport.form_validate)
+            {
+              let result=window.cellreport.form_validate(_this.queryForm)
+              if(typeof(result)=="string"){
+                _this.$message.error(result);
+                return false;
+              }
+              if(result==false){
+                _this.$message.error('校验没通过，请检查参数设置');
+                return false;
+              }
+            }
               run_one(_this,_this.reportName,null,loading_conf)
           } else {
             _this.$message.error('必填项目没填内容!!');
@@ -460,7 +465,16 @@ export default {
     },
     ExcelCommand(command, node,data){
       let _this=this
-      if(command=="exceljs")
+      let backend_split_page=false
+      for(let one of Object.keys( _this.name_lable_map) ){
+        if(_this.name_lable_map[one].component=="luckySheetProxy"){
+          backend_split_page =(backend_split_page || _this.result.data[one].backend_split_page)
+        }
+      }
+      if(backend_split_page){
+        run_download(this,this.result._zb_var_.file_name,'fast_excel')
+      }
+      else if(command=="exceljs")
         seriesLoadScripts('cdn/exceljs/exceljs.min.js',null,function (){
           let loadingInstance = _this.$loading({ lock: true,
           text: '正在导出',
@@ -487,18 +501,40 @@ export default {
               loadingInstance.close();
             },100);            
         })
+      else if(command=="backend_fast_excel"){
+        run_download(this,this.result._zb_var_.file_name,'fast_excel')
+      }        
       else if(command=="docx")
         seriesLoadScripts('cdn/html-to-docx/dist/html-to-docx.umd.js',null,function (){
             docx_inner_exec(_this,_this.name_lable_map)
         })
     },
+    pdf_print(){
+      let iframe_print=document.getElementById("printIframe");
+      iframe_print.setAttribute("src",document.getElementById("pdf_output").data)
+      //兼容谷歌，不兼容ie8，效果可以自己试下（谷歌浏览器推荐使用这种，效果会比较好）
+      setTimeout(() => {
+        $("#printIframe")[0].contentWindow.print(); 
+      },500);
+      
+    },
     async export_pdf(){
       let _this=this
       let pdf_data=await get_pdf(this.result)
-       _this.pdf_output_dialogVisible=true
-       let datauri = URL.createObjectURL(pdf_data)
+      if(!window.cellreport.pdf_print)
+          _this.pdf_output_dialogVisible=true
       _this.$nextTick(()=>{
-        document.getElementById("pdf_output").data =datauri
+        let datauri = URL.createObjectURL(pdf_data)
+        if(!window.cellreport.pdf_print)
+         document.getElementById("pdf_output").data =datauri
+        else{
+          // 创建iframe元素
+          let iframe = document.getElementById("printIframe")
+          iframe.src = datauri;
+          setTimeout(() => {
+            iframe.contentWindow.print();           
+          },500);
+        }
       })          
         
 

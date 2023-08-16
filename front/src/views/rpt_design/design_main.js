@@ -23,8 +23,9 @@ import website from '@/config/website';
 axios.interceptors.request.use(config => {
   const meta = (config.meta || {});
   const isToken = meta.isToken === false;
-  config.headers['needType']='json'
-  config.headers['worker_no']='14100298'
+  if(config.headers['needType']==undefined)
+    config.headers['needType']='json'
+  config.headers['worker_no']='xxxx'
   config.headers['Authorization']='Bearer d2762dbd'
   //headers中配置serialize为true开启序列化
   if (config.method === 'post' && meta.isSerialize === true) {

@@ -95,6 +95,8 @@ export default {
     }
     if(this.self.icon==undefined)
       this.$set(this.self,'icon',"img/m_pm.png")
+    if(this.self.force_sync_param==undefined)
+      this.$set(this.self,'force_sync_param',false)
   },
   name: 'widget-form-item',
   data () {

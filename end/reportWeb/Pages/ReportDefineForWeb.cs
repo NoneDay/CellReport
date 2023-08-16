@@ -111,7 +111,7 @@ namespace CellReport
         private String getQueryValue(string name)
         {
             if (httpRequest.Query.TryGetValue(name, out var ret))
-                return ret.ToString();
+                return System.Net.WebUtility.UrlDecode(ret.ToString());
             else
                 return null;
         }
@@ -126,76 +126,77 @@ namespace CellReport
                     exprfaced.addVariable(one, System.Net.WebUtility.UrlDecode(getFormValue(one)));
             }
             exprfaced.addNewScopeForScript();
-            ParamDefineDataSet pds = reportDefine.getEnv().getParamDefineDataSet();
-            
-            foreach (var row in pds.Rows)
+            try
             {
-                String param_name = row.getData("name").ToString();
-                if (row.getData("inner") != null && row.getData("inner").ToString().ToLower().Equals("true"))
-                    continue;
-                String default_value = CellReport.dataSet.DotNetDataSet.convertValue(pds.getDefaultValueForRow(row));
-                if (fixDefaultParamValueDict.ContainsKey(param_name))
-                {
-                    if (fixDefaultParamValueDict[param_name] != null)
-                        default_value = fixDefaultParamValueDict[param_name].ToString();
-                    else
-                        default_value = "";
-                    this.addParam(param_name, default_value);
-                }
-                if (resetDefaultParam != null)
-                {
-                    var t_val = resetDefaultParam?.Invoke(param_name);
-                    if (t_val != null)
-                        default_value = t_val;
-                }
-                exprfaced.addVariable("param_obj", row);
-                if (exprfaced.getVariableDefine("resetDefaultParam") != null)
-                {
-                    var t_val= exprfaced.calculate($"=resetDefaultParam('{param_name}',param_obj)", reportDefine.getEnv().getDataSetResultMap())?.ToString();
-                    if(t_val!=null)
-                        default_value = t_val;
-                }
-                if(param_name!="reportName")
-                    this.addParam(param_name, default_value);
-                if (getQueryValue(param_name)!= null)
-                    this.addParam(param_name, getQueryValue(param_name));
-                if (getFormValue(param_name) != null)
-                    this.addParam(param_name, getFormValue(param_name));
+                ParamDefineDataSet pds = reportDefine.getEnv().getParamDefineDataSet();
 
-                if (fixParamValueDict.ContainsKey(param_name))
+                foreach (var row in pds.Rows)
                 {
-                    row.setData("hide", "True");
-                    if (fixParamValueDict[param_name] != null)
-                        default_value = fixParamValueDict[param_name].ToString();
-                    else
-                        default_value = "";
-                    this.addParam(param_name, default_value);
+                    String param_name = row.getData("name").ToString();
+                    if (row.getData("inner") != null && row.getData("inner").ToString().ToLower().Equals("true"))
+                        continue;
+                    String default_value = CellReport.dataSet.DotNetDataSet.convertValue(pds.getDefaultValueForRow(row));
+                    if (fixDefaultParamValueDict.ContainsKey(param_name))
+                    {
+                        if (fixDefaultParamValueDict[param_name] != null)
+                            default_value = fixDefaultParamValueDict[param_name].ToString();
+                        else
+                            default_value = "";
+                        this.addParam(param_name, default_value);
+                    }
+                    if (resetDefaultParam != null)
+                    {
+                        var t_val = resetDefaultParam?.Invoke(param_name);
+                        if (t_val != null)
+                            default_value = t_val;
+                    }
+                    exprfaced.addVariable("param_obj", row);
+                    if (exprfaced.getVariableDefine("resetDefaultParam") != null)
+                    {
+                        var t_val = exprfaced.calculate($"=resetDefaultParam('{param_name}',param_obj)", reportDefine.getEnv().getDataSetResultMap())?.ToString();
+                        if (t_val != null)
+                            default_value = t_val;
+                    }
+                    if (param_name != "reportName")
+                        this.addParam(param_name, default_value);
+                    if (getQueryValue(param_name) != null)
+                        this.addParam(param_name, getQueryValue(param_name));
+                    if (getFormValue(param_name) != null)
+                        this.addParam(param_name, getFormValue(param_name));
+
+                    if (fixParamValueDict.ContainsKey(param_name))
+                    {
+                        row.setData("hide", "True");
+                        if (fixParamValueDict[param_name] != null)
+                            default_value = fixParamValueDict[param_name].ToString();
+                        else
+                            default_value = "";
+                        this.addParam(param_name, default_value);
+                    }
+                    if (lastSetParam != null)
+                    {
+                        default_value = paramSortedDictionary[param_name].ToString();
+                        default_value = lastSetParam(param_name);
+                        this.addParam(param_name, default_value);
+                    }
+
+                    if (exprfaced.getVariableDefine("lastSetParam") != null)
+                    {
+                        var t_val = exprfaced.calculate($"=lastSetParam('{param_name}',param_obj)", reportDefine.getEnv().getDataSetResultMap())?.ToString();
+                        if (t_val != null)
+                            this.addParam(param_name, t_val);
+                    }
                 }
-                if (lastSetParam != null)
-                {
-                    default_value = paramSortedDictionary[param_name].ToString();
-                    default_value=lastSetParam(param_name);
-                    this.addParam(param_name, default_value);
-                }
-                
-                if (exprfaced.getVariableDefine("lastSetParam") != null)
-                {
-                    var t_val = exprfaced.calculate($"=lastSetParam('{param_name}',param_obj)", reportDefine.getEnv().getDataSetResultMap())?.ToString();
-                    if (t_val != null)
-                        this.addParam(param_name, t_val);
-                }
-                //if (exprfaced.getVariableDefine("lastSetParam") != null)
-                //{
-                //    default_value = exprfaced.calculate($"=lastSetParam('{param_name}','{default_value}')")?.ToString();
-                //    this.addParam(param_name, default_value);
-                //}
             }
-            exprfaced.popCurrentScope();
+            finally
+            {
+                exprfaced.popCurrentScope();
+            }
         }
         public Exception currentException;
 
         public bool alreadyCalc = false;
-        public async Task calcReport(CellReport.exporter.MyTextWrite tw)
+        public async Task calcReport()
         {
             if (alreadyCalc)
                 return ;
@@ -208,14 +209,6 @@ namespace CellReport
             {
                 
                 Engine engine = new Engine(reportDefine);
-                //if (this.getParam("_d") != null)
-                //{
-                //    CellReport.dataSet.DataSet ds = reportDefine.getEnv().getDataSet(this.getParam("_d"));
-                //    await ds.loadDataAsync();
-                //    this.CurrentPage.Response.Write(ds.getJson());
-                //    Report = engine.getResult();
-                //    return;
-                //}
                 await engine.calcReportAsync();
                 Report = engine.getResult();
             }

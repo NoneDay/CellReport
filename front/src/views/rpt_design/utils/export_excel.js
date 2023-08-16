@@ -173,7 +173,7 @@ const http_src_pattern=/<img [^>]*src=['"]([^'"]+)[^>]*>/gi
 export  async function exceljs_inner_exec(_this,name_lable_map){
     let _this_result=_this.result
     const wb = new ExcelJS.Workbook();
-    let ws ,title,one_obj,file_name
+    let ws ,title,one_obj,file_name=_this.result._zb_var_.file_name
     let allSheetNames=new Set()
     //Object.keys( name_lable_map).forEach(one => {
     for(let one of Object.keys( name_lable_map) ){
@@ -315,7 +315,7 @@ export  async function exceljs_inner_exec(_this,name_lable_map){
           }
         }
         if(ws==undefined)
-          return
+          continue
         //while(wb.SheetNames.includes(title))
         //  title=title+one_obj.gridName
         //XLSX.utils.book_append_sheet(wb, ws, title.replace(/[\\|/|?|*|\[|\]]/,'_'))
@@ -327,7 +327,7 @@ export  async function exceljs_inner_exec(_this,name_lable_map){
   export function xlsxjs_inner_exec(_this,name_lable_map){
       const wb = XLSX.utils.book_new()
       
-      let ws ,title,one_obj,file_name
+      let ws ,title,one_obj,file_name=_this.result._zb_var_.file_name
       Object.keys( name_lable_map).forEach(one => {
           one_obj=name_lable_map[one]
           if(one_obj.component=="ele-grid"){

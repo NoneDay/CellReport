@@ -71,6 +71,15 @@ namespace reportWeb.Pages
         {
 
         }
+        private String getFormValue(string name)
+        {
+            if (!HttpContext.Request.HasFormContentType)
+                return null;
+            if (HttpContext.Request.Form.TryGetValue(name, out var ret))
+                return ret.ToString();
+            else
+                return null;
+        }
         public string FromAppendString = "";
         private String mc_report_id;
         private String tmpFileName;
@@ -84,6 +93,7 @@ namespace reportWeb.Pages
 
         protected CellReport.running.Env report_env;
         private static string g_report_content = null;
+        private string needType = "";
         public async Task Page_Load()
         {
             if (rpt_group == null)
@@ -95,17 +105,17 @@ namespace reportWeb.Pages
                 UserAgent = "";
             Regex regex = new Regex("(iPhone|iPod|Android|ios|SymbianOS)", RegexOptions.IgnoreCase);
             var isPhone = regex.IsMatch(UserAgent);
-            string needType = Request.Headers["needType"];
-            if (Request.HasFormContentType && (
-                Request.Form.Keys.Contains("__call_func") ||
-                Request.Form.Keys.Contains("__inserted") ||
-                Request.Form.Keys.Contains("__deleted"))
-                )
+            needType = Request.Headers["needType"];
+            if (Request.HasFormContentType && Request.Form.Keys.Contains("__call_func"))
                 needType = "json";
             string str_call_func = Request.Query["__call_func"].ToString();
             if (needType == "json" || !String.IsNullOrEmpty(str_call_func))
             {
                 Response.ContentType = "application/json";
+            }
+            else if (needType == "fast_excel")
+            {
+                //Response.ContentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
             }
             else
             {
@@ -126,7 +136,7 @@ namespace reportWeb.Pages
                     httpRequest = HttpContext.Request,
                     logger = logger
                 };
-
+                this.HttpContext.Response.RegisterForDispose(reportDefineForWeb);
                 //if(Request.Path != "/" + rpt_group.default_page)
                 //{
                 //    throw new Exception("非法路径！请使用run模式。当前："+ Request.Path);
@@ -153,6 +163,8 @@ namespace reportWeb.Pages
                 exprFaced.getVariableDefine("_zb_password_").value = rpt_group.zb_password;
                 exprFaced.getVariableDefine("_rpt_group_").value = rpt_group;
                 exprFaced.getVariableDefine("__page__").value = HttpContext.Request;
+                exprFaced.addVariableForRoot("_page_size_", getFormValue("_page_size_"));
+                exprFaced.addVariableForRoot("_cur_page_num_", getFormValue("_cur_page_num_"));
                 //exprFaced.getVariableDefine("_user_").value = user_dict; 
                 exprFaced.getVariableDefine("_user_").value = reportWeb.Controllers.UserController.ValidateJwtToken(HttpContext, HttpContext.Request.Cookies["access_token"]);
                 var g_var_dict = exprFaced.getVariableDefine("_g_var_").value as Dictionary<String, object>;
@@ -193,6 +205,11 @@ namespace reportWeb.Pages
 
                 //Console.WriteLine("pre_page_load:" + (DateTime.Now - start_time) / 10000 + "秒");
                 mc_report_id = reportDefineForWeb.getParamSortedString();
+                if (needType == "fast_excel")
+                {
+                    await calc_output_excel();
+                    return;
+                }
                 if (Request.Query["reportName"] == "")
                 {
 
@@ -204,14 +221,18 @@ namespace reportWeb.Pages
                 //report_env.logger.Info(mc_report_id);
                 // Console.WriteLine("output:" + (DateTime.Now - start_time) / 10000 + "秒");
                 Response.Body.Flush();
-                this.HttpContext.Response.RegisterForDispose(reportDefineForWeb);
+
             }
             catch (System.Exception ex)
             {
-                //while (ex.InnerException != null)
-                //    ex = ex.InnerException;
-                output_expection(ex, logger, report_env);
-                throw ex;
+                string message = output_expection(ex, logger, report_env);
+                // 设置响应头
+                await Response.WriteAsync(JsonSerializer.Serialize(new
+                {
+                    errcode = 1,
+                    message = message
+                }, CellReport.running.Logger.getJsonOption()));
+                //throw ex;
             }
             finally
             {
@@ -220,7 +241,7 @@ namespace reportWeb.Pages
             }
         }
 
-        internal static void output_expection(Exception e, CellReport.running.Logger logger, CellReport.running.Env report_env, HttpRequest Request = null)
+        internal static string output_expection(Exception e, CellReport.running.Logger logger, CellReport.running.Env report_env, HttpRequest Request = null)
         {
             StringBuilder sb = new("-----------------------------------\n");
 
@@ -260,17 +281,25 @@ namespace reportWeb.Pages
                             sb.Append("\t" + kv.Key + "='" + kv.Value + "'");
                         }
                 }
-                sb.AppendLine().AppendLine("疑似出错单元格：" + curCellName);
+                //sb.AppendLine().AppendLine("疑似出错单元格：" + curCellName);
             }
+            sb.AppendLine();
             System.Exception inner_e = e;
+            System.Exception last_e = e;
+            int cnt = 1;
             while (inner_e != null)
             {
-                sb.Append("【").Append(inner_e.Message).AppendLine("】");
+                last_e = inner_e;
+                sb.Append(string.Join("\t", new string[cnt])).Append(inner_e.Message).AppendLine("");
                 inner_e = inner_e.InnerException;
+                cnt++;
             }
+            if (last_e is NullReferenceException)
+                logger.Error(last_e.StackTrace.ToString());
             logger.Error(sb.ToString());
+            return sb.ToString();
         }
-
+        public virtual void output_last_exception(System.Exception last_e, CellReport.running.Logger logger) { }
 
         private void parse_fresh_ds()
         {
@@ -285,7 +314,7 @@ namespace reportWeb.Pages
             if (!String.IsNullOrEmpty(_fresh_ds))
             {
                 var exprFaced = report_env.getExprFaced();
-                exprFaced.addVariable("_fresh_ds", _fresh_ds);
+                exprFaced.addVariable("_fresh_ds", _fresh_ds.ToString());
                 foreach (var item in JsonDocument.Parse(_fresh_ds).RootElement.EnumerateArray())
                 {
                     var one = item.GetString().Split(":");
@@ -351,7 +380,7 @@ namespace reportWeb.Pages
 
                 await Response.Body.FlushAsync();
                 //await Response.WriteAsync(",\"footer2\":");
-                //await Response.WriteAsync(System.Text.Json.JsonSerializer.Serialize(report_env.TemplateGet("footer2"), report_env.getJsonOption()));
+                //await Response.WriteAsync(System.Text.Json.JsonSerializer.Serialize(report_env.TemplateGet("footer2"), CellReport.running.Logger.getJsonOption()));
                 var exprFaced = report_env.getExprFaced();
                 if (this.myCache != null)
                 {
@@ -359,20 +388,20 @@ namespace reportWeb.Pages
                          + "\n刷新标记是：" + this.myCache.fresh_flag
                         + "\n刷新标记取得时间:" + this.myCache.global_time.ToString("yyyy-MM-dd HH:mm:ss fff")
                          + "\n本报表计算时间：" + this.myCache.fresh_time.ToString("yyyy-MM-dd HH:mm:ss fff");
-                    this.tips = System.Text.Json.JsonSerializer.Serialize(this.tips, report_env.getJsonOption());
+                    this.tips = System.Text.Json.JsonSerializer.Serialize(this.tips, CellReport.running.Logger.getJsonOption());
                     await Response.WriteAsync($",\"cache_key\":\"{myCache.cacheKey(tmpFileName)}\" ,\"tips\":{this.tips}");
                 }
                 await Response.WriteAsync(",\"_zb_var_\":");
                 if (exprFaced.getVariable("_zb_var_") != null)
                 {
-                    await Response.WriteAsync(JsonSerializer.Serialize(exprFaced.getVariable("_zb_var_"), report_env.getJsonOption()));
+                    await Response.WriteAsync(JsonSerializer.Serialize(exprFaced.getVariable("_zb_var_"), CellReport.running.Logger.getJsonOption()));
                 }
                 else
                 {
                     await Response.WriteAsync("{}");
                 }
                 await Response.WriteAsync(",\"notebook\":");
-                await Response.WriteAsync(System.Text.Json.JsonSerializer.Serialize(report_env.TemplateGet("notebook"), report_env.getJsonOption()));
+                await Response.WriteAsync(System.Text.Json.JsonSerializer.Serialize(report_env.TemplateGet("notebook"), CellReport.running.Logger.getJsonOption()));
 
                 await Response.WriteAsync("\n}");
             }
@@ -418,7 +447,7 @@ namespace reportWeb.Pages
                     //if (!String.IsNullOrEmpty(str_call_func))
                     //{
                     //    Object result = CellReport.core.expr.ExprHelper.calc_client_func(report_env, str_call_func);
-                    //    htmlWrite.Write(JsonSerializer.Serialize(result, report_env.getJsonOption()));
+                    //    htmlWrite.Write(JsonSerializer.Serialize(result, CellReport.running.Logger.getJsonOption()));
                     //}
                     if (Request.HasFormContentType && (Request.Form.ContainsKey("__call_func")))
                     {
@@ -426,7 +455,7 @@ namespace reportWeb.Pages
                         var func_json = JsonDocument.Parse(__call_func).RootElement;
                         Object result = await CellReport.core.expr.ExprHelper.calc_client_func(report_env, func_json);
 
-                        htmlWrite.Write(JsonSerializer.Serialize(result, report_env.getJsonOption()));
+                        htmlWrite.Write(JsonSerializer.Serialize(result, CellReport.running.Logger.getJsonOption()));
                     }
                     else
                     {
@@ -434,16 +463,16 @@ namespace reportWeb.Pages
                         htmlWrite.Write(",\"_zb_var_\":");
                         if (exprFaced.getVariable("_zb_var_") != null)
                         {
-                            htmlWrite.Write(JsonSerializer.Serialize(exprFaced.getVariable("_zb_var_"), report_env.getJsonOption()));
+                            htmlWrite.Write(JsonSerializer.Serialize(exprFaced.getVariable("_zb_var_"), CellReport.running.Logger.getJsonOption()));
                         }
                         else
                         {
                             htmlWrite.Write("{}");
                         }
                         htmlWrite.Write(",\"notebook\":");
-                        htmlWrite.Write(System.Text.Json.JsonSerializer.Serialize(report_env.TemplateGet("notebook"), report_env.getJsonOption()));
+                        htmlWrite.Write(System.Text.Json.JsonSerializer.Serialize(report_env.TemplateGet("notebook"), CellReport.running.Logger.getJsonOption()));
                         //htmlWrite.Write(",\"footer2\":");
-                        //htmlWrite.Write(System.Text.Json.JsonSerializer.Serialize(report_env.TemplateGet("footer2"), report_env.getJsonOption()));
+                        //htmlWrite.Write(System.Text.Json.JsonSerializer.Serialize(report_env.TemplateGet("footer2"), CellReport.running.Logger.getJsonOption()));
                         htmlWrite.Write("\n}");
                     }
                     await htmlWrite.FlushAsync();
@@ -452,10 +481,31 @@ namespace reportWeb.Pages
                 }
             }
         }
+        private async Task calc_output_excel()
+        {
+            this.reportDefineForWeb.CurrentReportDefine.getGridList().ForEach(x => (x as CellReport.cell.ReportGrid).backend_split_page = false);
+            await this.reportDefineForWeb.calcReport();//命令格式：(g表格|d数据集|u修改数据)，
+            if (reportDefineForWeb.Report == null && reportDefineForWeb.currentException != null)
+            {
+                throw reportDefineForWeb.currentException;
+            }
+            long start = DateTime.Now.Ticks;
+            string fileName = Guid.NewGuid().ToString() + ".xlsx"; // 保存文件的路径
+            other.Export.Excel(reportDefineForWeb.Report, Path.Combine(this.WebHostEnvironment.WebRootPath, "../static/tmp_files", fileName));
+            logger.Debug("生成文件用时：" + (DateTime.Now.Ticks - start) / 10000000.0 + "秒");
 
+            Response.ContentType = "application/json";
+            // 设置响应头
+            await Response.WriteAsJsonAsync(new
+            {
+                errcode = 0,
+                url = Path.Combine("../static/tmp_files", fileName)
+            });
+
+        }
         private async Task calc_output(MyTextWrite htmlWrite)
         {
-            await this.reportDefineForWeb.calcReport(htmlWrite);//命令格式：(g表格|d数据集|u修改数据)，
+            await this.reportDefineForWeb.calcReport();//命令格式：(g表格|d数据集|u修改数据)，
             if (reportDefineForWeb.Report == null)
                 if (reportDefineForWeb.currentException != null)
                 {

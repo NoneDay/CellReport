@@ -46,6 +46,33 @@ function download_img(url){
 	    return {'errcode':-1,'message':`不是图片类型：${ex.Message}` };
 	}
 }
+var _bsp_dict_={
+    SqlClient:
+    {
+        total:"select count(*) from (\r\n  ${current_sql} \r\n ) tbl",
+        sp_sql:"select * from ( \r\n ${current_sql} \r\n ) tbl\r\n ORDER BY (SELECT 0) OFFSET ${(_cur_page_num_-1) * _page_size_ } ROWS FETCH NEXT ${_page_size_} ROWS ONLY",
+        condition:[
+            {
+                total_lines:1000,
+                sp_sql:"select * from ( \r\n ${current_sql} \r\n ) tbl\r\n ORDER BY (SELECT 0) OFFSET ${(_cur_page_num_-1) * _page_size_ } ROWS FETCH NEXT ${_page_size_} ROWS ONLY",
+            },
+            {
+                total_lines:10000,
+                sp_sql:"select * from ( \r\n ${current_sql} \r\n ) tbl\r\n ORDER BY (SELECT 0) OFFSET ${(_cur_page_num_-1) * _page_size_ } ROWS FETCH NEXT ${_page_size_} ROWS ONLY",
+            },
+        ]
+    },
+	"MySql":
+	{
+        total:"select count(*) from (\r\n  ${current_sql} \r\n ) as tbl",
+        sp_sql:"select * from ( \r\n ${current_sql} \r\n ) as tbl\r\n ORDER BY (SELECT 0)  limit  ${_page_size_} OFFSET ${(_cur_page_num_-1) * _page_size_ }",
+    },
+	"Microsoft.Data.Sqlite":
+	{
+        total:"select count(*) from (\r\n  ${current_sql} \r\n ) as tbl",
+        sp_sql:"select * from ( \r\n ${current_sql} \r\n ) as tbl\r\n ORDER BY (SELECT 0)  limit  ${_page_size_} OFFSET ${(_cur_page_num_-1) * _page_size_ }",
+    },
+};
 		]]>
 	</before_exec_script>
 	<footer2>
@@ -558,6 +585,7 @@ function 字典_${para.table}(){
 		String, System.String,
 		DateTime, System.DateTime,
 		Date, System.DateOnly,
+		TimeSpan,System.TimeSpan,
 		DateTimeOffset, System.DateTimeOffset,
 		DateTimeKind, System.DateTimeKind,
 		Double, System.Double,
@@ -570,5 +598,8 @@ function 字典_${para.table}(){
 		Exception,System.Exception,
 		Task,System.Threading.Tasks.Task,
 		RandomNumber,System.Security.Cryptography.RandomNumberGenerator,
+		Direction,CellReport.cell.Direction
+		CellProperty,CellReport.cell.Property
+		CellRange,CellReport.cell.CellRange
 	</type_var_def>
 </template>

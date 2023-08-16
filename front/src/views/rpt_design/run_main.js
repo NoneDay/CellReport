@@ -19,9 +19,10 @@ import website from '@/config/website';
 axios.interceptors.request.use(config => {
   const meta = (config.meta || {});
   const isToken = meta.isToken === false;
-  config.headers['needType']='json'
-  //config.headers['worker_no']='14100298'
-  config.headers['Authorization']='Bearer d2762dbd'
+  if(config.headers['needType']==undefined)
+    config.headers['needType']='json'
+  if(config.headers['Authorization']==undefined)
+    config.headers['Authorization']='Bearer d2762dbd'
   if(window.__real_referer)
     config.headers['realReferer']=window.__real_referer
   if(window.__Authorization)

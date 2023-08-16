@@ -211,7 +211,7 @@ export default {
         queryForm:{},
         queryForm_show:{},
         exec_log:"",
-        result:{},
+        result:{dataSet:{},data:{}},
         mode:"preview",
         last_js_cript:"",
         clickedEle:{},

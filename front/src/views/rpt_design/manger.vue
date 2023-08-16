@@ -1,12 +1,12 @@
 <template>
 <el-tabs v-model="tab_value" value="first" v-if="ready" style="overflow: hidden; height: 100%; width: 100%">
-    <el-tab-pane label="报表组管理" name="first">
-        <avue-crud :data="data.grp_register" :option="option_grp()" v-model="grp_obj"
+    <el-tab-pane label="报表组管理" name="first" style="height:100%;display: flex;" ref="manager">
+        <avue-crud :data="data.grp_register" :option="option_grp()" v-model="grp_obj" style="display: flex;flex-direction: column;height: 100%; "
             @row-save="grp_rowSave"  @row-update="grp_rowUpdate" @row-del="grp_rowDelete"
         >
         <template slot="db_connection_listForm">
             <avue-crud :option="db_connection_listOption()" :data="grp_obj.db_connection_list"  v-model="conn_obj"
-                @row-save="conn_rowSave"  @row-update="conn_rowUpdate" @row-del="conn_rowDelete"
+                @row-save="conn_rowSave"  @row-update="conn_rowUpdate" @row-del="conn_rowDelete"  
             >
             <template  slot="menuForm">
                 <el-button type="primary" icon="el-icon-check" size="small" plain @click.stop="test_link(conn_obj)">测试连接</el-button>
@@ -20,6 +20,7 @@
             <el-button type="primary" icon="el-icon-check" size="small" plain @click.stop="handleClone(scope.row,scope.index)">克隆</el-button>
         </template>
         </avue-crud>
+        
     </el-tab-pane>
     <el-tab-pane label="登陆验证管理" name="second" v-if="userInfo.username=='admin'" style=" height: 100%; width: 100%" >
         <div style="display:flex;height:400px;flex-direction: column;">
@@ -192,10 +193,15 @@ export default {
                 });
             
       },
-        option_grp(){ return {
+        option_grp(){ 
+            let clientHeight=400
+            if(this.$refs.manager){
+                clientHeight=this.$refs.manager.$el.clientHeight
+            }
+            return {
             "addBtn": this.userInfo.username=='admin',
             "editBtn": "true",
-            
+            height:clientHeight,
             "delBtn": this.userInfo.username=='admin',
             "saveBtn": "true",
             "column": [

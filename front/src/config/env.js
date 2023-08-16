@@ -15,7 +15,7 @@ if (env.NODE_ENV == 'development') {
 } else if (env.NODE_ENV == 'test') {
     baseUrl = `/aps`; //测试环境地址
 }
-let codeUrl = `${baseUrl}/VerifyCode`
+let codeUrl = `${baseUrl}/user/VerifyCodeImg`
 export {
     baseUrl,
     iconfontUrl,

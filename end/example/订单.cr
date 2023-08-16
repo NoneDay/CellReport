@@ -22,7 +22,7 @@ ORDER BY [订单明细].[订单ID] limit 100</dataSet>
     </param>
   </params>
   <AllGrids>
-    <grid append="cellSpacing=0 cellPadding=0  style=&quot;TABLE-LAYOUT: fixed; MARGIN-TOP: 0px; FONT-SIZE: 11px; Z-INDEX: -5; MARGIN-LEFT: 0px;   BORDER-COLLAPSE: collapse;&quot;" optimize="True" name="main" fix_rows="-1" fix_cols="-1" title="main" CanShow_expr="" fields="[&quot;订单ID&quot;,&quot;产品ID&quot;,&quot;产品名称&quot;,&quot;单价&quot;,&quot;数量&quot;,&quot;折扣&quot;,&quot;总价pdf输出时，单元格行后分页(true)&quot;,&quot;&quot;,&quot;0&quot;,&quot;key&quot;]" is_large="0" auto_line_height="true">
+    <grid append="cellSpacing=0 cellPadding=0  style=&quot;TABLE-LAYOUT: fixed; MARGIN-TOP: 0px; FONT-SIZE: 11px; Z-INDEX: -5; MARGIN-LEFT: 0px;   BORDER-COLLAPSE: collapse;&quot;" optimize="True" name="main" fix_rows="-1" fix_cols="-1" title="main" CanShow_expr="" fields="[&quot;订单ID&quot;,&quot;产品ID&quot;,&quot;产品名称&quot;,&quot;单价&quot;,&quot;数量&quot;,&quot;折扣&quot;,&quot;总价pdf输出时，单元格行后分页(true)&quot;,&quot;&quot;,&quot;0&quot;,&quot;key&quot;]" is_large="0" auto_line_height="true" backend_split_page="true" page_size="20">
       <columns>
         <column name="a" width="247" fixed="False" />
         <column name="b" width="147" fixed="False" />
@@ -219,7 +219,8 @@ ORDER BY [订单明细].[订单ID] limit 100</dataSet>
                         "flex-shrink": 1,
                         "flex-grow": 1,
                         "align-self": "auto",
-                        "flex-margin": "5px"
+                        "flex-margin": "5px",
+                        "idx": 0
                     },
                     {
                         "type": "dv_scroll_ranking_board",
@@ -259,7 +260,8 @@ ORDER BY [订单明细].[订单ID] limit 100</dataSet>
                         "flex-shrink": 1,
                         "flex-grow": 1,
                         "align-self": "auto",
-                        "flex-margin": "5px"
+                        "flex-margin": "5px",
+                        "idx": 1
                     },
                     {
                         "type": "text",
@@ -297,7 +299,8 @@ ORDER BY [订单明细].[订单ID] limit 100</dataSet>
                         "flex-grow": 1,
                         "align-self": "auto",
                         "flex-margin": "5px",
-                        "background-color": "rgba(255, 140, 0, 1)"
+                        "background-color": "rgba(255, 140, 0, 1)",
+                        "idx": 2
                     }
                 ]
             },
@@ -320,15 +323,9 @@ ORDER BY [订单明细].[订单ID] limit 100</dataSet>
         "moved": false
     }
 ]</layout>
-  <includeFiles />
-  <datasources>
-    <dataSource name="dfsd">Dsn=testDb</dataSource>
-  </datasources>
-  <macros />
-  <pageProperty Orientation="True" />
   <notebook />
   <template>
-    <BACKGROUND-COLOR />
+    <BACKGROUND-COLOR>transparent</BACKGROUND-COLOR>
     <COLOR>black</COLOR>
     <backgroundImage />
     <big_screen>0</big_screen>
@@ -452,10 +449,6 @@ if(cur_rpt){
     <row_col_gutter>10</row_col_gutter>
   </template>
   <conn_list>testsqlite</conn_list>
-  <script />
-  <cache time="10" />
-  <bi_dataSets />
-  <click_refresh_grids />
   <layout_hidden>[
     {
         "x": 0,
@@ -496,6 +489,16 @@ if(cur_rpt){
         "moved": false
     }
 ]</layout_hidden>
+  <includeFiles />
+  <datasources>
+    <dataSource name="dfsd">Dsn=testDb</dataSource>
+  </datasources>
+  <macros />
+  <pageProperty Orientation="True" />
+  <script />
+  <cache time="10" />
+  <bi_dataSets />
+  <click_refresh_grids />
   <inner_script>    function 清单_订单明细(p){
        var key_list= [{"parent_key":"订单ID","self_key":"订单ID"}];
        trace(p);

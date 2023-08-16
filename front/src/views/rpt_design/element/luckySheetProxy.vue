@@ -22,9 +22,8 @@
         :page-size.sync="self.page_size" 
         :page-sizes="JSON.parse(self.page_sizes)"
         :layout="context.crisMobile?'total, sizes, prev, next':'total, sizes, prev, pager, next, jumper'" 
-        
         hide-on-single-page
-        :total="TABLEOBJ.total()">
+        :total="cur_result.backend_split_page? cur_result.backend_total_line: TABLEOBJ.total()">
       </el-pagination>
       
     </template>
@@ -94,6 +93,7 @@ import dyncTemplate from './dyncTemplate.vue'
 import {designGrid2LuckySheet,numToString,getRangeByText,resultGrid2LuckySheet,output_largeGrid,convert_array_to_json} from '../utils/util.js'
 import   ResultGrid2HtmlTable2   from '../utils/resultGrid2HtmlTable.js'
 import mixins from "./mixins"
+
 export default {
  name: "luckySheetProxy",
   mixins:[mixins],
@@ -123,6 +123,10 @@ export default {
     cur_grid(){
       return this.context.report.AllGrids?.grid?.find(a=>a._name==this.gridName)
     },
+    cur_result(){
+      return this.context.report_result.data[this.gridName]
+    },
+    
     datasource(){
       return "表格:"+this.gridName
     }
@@ -151,6 +155,13 @@ export default {
       }
     },
     cur_page(){
+      if(this.cur_result.backend_split_page){
+        this.context.queryForm._fresh_ds=JSON.stringify(['表格:'+this.gridName]) 
+        this.context.queryForm._cur_page_num_=this.cur_page
+        this.context.queryForm._page_size_=this.self.page_size
+        this.context.rpt_this.submit()
+        return
+      }
       this.grid_sort_action()
     },
     "self.page_size"(){
@@ -160,7 +171,13 @@ export default {
       if(!this.self.page_size){
         this.self.page_size=20
       }
-      this.cur_page=1   
+      if(this.cur_result.backend_split_page){
+        this.context.queryForm._fresh_ds=JSON.stringify(['表格:'+this.gridName]) 
+        this.context.queryForm._cur_page_num_=1
+        this.context.queryForm._page_size_=this.self.page_size
+        this.context.rpt_this.submit()
+        return
+      }
       this.grid_sort_action()   
     },
     //"context.report":function(){this.buildDisplayData() },
@@ -180,6 +197,13 @@ export default {
     
   },
   mounted(){
+    if(this.context.mode!='design'){
+      if(this.cur_result.backend_split_page){
+        //this.cur_page=this.cur_result.cur_page??1
+        //this.self.page_size=this.cur_result.page_size??20
+      }
+    }
+
     let _this=this
     setTimeout(function(){//如果不加，group中新增报表的时候会导致名字混乱
       _this.self.gridName=_this.gridName
@@ -264,7 +288,7 @@ export default {
           if(this.TABLEOBJ==null)
             this.$set(this,'TABLEOBJ',new ResultGrid2HtmlTable2(cur_grid,this.$el,this.self,_this.context.report_result.defaultsetting))
           this.pager_height=this.TABLEOBJ!=undefined && (parseInt(this.self.page_size)<=this.TABLEOBJ.total() )?32:0
-          this.html_table=this.TABLEOBJ.show(this.cur_page,this.self.page_size)
+          this.html_table=this.TABLEOBJ.show(this.cur_result.backend_split_page?1:this.cur_page,this.self.page_size)
           
     
           //test.show(1,20)
@@ -657,7 +681,7 @@ export default {
                       updated:lucky_updated,
                       cellUpdateBefore:cellUpdateBefore,
                       rangePasteBefore:rangePasteBefore,
-                      cellRenderAfter:cellRenderBefore
+                      cellRenderAfter:cellRenderBefore,
                       },
                     ${append}
               })

@@ -601,17 +601,17 @@ function luckySheet2ReportGrid(sheet_window,DefaultCssSetting){
     let row_num=Math.min(max_r+4, sheet.visibledatarow.length)
     let col_num=Math.min(max_c+4,sheet.visibledatacolumn.length)
     for(let i=0;i<row_num;i++){
-        rows[i]={_name:i +1,_height:
+        rows[i]={...sheet.cr_rows[i],... {_name:i +1,_height:
             (sheet.config && sheet.config.rowlen && sheet.config && sheet.config.rowlen[i.toString()]!=undefined)?
             sheet.config.rowlen[i.toString()]:sheet.defaultRowHeight,
-            _fixed:"False" }
+            _fixed:"False" }}
     }
     let columns=[]
     for(let i=0;i<col_num;i++){
-        columns[i]={_name:numToString(parseInt(i)+1).toLowerCase() ,_width:
+        columns[i]={...sheet.cr_columns[i],...{_name:numToString(parseInt(i)+1).toLowerCase() ,_width:
             (sheet.config && sheet.config.columnlen && sheet.config && sheet.config.columnlen[i.toString()]!=undefined)?     
             sheet.config.columnlen[i.toString()] :sheet.defaultColWidth
-             ,_fixed:"False" }
+             ,_fixed:"False" }}
     }
     let fix_rows=sheet.freezen?.horizontal?.freezenhorizontaldata[1]
     let fix_cols=sheet.freezen?.vertical?.freezenverticaldata[1]
@@ -637,7 +637,8 @@ function designGrid2LuckySheet(grid,setting,DefaultCssSetting){
     let borderInfo=[]
     let rowlen={}
     let frozen_row_focus=-1, frozen_column_focus=-1
-    
+    if(grid.rows==undefined)    grid.rows={row:Enumerable.range(1,10).select(x=> {return {_name:x,_height:25,_fixed:"True"}}).toArray()}
+    if(grid.columns==undefined)    grid.columns={column:Enumerable.range(0,10).select(x=> {return {_name:'abcdefghijklmn'[x],_width:75,_fixed:"False"}}).toArray()}
     if(grid.rows && grid.rows.row)
     grid.rows.row.forEach(one => {
         rowlen[(parseInt(one._name)-1).toString()]=parseInt(one._height)
@@ -739,6 +740,7 @@ function designGrid2LuckySheet(grid,setting,DefaultCssSetting){
             push_border('_BORDER-BOTTOM')
         }
     });
+    
     return {
         "name": grid._name, //工作表名称
         "color": "", //工作表颜色
@@ -749,7 +751,7 @@ function designGrid2LuckySheet(grid,setting,DefaultCssSetting){
         "row": (grid.rows && grid.rows.row) ? grid.rows.row.length:10, //行数
         "column": (grid.columns && grid.columns.column) ? grid.columns.column.length:10, //列数
         "defaultRowHeight": 25, //自定义行高
-        "defaultColWidth": 73, //自定义列宽
+        "defaultColWidth": 75, //自定义列宽
         "celldata": celldata, //初始化使用的单元格数据
         "config": {
             "merge":merge, //合并单元格
@@ -761,6 +763,8 @@ function designGrid2LuckySheet(grid,setting,DefaultCssSetting){
             "authority":{}, //工作表保护
             
         },
+        "cr_rows":grid.rows.row,
+        "cr_columns":grid.columns.column,
         enableAddBackTop:false,enableAddRow:false,
 		sheetFormulaBar:false,
         "scrollLeft": 0, //左右滚动条位置

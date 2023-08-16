@@ -1,7 +1,7 @@
 import x2js from 'x2js' 
 const x2jsone=new x2js(); //实例
 import loading from "@/util/loading"
-import {request} from 'axios'
+import axios, {request} from 'axios'
 import {load_css_js} from '../utils/util'
 let baseUrl=""
 //import { baseUrl } from '@/config/env'; 
@@ -37,7 +37,7 @@ export function get_pdf(report_obj,paperSetting) {
     if(window.location.pathname.endsWith("run.html"))
         run_url=`${baseUrl}/report5/pdf`
     else
-        run_url=`${baseUrl}/pdf`
+        run_url=`pdf`
     return request({
         headers: {
             'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
@@ -206,6 +206,8 @@ export async function preview_one(_this,createFormParam=false,param_name=null) {
         ,withCredentials: true,noloading:true
         }).then(response_data => {
             delete _this.queryForm._fresh_ds
+            delete _this.queryForm._cur_page_num_
+            delete _this.queryForm._page_size_
             if(response_data.errcode==1){
                 _this.$notify({title: '提示',message: response_data.message,type: 'error',duration:0});
                 return
@@ -213,6 +215,9 @@ export async function preview_one(_this,createFormParam=false,param_name=null) {
             _this.$set(_this,'previewFormParam',response_data)            
             Object.assign(_this.result,response_data)
             console.info( _this.result)
+            _this.result.fresh_dataset=Enumerable.from( Object.keys(response_data.dataSet??{})).select(x=>"数据集:"+x).toArray().join(",")
+            _this.result.fresh_report=Enumerable.from( Object.keys(response_data.data??{})).select(x=>"表格:"+x).toArray().join(",")
+    
             response_data.form.forEach(ele=>{
                 let val=ele.value
                 if(ele.data_type=='date' && val!="")
@@ -295,8 +300,42 @@ export async function preview_one(_this,createFormParam=false,param_name=null) {
         _this.$notify({title: '提示',message: error,type: 'error',duration:0});
     })
 }
+export function run_download(_this,file_name="",needType="excel") {
+    let loading_conf={type: 'loading',options: {fullscreen: true,lock: true,text: '正在生成文件，请稍候...',spinner: 'el-icon-loading',background: 'rgba(0, 0, 0, 0.8)'}}
+    let data=new FormData();
+    Object.entries({..._this.queryForm,reportName:_this.reportName}).forEach(kv=>{
+        data.append(kv[0], kv[1]??'')    
+    })
+    if(window.location.pathname.endsWith("run.html"))
+        _this.in_exec_url.run_url=`${baseUrl}/report5/run${_this.grpId==0?"":":"+_this.grpId}?`+_this.queryPara
+    else
+        _this.in_exec_url.run_url=window.location.href
+    loading.show(loading_conf)
+    request({
+        method: 'post',
+        url:_this.in_exec_url.run_url,
+        data,headers:{needType},
+        withCredentials: true
+      }).then(response => {
+        console.info(response)
+        const url = _this.in_exec_url.run_url.split("?")[0]+"/"+response.url;
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', file_name??"filename.xlsx");
+        link.style.display = 'none';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+        loading.hide(loading_conf)
+    })
+    .catch(error => {
+        _this.$notify({title: '文件下载失败：',message: error,duration: 0});
+        loading.hide(loading_conf)
+    });        
+}
 const conf_loading_conf={type: 'loading',options: {fullscreen: true,lock: true,text: '正在载入...',spinner: 'el-icon-loading',background: 'rgba(0, 0, 0, 0.8)'}}
-export function run_one(_this,reportFilePath,_param_name_=null,loading_conf=null) {
+export function run_one(_this,reportFilePath,_param_name_=null,loading_conf=null,needType="json") {
     if(loading_conf==null)
         loading_conf=conf_loading_conf
     let data=new FormData();
@@ -304,7 +343,7 @@ export function run_one(_this,reportFilePath,_param_name_=null,loading_conf=null
         data.append(kv[0], kv[1]??'')    
     })
     let _fresh_ds=_this.queryForm._fresh_ds
-    loading.show(loading_conf)
+    
     data.append("reportName", reportFilePath)
     data.append("_createFormParam", window.cellreport.exec_num==0)
     window.cellreport.exec_num++
@@ -315,11 +354,12 @@ export function run_one(_this,reportFilePath,_param_name_=null,loading_conf=null
         _this.in_exec_url.run_url=`${baseUrl}/report5/run${_this.grpId==0?"":":"+_this.grpId}?`+_this.queryPara
     else
         _this.in_exec_url.run_url=window.location.href
+    loading.show(loading_conf)
     request({
       method: 'post',
       url:_this.in_exec_url.run_url,
-      data
-      ,withCredentials: true
+      data,
+      withCredentials: true
     }).then(response_data => {
         if(_this.reportName!=reportFilePath){
             for(let k in _this.queryForm)
@@ -329,10 +369,13 @@ export function run_one(_this,reportFilePath,_param_name_=null,loading_conf=null
             _this.allElementSet.clear()
         }
         delete _this.queryForm._fresh_ds
+        delete _this.queryForm._cur_page_num_
+        delete _this.queryForm._page_size_
         _this.executed =true
         if(response_data.errcode && response_data.errcode ==1){
-        _this.$notify({title: '提示',message: response_data.message,duration: 0});
-        return;
+            _this.$notify({title: '提示',message: response_data.message,duration: 0});
+            loading.hide(loading_conf)
+            return;
         }
         if(response_data.zb_var) //兼容老写法
             response_data._zb_var_=response_data.zb_var

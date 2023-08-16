@@ -290,7 +290,7 @@ export default {
                 confirmButtonText: '确定',
                 cancelButtonText: '取消',
                 inputPattern:['目录','统计报表'].includes(command)?  /^[a-zA-Z_0-9\u4e00-\u9fa5]*$/ : /.*/,
-                inputValue:"ds"
+                inputValue:command=='定位'?'':"ds"
             })
             .then( async ({ value }) => {
                 if(command=="目录"){
@@ -339,7 +339,10 @@ export default {
                         save_one({reportName:reportName,
                                     dataSets:{dataSet:[]}
                                     ,params:{param:[]}
-                                    ,AllGrids:{grid:[{_name:"main",_title:"main" }]}
+                                    ,AllGrids:{grid:[{_name:"main",_title:"main" ,
+                                    rows:{row:Enumerable.range(1,10).select(x=> {return {_name:x,_height:25,_fixed:"True"}}).toArray()},
+                                    columns:{column:Enumerable.range(0,10).select(x=> {return {_name:'abcdefghijklmn'[x],_width:75,_fixed:"False"}}).toArray()}
+                                }]}
                             })
                     }
                     //this.cur_grp.loc_path.push(row.FileName)

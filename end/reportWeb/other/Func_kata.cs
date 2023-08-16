@@ -38,7 +38,15 @@ namespace CellReport.function
                 throw new CellReport.core.ReportRuntimeException("kata至少需要一个参数！");
             object expr = args[0];
             Object ret_obj = calcExpr(expr);
-            DatasourceStruct ds_struct = (DatasourceStruct)(getEnv().getDataSource(ret_obj.ToString()));
+            DatasourceStruct ds_struct;
+            if (ret_obj is CR_Object cr_obj)
+            {
+                ds_struct = new();
+                ds_struct.ds_link = cr_obj["db_link"].ToString();
+                ds_struct.ds_type = cr_obj["ds_type"].ToString();
+            }
+            else
+                ds_struct = (DatasourceStruct)(getEnv().getDataSource(ret_obj.ToString()));
             if (ds_struct == null)
                 throw new core.ReportRuntimeException($"没有找到数据源：【{ret_obj}】，查看报表组和数据源名称是否正确。");
             var ds_type = ds_struct.ds_type;

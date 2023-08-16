@@ -679,6 +679,10 @@ innerReport(); //设计好的报表页面选中有关单元格，复制粘贴到
         if(ds.url_param && Array.isArray(ds.url_param)==false){
             ds.url_param=[ds.url_param]
         }
+        if(ds._type=='sql' ){
+            //if(ds._back_split_page==undefined) this.$set(ds,'_back_split_page',false)
+            if(ds._FilterZero==undefined) this.$set(ds,'_FilterZero',false)
+        }
         this.action_target=ds
         //if(this.action_target.__text)this.action_target.__text=this.action_target.__text.replaceAll("\r",'')
     },

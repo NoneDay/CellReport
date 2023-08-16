@@ -21,6 +21,7 @@
   <ItemGroup>
     <PackageReference Include="Antlr3.Runtime" Version="3.5.2-rc1" />
     <PackageReference Include="CSRedisCore" Version="3.6.6" />
+    <PackageReference Include="EPPlus" Version="6.2.7" />
 	<PackageReference Include="itext7" Version="7.2.1" />
 	<PackageReference Include="itext7.pdfhtml" Version="4.0.1" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="6.0.0" />
@@ -33,7 +34,7 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.IO.RecyclableMemoryStream" Version="2.2.0" />
+    <PackageReference Include="Microsoft.IO.RecyclableMemoryStream" Version="2.3.2" />
     <PackageReference Include="MySql.Data" Version="8.0.30">
       <TreatAsUsed>true</TreatAsUsed>
     </PackageReference>
@@ -60,6 +61,7 @@
     <Reference Include="PolarDB.PolarDBClient">
       <HintPath>..\a_new_lib\netstandard2.0\PolarDB.PolarDBClient.dll</HintPath>
     </Reference>
+	  <PackageReference Include="System.Management" Version="7.0.2" />
   </ItemGroup>
 
   <ItemGroup>

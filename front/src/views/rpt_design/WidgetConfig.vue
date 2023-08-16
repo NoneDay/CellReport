@@ -284,8 +284,6 @@ export default {
       return ret
     },
     getComponent() {
-      
-
       this.tab_val=!this.data.type.startsWith('layout')?'0':'1'
       if(this.layout_config && this.layout_config.config.border_option==undefined)
         this.$set(this.layout_config.config,'border_option',{color:["#83bff6","#00CED1"]})
@@ -293,6 +291,8 @@ export default {
       const { type, component } = this.data
       if(this.data.type.startsWith("flex_span"))
         return prefix + 'cr-span'
+      if(this.data.type=="tabs" || this.data.type=="carousel")
+        return prefix + 'cr-tab'
       //if ((!type || component) && ! ['text','html-text','ueditor','echart','scroll-ranking-board','scroll-board','dv_scroll_ranking_board',
       //'dync-template','ele-grid','luckySheetProxy','bar','line','pie','radar',
       //'gauge','scatter','funnel','map','airBubbleMap'].includes(type)

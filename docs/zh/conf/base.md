@@ -480,6 +480,26 @@ hasOption 是为了动态初始化option，他总是返回true。
 ```
 `call_server_func(func_name,func_params,_this,get_post='post')`
 第一个参数 func_name: 后端已定义的函数名称
-第二个参数 func_params：后端函数需要的参数
+第二个参数 func_params：后端函数需要的参数,必须是一个对象，如：{a:1,b:[1,2,]},后端将以同样的方式取出
 第三个参数 ：如果是字符串，就是将当前字符串作为url 传递给后端(通过这种方式手动执行指定报表组中的函数)，否则，就从_this 中解析出当前网页的url(组件中调用的话，直接传this就行)，传递给后端. 
 第四个参数 get_post : 提交给后台时使用的http 提交方式
+
+## 前端使用js的一些控制选项
+
+window.cellreport.show_tips 是否显示右上角的提示信息，这个信息是后台传过来的。
+
+window.cellreport.cr_login_verfiy_code_type='text';  设计器登陆验证方式：
+  text，纯前端（已经显示了。重输入一遍就可以）。
+  img:`${baseUrl}/VerifyCode` 后端要编写这个代码
+  其他:用其他方式（如手机验证码）验证，需要后端代码配合。也是修改 UserController.cs中的VerifyCode
+
+window.cellreport["expand_form"] 手机端是否显示收缩查询输入图标（控制查询输入是否显示）
+window.cellreport.cr_export_excel_func 导出excel 时调用的监控函数。通常需要传给后端记录
+window.cellreport[`cr_click_${gridName}`](p_data,this) 点击某个组件后调用的函数
+window.cellreport.hn_old 控制是否显示列表头上的链接是否有用
+window.cellreport.cr_hover_row   鼠标悬停时使用的格式 缺省值：'{background-color:lightgray!important;}'
+window.cellreport.cr_active_row  鼠标点选后时使用的格式  缺省值：'{background-color: #7cbcfc!important;}'
+window.cellreport.call_server_func 不要修改。这是调用后端使用的函数入口
+window.cellreport.map_url 地图地址。格式：`${default_map_url}/${code}_full.json` 。如果地图存放到了static/GeoJSON下，可以设置为static/GeoJSON
+window.cellreport.pdf_print  pdf预览时，如果为true直接显示打印预览，不设置或false，将显示中间预览，以便调整或另存到本地
+window.cellreport.form_validate(queryForm)  form提交时的表单校验。queryForm的属性就是报表用到的参数,返回true表示校验通过，false或字符串表示校验不通过，返回字符串时将作为错误信息显示到浏览器

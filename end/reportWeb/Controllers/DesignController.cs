@@ -182,27 +182,28 @@ namespace reportWeb.Controllers
                 exprFaced.getVariableDefine("_zb_password_").value = rpt_group.zb_password;
                 exprFaced.getVariableDefine("_rpt_group_").value = rpt_group;
                 exprFaced.getVariableDefine("_need_dataset_").value = (_createFormParam != true);
-
+                exprFaced.addVariableForRoot("_page_size_", getFormValue("_page_size_"));
+                exprFaced.addVariableForRoot("_cur_page_num_", getFormValue("_cur_page_num_"));
                 if (_createFormParam == true)
                 {
                     exprFaced.addVariable("_createFormParam_", _createFormParam);
                     exprFaced.addVariable("_param_name_", _param_name_);
                 }
-                //exprFaced.getVariableDefine("__page__").value = HttpContext.Request;
+                exprFaced.getVariableDefine("__page__").value = HttpContext.Request;
                 Engine engine = new Engine(reportDefine);
                 long end = DateTime.Now.Ticks;
                 report_env.logger.Debug($"分析xml耗时：{(DateTime.Now.Ticks - start) / 10000000.0}秒");
                 Exception cur_exception = null;
                 Func<Task> my_out_act = async () =>
                 {
-                    if (cur_exception != null)
-                    {
-                        while (cur_exception.InnerException != null)
-                        {
-                            report_env.logger.Error(cur_exception.Message);
-                            cur_exception = cur_exception.InnerException;
-                        }
-                    }
+                    //if (cur_exception != null)
+                    //{
+                    //    while (cur_exception.InnerException != null)
+                    //    {
+                    //        report_env.logger.Error(cur_exception.Message);
+                    //        cur_exception = cur_exception.InnerException;
+                    //    }
+                    //}
                     using (var Report = engine.getResult())
                     {
                         using (MemoryStream jsonStream = CellReport.Redis_Cache.manager.GetStream())
@@ -224,22 +225,16 @@ namespace reportWeb.Controllers
 
                                 if (cur_exception != null)
                                 {
-                                    reportWeb.Pages.ReportModel.output_expection(cur_exception, Report.getEnv().logger, Report.getEnv());
-                                    StringBuilder sb = new StringBuilder();
-                                    do
-                                    {
-                                        sb.AppendLine(cur_exception.Message);
-                                        cur_exception = cur_exception.InnerException;
-                                    } while (cur_exception != null);
+                                    string message = reportWeb.Pages.ReportModel.output_expection(cur_exception, Report.getEnv().logger, Report.getEnv());
                                     if (haswrite)
                                         jsonWriter.Write(",");
                                     jsonWriter.Write("\"errcode\":1,\"message\":");
-                                    jsonWriter.Write(JsonSerializer.Serialize(sb.ToString(), json_option));
+                                    jsonWriter.Write(JsonSerializer.Serialize(message, json_option));
                                 }
                                 jsonWriter.Write(",\"_zb_var_\":");
                                 if (exprFaced.getVariable("_zb_var_") != null)
                                 {
-                                    jsonWriter.Write(JsonSerializer.Serialize(exprFaced.getVariable("_zb_var_"), report_env.getJsonOption()));
+                                    jsonWriter.Write(JsonSerializer.Serialize(exprFaced.getVariable("_zb_var_"), CellReport.running.Logger.getJsonOption()));
                                 }
                                 else
                                 {
@@ -257,7 +252,7 @@ namespace reportWeb.Controllers
                 {
                     var func_json = JsonDocument.Parse(Request.Form["__call_func"].ToString()).RootElement;
                     Object result = await CellReport.core.expr.ExprHelper.calc_client_func(report_env, func_json);
-                    await Response.WriteAsJsonAsync(result, report_env.getJsonOption());
+                    await Response.WriteAsJsonAsync(result, CellReport.running.Logger.getJsonOption());
                 }
                 else
                 {
@@ -294,9 +289,15 @@ namespace reportWeb.Controllers
             }
             catch (Exception ex)
             {
-                while (ex.InnerException != null)
+                StringBuilder sb = new StringBuilder();
+                Exception las_ex;
+                do
+                {
+                    sb.AppendLine(ex.Message);
+                    las_ex = ex;
                     ex = ex.InnerException;
-                return Json(new { errcode = 1, message = ex.Message, stacktrace = ex.StackTrace });
+                } while (ex != null);
+                return Json(new { errcode = 1, message = sb.ToString(), stacktrace = las_ex.StackTrace });
             }
         }
 
@@ -344,6 +345,8 @@ namespace reportWeb.Controllers
                     exprFaced.addVariable("_zb_password_", rpt_group.zb_password);
                     exprFaced.addVariable("_zb_var_", new Dictionary<String, object>());
                     exprFaced.addVariable("_rpt_group_", rpt_group);
+                    exprFaced.getVariableDefine("__page__").value = HttpContext.Request;
+
                 }
                 else
                 {
@@ -354,6 +357,9 @@ namespace reportWeb.Controllers
                     var reportDefine = await XmlReport.loadReportFromXmlDoc(xmlDoc, this.rpt_group.report_path, reportName ?? "temp.cr");
                     report_env = reportDefine.getEnv();
                     exprFaced = report_env.getExprFaced();
+                    exprFaced.getVariableDefine("__page__").value = HttpContext.Request;
+                    exprFaced.addVariableForRoot("_page_size_", getFormValue("_page_size_"));
+                    exprFaced.addVariableForRoot("_cur_page_num_", getFormValue("_cur_page_num_"));
                     cur_GroupMap = report_env.getDataSetResultMap();
                 }
                 report_env.logger = logger;
@@ -362,7 +368,7 @@ namespace reportWeb.Controllers
                     report_env.addDataSource(one.name, one.conn_str, one.db_type, "0");
                 }
 
-                var exec_result = exprFaced.calculate("{  " + expr + "\n}", cur_GroupMap);
+                var exec_result = exprFaced.calculate("{  " + expr + "\n}", cur_GroupMap, "当前脚本");
                 if (exec_result is Exception ex)
                 {
                     throw ex;

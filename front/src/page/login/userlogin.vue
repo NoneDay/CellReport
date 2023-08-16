@@ -93,9 +93,9 @@ export default {
   name: "userlogin",
   data() {
     const validateCode = (rule, value, callback) => {
-      if (this.code.value != value && ['text','img'].includes(this.code.type)) {
+      if (this.code.value != value && ['text'].includes(this.code.type)) {
         this.loginForm.code = "";
-        this.refreshCode();
+        //this.refreshCode();
         callback(new Error("请输入正确的验证码"));
       } else {
         callback();
@@ -182,11 +182,11 @@ export default {
         })      
     },
     refreshCode() {
-      this.loginForm.redomStr = randomLenNum(this.code.len, true);
+      this.loginForm.redomStr = randomLenNum(this.code.len, false);
       if(this.code.type == "text")
         this.code.value = randomLenNum(this.code.len)
       else if (this.code.type == "img")
-        this.code.src = `${this.codeUrl}/${this.loginForm.redomStr}`;
+        this.code.src = `${this.codeUrl}?userid=${this.loginForm.username}&code_len=${this.code.len}&t=${Date.now()}`;
       else{
         VerifyCode(this.loginForm.username,this.code.len).then((res)=>{
           if(res.errcode)

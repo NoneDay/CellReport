@@ -1,30 +1,30 @@
 <template>
-    <div >
-            <div style="height:200px;overflow:auto">
-            <draggable tag="ul"
-                            :list="report.params.param"
-                            :group="{ name: 'dic' }"
-                            ghost-class="ghost"
-                            handle=".drag-item" style="padding-left: 5px;">
-                    <li v-for="(item,idx ) in report.params.param" :key="idx" 
-                        style="display: flex;padding: 5px;"
-                        :style="{'background-color':action_target==item?'#c5f3e0':'#fff','cursor': 'pointer'}">
-                    <i class="drag-item el-icon-s-operation"
-                        style="font-size: 16px; margin: 0 5px; cursor: move;"></i>                        
-                        <div @click="select_action_target(item)"  style="display: inline-block;width:calc(100% - 50px)">
-                            {{item._name}} 
-                        </div>
-                        <el-button @click="param_delete(item,idx)"
-                                circle
-                                plain
-                                type="danger"
-                                size="mini"
-                                icon="el-icon-minus"
-                                style="padding: 4px;float:right"></el-button>
-                        
-                    </li>
-            </draggable>
-            </div>
+    <div style="height: 100%;overflow: auto;">
+        <div style="height:200px;overflow:auto">
+        <draggable tag="ul"
+                        :list="report.params.param"
+                        :group="{ name: 'dic' }"
+                        ghost-class="ghost"
+                        handle=".drag-item" style="padding-left: 5px;">
+                <li v-for="(item,idx ) in report.params.param" :key="idx" 
+                    style="display: flex;padding: 5px;"
+                    :style="{'background-color':action_target==item?'#c5f3e0':'#fff','cursor': 'pointer'}">
+                <i class="drag-item el-icon-s-operation"
+                    style="font-size: 16px; margin: 0 5px; cursor: move;"></i>                        
+                    <div @click="select_action_target(item)"  style="display: inline-block;width:calc(100% - 50px)">
+                        {{item._name}} 
+                    </div>
+                    <el-button @click="param_delete(item,idx)"
+                            circle
+                            plain
+                            type="danger"
+                            size="mini"
+                            icon="el-icon-minus"
+                            style="padding: 4px;float:right"></el-button>
+                    
+                </li>
+        </draggable>
+        </div>
         
         <el-row>
             <el-col  :offset="1" :span="6">
@@ -68,14 +68,20 @@
                   </el-row>
             <el-divider></el-divider>
             <div>
-               缺省值：<el-input v-model="action_target._default_value" style="width:75%" 
-                        placeholder="请输入名字："></el-input>
-                <el-button @click="ExprEditorDialog_visible=true"
-                            circle
-                            type="success"
-                            size="mini"
-                            icon="el-icon-edit"
-                            style="padding: 4px;margin-left: 5px"></el-button>
+                <ul ghost-class="ghost" style="padding-left: 10px;font-size:12px;">
+                    <li  style="display: flex;padding-bottom: 10px;" >
+                    <label style="width:100px;padding-top:5px;" >缺省值：</label>
+                    <el-input v-model="action_target._default_value" style="width:75%" 
+                                placeholder="请输入名字："></el-input>
+                        <el-button @click="ExprEditorDialog_visible=true"
+                                    circle
+                                    type="success"
+                                    size="mini"
+                                    icon="el-icon-edit"
+                                    style="padding: 4px;margin-left: 5px"></el-button>
+                    </li>
+                </ul>   
+               
             </div>
             <el-divider></el-divider>
             <el-row>

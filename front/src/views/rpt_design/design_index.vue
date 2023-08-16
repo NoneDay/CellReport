@@ -111,7 +111,7 @@
                       {display:'显示值表达式',val:'_displayValueExpr'},
                       {display:'值表达式',val:'_valueExpr'},
                       {display:'加到style中',val:'_append'},
-                      {display:'pdf输出时，单元格行后分页(true)',val:'_row_page_break'},
+                      //{display:'pdf输出时，单元格行后分页(true)',val:'_row_page_break'},
                     ]"  
                 style="display: flex;padding-bottom: 10px;" :key="item.display" >
               <label style="width:120px;padding-top:5px;">{{item.display}}</label>
@@ -134,6 +134,23 @@
               </el-select>
             </li>
         </ul>
+        <div v-else-if="selectWidget.type=='cr_row' || selectWidget.type=='cr_col'" >
+          <ul ghost-class="ghost" style="padding-left: 10px;font-size:12px;">
+            <li  style="display: flex;padding-bottom: 10px;" >
+              <label style="width:100px;padding-top:5px;" >是否隐藏：</label>
+              <el-input placeholder="返回true，隐藏" v-model="colrow_obj._show"></el-input>      
+              <el-button  @click="expr_edit(colrow_obj,{display:'行列是否显示的表达式',val:'_show'})" circle  type="success" size="mini" icon="el-icon-edit"
+                              style="padding: 4px;margin-left: 5px;    width: 30px;height: 30px;">
+                    </el-button>    
+            </li>
+            <li  style="display: flex;padding-bottom: 10px;" v-if="selectWidget.type=='cr_row' " >
+              <label style="width:100px;padding-top:5px;" >是否分页：</label>
+              <el-input placeholder="返回true，分页:" v-model="colrow_obj._row_page_break"></el-input>      
+              <el-button  @click="expr_edit(colrow_obj,{display:'是否分页',val:'_row_page_break'})" circle  type="success" size="mini" icon="el-icon-edit"
+                              style="padding: 4px;margin-left: 5px;    width: 30px;height: 30px;"> </el-button>    
+          </li>
+          </ul>
+        </div>
         <widget-config  v-else style="flex:1"
           :data="selectWidget" 
           :layout_config="cur_layout_item"
@@ -387,6 +404,7 @@ export default {
           },
         widgetForm: widget_row_col_layout(),//布局显示
        queryForm:{},
+       colrow_obj:{_show:'',_row_page_break:''}
       }
   },
   methods:{
@@ -701,11 +719,33 @@ export default {
     
     //-=========================    
   selectChange(sheet,luckysheet_select_save,sheet_window){
-        this.cur_select_type='cell'
-        this.selectWidget={prop:'--'}
         this.cur_sheet=sheet
         this.sheet_window=sheet_window
         let cur_postion=sheet.luckysheet_select_save[0]
+        if(cur_postion.row_select && cur_postion.column_select ){
+          this.selectWidget=this.findGridInWidgeForm(this.widgetForm,sheet_window.gridName)
+          return
+        }
+        if(cur_postion.row_select ){
+          this.selectWidget={prop:'--'}
+          let obj=sheet.cr_rows[cur_postion.row_focus]
+          Object.keys(this.colrow_obj).forEach(x=>this.colrow_obj[x]='');
+          Object.assign(this.colrow_obj, obj)
+          this.selectWidget={type:'cr_row',data:obj}
+          return
+        }
+        if(cur_postion.column_select ){
+          this.selectWidget={prop:'--'}
+          let obj=sheet.cr_columns[cur_postion.column_focus]
+          Object.keys(this.colrow_obj).forEach(x=>this.colrow_obj[x]='');
+          Object.assign(this.colrow_obj, obj)
+          this.selectWidget={type:'cr_col',data:obj}     
+          return          
+        }
+        this.cur_select_type='cell'
+        this.selectWidget={prop:'--'}
+
+        
         let cell=sheet.data[cur_postion.row_focus][cur_postion.column_focus]
         if(this.cur_cell!= cell)
           this.can_watch_cell=false//切换单元格后，对cur_cell.cr的第一次监控 ，不需要监控
@@ -901,6 +941,15 @@ export default {
       try{
         add_rc(val)
         if(["addRC","delRC"].includes( val.type)){
+          let lucky_sheet=this.sheet_window.luckysheet.getSheet(0)
+          let cur_rc=val.ctrlValue.rc=='r' ? lucky_sheet.cr_rows :lucky_sheet.cr_columns
+          if(val.type=="delRC"){
+              cur_rc.splice(val.ctrlValue.index,val.ctrlValue.len)            
+          }
+          if(val.type=="addRC"){            
+              cur_rc.splice(val.ctrlValue.index + (val.ctrlValue.direction=="lefttop"?0:1), 0, ...Array(val.ctrlValue.len).fill({_show:''}));
+          }
+          
           for(let row=0;row<val.curData.length;row++){
             for(let col=0;col<val.curData[row].length;col++){
               let cell=val.curData[row][col]
@@ -1144,6 +1193,18 @@ export default {
         this.$set(this,'cur_layout_item',{type:'layout',config:this.report.defaultsetting})
       }
       this.cur_select_type='widget'
+    },
+    "colrow_obj": {
+        handler(val,oldVal)
+        {
+          if(this.selectWidget.type=='cr_row' || this.selectWidget.type=='cr_col'){
+            Object.assign(this.selectWidget.data,this.colrow_obj)
+            let grid= this.report.AllGrids.grid.find(a=>a._name==this.sheet_window.gridName)
+            let aaa=luckySheet2ReportGrid( this.sheet_window,this.report.defaultsetting)
+            
+            $.extend(grid,aaa.grid);
+          }
+        },deep:true
     },
 //======================
 

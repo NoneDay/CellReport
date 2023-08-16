@@ -1,8 +1,8 @@
 <template>
-  <div style="width:100%;height:100%">
+  <div style="width:100%;height:100%"  @click.stop="handleSelectWidget()" v-if="cr_init">
     <component :is="MainComponent"  type="border-card" v-model="cur_tab" 
-    style="height:100%"  :depth="depth+1"
-    @tab-click="tab_click"
+    style="height:100%"  :depth="depth+1" v-bind="self.el_param??{}"
+    @tab-click="tab_click" 
     :editable="context.canDraggable" 
     @edit="handleTabsEdit"> 
           <component :is="SubComponent"  :key="groupIndex"  style="height:100%" 
@@ -42,10 +42,10 @@ export default {
   },
   computed:{
     MainComponent(){
-      return this.page_type[ "tabs"].main
+      return this.page_type[ this.self.el_type??"tabs"].main
     },
     SubComponent(){
-      return this.page_type[ "tabs"].sub
+      return this.page_type[ this.self.el_type??"tabs"].sub
     },
     col_items(){
       let idx=0
@@ -59,6 +59,15 @@ export default {
     }
   },
   watch:{
+    "self.el_param":{
+            handler(val,oldVal){
+                this.cr_init=false
+                let _this=this
+                setTimeout(() => {
+                  _this.cr_init=true
+                });
+            },deep:true
+        },
     editableTabsValue:function(val){
       function resize(node) {
           if(node.self && node.self.type=="echart" ){
@@ -78,21 +87,34 @@ export default {
   data () {
     return {
       page_type:{"tabs":{'main':'el-tabs','sub':'el-tab-pane'},
-      "Carousel":{'Carousel':'el-carousel','sub':'el-carousel-item'},
+      "carousel":{'main':'el-carousel','sub':'el-carousel-item'},
       "collapse":{'main':'el-collapse','sub':'el-collapse-item'},
       },
       editableTabsValue:"Tab0",
       cur_tab:"-1",
-      widget_dialogVisible:false
+      widget_dialogVisible:false,
+      cr_init:true
     }
   },
   mounted(){
+    if(this.self.el_param==undefined){
+      this.self.el_param={}
+    }
+    if(this.self.el_type==undefined){
+      this.self.el_type='tabs'
+      this.self.el_param['stretch']=false   
+      this.self.el_param['tab-position']='top'      
+    }
     let _this=this
     setTimeout(function(){
      _this.cur_tab="0" 
     });
   },
   methods: {
+    handleSelectWidget () {
+      if(this.context.mode=="design")
+          this.selectWidget = this.self
+    },
     tab_click(cur_tab){
       if(window.needResizeFunc){
         setTimeout(function(){

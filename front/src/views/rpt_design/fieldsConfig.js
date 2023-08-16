@@ -143,7 +143,7 @@ export default [
               type: 'tabs',
               label: 'tab面板',
               icon: 'icon-table',
-              span: 24,
+              span: 24,el_type:'tabs',el_param:{stretch:false,'tab-position':'top'},
               display: true,style:{height:'100%'},
               component:'widget-form-tabs',
               children: {
@@ -151,7 +151,20 @@ export default [
                 headerAlign: 'center',
                 column: []
               }
-            },
+            },/*
+            {
+              type: 'carousel',
+              label: 'Carousel走马灯',
+              icon: 'icon-table',
+              span: 24,el_type:'carousel',el_param:{interval:3000,'indicator-position':'none',arrow:'hover',type:'card',direction:'horizontal'},
+              display: true,style:{height:'100%'},
+              component:'widget-form-tabs',
+              children: {
+                align: 'center',
+                headerAlign: 'center',
+                column: []
+              }
+            },*/
             {
               type:"flex_span_row"  ,
               label: '同行容器',span: 24,

@@ -235,6 +235,15 @@ export default {
             _this.$notify({title: '提示',message: response.message,duration: 0});
             return;
           }
+          if(_this.self.force_sync_param){
+            response.form.forEach(ele=>{
+              let val=ele.value
+              if(ele.data_type=='date' && val!="")
+                  val=new Date(ele.value).format("yyyy-MM-dd")
+              _this.$set(_this.context.queryForm,ele.name,val)
+            })
+            _this.context.report_result.form=response.form
+          }
           //console.info(response)
           _this.fresh_ele.splice(0)
           if(_this.context.report_result.dataSet==undefined)
@@ -256,7 +265,7 @@ export default {
             });
           }
           if(window.cellreport[`cr_click_${_this.self.gridName}`]){
-            window.cellreport[`cr_click_${_this.self.gridName}`](p_data,_this)
+            window.cellreport[`cr_click_${_this.self.gridName}`](p_data,_this,response)
           }
           if(!window.cellreport.cr_close_fresh_message)
             _this.$notify({title: '提示',type: 'success',message: _this.fresh_ele,position: 'bottom-right',duration: 3000});

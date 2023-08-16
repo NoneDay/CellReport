@@ -220,7 +220,7 @@ export default {
         ret.push(`数据集:${element._name}`);
       });
       this.context.report.AllGrids.grid.forEach((element) => {
-        if (element._is_large == "0") {
+        if (element._is_large==undefined || element._is_large == "0") {
           ret.push(`表格明细数据:${element._name}`);
           ret.push(`表格汇总数据:${element._name}`);
         }
