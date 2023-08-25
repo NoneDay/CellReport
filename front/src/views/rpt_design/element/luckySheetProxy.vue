@@ -57,7 +57,9 @@
          <el-form-item label="关系运算符">
         <el-radio-group v-model="relation" placeholder="请选择">
           <el-radio
-            v-for="item in [{label:'等于',value:'=='},{label:'不等于',value:'!='},{label:'大于',value:'>'},{label:'大于等于',value:'>='},{label:'小于',value:'<'},{label:'小于等于',value:'<='},]"
+            v-for="item in [{label:'等于',value:'=='},{label:'不等于',value:'!='},{label:'大于',value:'>'},{label:'大于等于',value:'>='},
+            {label:'小于',value:'<'},{label:'小于等于',value:'<='},{label:'包含',value:'contains'},{label:'开始',value:'start'},{label:'结束',value:'end'},
+            ]"
             :key="item.value"
             :label="item.value"
             :value="item.value">{{item.label}}
@@ -334,11 +336,7 @@ export default {
               //      $(val).height( $(main_td_arr[i]).height() )
               //    })
               //})
-              
-              //点击，发送数据到clickedEle
-              $(`#reportDiv${_this.gridName} .cr-table__body tr`).unbind()
-              $(`#reportDiv${_this.gridName} .cr-table__body tr`).bind('click',
-                function(evt){
+              function click_row(evt){
                   let real_row_no=_this.TABLEOBJ.tableData_bridge[$(evt.currentTarget).data("n")]
                   let cur_row=_this.TABLEOBJ.param_grid.tableData[real_row_no]
                   let cur_col=_this.TABLEOBJ.param_grid.columns[  $(evt.target.parentElement).data("c")]
@@ -357,20 +355,29 @@ export default {
                   }
 
                   // 点击后的活动行
-                  $(this).siblings('tr').removeClass('active-row');
-                  $(this).addClass('active-row');
+                  //$(this).siblings('tr').removeClass('active-row');
+                  //$(this).addClass('active-row');
+                  $(`#reportDiv${_this.gridName} tr[data-n=${this.dataset['n']}]`).siblings('tr').removeClass('active-row');
+                  $(`#reportDiv${_this.gridName} tr[data-n=${this.dataset['n']}]`).addClass('active-row');                        
                   $(`#reportDiv${_this.gridName}Left tr[data-n=${this.dataset['n']}]`).siblings('tr').removeClass('active-row');
                   $(`#reportDiv${_this.gridName}Left tr[data-n=${this.dataset['n']}]`).addClass('active-row');                        
-                }
-              )
-              //鼠标悬停
-              $(`#reportDiv${_this.gridName} .cr-table__body tr`).mouseover(function (e) {
-                $(this).siblings('tr').removeClass('hover-row');
-                  $(this).addClass('hover-row');
+              }
+              function mouse_over(e) {
+                  //$(this).siblings('tr').removeClass('hover-row');
+                  //$(this).addClass('hover-row');
+                  $(`#reportDiv${_this.gridName} tr[data-n=${this.dataset['n']}]`).siblings('tr').removeClass('hover-row');
+                  $(`#reportDiv${_this.gridName} tr[data-n=${this.dataset['n']}]`).addClass('hover-row'); 
                   $(`#reportDiv${_this.gridName}Left tr[data-n=${this.dataset['n']}]`).siblings('tr').removeClass('hover-row');
                   $(`#reportDiv${_this.gridName}Left tr[data-n=${this.dataset['n']}]`).addClass('hover-row'); 
-              })
-              
+              }
+              //点击，发送数据到clickedEle
+              $(`#reportDiv${_this.gridName} .cr-table__body tr`).unbind()
+              $(`#reportDiv${_this.gridName} .cr-table__body tr`).bind('click',click_row)
+              $(`#reportDiv${_this.gridName}Left .cr-table__body tr`).unbind()
+              $(`#reportDiv${_this.gridName}Left .cr-table__body tr`).bind('click',click_row)
+              //鼠标悬停
+              $(`#reportDiv${_this.gridName} .cr-table__body tr`).mouseover(mouse_over)
+              $(`#reportDiv${_this.gridName}Left .cr-table__body tr`).mouseover(mouse_over)              
               //树折叠展开
               $(`#reportDiv${_this.gridName} span.cr_tree_node`).unbind()
               $(`#reportDiv${_this.gridName} span.cr_tree_node`).click(

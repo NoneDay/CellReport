@@ -316,7 +316,7 @@ export const convert_array_to_json=function (data,start=0,end=-1,col_list){
     }
     data.slice(start,end).forEach(element => {
         let one_line={}
-        if(element.length==0)
+        if(element==undefined || element.length==0)
             return false;
         gridData.push(one_line)
         for (let index = 0; index < col_list.length; index++) {
@@ -585,7 +585,7 @@ function luckySheet2ReportGrid(sheet_window,DefaultCssSetting){
                 if(cell.cr['_FONT-SIZE']==DefaultCssSetting["FONT-SIZE"]) delete cell.cr['_FONT-SIZE']
                 if(cell.cr['_background-color']==DefaultCssSetting["BACKGROUND-COLOR"]) delete cell.cr['_background-color']
                 if(cell.cr['_color']==DefaultCssSetting["COLOR"]) delete cell.cr['_color']
-
+                if(cell.cr['_displayValueExpr']=="=@value") delete cell.cr['_displayValueExpr']
                 //if(cell.cr['_BORDER-LEFT']==DefaultCssSetting.border_style) delete cell.cr['_BORDER-LEFT']
                 //if(cell.cr['_BORDER-RIGHT']==DefaultCssSetting.border_style) delete cell.cr['_BORDER-RIGHT']
                 //if(cell.cr['_BORDER-TOP']==DefaultCssSetting.border_style) delete cell.cr['_BORDER-TOP']
@@ -593,7 +593,13 @@ function luckySheet2ReportGrid(sheet_window,DefaultCssSetting){
 
                 if(cell.cr._absName)
                     delete cell.cr._absName
-                cells.push(JSON.parse(JSON.stringify(cell.cr)))
+                let t_cell=JSON.parse(JSON.stringify(cell.cr))
+                Object.keys(t_cell).forEach(x=>{
+                    if(x!='_valueExpr' && t_cell[x]=='')
+                        delete t_cell[x]
+                })
+                cells.push(t_cell)
+                //cells.push(JSON.parse(JSON.stringify(cell.cr)))
             }
         })
     })

@@ -446,10 +446,19 @@ export default class ResultGrid2HtmlTable{
                     break;
                 case '<':
                     tmp_arr=Enumerable.from(tmp_arr).where(x=>convert_func(x.value[for_col])<traget_value).toArray();
-                    break;                                    
+                    break; 
                 case '<=':
                     tmp_arr=Enumerable.from(tmp_arr).where(x=>convert_func(x.value[for_col])<=traget_value).toArray();
+                    break;
+                case 'contains':
+                    tmp_arr=Enumerable.from(tmp_arr).where(x=>x.value[for_col]?.toString()?.indexOf(traget_value)>=0).toArray();
+                    break;  
+                case 'start':
+                    tmp_arr=Enumerable.from(tmp_arr).where(x=>x.value[for_col]?.toString()?.startsWith(traget_value)).toArray();
                     break;                                    
+                case 'end':
+                    tmp_arr=Enumerable.from(tmp_arr).where(x=>x.value[for_col]?.toString()?.endsWith(traget_value)).toArray();
+                    break;   
             }
         }
         

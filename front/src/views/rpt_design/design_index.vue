@@ -144,9 +144,9 @@
                     </el-button>    
             </li>
             <li  style="display: flex;padding-bottom: 10px;" v-if="selectWidget.type=='cr_row' " >
-              <label style="width:100px;padding-top:5px;" >是否分页：</label>
-              <el-input placeholder="返回true，分页:" v-model="colrow_obj._row_page_break"></el-input>      
-              <el-button  @click="expr_edit(colrow_obj,{display:'是否分页',val:'_row_page_break'})" circle  type="success" size="mini" icon="el-icon-edit"
+              <label style="width:100px;padding-top:5px;" >是否行后分页：</label>
+              <el-input placeholder="返回true，行后分页:" v-model="colrow_obj._row_page_break"></el-input>      
+              <el-button  @click="expr_edit(colrow_obj,{display:'是否行后分页',val:'_row_page_break'})" circle  type="success" size="mini" icon="el-icon-edit"
                               style="padding: 4px;margin-left: 5px;    width: 30px;height: 30px;"> </el-button>    
           </li>
           </ul>

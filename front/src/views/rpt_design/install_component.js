@@ -13,6 +13,7 @@ import eleGrid from './element/eleGrid'
 import text from './element/text'
 import datetime from './element/datetime'
 import flop from './element/flop'
+import dyncDialog from './element/dyncDialog'
 import {deepClone} from './utils/util'
 export default {
   install (Vue) {
@@ -33,5 +34,6 @@ export default {
     Vue.component('dyncTemplate', dyncTemplate);    
     Vue.component('luckySheetProxy', luckySheetProxy);
     Vue.component('eleGrid', eleGrid);
+    Vue.component('dyncDialog', dyncDialog);
   }
 }

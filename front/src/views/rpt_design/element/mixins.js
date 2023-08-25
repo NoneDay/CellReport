@@ -2,7 +2,7 @@ import {request} from 'axios'
 import x2js from 'x2js' 
 import {baseUrl} from '../api/report_api'
 import {test_data} from "../utils/util" 
-export default {
+let default_mixins={
     props: {
       depth:{
         type: Number,
@@ -136,11 +136,54 @@ export default {
       },
       findElelment(name,prop_dict){
         if(this.context?.report_result){
-          let ret=this.context?.report_result.layout.concat(
+          let ret=this.context?.report_result.layout?.concat(
             this.context?.report_result.layout_hidden||[]).filter(x=>x.element.gridName==name)
           if(ret!=null)
             return Object.assign({}, ret[0].element,prop_dict||{})
         }
+      },
+      async showDialog (ele_name, data) {
+        let _this=this
+        let Cpn = { template:`<dyncDialog :dync_item='dync_item' :context='context'></dyncDialog>`,
+            data(){
+                return {
+                    dync_item:_this.findElelment(ele_name,data),
+                    context:_this.context
+                }
+            },
+            methods:{
+            }            
+        };
+        return new Promise(function (resolve, reject) {
+          // 初始化配置参数
+          let opt = {
+            data
+          }
+          let component = Object.assign({}, Cpn)
+          
+          // 创建构造器创建实例挂载
+          let DialogC = Vue.extend(component)
+          let dialog = new DialogC()
+          //open opened close closed
+          // 关闭事件
+          let _onClose = dialog.$options.methods.close
+          dialog.$options.methods.close = function () {
+            resolve()
+            _onClose && _onClose.call(dialog)            
+          }
+          let _onClosed = dialog.$options.methods.closed
+          dialog.$options.methods.closed = function () {
+            resolve()
+            _onClosed && _onClosed.call(dialog)            
+          }
+          
+          dialog.$mount()
+          // 点击关闭按钮时会改变visible
+          dialog.$watch('visible', function (n, o) {
+            dialog === false && dialog.onClose()
+          })
+          document.body.appendChild(dialog.$el)
+        })
       },
       find_item(item){
         if(this.context.mode!='design' || this.selectWidget.type=='layout')
@@ -179,7 +222,7 @@ export default {
         let _this=this
         this.fresh_ele.splice(0) 
         this.fresh_ele.push("元素选中行:"+this.self.gridName)//: Date.now() + '_' + Math.ceil(Math.random() * 99999});
-        if(this.self.fresh_ds.length==0) //没有需要刷新的对象，就返回
+        if(this.self.fresh_ds==undefined || this.self.fresh_ds.length==0) //没有需要刷新的对象，就返回
         {
           if(window.cellreport[`cr_click_${this.self.gridName}`]){
             window.cellreport[`cr_click_${this.self.gridName}`](p_data,this)
@@ -213,7 +256,7 @@ export default {
           }
           // 使用缺省原始参数
           let default_param=Enumerable.from(_this.context.report_result.form).first(x=>x.name==ele.name)
-          t_params.push({"name":ele.name,"value":default_param.value})
+          t_params.push({"name":ele.name,"value":default_param.value.toString()})
           data.append(ele.name,default_param.value)  
         })        
         _this.context.in_exec_url.stat=true;
@@ -291,3 +334,4 @@ export default {
     },
     
 }
+export default default_mixins;

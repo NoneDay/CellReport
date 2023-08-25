@@ -208,6 +208,11 @@ export async function preview_one(_this,createFormParam=false,param_name=null) {
             delete _this.queryForm._fresh_ds
             delete _this.queryForm._cur_page_num_
             delete _this.queryForm._page_size_
+            if(typeof(response_data)=='string')
+            {
+                _this.$notify({title: '提示',message: response_data,duration: 0});               
+                return;
+            }
             if(response_data.errcode==1){
                 _this.$notify({title: '提示',message: response_data.message,type: 'error',duration:0});
                 return
@@ -282,6 +287,9 @@ export async function preview_one(_this,createFormParam=false,param_name=null) {
                     grid:Object.values(_this.result.data).filter(ele=>ele.type=="common")
                     } )
             }
+            Object.keys(window.cellreport).forEach(x=>{
+                if(x.startsWith("cr_click")) delete window.cellreport[x]
+            })
             _this.last_js_cript=load_css_js(_this.context.report_result.footer2,"report_back_css")
             eval("(function(){\n"+_this.last_js_cript+"\n})()")
             Object.entries(_this.context.clickedEle).forEach(kv=>{
@@ -372,6 +380,16 @@ export function run_one(_this,reportFilePath,_param_name_=null,loading_conf=null
         delete _this.queryForm._cur_page_num_
         delete _this.queryForm._page_size_
         _this.executed =true
+        if(typeof(response_data)=='string')
+        {
+            try{
+                response_data=JSON.parse( response_data.substring( response_data.indexOf('{"errcode"')) )
+            }catch{
+                _this.$notify({title: '提示',message: response_data,duration: 0});
+                loading.hide(loading_conf)
+                return;
+            }
+        }
         if(response_data.errcode && response_data.errcode ==1){
             _this.$notify({title: '提示',message: response_data.message,duration: 0});
             loading.hide(loading_conf)

@@ -113,12 +113,12 @@ export default ({
            if (this.self.option.type === "border") {
             return {
               borderColor: this.self.option.borderColor || "#fff",
-              borderStyle: "solid",
-              borderWidth: this.setPx(this.self.option.borderWidth),
+              borderStyle: "solid",              
               "padding": "0 5px",
               "border-image-slice": "10 16 15 10 fill",
               'border-width': '10px 16px 15px 10px',
-              'border-style': 'solid'
+              'border-style': 'solid',
+              borderWidth: this.setPx(this.self.option.borderWidth),
 
             };
           }

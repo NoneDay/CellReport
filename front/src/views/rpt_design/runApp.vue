@@ -21,12 +21,13 @@
         </div>
 
     </el-dialog> 
-    <el-dialog v-draggable v-if="dync_item_dialogVisible" style="text-align: left;" class="report_define"
-          :visible.sync="dync_item_dialogVisible" :title="dync_item.title" 
-          :close-on-click-modal="false"   :fullscreen="dync_item.fullscreen||false"
-          direction="btt" append-to-body 
+    <el-dialog v-draggable v-if="dync_item_dialogVisible" style="text-align: left;" 
+          :visible.sync="dync_item_dialogVisible" 
+          :close-on-click-modal="false" direction="btt" append-to-body v-bind="{...{'custom-class':'dync_dialog'},...dync_item.dialog_params||{} }"
         > 
-      <widget-form-item  :self="dync_item"  >  </widget-form-item>
+      <div v-bind="{...{style:'height:50vh'},...dync_item.params||{}}">
+        <widget-form-item  :self="dync_item"  >  </widget-form-item>
+      </div>
     </el-dialog> 
     <paperSetting :target_obj="paperSetting" @submit="paperSetting_submit"
     :visible.sync="paper_setting_dialogVisible" />

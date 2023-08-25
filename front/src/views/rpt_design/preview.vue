@@ -22,13 +22,14 @@
         </div>
 
     </el-dialog> 
-    <el-dialog v-draggable v-if="dync_item_dialogVisible" style="text-align: left;" class="report_define"
-          :visible.sync="dync_item_dialogVisible" :title="dync_item.title" 
-          :close-on-click-modal="false"   :fullscreen="dync_item.fullscreen||true"
-          direction="btt" append-to-body  
+    <el-dialog v-draggable v-if="dync_item_dialogVisible" style="text-align: left;" 
+          :visible.sync="dync_item_dialogVisible" 
+          :close-on-click-modal="false" direction="btt" append-to-body v-bind="{...{'custom-class':'dync_dialog',title:'信息'},...dync_item.dialog_params||{} }"
         > 
-      <widget-form-item  :self="dync_item"  >  </widget-form-item>
-    </el-dialog> 
+      <div v-bind="{...{style:'height:50vh'},...dync_item.params||{}}">
+        <widget-form-item  :self="dync_item"  >  </widget-form-item>
+      </div>
+    </el-dialog>
 
     <div style="position: absolute;right:40px;top:10px;">
     <div v-if="!executed || showLog" style="display:inline-block;">  
@@ -194,7 +195,7 @@ export default {
           in_exec_url:this.in_exec_url,
           fresh_ele:this.fresh_ele,
           defaultsetting:this.result.defaultsetting,
-          name_lable_map:this.name_lable_map
+          name_lable_map:this.name_lable_map          
       },      
 
     }
