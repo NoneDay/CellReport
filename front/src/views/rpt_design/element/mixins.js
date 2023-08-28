@@ -221,6 +221,8 @@ let default_mixins={
       click_fresh(p_data){
         let _this=this
         this.fresh_ele.splice(0) 
+        if(_this.context.mode=='design')
+          return;
         this.fresh_ele.push("元素选中行:"+this.self.gridName)//: Date.now() + '_' + Math.ceil(Math.random() * 99999});
         if(this.self.fresh_ds==undefined || this.self.fresh_ds.length==0) //没有需要刷新的对象，就返回
         {

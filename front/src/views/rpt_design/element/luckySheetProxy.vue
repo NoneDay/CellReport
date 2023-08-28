@@ -678,6 +678,7 @@ export default {
                   return this.replace(new RegExp(s1, "gm"), s2);
                 }
               }
+              window.cr_design=true
               luckysheet.create({
                     container: 'report',lang: 'zh',forceCalculation:false,showsheetbar:false,
                     showstatisticBarConfig:{count: false,  view: false,   zoom: false,  },

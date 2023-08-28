@@ -102,6 +102,7 @@ export function save_one(report,zb_data,imgFile) {
             x.__text=x.__text.replaceAll("\r","")
         })
     let data=new FormData();
+    x2jsone.xml2js(x2jsone.js2xml( {a:'sfsdfsdf\r\nasd'} ))
     data.append('reportName',reportFilePath)
     data.append('content',x2jsone.js2xml({report}))
     if(imgFile)

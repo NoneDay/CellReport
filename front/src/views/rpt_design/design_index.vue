@@ -749,8 +749,18 @@ export default {
         let cell=sheet.data[cur_postion.row_focus][cur_postion.column_focus]
         if(this.cur_cell!= cell)
           this.can_watch_cell=false//切换单元格后，对cur_cell.cr的第一次监控 ，不需要监控
-        this.cur_cell= cell?? {"cr":{"_displayValueExpr":"=@value","_valueExpr":"",'_extendDirection':"none"}}  
-        
+        let default_cr={"_displayValueExpr":"=@value","_valueExpr":"",'_extendDirection':"none"
+                        ,'_FONT':this.report.defaultsetting["FONT"]
+                        ,'_FONT-SIZE':this.report.defaultsetting["FONT-SIZE"]
+                        ,'_background-color':this.report.defaultsetting["BACKGROUND-COLOR"]
+                        ,'_color':this.report.defaultsetting["COLOR"]
+                  }
+        if(cell){
+          cell.cr={...default_cr ,...cell.cr}
+          this.cur_cell= cell
+        }
+        else 
+        this.cur_cell={"cr":default_cr}  
     },
     
     expr_edit(cur_cell,prop){
@@ -778,7 +788,6 @@ export default {
         cell.bg=this.report.defaultsetting["BACKGROUND-COLOR"]
     },
     rangePasteBefore(select_save,txtdata,copy_save){
-      
       if(copy_save.copyRange==undefined || select_save.length>1 || copy_save.copyRange.length>1)
         return 
       this.rangePaste_val={column:select_save[0].column_focus- copy_save.copyRange[0].column[0],
@@ -833,6 +842,11 @@ export default {
     },
     lucky_updated(val,from_cull_cell_cr){
       let _this=this
+      // 如果从这里的setCellValue API进入，则不执行，防止递归循环
+      if(this.setCellFromAPI){
+        return
+      }
+      this.setCellFromAPI = true;
       function _inner_add_del(cell,val){
         if(cell && cell.mc && cell.mc.rs==undefined){
           delete cell.v
@@ -855,17 +869,14 @@ export default {
         if(cell.cr['_topHead']!=undefined && cell.cr['_topHead'].trim()!='')
           cell.cr['_topHead']= _this.add_del_rc_rebuild_expr(val,"="+cell.cr['_topHead']).substring(1)
       }
-// 如果从这里的setCellValue API进入，则不执行，防止递归循环
-      if(this.setCellFromAPI){
-        return
-      }
+
       let grid= this.report.AllGrids.grid.find(a=>a._name==_this.sheet_window.gridName)
       function add_rc(val){
         if(_this.sheet_window.luckysheet.is_in_simapleGuid){
           delete _this.sheet_window.luckysheet.is_in_simapleGuid
          return
         }
-                //删除被lucky添加的无用单元格
+        //删除被lucky添加的无用单元格
         if("addRC"==val.type){
           _this.cull_cell_cr={}
           let ctrlValue=val.ctrlValue
@@ -874,9 +885,8 @@ export default {
             if(ctrlValue.direction=="lefttop"){
               for(let row=ctrlValue.index ;row<ctrlValue.index  + ctrlValue.len;row++){
                   for(let col=0  ;col<val.curData[row].length  ;col++){
-                      console.info(row,col)
                       let cell=val.curData[row][col]
-                      if(cell.mc){
+                      if(cell?.mc){
                         delete cell.cr
                         continue
                       }
@@ -889,9 +899,8 @@ export default {
             }else{
               for(let row=ctrlValue.index +1 ;row<=ctrlValue.index  + ctrlValue.len;row++){
                   for(let col=0  ;col<val.curData[row].length  ;col++){
-                      console.info(row,col)
                       let cell=val.curData[row][col]
-                      if(cell.mc){
+                      if(cell?.mc){
                         delete cell.cr
                         continue
                       }
@@ -906,10 +915,9 @@ export default {
           else if(ctrlValue && ctrlValue.rc=='c'){
             if(ctrlValue.direction=="lefttop"){
               for(let row=0;row<val.curData.length;row++){
-                  for(let col=ctrlValue.index  ;col<ctrlValue.index  + ctrlValue.len  ;col++){
-                      console.info(row,col)
+                  for(let col=ctrlValue.index  ;col<ctrlValue.index  + ctrlValue.len  ;col++){                      
                       let cell=val.curData[row][col]
-                      if(cell.mc){
+                      if(cell?.mc){
                         delete cell.cr
                         continue
                       }
@@ -920,10 +928,9 @@ export default {
                 }
             }else{
               for(let row=0;row<val.curData.length;row++){
-                  for(let col=ctrlValue.index+1  ;col<=ctrlValue.index  + ctrlValue.len  ;col++){
-                      console.info(row,col)
+                  for(let col=ctrlValue.index+1  ;col<=ctrlValue.index  + ctrlValue.len  ;col++){                      
                       let cell=val.curData[row][col]
-                      if(cell.mc){
+                      if(cell?.mc){
                         delete cell.cr
                         continue
                       }
@@ -936,8 +943,6 @@ export default {
           }
         }
       }//end function add_rc
-
-      this.setCellFromAPI = true;
       try{
         add_rc(val)
         if(["addRC","delRC"].includes( val.type)){
@@ -999,8 +1004,9 @@ export default {
                 if(cell.v==undefined && cell.mc!=undefined && cell.mc.cs==undefined)//不处理合并单元格
                   continue
                 if(!cell.cr) cell.cr={"_displayValueExpr":"=@value"}
-                if(!cell.cr['_displayValueExpr'])
+                if(cell.cr['_displayValueExpr']==undefined)
                   cell.cr['_displayValueExpr']="=@value"
+                
                 if(cell.bg && !cell.cr['_background-color']?.startsWith("=") && !from_cull_cell_cr) 
                   cell.cr["_background-color"]=cell.bg
                 if(cell.fc && !cell.cr['_color']?.startsWith("=") && !from_cull_cell_cr) 
@@ -1021,14 +1027,30 @@ export default {
                 if(!cell.cr._extendDirection && typeof v=='string' && v.search("^=.*(select|group)")>=0)
                   cell.cr._extendDirection="row"
                 let cellCopy=JSON.parse(JSON.stringify(cell))  //$.extend(true,{},cell)
+
+                if(cell && cell.ct && cell.ct.t=='inlineStr' ){
+                  cell.v=cell.m=value
+                  cell.ct.t='g'
+                  cell.ct.fa="General"
+                  delete cell.ct.s
+                }
+                if(cell && cell.ff==undefined)
+                  cell.ff=this.report.defaultsetting["FONT"]
+                if(cell && cell.fs==undefined)
+                  cell.fs=this.report.defaultsetting["FONT-SIZE"]
+                if(cell && cell.fc==undefined)
+                  cell.fc=this.report.defaultsetting["COLOR"]
+                if(cell && cell.bg==undefined)
+                  cell.bg=this.report.defaultsetting["BACKGROUND-COLOR"]
                 cacheCells.push({r,c,cellCopy})
               }
             }
           }
         })
-        cacheCells.forEach(one=>{
-          this.sheet_window.luckysheet.setCellValue(one.r,one.c,one.cellCopy);  
-        })
+        
+        //cacheCells.forEach(one=>{
+        //  this.sheet_window.luckysheet.setCellValue(one.r,one.c,one.cellCopy);  
+        //})
         if(cacheCells.length>0 && val?.type!="datachange"){//数据修改后，已经正确设置了
           this.can_watch_cell=false//切换单元格后，对cur_cell.cr的第一次监控 ，不需要监控
           this.cur_cell=cacheCells[0].cellCopy
@@ -1052,7 +1074,7 @@ export default {
              _this.setCellFromAPI = false; //状态重置
             return
           }
-            _this.sheet_window.luckysheet.refresh()    
+            _this.sheet_window.luckysheet.refresh()
             setTimeout(()=>{
               _this.setCellFromAPI = false; //状态重置
             })
