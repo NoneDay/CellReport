@@ -15,7 +15,7 @@ import mixins from "./mixins"
 export default {
   name:"dync-dialog",
   mixins:[mixins],
-  props:['dync_item','context'],
+  props:['dync_item','context','fresh_ele'],
   data: () => ({
     dialogVisible: true, 
   }),  

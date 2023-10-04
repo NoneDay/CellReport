@@ -412,14 +412,14 @@ export default {
     },
     changeMapLevel(p) {
       if (p.value === "国家") {
-        this.data.option.mapData = `${default_map_url}/100000_full.json`;
+        this.data.option.mapData = `${this.default_map_url}/100000_full.json`;
       }
     },
     //https://geo.datav.aliyun.com/areas_v3/bound/100000_full.json
     //https://geo.datav.aliyun.com/areas_v3/bound/410800_full.json
     changeProvince({value}) {
       if (value) {
-        this.data.option.mapData = `${default_map_url}/${value}_full.json`
+        this.data.option.mapData = `${this.default_map_url}/${value}_full.json`
         //`${
         //  this.backUrl
         //}/map/data/${value}?name=${this.getLastRegion([value])}`;
@@ -430,7 +430,7 @@ export default {
         const name = this.getLastRegion(arr);
         const code = arr[arr.length - 1];
         //this.data.option.mapData = `${this.backUrl}/map/data/${code}?name=${name}`;
-        this.data.option.mapData = `${default_map_url}/${code}_full.json`
+        this.data.option.mapData = `${this.default_map_url}/${code}_full.json`
       }
     },
     /**

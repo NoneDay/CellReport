@@ -1,7 +1,7 @@
 <template>
   <div class="widget-form-item" style="position: relative;height: 100%;width: 100%;display: flex;flex-direction: column;"  :depth="depth+1"
       :prop="self.prop" :id="'cr_id_'+self.gridName"
-      v-bind="self.params"
+      v-bind="{...self.params,...{content:undefined}}"
       :class="{active: selectWidget == self, 'required': self.required }"
       
       @click.stop="handleSelectWidget(index)"> 
@@ -49,33 +49,19 @@
       <img :src="self.icon" v-if="self.icon!=''" style="width: 20px;height: 20px;vertical-align:middle;">
       <div style="display: inline;" v-html="self.label"> </div>
     </div>
-    <div :style="{width:'100%',height:'100%','flex-grow':1,display:`flex`}" 
-    
-    >
-    
-    <component draggable=".item" v-if="context.mode=='design'"
-               :is="getComponent(self.type, self.component)"
-               :self="self" :parent="parent" 
-               :select.sync="selectWidget"  :depth="depth+1"
-               v-bind="Object.assign(this.deepClone(self),{style:Object.assign({},self.style,{height:'100%',width:'100%', flex:'1'} )}, self.params, {content:undefined,___depth:depth,depth:depth+1, size:self.size || 'mini' })"
-               
-               @change="$emit('change')">
-
-      <span v-if="params.html"
-            v-html="params.html"></span>
-    </component>
-    <component  v-else
-               :is="getComponent(self.type, self.component)"
-               :self="self" :parent="parent" 
-               :select.sync="selectWidget"  :depth="depth+1"
-               v-bind="Object.assign(this.deepClone(self),{style:Object.assign({},self.style,{height:'100%',width:'100%', flex:'1'} )}, self.params, {content:undefined,___depth:depth,depth:depth+1, size:self.size || 'mini'})"
-               
-               @change="$emit('change')">
-
-      <span v-if="params.html"
-            v-html="params.html"></span>
-    </component>
-
+    <div :style="{width:'100%',height:'100%','flex-grow':1,display:`flex`}" >
+      <component   
+                :is="getComponent(self.type, self.component)"
+                :self="self" :parent="parent" 
+                :select.sync="selectWidget"  :depth="depth+1"
+                v-bind="{...self,...(self.params||{}),
+                    ...{style: {...(self.style||{}),...{height:'100%',width:'100%', flex:'1','--x':1} }, },
+                    ...{content:undefined,optiondata:2,___depth:depth,depth:depth+1, option:undefined,size:self.size || 'mini'} 
+                  }"
+                
+                @change="$emit('change')">
+        <span v-if="params.html"  v-html="params.html"></span>
+      </component>
     </div>
      <widgetDialog v-if="widget_dialogVisible" :visible.sync="widget_dialogVisible" >
     </widgetDialog>
@@ -86,6 +72,7 @@ import mixins from "./mixins"
 export default {
   mixins:[mixins],
   inject:["has_name"],
+  props:["border_size"],
   mounted(){
     if(this.context.mode!='design'){
       if(this.context.name_lable_map==undefined)
@@ -93,6 +80,7 @@ export default {
       if(this.context.name_lable_map[this.self.gridName]==undefined)
         this.context.name_lable_map[this.self.gridName]=this.self
     }
+
     if(this.self.icon==undefined)
       this.$set(this.self,'icon',"img/m_pm.png")
     if(this.self.force_sync_param==undefined)

@@ -100,7 +100,6 @@ let dicList = [{label: '输入框',value: 'input'},
 {label: '周',value: 'week'},  {label: '年',value: 'year'}]
   
 let ynList = [{label: '否',value: false},  {label: '是',value: true  }]
-
 let alignList = [{label: '居左',value: 'left'},{label: '居中',value: 'center'},{label: '居右',value: 'right'  }]
 
   let menuOption = {menuBtn: false,column: [
@@ -353,9 +352,9 @@ export default {
             }
             Object.keys(this.all_tbl).forEach(a=>{
                 let one=this.all_tbl[a]
-                if(one.foreign_info.length==0 && one.columns.filter(x=>x.is_key=="true").length==1)
+                if(one.foreign_info.length==0 && one.columns.filter(x=>x.is_key==true).length==1)
                     one.type='字典表'
-                else if(one.columns.filter(x=>x.is_key=="true" && one.foreign_info.filter(f=>f.from== x.prop).length>0).length>0)
+                else if(one.columns.filter(x=>x.is_key==true && one.foreign_info.filter(f=>f.from== x.prop).length>0).length>0)
                     one.type='子表'
                 else
                     one.type='主表'
@@ -410,7 +409,7 @@ export default {
                     ds_link:this.data.datasource,
                     table:this.data.table.split(".")[2],
                     col_list:Enumerable.from(this.cloumn_list).select(x=>x.prop).toArray(),
-                    keys:Enumerable.from(this.cloumn_list).where(x=>x.is_key=='true').select(x=>x.prop).toArray(),
+                    keys:Enumerable.from(this.cloumn_list).where(x=>x.is_key==true).select(x=>x.prop).toArray(),
                     auto_incr_cols:Enumerable.from(this.cloumn_list).where(x=>x.auto_incr).select(x=>x.prop).toArray(),
                     crud_option:_this.code(),
                     allDict:this.allDict,
@@ -452,7 +451,7 @@ export default {
                     //delete x.dicData
                     let tmp_column=Enumerable.from(_this.all_tbl[x.m_dictData].columns).select(t=>{return {label:t.label,prop:t.prop};}).toArray();
                     console.info(tmp_column)
-                    let key=Enumerable.from(_this.all_tbl[x.m_dictData].columns).first(x=>x.is_key=="true").prop
+                    let key=Enumerable.from(_this.all_tbl[x.m_dictData].columns).first(x=>x.is_key==true).prop
                     x.children= { border: true,column:tmp_column}
                     x.props={value:`${key}`,label:`${_this.all_tbl[x.m_dictData].columns[1].prop}`}
                     x.formatter=`<!!> (row) => {
@@ -477,11 +476,15 @@ export default {
 
             option.column.forEach(ele => {
                 Object.keys(ele).forEach(key => {
-                if (vaild(ele, key) || ['data_type','dflt_value','is_nullable','auto_incr','m_dictData',''].includes(key)) delete ele[key];
+                    if(ele.is_key==false)
+                        delete ele.is_key
+                    if (vaild(ele, key) || ['data_type','dflt_value','is_nullable','auto_incr','m_dictData',''].includes(key)) 
+                        delete ele[key];
                 })
             })
-            let jsStr = JSON.stringify(option,).replaceAll("},","}\n,").replaceAll('<!!>"',"").replaceAll('"<!!>',"");
-            return jsStr;
+            let jsStr = JSON.stringify(option,).replaceAll("},","}\n,").replaceAll('<!!>"',"")
+                        .replaceAll('"<!!>',"").replaceAll('"column":[','\n"column":[\n');
+            return jsStr.replaceAll(/"(\w+)":/mg,'$1:');
         },        
     }
 }

@@ -14,7 +14,7 @@
     
     <el-row>
         <div>
-            <span>数据集</span> <el-button @click="save_data_for_init">备份</el-button>
+            <span>数据集</span> <el-button @click="save_data_for_init">备份</el-button><el-button @click="save_data_for_clear">清除备份</el-button>
             
             <el-dropdown @command="new_dataset($event)" style="float: right; padding: 3px 0">
                 <span class="el-dropdown-link">
@@ -63,7 +63,7 @@
                         </el-col>  
                         <el-col :span="4"><el-form-item label="类型" style="color:red;font-weight: 900;">{{action_target._type}} </el-form-item> </el-col>
                         <el-col v-if="action_target._type=='sql'|| action_target._type=='db'" :span="4">
-                            <el-form-item label="舍弃数值全零的行">  <el-checkbox v-model="action_target._FilterZero"></el-checkbox></el-form-item> 
+                            <el-form-item label="舍弃数值全零的行">  <el-checkbox v-model="action_target._FilterZero"  true-label="true" false-label="false"></el-checkbox></el-form-item> 
                         </el-col>
                         <el-button  type="primary" v-if="['memory','sql','userDefine'].includes(action_target._type)"  @click="sql_run">取数</el-button>
                         <!--
@@ -584,7 +584,7 @@ export default {
             .then( ({ value }) => {
                  if(_this.has_name(value))
                     return
-                _this.action_target={__text:' ',_dataSource:'',_name:value,_type:command,_fields:"[]",_FilterZero:false}
+                _this.action_target={__text:' ',_dataSource:'',_name:value,_type:command,_fields:"[]",_FilterZero:'false'}
                 if(command=="memory"){
                     _this.action_target._dataSource="memory"
                 }
@@ -628,17 +628,30 @@ innerReport(); //设计好的报表页面选中有关单元格，复制粘贴到
                 }
             }).catch(function () {});
         },
+        save_data_for_clear(){
+            this.context.report.template.before_exec_script=this.context.report.template.before_exec_script.replace(/\/\/-- 开始备份数据.*?\/\/-- 结束备份数据/igs,"").trim()
+            this.$message({
+          message: '清除备份成功。',
+          type: 'success'
+        });
+        },
     save_data_for_init(){
         if(this.context.report.template==undefined)
             this.context.report.template={}
         let t_d={}
         this.all_dataSet.filter(x=>x._dataSource!="memory").map(x=>t_d[x._name]=this.context.report_result.dataSet[x._name])
-        this.context.report.template.before_exec_script=`
-        var _init_dataset_dict_=
-            ${ JSON.stringify(t_d,null).replaceAll("{}",null).replaceAll("],[","],\n[")};
-        `
+        let txt=`
+//-- 开始备份数据
+var _init_dataset_dict_=
+    ${ JSON.stringify(t_d,null).replaceAll("{}",null).replaceAll("],[","],\n[")};
+//-- 结束备份数据
+`;
+        if(this.context.report.template.before_exec_script)
+            this.context.report.template.before_exec_script=this.context.report.template.before_exec_script.replace(/\/\/-- 开始备份数据.*?\/\/-- 结束备份数据/igs,"").trim()+txt
+        else
+            this.context.report.template.before_exec_script=txt
         this.$message({
-          message: '备份成功。下一次报表运算将会离线运行。你可以在设置(后端运行前脚本)中，删除相应备份数据，以恢复正常运行。',
+          message: '备份成功。下一次报表运算将会离线运行。',
           type: 'success'
         });
          
@@ -681,7 +694,7 @@ innerReport(); //设计好的报表页面选中有关单元格，复制粘贴到
         }
         if(ds._type=='sql' ){
             //if(ds._back_split_page==undefined) this.$set(ds,'_back_split_page',false)
-            if(ds._FilterZero==undefined) this.$set(ds,'_FilterZero',false)
+            if(ds._FilterZero==undefined) this.$set(ds,'_FilterZero','false')
         }
         this.action_target=ds
         //if(this.action_target.__text)this.action_target.__text=this.action_target.__text.replaceAll("\r",'')

@@ -19,11 +19,12 @@
       </div>
       <el-pagination  v-if="TABLEOBJ!=null" 
         :current-page.sync="cur_page"
-        :page-size.sync="self.page_size" 
-        :page-sizes="JSON.parse(self.page_sizes)"
-        :layout="context.crisMobile?'total, sizes, prev, next':'total, sizes, prev, pager, next, jumper'" 
+        :page-size.sync="self_page_size" 
+        :page-sizes="JSON.parse(self_page_sizes)"
+        :layout="layout" 
         hide-on-single-page
-        :total="cur_result.backend_split_page? cur_result.backend_total_line: TABLEOBJ.total()">
+        :page-count="page_count"
+        :total="total">
       </el-pagination>
       
     </template>
@@ -92,7 +93,7 @@
 let arrow_right_img=undefined
 let arrow_down_img=undefined
 import dyncTemplate from './dyncTemplate.vue'
-import {designGrid2LuckySheet,numToString,getRangeByText,resultGrid2LuckySheet,output_largeGrid,convert_array_to_json} from '../utils/util.js'
+import {designGrid2LuckySheet,numToString,getRangeByText,resultGrid2LuckySheet,output_largeGrid,convert_array_to_json,isMobile} from '../utils/util.js'
 import   ResultGrid2HtmlTable2   from '../utils/resultGrid2HtmlTable.js'
 import mixins from "./mixins"
 
@@ -118,6 +119,10 @@ export default {
       relation:"==",
       target_val:'',
       as_type:"string",
+      self_page_size:-1,
+      self_page_sizes:"[20, 50, 100, 200]",
+      page_count:undefined,
+      total:undefined,
     }
   },
   computed:{
@@ -131,11 +136,17 @@ export default {
     
     datasource(){
       return "表格:"+this.gridName
+    },
+    layout(){
+      if(!this.cur_result.optimize && this.cur_result.row_page_break_set.length>0)
+        return this.context.crisMobile?'  prev, next':' prev, pager, next, jumper'
+      else
+        return this.context.crisMobile?'total, sizes, prev, next':'total, sizes, prev, pager, next, jumper'
     }
   },
   
   watch: {
-    "self.page_sizes"(){
+    self_page_sizes(){
       if(this.$refs.iframe){
         let paperSetting=JSON.parse(this.cur_grid.paperSetting??
         `{"pageSize_name":"A4",
@@ -160,23 +171,19 @@ export default {
       if(this.cur_result.backend_split_page){
         this.context.queryForm._fresh_ds=JSON.stringify(['表格:'+this.gridName]) 
         this.context.queryForm._cur_page_num_=this.cur_page
-        this.context.queryForm._page_size_=this.self.page_size
+        this.context.queryForm._page_size_=this.self_page_size
         this.context.rpt_this.submit()
         return
       }
       this.grid_sort_action()
     },
-    "self.page_size"(){
-      if(!this.self.page_sizes){
-        this.self.page_sizes="[20, 50, 100, 200]"
-      }
-      if(!this.self.page_size){
-        this.self.page_size=20
-      }
+    self_page_size(newVal,oldVal){
+      if(oldVal==-1)
+        return;
       if(this.cur_result.backend_split_page){
         this.context.queryForm._fresh_ds=JSON.stringify(['表格:'+this.gridName]) 
         this.context.queryForm._cur_page_num_=1
-        this.context.queryForm._page_size_=this.self.page_size
+        this.context.queryForm._page_size_=this.self_page_size
         this.context.rpt_this.submit()
         return
       }
@@ -199,20 +206,33 @@ export default {
     
   },
   mounted(){
-    if(this.context.mode!='design'){
-      if(this.cur_result.backend_split_page){
+    let _this=this
+    if(this.context.mode!='design'){      
+      _this.self_page_sizes=_this.self.page_sizes
+      if(!_this.cur_result.optimize)
+      {
+        _this.self_page_size=_this.cur_result.tableData.length
+        if(_this.cur_result.row_page_break_set.length>0)
+        _this.page_count=_this.cur_result.row_page_break_set.length
+      }else{
+        _this.self_page_size=_this.self.page_size
+      }
+      if(!_this.self_page_sizes){
+        _this.self_page_sizes="[20, 50, 100, 200]"
+      }
+      
+      if(_this.cur_result.backend_split_page){
         //this.cur_page=this.cur_result.cur_page??1
         //this.self.page_size=this.cur_result.page_size??20
       }
     }
-
-    let _this=this
-    setTimeout(function(){//如果不加，group中新增报表的时候会导致名字混乱
-      _this.self.gridName=_this.gridName
-      _this.buildDisplayData()
-
-    })
-    
+    //else
+    {
+      setTimeout(function(){//如果不加，group中新增报表的时候会导致名字混乱
+        _this.self.gridName=_this.gridName
+        _this.buildDisplayData()
+      })
+    }
   },
   beforeDestroy(){
     let idx=this.context.all_sheet_windows.indexOf(this)
@@ -289,9 +309,10 @@ export default {
           }
           if(this.TABLEOBJ==null)
             this.$set(this,'TABLEOBJ',new ResultGrid2HtmlTable2(cur_grid,this.$el,this.self,_this.context.report_result.defaultsetting))
-          this.pager_height=this.TABLEOBJ!=undefined && (parseInt(this.self.page_size)<=this.TABLEOBJ.total() )?32:0
-          this.html_table=this.TABLEOBJ.show(this.cur_result.backend_split_page?1:this.cur_page,this.self.page_size)
-          
+          this.pager_height=this.TABLEOBJ!=undefined && (parseInt(this.self_page_size)<=this.TABLEOBJ.total() )?32:0
+          this.html_table=this.TABLEOBJ.show(this.cur_result.backend_split_page?1:this.cur_page,this.self_page_size)
+          if(this.cur_result.optimize)
+            this.total= this.cur_result.backend_split_page? this.cur_result.backend_total_line: this.TABLEOBJ.total()   
     
           //test.show(1,20)
           this.$nextTick(x=>{
@@ -315,10 +336,12 @@ export default {
               $(`#reportDiv${_this.gridName}Top tr`).each(function() {
                   //if(!this.param_grid.auto_line_height || this.defaultsetting.cr_auto_line_height!='true')
                   $(`#reportDiv${_this.gridName}TopLeft tr[data-n=${this.dataset['n']}]`).height( $(this).height() )
+                  if(!isMobile())
                   cur_grid.rowlenArr[this.dataset['n']]=$(this).height() //设置真正行高到原始数组,pdf 生成时就可以使用了
               })
               $(`#reportDiv${_this.gridName} tr`).each(function() {
                   $(`#reportDiv${_this.gridName}Left tr[data-n=${this.dataset['n']}]`).height( $(this).height() )
+                  if(!isMobile())
                   cur_grid.rowlenArr[this.dataset['n']]=$(this).height() //设置真正行高到原始数组,pdf 生成时就可以使用了
               })
 

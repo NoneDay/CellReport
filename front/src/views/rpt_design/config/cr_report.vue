@@ -44,7 +44,6 @@
     :visible.sync="paper_setting_dialogVisible" />
     
     
-      <cr_set_fresh :data="data" />
 
   </div>
 </template>

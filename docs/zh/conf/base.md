@@ -499,12 +499,14 @@ hasOption 是为了动态初始化option，他总是返回true。
 只有报表、echarts 有缺省的点击事件，可以直接调用click事件。如果是其他组件，需要自己写有关的click，如果需要刷新数据集，自己组装_this.context.clickedEle以及调用click_fresh.
 
 - window.cellreport.hn_old 控制列表头上的链接是否有用
+- window.cellreport.cr_close_fresh_message=true 关闭组件刷新提示 
 - window.cellreport.cr_hover_row   鼠标悬停时使用的格式 缺省值：'{background-color:lightgray!important;}'
 - window.cellreport.cr_active_row  鼠标点选后时使用的格式  缺省值：'{background-color: #7cbcfc!important;}'
 - window.cellreport.call_server_func 不要修改。这是调用后端使用的函数入口
 - window.cellreport.map_url 地图地址。格式：`${default_map_url}/${code}_full.json` 。如果地图存放到了static/GeoJSON下，可以设置为static/GeoJSON
 - window.cellreport.pdf_print  pdf预览时，如果为true直接显示打印预览，不设置或false，将显示中间预览，以便调整或另存到本地
 - window.cellreport.form_validate(queryForm)  form提交时的表单校验。queryForm的属性就是报表用到的参数,返回true表示校验通过，false或字符串表示校验不通过，返回字符串时将作为错误信息显示到浏览器
+- window.cellreport.convert_col_to_button 手机端是否将多层表头转换为按钮显示
 
 ## 查找组件和显示组件对话框
 this.findElelment("line_832",{parent_obj:null,dialog_params:{title:'标题'},params:{style:"height:50vh"} }) 

@@ -38,6 +38,7 @@
 export default {
     inject: ["context"],
     props: ['data'],
+    name:'cr_set_fresh',
     methods:{ 
     },
     mounted(){

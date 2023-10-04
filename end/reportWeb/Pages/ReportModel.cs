@@ -106,6 +106,8 @@ namespace reportWeb.Pages
             Regex regex = new Regex("(iPhone|iPod|Android|ios|SymbianOS)", RegexOptions.IgnoreCase);
             var isPhone = regex.IsMatch(UserAgent);
             needType = Request.Headers["needType"];
+            if (!String.IsNullOrEmpty(Request.Query["_needType_"].ToString()))
+                needType = Request.Query["_needType_"].ToString();
             if (Request.HasFormContentType && Request.Form.Keys.Contains("__call_func"))
                 needType = "json";
             string str_call_func = Request.Query["__call_func"].ToString();
@@ -124,7 +126,7 @@ namespace reportWeb.Pages
                 //if(g_report_content==null)
                 g_report_content = await CellReport.running.XmlReport.getIndexHtml(this.WebHostEnvironment.WebRootPath, Referer, Authorization);
 
-                var report_content = g_report_content.Replace("<head>", $"<head><script>var __real_referer='{Referer}';__Authorization='{Authorization}';</script>");
+                var report_content = g_report_content.Replace("<head>", $"<head><script>var __real_referer='{Referer}';__Authorization='{Authorization}';document.title='{rpt_group.name ?? "CellReport报表"}'</script>");
                 await Response.WriteAsync(report_content);
                 return;
             }
@@ -295,7 +297,9 @@ namespace reportWeb.Pages
                 cnt++;
             }
             if (last_e is NullReferenceException)
+            {
                 logger.Error(last_e.StackTrace.ToString());
+            }
             logger.Error(sb.ToString());
             return sb.ToString();
         }
@@ -402,6 +406,8 @@ namespace reportWeb.Pages
                 }
                 await Response.WriteAsync(",\"notebook\":");
                 await Response.WriteAsync(System.Text.Json.JsonSerializer.Serialize(report_env.TemplateGet("notebook"), CellReport.running.Logger.getJsonOption()));
+                await Response.WriteAsync(",\"footer2\":");
+                await Response.WriteAsync(System.Text.Json.JsonSerializer.Serialize(report_env.TemplateGet("footer2"), CellReport.running.Logger.getJsonOption()));
 
                 await Response.WriteAsync("\n}");
             }
@@ -471,8 +477,8 @@ namespace reportWeb.Pages
                         }
                         htmlWrite.Write(",\"notebook\":");
                         htmlWrite.Write(System.Text.Json.JsonSerializer.Serialize(report_env.TemplateGet("notebook"), CellReport.running.Logger.getJsonOption()));
-                        //htmlWrite.Write(",\"footer2\":");
-                        //htmlWrite.Write(System.Text.Json.JsonSerializer.Serialize(report_env.TemplateGet("footer2"), CellReport.running.Logger.getJsonOption()));
+                        htmlWrite.Write(",\"footer2\":");
+                        htmlWrite.Write(System.Text.Json.JsonSerializer.Serialize(report_env.TemplateGet("footer2"), CellReport.running.Logger.getJsonOption()));
                         htmlWrite.Write("\n}");
                     }
                     await htmlWrite.FlushAsync();

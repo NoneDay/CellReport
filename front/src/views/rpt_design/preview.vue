@@ -148,8 +148,7 @@
       </el-form>
     </div>
     <div ref="report_pane" :style="{    'flex-grow': 1,height:'90%',overflow: 'auto',color:result.defaultsetting['COLOR'],background:result.defaultsetting['BACKGROUND-COLOR']}">
-        <grid-layout-form v-if="layoutType=='gridLayout'" :layout="layout" :big_screen_scale="big_screen_scale" :big_screen_scale_x="big_screen_scale_x"
-         :big_screen_scale_y="big_screen_scale_y"
+        <grid-layout-form v-if="layoutType=='gridLayout'" :layout="layout" :scale="scale"
         >
         </grid-layout-form>          
         <widget-form v-else   :data="layout"   
@@ -179,24 +178,7 @@ export default {
   inject: ["context"],
   provide() {
     return {
-      context: {
-          all_sheet_windows:[],
-          canDraggable:false,
-          report:this.context?.report,
-          report_result:this.result,
-          mode:"preview",
-          grpId:this.grpId,
-          event:{},
-          queryForm:this.queryForm,
-          rpt_this:this,
-          allElementSet:this.context.allElementSet,
-          clickedEle:this.clickedEle,
-          //不放到这里，会导致动态runtime-template重算，如果是有滚动行的，会每次都重新跑到顶部
-          in_exec_url:this.in_exec_url,
-          fresh_ele:this.fresh_ele,
-          defaultsetting:this.result.defaultsetting,
-          name_lable_map:this.name_lable_map          
-      },      
+      context: this.create_context(),      fresh_ele:this.fresh_ele,
 
     }
   },  
@@ -226,9 +208,7 @@ export default {
         pageSize:20,
         fresh_ele:[],
         in_exec_url:{stat:false},
-        big_screen_scale:70,
-        big_screen_scale_x:70,
-        big_screen_scale_y:70,
+        scale:{x:100,y:100,v:100},
     }
   },
   watch:{
@@ -240,9 +220,9 @@ export default {
                 let form_h=_this.$refs.div_form.clientHeight+4
                 _this.$refs.report_pane.style.height=`calc(100%)`// - ${form_h}px
                 if(_this.result.defaultsetting.big_screen=='1'){
-                  _this.big_screen_scale_y=100*_this.$refs.report_pane.clientHeight/parseInt(_this.result.defaultsetting.screen_height)
-                  _this.big_screen_scale_x=100*_this.$refs.report_pane.clientWidth/parseInt(_this.result.defaultsetting.screen_width)
-                  _this.big_screen_scale=Math.min(_this.big_screen_scale_x,_this.big_screen_scale_y)
+                  _this.scale.y=100*_this.$refs.report_pane.clientHeight/parseInt(_this.result.defaultsetting.screen_height)
+                  _this.scale.x=100*_this.$refs.report_pane.clientWidth/parseInt(_this.result.defaultsetting.screen_width)
+                  _this.scale.v=Math.min(_this.scale.x,_this.scale.y)
                 }
             })    
         });
@@ -331,6 +311,26 @@ export default {
       let aa=convert_array_to_json(data)
       let ret=arrayToTree(aa,{pid:para.parent_valueField_kyz,id:para.valueField_kyz})
       return ret
+    },
+    create_context(){
+      return {
+          all_sheet_windows:[],
+          canDraggable:false,
+          report:this.context?.report,
+          report_result:this.result,
+          mode:"preview",
+          grpId:this.grpId,
+          event:{},
+          queryForm:this.queryForm,
+          rpt_this:this,
+          allElementSet:this.context.allElementSet,
+          clickedEle:this.clickedEle,
+          //不放到这里，会导致动态runtime-template重算，如果是有滚动行的，会每次都重新跑到顶部
+          in_exec_url:this.in_exec_url,
+          scale:this.scale,          
+          defaultsetting:this.result.defaultsetting,
+          name_lable_map:this.name_lable_map          
+      };
     },
     tag_click(key,val){
       console.info(val.color); 

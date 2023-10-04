@@ -1,6 +1,7 @@
 <template>
-  <div :style="{height: self.type!='el-row'?'calc(100% - '+border_size+'px)':'','width':'calc(100% - '+border_size+'px)'}"> 
-       <component :is="MainComponent" v-if="MainComponent=='el-row'" :gutter="gutter" :style="MainComponent=='el-row'?'margin-bottom: 0px;height: 100%;position: relative;overflow: auto;':'display:flex;'"
+  <div :style="{height: self.type!='el-row'?'calc(100% - '+(border_size??0)+'px)':'','width':'calc(100% - '+(border_size??0)+'px)'}"> 
+       <component :is="MainComponent" v-if="MainComponent=='el-row'" :gutter="gutter" 
+       :style="MainComponent=='el-row'?'margin-bottom: 0px;height: 100%;position: relative;overflow: auto;':'display:flex;'"
        >
             <component :is="SubComponent" :key="groupIndex"  v-for="(item, groupIndex) in self.children.column"
                     :md="item.span || 12" :xs="24" :offset="item.offset || 0"  :style="{height:(item.height)?item.height:item.style.height}"

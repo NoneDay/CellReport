@@ -221,7 +221,7 @@ function db_tableinfo(data){
                     x.format='yyyy-MM-dd HH:mm:ss';
                     x.valueFormat='yyyy-MM-dd HH:mm:ss';
                     }
-                if(x.is_key=="true") {
+                if(x.is_key==true) {
                     x.value=`<!!>_this.self.parent_obj?.${x.prop}<!!>`;
                     if(!x.auto_incr){
                         x.editDisabled=`<!!>(_this.self.parent_obj?.${x.prop})!=null<!!>`;
@@ -270,7 +270,7 @@ var schema_kind={
                       INNER JOIN sys.types AS tp   ON  C.user_type_id = tp.user_type_id   
                 where T.name='$table$'`,
                 `=cur.select(x=>{prop:x.column_name, label:x.column_name,type:"input",auto_incr:iif(x.auto_incr==true || x.auto_incr==1,true,false),
-                  is_nullable:iif(x.is_nullable==true || x.is_nullable==1,'YES','NO'),dflt_value:'',is_key:iif(x.is_key!=0,'true',''),
+                  is_nullable:iif(x.is_nullable==true || x.is_nullable==1,'YES','NO'),dflt_value:'',is_key:iif(x.is_key!=0,true,false),
                   data_type:x.data_type}).toList()` ],
            
           },
@@ -282,7 +282,7 @@ var schema_kind={
                  SELECT *,case when pk=1 and EXISTS (SELECT 1 FROM "sqlite_sequence" where name='$table$') then 1 else 0 end auto_incr
                  FROM pragma_table_info('$table$')`,
                  `=cur.select(x=>{prop:x.name, label:x.name,type:"input",auto_incr:iif(x.auto_incr==1,true,false),
-                            is_nullable:iif(x.notnull==1,'NO','YES'),dflt_value:x.dflt_value,is_key:iif(x.pk!=0,'true',''),
+                            is_nullable:iif(x.notnull==1,'NO','YES'),dflt_value:x.dflt_value,is_key:iif(x.pk!=0,true,false),
                             data_type:x.type}).toList()`],
             
           },  
@@ -327,7 +327,7 @@ var schema_kind={
                 INNER JOIN information_schema.COLUMNS B  ON A.TABLE_SCHEMA=B.TABLE_SCHEMA AND  A.TABLE_NAME=B.TABLE_NAME
                 order by B.ORDINAL_POSITION`,
                 `=cur.select(x=>{prop:x.column_name, label:x.column_name,type:"input",auto_incr:iif(x.auto_incr==1,true,false),
-                  is_nullable:iif(x.is_nullable==1,'YES','NO'),dflt_value:'',is_key:iif(x.is_key!=0,'true',''),
+                  is_nullable:iif(x.is_nullable==1,'YES','NO'),dflt_value:'',is_key:iif(x.is_key!=0,true,false),
                   data_type:x.data_type}).toList()` ],
             auto_incr_sql:'select @@IDENTITY as key;',
           }, 
@@ -335,7 +335,7 @@ var schema_kind={
 
 var tbl_default_filter=`=cur.select(x=>{
                 prop:x.ColumnName,label:x.ColumnName,type:'input',
-                is_nullable: iif(x.IsNull==1,'YES','') ,is_key:iif(x.IsKey==1,'true',''),
+                is_nullable: iif(x.IsNull==1,'YES','') ,is_key:iif(x.IsKey==1,true,false),
                 data_type: x.ColumnType} )`;
 var schema_filter=`=cur.orderBy(x=>x.ORDINAL_POSITION).select(x => {
                         prop: x.COLUMN_NAME,label: x.COLUMN_NAME,type: 'input',
@@ -595,6 +595,7 @@ function 字典_${para.table}(){
 		Int64, System.Int64,
 		DynObject,System.Dynamic.ExpandoObject,
 		Guid,System.Guid,
+		Uri,System.Uri,
 		Exception,System.Exception,
 		Task,System.Threading.Tasks.Task,
 		RandomNumber,System.Security.Cryptography.RandomNumberGenerator,

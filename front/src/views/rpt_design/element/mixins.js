@@ -1,7 +1,8 @@
 import {request} from 'axios'
 import x2js from 'x2js' 
+import loading from "@/util/loading"
 import {baseUrl} from '../api/report_api'
-import {test_data} from "../utils/util" 
+import {showDialog,find_item,test_data,findElelment} from "../utils/util" 
 let default_mixins={
     props: {
       depth:{
@@ -135,80 +136,14 @@ let default_mixins={
           return ds.slice(from,to)
       },
       findElelment(name,prop_dict){
-        if(this.context?.report_result){
-          let ret=this.context?.report_result.layout?.concat(
-            this.context?.report_result.layout_hidden||[]).filter(x=>x.element.gridName==name)
-          if(ret!=null)
-            return Object.assign({}, ret[0].element,prop_dict||{})
-        }
+        return findElelment(name,prop_dict,this)
       },
       async showDialog (ele_name, data) {
-        let _this=this
-        let Cpn = { template:`<dyncDialog :dync_item='dync_item' :context='context'></dyncDialog>`,
-            data(){
-                return {
-                    dync_item:_this.findElelment(ele_name,data),
-                    context:_this.context
-                }
-            },
-            methods:{
-            }            
-        };
-        return new Promise(function (resolve, reject) {
-          // 初始化配置参数
-          let opt = {
-            data
-          }
-          let component = Object.assign({}, Cpn)
-          
-          // 创建构造器创建实例挂载
-          let DialogC = Vue.extend(component)
-          let dialog = new DialogC()
-          //open opened close closed
-          // 关闭事件
-          let _onClose = dialog.$options.methods.close
-          dialog.$options.methods.close = function () {
-            resolve()
-            _onClose && _onClose.call(dialog)            
-          }
-          let _onClosed = dialog.$options.methods.closed
-          dialog.$options.methods.closed = function () {
-            resolve()
-            _onClosed && _onClosed.call(dialog)            
-          }
-          
-          dialog.$mount()
-          // 点击关闭按钮时会改变visible
-          dialog.$watch('visible', function (n, o) {
-            dialog === false && dialog.onClose()
-          })
-          document.body.appendChild(dialog.$el)
-        })
+        return showDialog(ele_name, data,this)
       },
       find_item(item){
-        if(this.context.mode!='design' || this.selectWidget.type=='layout')
-            return false;
-        if(this.selectWidget.type=='layout_item' && item.i==this.selectWidget.item_i)
-        {
-            return true;
-        }
-        if(item==this.selectWidget || item.element==this.selectWidget)
-        {
-            return true;
-        }
-        let children=item.element?.children?.column || item.children?.column
-        if(children)
-        {
-            for(let one in children){
-                let in_child=this.find_item(children[one])
-                if(in_child)
-                {
-                    return true;
-                }
-            }
-        }        
-        return false;
-    },
+        return find_item(item,this)
+     },
       /**
        * 刷新机制：context.clickedEle 中存放每个元素的点击数据
        * 在点击grid或report或图等元素时，需要设置 clickedEle.然后调用click_fresh，参数为点击元素的选中数据p_data
@@ -226,6 +161,13 @@ let default_mixins={
         this.fresh_ele.push("元素选中行:"+this.self.gridName)//: Date.now() + '_' + Math.ceil(Math.random() * 99999});
         if(this.self.fresh_ds==undefined || this.self.fresh_ds.length==0) //没有需要刷新的对象，就返回
         {
+          if(_this.self.click){
+            let func
+            eval(`func=function (p_data,p_this){ 
+              ${_this.self.click}
+            }`)
+            func(p_data,this)
+          }
           if(window.cellreport[`cr_click_${this.self.gridName}`]){
             window.cellreport[`cr_click_${this.self.gridName}`](p_data,this)
           }
@@ -273,8 +215,7 @@ let default_mixins={
           url= `${baseUrl}/design/preview:${grpid}`
           data.append("_fresh_params", JSON.stringify(t_params))
         }
-        request({method: 'post',url,data,withCredentials: true
-        }).then(response => {
+        request({method: 'post',url,data,withCredentials: true,showLoading:window.cellreport.fresh_ele_loading}).then(response => {
           _this.context.in_exec_url.stat=false;
           if(response.errcode && response.errcode ==1){
             _this.$notify({title: '提示',message: response.message,duration: 0});
@@ -303,11 +244,19 @@ let default_mixins={
             });
           }
           if(!_this.validatenull(response.data)){
+            _this.context.report_result.fresh_report=Enumerable.from( Object.keys(response.data??{})).select(x=>"表格:"+x).toArray().join(",")
             Object.assign(_this.context.report_result.data,response.data)
             Object.keys(response.data).forEach(name => {
             //  _this.context.report_result.data[name] =response.data[name]  
               _this.fresh_ele.push("表格:"+name);
             });
+          }
+          if(_this.self.click){
+            let func
+            eval(`func=function (p_data,p_this){ 
+              ${_this.self.click}
+            }`)
+            func(p_data,this)
           }
           if(window.cellreport[`cr_click_${_this.self.gridName}`]){
             window.cellreport[`cr_click_${_this.self.gridName}`](p_data,_this,response)

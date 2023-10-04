@@ -73,7 +73,7 @@
                <grid-layout-form v-if="widgetForm!=null && formType=='gridLayout'" ref="gridlayout"
                :layout.sync="widgetForm" 
                :select.sync="selectWidget"
-               :big_screen_scale="big_screen_scale" :big_screen_scale_x="big_screen_scale_x" :big_screen_scale_y="big_screen_scale_y"
+               :scale="scale"
                 @change="handleHistoryChange(widgetForm)"
                 >
               </grid-layout-form>          
@@ -83,7 +83,7 @@
       <!-- 右侧配置 -->
       <el-aside class="widget-config-container" :width="rightWidth"> 
         <div style="display:flex;height:100%">
-         <el-slider v-if="report.defaultsetting.big_screen=='1'" v-model="big_screen_scale" vertical style="align-self:flex-end;margin: 0;width: 10px;height: 200px;" ></el-slider>
+         <el-slider v-if="report.defaultsetting.big_screen=='1'" v-model="scale.v" vertical style="align-self:flex-end;margin: 0;width: 10px;height: 200px;" ></el-slider>
         <ul v-if="cur_select_type=='cell'" ghost-class="ghost" style="padding-left: 10px;font-size:12px;">
             <li  style="display: flex;padding-bottom: 10px;" >
               <label style="width:100px;padding-top:5px;" >扩展方向</label>
@@ -138,8 +138,8 @@
           <ul ghost-class="ghost" style="padding-left: 10px;font-size:12px;">
             <li  style="display: flex;padding-bottom: 10px;" >
               <label style="width:100px;padding-top:5px;" >是否隐藏：</label>
-              <el-input placeholder="返回true，隐藏" v-model="colrow_obj._show"></el-input>      
-              <el-button  @click="expr_edit(colrow_obj,{display:'行列是否显示的表达式',val:'_show'})" circle  type="success" size="mini" icon="el-icon-edit"
+              <el-input placeholder="返回true，隐藏" v-model="colrow_obj._hidden"></el-input>      
+              <el-button  @click="expr_edit(colrow_obj,{display:'行列是否显示的表达式',val:'_hidden'})" circle  type="success" size="mini" icon="el-icon-edit"
                               style="padding: 4px;margin-left: 5px;    width: 30px;height: 30px;">
                     </el-button>    
             </li>
@@ -366,9 +366,7 @@ export default {
           },//报表运行后的结果
         in_exec_url:{stat:false},//当前是否已经在点击后取数
         preview_dialogVisible:false,
-        big_screen_scale:100,
-        big_screen_scale_x:100,
-        big_screen_scale_y:100,
+        scale:{x:100,y:100,v:100},
         simpleGuide_dialogVisible:false,
         widget_dialogVisible:false,
         datamanger_dialogVisible:false,
@@ -404,7 +402,7 @@ export default {
           },
         widgetForm: widget_row_col_layout(),//布局显示
        queryForm:{},
-       colrow_obj:{_show:'',_row_page_break:''}
+       colrow_obj:{_hidden:'',_row_page_break:''}
       }
   },
   methods:{
@@ -440,6 +438,7 @@ export default {
         all_sheet_windows:this.all_sheet_windows,
         parent_defaultsetting:this.report.parent_defaultsetting,
         fields:this.fields   ,
+        scale:this.scale,
         templateGuide:`以等号开始的是公式，如：=cur_ds?cur_ds[1][4]:14<br/>
       cur_ds是指定的依赖数据集的数据，为一个二维数组，第一行是列名，第二行开始是数据。计数是从0开始。
       <br/>也就是说cur_ds[1]就是数据集的第一行数据
@@ -616,10 +615,10 @@ export default {
       });
       //this.selectWidget={}
       if(this.report.defaultsetting.big_screen=='1'){
-        this.big_screen_scale_y=100*this.$refs.grid_layout_form.$el.clientHeight/parseInt(this.report.defaultsetting.screen_height)
-        this.big_screen_scale_x=100*this.$refs.grid_layout_form.$el.clientWidth/parseInt(this.report.defaultsetting.screen_width)
-        this.big_screen_scale=Math.min(this.big_screen_scale_x,this.big_screen_scale_y)  
-        this.big_screen_scale_x=this.big_screen_scale_y=this.big_screen_scale_x              
+        this.scale.y=100*this.$refs.grid_layout_form.$el.clientHeight/parseInt(this.report.defaultsetting.screen_height)
+        this.scale.x=100*this.$refs.grid_layout_form.$el.clientWidth/parseInt(this.report.defaultsetting.screen_width)
+        this.scale.v=Math.min(this.scale.x,this.scale.y)  
+        //this.big_screen_scale_x=this.big_screen_scale_y=this.big_screen_scale_x 
       }
       this.setSelectWidgetForLayout();
     },
@@ -952,7 +951,7 @@ export default {
               cur_rc.splice(val.ctrlValue.index,val.ctrlValue.len)            
           }
           if(val.type=="addRC"){            
-              cur_rc.splice(val.ctrlValue.index + (val.ctrlValue.direction=="lefttop"?0:1), 0, ...Array(val.ctrlValue.len).fill({_show:''}));
+              cur_rc.splice(val.ctrlValue.index + (val.ctrlValue.direction=="lefttop"?0:1), 0, ...Array(val.ctrlValue.len).fill({_hidden:''}));
           }
           
           for(let row=0;row<val.curData.length;row++){
@@ -983,6 +982,7 @@ export default {
                   continue
                 let old_cell=curData[r-this.rangePaste_val.row][c-this.rangePaste_val.column]
                 cell.cr=JSON.parse(JSON.stringify(old_cell.cr))
+                cell.v=cell.m=cell.cr._valueExpr
                 _inner_add_del(cell,this.rangePaste_val)   
               }
             }
@@ -1113,8 +1113,8 @@ export default {
         this.setSelectWidgetForLayout();
         setTimeout(()=>{
           html2canvas(document.getElementById('cr_gridLayout'), {
-            width: _this.report.defaultsetting.screen_width*_this.big_screen_scale/100, // canvas宽度
-            height: _this.report.defaultsetting.screen_height*_this.big_screen_scale/100, // canvas高度
+            width: _this.report.defaultsetting.screen_width*_this.scale.v/100, // canvas宽度
+            height: _this.report.defaultsetting.screen_height*_this.scale.v/100, // canvas高度
             //scale:2,
             //dpi:300,
             foreignObjectRendering: true, // 是否在浏览器支持的情况下使用ForeignObject渲染
@@ -1273,7 +1273,8 @@ export default {
            this.test_and_refresh()
            return
         }
-        this.lucky_updated({range:this.cur_sheet.luckysheet_select_save,...cacheUpdate },true) 
+        if(cacheUpdate.length>0)
+          this.lucky_updated({range:this.cur_sheet.luckysheet_select_save,...cacheUpdate },true) 
       },
       deep:true,immediate: true
     }

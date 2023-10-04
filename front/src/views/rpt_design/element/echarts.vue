@@ -30,16 +30,15 @@ export default {
                 {
                     this.need_clear=true
                 }
-                this.buildDisplayData()                
+                _this.buildDisplayData() 
             },deep:true
         },         
     },
     data(){
         return {
             need_clear:this.context.mode=='design',
-            myChart:{}, 
+            myChart:null, 
             zoomData: 1,
-            
             geoCoordMap:{},
             map_url:"",
         }
@@ -55,31 +54,26 @@ export default {
             return this.self.option.labelShowFontSize || 14;
         }
     },
+    beforeDestroy(){
+      if(this.myChart){
+        this.myChart.dispose();
+        console.info("echarts dispose")
+      }
+    },
     mounted(){
         let _this=this
-        function inner_func(){
-            _this.myChart = echarts.init(_this.$refs.main);
-            // let resp=$.get("util/china.json",function(data,status){
-            //        echarts.registerMap('china', data)
-            //    })
-            try{
-                _this.buildDisplayData()
-                const erd = elementResizeDetectorMaker()
-                erd.listenTo(_this.$refs.main_parent,(element)=>{
-                    _this.$nextTick(()=>{
-                    _this.myChart.resize();
-                    })
-                })            
-            }catch (e) {
-                console.info(e)
-            }
+        try{
+          const erd = elementResizeDetectorMaker()
+          erd.listenTo(_this.$refs.main_parent,(element)=>{
+              _this.$nextTick(()=>{
+                if(_this.myChart)
+                  _this.myChart.resize();
+              })
+          })            
+        }catch (e) {
+          console.info(e)
         }
-       
-        
-        if(window.echarts==undefined)
-            seriesLoadScripts("cdn/echarts.min.js",null,inner_func)
-        else
-            inner_func()
+        _this.buildDisplayData()
     },
     methods:{
         real_map_url(){
@@ -140,8 +134,36 @@ export default {
             }
             return name.value[name.seriesIndex+1];
         },
-        buildDisplayData()
+        buildDisplayData(){  
+          let _this=this        
+          function inner_func(){
+              if(_this.myChart)
+                return;
+              if(window.echarts==undefined){
+                return
+              }
+              _this.myChart = window.echarts.init(_this.$refs.main);
+          }
+          if(window.echarts==undefined)
+          //cdn/echarts.min.js
+            //seriesLoadScripts("https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js",null,inner_func)
+            seriesLoadScripts("cdn/echarts.min.js",null,
+              function(){
+                inner_func();
+                _this.inner_buildDisplayData();
+              })
+          else
+          {
+            inner_func();
+            _this.inner_buildDisplayData()
+          }
+        },
+        inner_buildDisplayData()
         {
+          if(!this.myChart){
+            this.$refs.main.innerText="没有初始化"
+            return
+          }
             let fields=this.self.fields
             let datasource=this.self.datasource
             let __valid_data__,valid_fileds,real_data
@@ -183,9 +205,9 @@ export default {
             let _myChart=this.myChart
             let self=this.self
             let option={}
-            setTimeout(function(){
+            this.$nextTick(function(){
                 try{
-                    if(_this.need_clear)
+                    if(_this.myChart && _this.need_clear)
                     {
                         _myChart.clear()
                     }
@@ -268,8 +290,9 @@ export default {
                     console.info(e)
                     console.info("this.self.chart_option不正确")
                     console.info(option)
-                    _this.myChart.dispose()
-                    _this.myChart = echarts.init(_this.$refs.main);
+                    if(_this.myChart)
+                      _this.myChart.dispose();                    
+                    _this.myChart = window.echarts.init(_this.$refs.main);
                     console.error(e)
                 }
             })
@@ -1361,7 +1384,9 @@ function map_option (self,_this,__valid_data__) {
     {
         $.get(_this.real_map_url(),function(result){//map 方式，必须先下载注册地图再初始化myChart实例才行，否则会找不到地图
             window.echarts.registerMap(_this.real_map_url(), result);
-            _this.myChart = echarts.init(_this.$refs.main);// 不重新初始话的话，会报错 echarts.vue?3bfd:1356 TypeError: Cannot read properties of undefined (reading 'regions')
+            if(_this.myChart)
+            _this.myChart.dispose();
+            _this.myChart = window.echarts.init(_this.$refs.main);// 不重新初始话的话，会报错 echarts.vue?3bfd:1356 TypeError: Cannot read properties of undefined (reading 'regions')
             let option=map_inner_exec(0)
             
         })

@@ -2,7 +2,7 @@
 <el-tabs v-model="tab_value" value="first" v-if="ready" style="overflow: hidden; height: 100%; width: 100%">
     <el-tab-pane label="报表组管理" name="first" style="height:100%;display: flex;" ref="manager">
         <avue-crud :data="data.grp_register" :option="option_grp()" v-model="grp_obj" style="display: flex;flex-direction: column;height: 100%; "
-            @row-save="grp_rowSave"  @row-update="grp_rowUpdate" @row-del="grp_rowDelete"
+            @row-save="grp_rowSave"  @row-update="grp_rowUpdate" @row-del="grp_rowDelete" 
         >
         <template slot="db_connection_listForm">
             <avue-crud :option="db_connection_listOption()" :data="grp_obj.db_connection_list"  v-model="conn_obj"
@@ -201,7 +201,7 @@ export default {
             return {
             "addBtn": this.userInfo.username=='admin',
             "editBtn": "true",
-            height:clientHeight,
+            height:'auto',
             "delBtn": this.userInfo.username=='admin',
             "saveBtn": "true",
             "column": [
@@ -249,4 +249,10 @@ return {'errcode':json.errcode,'message':json.errmsg, 'userid':json.userid,'user
 
 <style>
 .avue-crud .el-table .el-form-item{display: inline;}
+#avue-view .avue-crud__body,#avue-view .el-card__body{
+   height: 100%; 
+}
+#avue-view .el-form{
+    height: calc(100% - 40px)
+}
 </style>

@@ -141,7 +141,7 @@ module.exports = {
         //  new MonacoWebpackPlugin({
         //    languages: ['json', 'javascript', 'html', 'css','sql']
         //  }))
-        return
+        return 
         // config.plugins.push(["equire"]);
         if (process.env.NODE_ENV !== 'development') {
           config.output.filename = 'assets/[name].[hash:8].js'

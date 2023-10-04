@@ -215,7 +215,7 @@ function build_col_arr(s_col,e_col){
 export default class ResultGrid2HtmlTable{
     constructor(param_grid,el,setting,defaultsetting){
         let {name,tableData,extend_lines,rowlenArr,hyperlink,conditionformat,
-            columnlenArr,styles,loc_style,colName_lines,my_sort,columns,
+            columnlenArr,styles,loc_style,colName_lines,my_sort,columns,row_page_break_set,
             config_merge,reportDefaultCss,optimize,abs_to_design} ={...param_grid}
         this.el=el
         
@@ -278,16 +278,8 @@ export default class ResultGrid2HtmlTable{
                 }                
             })
         })
-        this.cur_page=1
-        this.page_size=setting.page_size??20
-        if(!optimize)
-        {
-            setting.page_size=tableData.length
-        }
         if(tableData.length<=1000)
             this.cell_cf= cellFromatCompute(cdf_arr,tableData)
-
-        
         this.tableData_bridge=new Array(tableData.length)//里面存的是指向原始表的行号
         for(let idx=0;idx<tableData.length;idx++)
             this.tableData_bridge[idx]=idx
@@ -617,6 +609,9 @@ export default class ResultGrid2HtmlTable{
                 sb.append(` style='${this.calc_style(cell,max_width*this.ratio,max_height)};'`)
                 sb.append(` class=' ${cell.clazz} `)
                 let cell_sort=my_sort[`${rowNo}_${colNo}`]
+                if(this.param_grid.mobile_col_button_arr && this.param_grid.mobile_col_button_arr.length >0  && rowNo>=colName_lines[0] && rowNo<=colName_lines[1]){
+                    cell_sort=true
+                }
                 let disp=(cell.m && cell.m.v)? cell.m.v : cell.m
                 
                 if(this.tree_node_set.has(`${rowNo}_${colNo}`))
@@ -642,7 +637,7 @@ export default class ResultGrid2HtmlTable{
                    </div></td>`)
                 }
                 else
-                    sb.append(`' data-c=${colNo}><div class="cr-cell" ${style}> ${disp??''}</div></td>`)
+                    sb.append(`' data-c=${colNo}><div class="cr-cell" ${style}>${disp??''}</div></td>`)
             })
             if(gutter)
                 sb.append(`<td class="gutter"></td>`)
@@ -703,12 +698,21 @@ export default class ResultGrid2HtmlTable{
         else{
             this.fix_rows=0
         }
-        // body 
-        table_obj=this._inner_table(this.fix_rows +(cur_page-1)*page_size
-            ,this.param_grid.need_footer?
-                Math.min(this.fix_rows +cur_page*page_size ,this.param_grid.extend_lines[1]+1 )
+        let s_row,e_row
+        if(!this.param_grid.optimize && this.param_grid.row_page_break_set.length>0){
+            s_row=cur_page==1?this.fix_rows:this.param_grid.row_page_break_set[cur_page - 2]
+            
+            if(cur_page==this.param_grid.row_page_break_set.length)
+                e_row=this.param_grid.tableData.length
+            else
+                e_row=this.param_grid.row_page_break_set[cur_page-1]
+        }else{
+            s_row=this.fix_rows +(cur_page-1)*page_size
+            e_row=this.param_grid.need_footer? Math.min(this.fix_rows +cur_page*page_size ,this.param_grid.extend_lines[1]+1 )
                 : this.fix_rows +cur_page*page_size 
-            ,  col_arr)
+        }
+        // body 
+        table_obj=this._inner_table(s_row,e_row,col_arr)
         min_width=Math.min(this.el.clientWidth-this.ScrollBarWidth-2, table_obj.table_width+(this.ratio==1?0:this.ScrollBarWidth))
         sb.append(`<div id='reportDiv${this.param_grid.name}' class="cr-table__body-wrapper is-scrolling-middle" 
         style='background-color:${background_color};height: calc(100% - ${head_height+foot_height}px);width:${min_width+this.ScrollBarWidth+3}px'>\n
@@ -735,11 +739,7 @@ export default class ResultGrid2HtmlTable{
             add_other()
             sb.append(table_obj.sb.toString(''))
             // 固定列，body
-            table_obj=this._inner_table(this.fix_rows +(cur_page-1)*page_size,
-                    this.param_grid.need_footer?
-                    Math.min(this.fix_rows +cur_page*page_size ,this.param_grid.extend_lines[1]+1 )
-                    : this.fix_rows +cur_page*page_size ,
-                    build_col_arr(0,this.fix_cols))
+            table_obj=this._inner_table(s_row,e_row , build_col_arr(0,this.fix_cols))
             sb.append(`<div id='reportDiv${this.param_grid.name}Left' class="cr-table__fixed-body-wrapper" 
             style='background-color:${background_color};top: ${head_height+0.5}px;height: calc(100% - ${head_height+foot_height}px)'>\n
             <table class='cr-table__body  reportDefaultCss'  width=${table_obj.table_width}  `)  //height=${table_obj.table_height}

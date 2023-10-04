@@ -1,6 +1,6 @@
 <template>
   <div id="report_app" style="display:flex;flex-direction:column;height:100%" :style="{'overflow':result.defaultsetting.big_screen=='1'?'hidden':''}"> 
-    <iframe id="printIframe" style="display:none"></iframe>
+    <iframe v-if="result.defaultsetting.big_screen!='1'" id="printIframe" style="display:none"></iframe>
     <el-dialog v-draggable v-if="pdf_output_dialogVisible" style="text-align: left;" class="report_define"
         :visible.sync="pdf_output_dialogVisible" :title="'PDF导出和打印预览'" 
             :close-on-click-modal="false"   :fullscreen="true"
@@ -55,7 +55,8 @@
       </dyncTemplate>
       <el-form inline ref="form" v-else label-position="right" :model="queryForm" >
         <input hidden v-for="one in result.form.filter(x=>x.hide=='True')" :key="one.name" v-model="queryForm[one.name]"/>
-        <el-form-item :label="one.prompt"  v-for="one in result.form.filter(x=>x.hide=='False')" :key="one.name"
+
+        <el-form-item :label="one.prompt" v-for="one in result.form.filter(x=>x.hide=='False')" :key="one.name"
           :prop="one.name" :rules="result.defaultsetting.cr_front_validate=='true' && one.allowSpace=='False'? {required: true, message: '请选择', trigger: 'change' } :null">
           <el-input v-if="one.data_type=='string' && one.tagValueList.length==0 && one.canUsedValueFrom!='Query' " v-model="queryForm[one.name]"></el-input>
           <el-select v-if="['string','int'].includes(one.data_type) && one.canUsedValueFrom!='Query' && one.tagValueList.length>0" v-model="queryForm[one.name]" 
@@ -112,6 +113,7 @@
           <el-date-picker v-if="['datetimerange'].includes( one.data_type)" :value-format="one.dateTimeFormat" :format="one.dateTimeFormat" 
           :type="'datetimerange'" v-model="queryForm[one.name]"></el-date-picker>
           </el-form-item>
+
           <el-form-item style="text-align: center;">
             <el-button type="primary" class='form_query_button' @click="validate_submit">查询</el-button>
             
@@ -126,8 +128,9 @@
                 <el-dropdown-item  command="docx">word文档</el-dropdown-item> -->
               </el-dropdown-menu>
             </el-dropdown>
-            <el-button type="primary" class='form_query_button' @click="export_pdf">PDF预览</el-button>            
+            <el-button type="primary" class='form_query_button' @click="export_pdf">PDF预览</el-button>
           </el-form-item>
+        
       </el-form>
     </div>
     <div  ref="div_form" v-if="expand_form && crisMobile && isShow && result.defaultsetting.big_screen!='1' && result.defaultsetting['show_form']=='true'" > 
@@ -179,8 +182,8 @@
             > </nut-picker>
            
             <div  style="display: flex;flex: 0 0 auto;overflow-x: auto;"  v-if=" one.data_type=='string' && one.tagValueList.length>0 && one.allowMutil=='False'">
-              <div style="display: relative; word-break: keep-all; font-size: 14px;   padding-left: 10px; margin-right: 20px;"> <b>{{one.prompt}}</b></div>
-              <div style="position:relative;    word-break: keep-all;" v-for="item in one.tagValueList" :key="item[1]">
+              <div style="display: relative;  white-space: nowrap; word-break: keep-all; font-size: 14px;   padding-left: 10px; margin-right: 20px;"> <b>{{one.prompt}}</b></div>
+              <div style="position:relative;   white-space: nowrap;   word-break: keep-all;" v-for="item in one.tagValueList" :key="item[1]">
               <nut-button  :type="queryForm[one.name]==item[1]?'primary':'lightred'" shape="circle"   small  style="margin-right: 2px;"
                   @click.prevent="queryForm[one.name]=item[1]; result.param_liandong.includes(one.name)?change_param(one.name):submit()"> {{item[0]}}</nut-button>
               </div>
@@ -204,7 +207,7 @@
            </div>
 
            <div  style="display: flex;flex: 0 0 auto;overflow-x: auto;" v-for="one_button_arr,idx in mobile_col_button_arr" :key="idx">
-           <div style="position:relative;    word-break: keep-all;"  v-for="item,item_idx in one_button_arr.arr" :key="''+idx+'_'+item_idx">
+           <div style="position:relative;  white-space: nowrap;  word-break: keep-all;"  v-for="item,item_idx in one_button_arr.arr" :key="''+idx+'_'+item_idx">
               <nut-button  :type="one_button_arr.selected==item_idx?'red':'lightred'" @click.prevent="click_col_button(idx,item_idx)"
                shape="circle"   small  style="margin-right: 2px;"
               > {{item.txt}}</nut-button>
@@ -213,12 +216,11 @@
       </form>
        
     </div>
-    <div ref="report_pane" class="report_define" v-if="isShow" :style="{'flex-grow': 1,height:'90px',color:result.defaultsetting['COLOR'],background:result.defaultsetting['BACKGROUND-COLOR']}">
-        <grid-layout-form v-if="layoutType=='gridLayout'" :layout="layout"  :big_screen_scale="big_screen_scale" :big_screen_scale_x="big_screen_scale_x"
-         :big_screen_scale_y="big_screen_scale_y">
+    <div ref="report_pane" class="report_define"  :style="{'flex-grow': 1,height:'90px',color:result.defaultsetting['COLOR'],background:result.defaultsetting['BACKGROUND-COLOR']}">
+        <grid-layout-form v-if="isShow && report_pane_show && layoutType=='gridLayout'" :layout="layout"  :scale="scale">
         </grid-layout-form>          
-        <widget-form v-else   :data="layout"   
-        ></widget-form>
+        <widget-form v-else-if="isShow && report_pane_show && layoutType!='gridLayout'"   :data="layout"   
+        ></widget-form> <!--// 老报表只有报表，用这个组件显示-->
     </div>    
   </div>
 </template>
@@ -227,7 +229,7 @@
 import widgetForm from './WidgetForm'
 import {dateToString} from './utils/resultGrid2HtmlTable.js'
 import {run_one,get_pdf,run_download} from "./api/report_api"
-import {convert_array_to_json,arrayToTree,seriesLoadScripts,load_css_file,watermark } from "./utils/util"
+import {convert_array_to_json,arrayToTree,seriesLoadScripts,load_css_file,watermark,isMobile } from "./utils/util"
 import install_component from './install_component'
 import dyncTemplate from './element/dyncTemplate.vue'
 import paperSetting  from './paperSetting.vue'
@@ -238,6 +240,9 @@ export default {
   mounted(){    
     let _this=this
     window.onresize=this.refresh_layout 
+  },
+  beforeDestroy() {
+    clearInterval(this.intervalId)
   },
   created() {
     Vue.use(install_component)
@@ -256,23 +261,14 @@ export default {
       if (cs.reportName){
         this.reportName=cs.reportName
       }
+      this.intervalId = setInterval(this.interval_func,1000)
       let _this=this
-      setInterval(function(){
-        if(_this.setTimeout_second==0){
-          if(typeof _this.setTimeout_function=="function")
-            _this.setTimeout_function(_this)
-        }
-        _this.setTimeout_second--
-        if(_this.setTimeout_second<0)
-          _this.setTimeout_second=-1
-      },1000)
       function inner_exec(){
         if(_this.reportName)
           _this.submit()
           //run_one(_this,_this.reportName,_this.queryPara)
         else
           _this.$notify({title: '提示',message: '没有提供参数：reportName',type: 'error'});
-        //_this.refresh_layout(null,_this)
       }
       if(this.crisMobile && window.nutui==undefined){
         load_css_file("cdn/nutui@2.3.10/nutui.min.css")
@@ -285,24 +281,7 @@ export default {
   }, 
   provide() {
     return {
-      context: {
-          all_sheet_windows:[],
-          canDraggable:false,
-          crisMobile:this.crisMobile,
-          report:this.context?.report,
-          report_result:this.result,
-          mode:'run',
-          selectWidget:this.selectWidget, 
-          event:{},
-          queryForm:this.queryForm,
-          clickedEle:this.clickedEle,
-          allElementSet:this.allElementSet,
-          //不放到这里，会导致动态runtime-template重算，如果是有滚动行的，会每次都重新跑到顶部
-          in_exec_url:this.in_exec_url,
-          defaultsetting:this.result.defaultsetting,
-          rpt_this:this,
-          name_lable_map:this.name_lable_map,
-      },   fresh_ele:this.fresh_ele,   
+      context: this.create_context(),   fresh_ele:this.fresh_ele,   
 
     }
   },  
@@ -311,6 +290,7 @@ export default {
         expand_form:window.cellreport["expand_form"]??true,
         name_lable_map:{},
         isShow:false,
+        report_pane_show:true,
         grpId:0,
         selectWidget:'{"prop":"--"}',
         reportName:"",
@@ -327,7 +307,7 @@ export default {
         fresh_ele:[],
         mobile_col_arr:[ ],
         mobile_col_button_arr:[ ],
-        setTimeout_function:function(){},
+        setTimeout_function:'',
         setTimeout_second:10,
         setTimeout_exec_num:0,
         parentComponent: this,
@@ -335,9 +315,7 @@ export default {
         in_exec_url:{stat:false,run_url:""},
         pdf_output_dialogVisible:false,
         paper_setting_dialogVisible:false,
-        big_screen_scale:100,
-        big_screen_scale_x:100,
-        big_screen_scale_y:100,
+        scale:{x:100,y:100,v:100},
         dync_item_dialogVisible:false,
         dync_item:{},
         paperSetting:{pageSize_name:'A5',}
@@ -346,41 +324,71 @@ export default {
   watch:{
   },
   methods:{
+    interval_func(){
+      // 定时器。每间隔一秒调用，调用时判断setTimeout_second 是否为0 ，为0执行，只到小于0，以后就不执行。
+      //除非setTimeout_function重新被设置 
+      if(this.setTimeout_second==0){
+        if(typeof this.setTimeout_function=="function"){
+          this.setTimeout_function(this)
+          this.setTimeout_function=''// 设置为空，下次不执行，除非在上一次调用的函数里面重置
+        }
+      }
+      this.setTimeout_second--
+      if(this.setTimeout_second<0)
+      this.setTimeout_second=-1
+    },
     async paperSetting_submit(val){
       let pdf_data=await get_pdf(this.result,val)
       let datauri = URL.createObjectURL(pdf_data)
       document.getElementById("pdf_output").data =datauri
     },
     refresh_layout(ddd,that){  
-    if(that==undefined)
-      that=this
+      if(that==undefined)
+        that=this
+      if(that.result.defaultsetting.big_screen=='1'){
+          that.scale.y=100*that.$refs.report_pane.clientHeight/parseInt(that.result.defaultsetting.screen_height)
+          that.scale.x=100*that.$refs.report_pane.clientWidth/parseInt(that.result.defaultsetting.screen_width)
+          that.scale.v=Math.min(that.scale.x,that.scale.y)
+      }
       that.$set(that,'isShow',false)
-        setTimeout(() => {
-            that.$set(that,'isShow',true)
-            setTimeout(() => {
-                that.$nextTick(x=>{
-                   let form_h=that.$refs.form?that.$refs.div_form.clientHeight:0
-                    //that.$refs.report_pane.style.height=`calc(100% - ${form_h}px)`//
-                    if(that.result.defaultsetting.big_screen=='1'){
-                        that.big_screen_scale_y=100*that.$refs.report_pane.clientHeight/parseInt(that.result.defaultsetting.screen_height)
-                        that.big_screen_scale_x=100*that.$refs.report_pane.clientWidth/parseInt(that.result.defaultsetting.screen_width)
-                        that.big_screen_scale=Math.min(that.big_screen_scale_x,that.big_screen_scale_y)
-                    }
-                    document.title = (that.result.data[Object.keys(that.result.data)[0]]?.title)   || 'CellReport'
-                    if(window.after_show_report_hook){window.after_show_report_hook()}
-                })
-            });
-        });
+      setTimeout(() => {
+          that.$set(that,'isShow',true)
+          setTimeout(() => {
+            let ks=Object.keys(that.result.data)
+            if(ks.length>0)
+              document.title = (that.result.data[ks[0]]?.title)   || document.title 
+            if(window.after_show_report_hook){window.after_show_report_hook()}
+          });
+      });
     },
-    click_col_button(idx,item_idx){
-      this.$set(this.mobile_col_button_arr[idx],'selected',item_idx)
-      this.mobile_col_button_arr.splice(idx+1)
-      if(this.mobile_col_button_arr[idx].arr[item_idx].arr.length>0)
-        this.mobile_col_button_arr.push({selected:0,arr:this.mobile_col_button_arr[idx].arr[item_idx].arr })
-      let that=this
-      while(that && that.$el.id!='report_app')
-        that=that.$parent
-      this.refresh_layout(null,that)
+    click_col_button(line_idx,col_idx){
+      this.$set(this.mobile_col_button_arr[line_idx],'selected',col_idx)
+      this.mobile_col_button_arr.splice(line_idx+1)
+      let i_col_idx=col_idx
+      for(let idx=line_idx;;idx++){
+          let cur_item=this.mobile_col_button_arr[idx]
+          if( cur_item.arr[i_col_idx].arr.length>0){
+            this.mobile_col_button_arr.push({selected:0,arr:cur_item.arr[i_col_idx].arr })
+            i_col_idx=0;
+          }
+          else
+              break
+      }
+      let last_item=this.mobile_col_button_arr[this.mobile_col_button_arr.length-1]
+      if(this.mobile_col_button_arr.length>1 && last_item.arr.length==1 && last_item.selected==0 && last_item.arr[0].col_span[0]==last_item.arr[0].col_span[1])
+      {
+        
+        let up_item=this.mobile_col_button_arr[this.mobile_col_button_arr.length-2]
+        if(up_item.arr[up_item.selected].txt==last_item.arr[0].txt)
+        this.mobile_col_button_arr.splice(-1)
+      }
+      if(window.cellreport.hook && typeof window.cellreport.hook=='function'){
+        window.cellreport.hook("click_col_button", this.mobile_col_button_arr)
+      }
+      this.report_pane_show=false
+      this.$nextTick(() => {
+        this.report_pane_show=true
+      });
     },
     marked(val){
       //seriesLoadScripts("cdn/editor.md-master/lib/marked.min.js")
@@ -456,6 +464,28 @@ export default {
         })        
       }
     },
+    create_context(){
+      return {
+          all_sheet_windows:[],
+          canDraggable:false,
+          crisMobile:this.crisMobile,
+          //report:this.context?.report,  //这里要重新检查
+          report_result:this.result,
+          mode:'run',
+          selectWidget:this.selectWidget, 
+          event:{},
+          queryForm:this.queryForm,
+          clickedEle:this.clickedEle,
+          allElementSet:this.allElementSet,
+          //不放到这里，会导致动态runtime-template重算，如果是有滚动行的，会每次都重新跑到顶部
+          in_exec_url:this.in_exec_url,
+          defaultsetting:this.result.defaultsetting,
+          rpt_this:this,
+          name_lable_map:this.name_lable_map,
+          scale:{x:100,y:100,v:100},
+      }
+    },
+    
     watermark(cfg){
       if(typeof cfg=="string"){
         watermark({"watermark_txt":cfg})
@@ -545,11 +575,7 @@ export default {
     show_tips(){return window.cellreport.show_tips},
     parentCompent(){ return this},
     crisMobile(){
-        let flag = navigator.userAgent.match(/(phone|pad|pod|iPhone|iPod|ios|iPad|Android|Mobile|BlackBerry|IEMobile|MQQBrowser|JUC|Fennec|wOSBrowser|BrowserNG|WebOS|Symbian|Windows Phone)/i)
-        // localStorage.setItem('isiphone',flag)
-        //localStorage.setItem('ismobile',flag?1:0)
-      console.info(flag)
-        return flag!=null && flag.length>0;
+        return isMobile();
     },
     parentHeight(){
         return this.$parent.$el.clientHeight
@@ -559,8 +585,7 @@ export default {
       return 'gridLayout'
       else
       return 'divLayout'
-    },
-
+    }
   },
 }
 </script>
@@ -586,22 +611,7 @@ html, body, #report_app {
 .report_define .widget-form-container .el-form {
     height: 100%;
 }
-.report_define .el-tabs--border-card .el-tabs__content {
-    height: calc(100% - 40px);
-    width:100%
-}
 
-.CodeMirror { /*不加margin border codemirror的光标会有问题，行尾不出现光标，行内遇到空白会消失 */
-  width: 100%;
-  margin: 0 0 0 10px;
-  border: 1px solid black;
-  font-size : 11px;
-    line-height : 150%;
-    height: 100%!important; 
-  }
-.el-tabs--border-card>.el-tabs__content {
-    padding: 2px;
-}
 .el-form-item--mini.el-form-item, .el-form-item--small.el-form-item {
     margin-bottom: 1px;
 }
@@ -641,10 +651,16 @@ div::-webkit-scrollbar-track {
   background   : transparent;
   border-radius: 10px;
 }
-    .border-box-content {
+
+.border-box-content {
       display: flex;
       justify-content: center;
       align-items: center;
+      position: relative!important;
+      width: calc(100% - var(--border_size) * 2px)!important;
+      height: calc(100% - var(--border_size) * 2px)!important;
+      top: calc(var(--border_size) * 1px);
+      left: calc(var(--border_size) * 1px);
     }
     .report_define .el-dialog{
       display: flex;

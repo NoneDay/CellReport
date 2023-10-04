@@ -8,7 +8,10 @@ Vue.use(window.AVUE, {size: 'mini'})
 Vue.config.productionTip = false
 import loading from "@/util/loading"
 import axios from 'axios'
-
+import DlgDraggable from "vue-element-dialog-draggable"
+Vue.use(DlgDraggable, {
+  containment: true //Constrains dragging to within the bounds of the window.  Default: false.
+});
 //axios.defaults.timeout = 100*1000;
 
 //axios.defaults.baseURL = baseUrl;
@@ -17,6 +20,8 @@ import { Message } from 'element-ui'
 import website from '@/config/website';
 //HTTPrequest拦截
 axios.interceptors.request.use(config => {
+  if(config.showLoading)
+    loading.show(config)
   const meta = (config.meta || {});
   const isToken = meta.isToken === false;
   if(config.headers['needType']==undefined)
@@ -49,6 +54,8 @@ axios.interceptors.response.use(async res => {
   if (statusWhiteList.includes(status)) return Promise.reject(res);
   //如果是401则跳转到登录页面
   if (status === 401) store.dispatch('FedLogOut').then(() => router.push({ path: '/login' }));
+  if(res.config.showLoading)
+    loading.hide(res.config)
   if(res.data?.message && res.data.message.search('正在刷新缓存')>=0){
       {
           loading.show(res.config)
@@ -70,12 +77,17 @@ axios.interceptors.response.use(async res => {
     return res;
   else
     return res.data;
-}, error => {
+}, (error) => {
   let err_txt=error.response.data?.message||error.response.statusText
   Message({
       message: err_txt,duration:10000,showClose: true,
       type: 'error'
   })
+  try{
+    if(res&&res?.config?.showLoading){
+      loading.hide(res.config)
+    }
+  }catch{}
   return Promise.reject(new Error(err_txt));
 })
 new Vue({

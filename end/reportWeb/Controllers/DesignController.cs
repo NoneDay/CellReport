@@ -166,10 +166,12 @@ namespace reportWeb.Controllers
                 {
                     foreach (var item in JsonDocument.Parse(_fresh_params).RootElement.EnumerateArray())
                     {
-                        report_env.addParam(item.GetProperty("name").GetString(),
-                            item.GetProperty("value").ValueKind == JsonValueKind.Number
-                            ? item.GetProperty("value").GetDecimal()
-                            : item.GetProperty("value").GetString());
+                        object val = null;
+                        if (item.GetProperty("value").ValueKind == JsonValueKind.Number)
+                            val = item.GetProperty("value").GetDecimal();
+                        else
+                            val = item.GetProperty("value").GetString();
+                        report_env.addParam(item.GetProperty("name").GetString(), val);
                     }
                 }
                 reportDefine.calcGridNames = calcGridNames?.ToArray();
@@ -181,7 +183,10 @@ namespace reportWeb.Controllers
                 exprFaced.getVariableDefine("_zb_user_").value = rpt_group.zb_user;
                 exprFaced.getVariableDefine("_zb_password_").value = rpt_group.zb_password;
                 exprFaced.getVariableDefine("_rpt_group_").value = rpt_group;
-                exprFaced.getVariableDefine("_need_dataset_").value = (_createFormParam != true);
+                if (_createFormParam || (calcDsNames != null && calcDsNames.Count > 0) || (calcGridNames != null && calcGridNames.Count > 0))
+                    exprFaced.getVariableDefine("_need_dataset_").value = false;
+                else
+                    exprFaced.getVariableDefine("_need_dataset_").value = true;
                 exprFaced.addVariableForRoot("_page_size_", getFormValue("_page_size_"));
                 exprFaced.addVariableForRoot("_cur_page_num_", getFormValue("_cur_page_num_"));
                 if (_createFormParam == true)
@@ -219,8 +224,8 @@ namespace reportWeb.Controllers
                                 }
                                 catch (Exception ex)
                                 {
-                                    //if (cur_exception == null)
-                                    cur_exception = ex;
+                                    if (cur_exception == null)
+                                        cur_exception = ex;
                                 }
 
                                 if (cur_exception != null)
@@ -231,6 +236,9 @@ namespace reportWeb.Controllers
                                     jsonWriter.Write("\"errcode\":1,\"message\":");
                                     jsonWriter.Write(JsonSerializer.Serialize(message, json_option));
                                 }
+                                jsonWriter.Write(",\"footer2\":");
+                                jsonWriter.Write(System.Text.Json.JsonSerializer.Serialize(report_env.TemplateGet("footer2"), CellReport.running.Logger.getJsonOption()));
+
                                 jsonWriter.Write(",\"_zb_var_\":");
                                 if (exprFaced.getVariable("_zb_var_") != null)
                                 {

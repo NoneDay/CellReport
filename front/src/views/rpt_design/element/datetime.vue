@@ -33,7 +33,7 @@ export default {
       return this.date.format(format);
     },
     styleName () {
-        console.info(this.self.option)
+        //console.info(this.self.option)
       return {
         width: "100%",
         height: "100%",

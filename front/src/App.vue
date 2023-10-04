@@ -44,6 +44,12 @@ export default {
 .cm-s-cobalt span.cm-atom {
     color: #b4c45d;
 }
+.border-box-content {
+      width: calc(100% - var(--border_size) * 2px)!important;
+      height: calc(100% - var(--border_size) * 2px)!important;
+      top: calc(var(--border_size) * 1px);
+      left: calc(var(--border_size) * 1px);
+    }
 @font-face {font-family: "iconfont";
   src: url('//at.alicdn.com/t/font_567566_pwc3oottzol.eot?t=1548038380635'); /* IE9 */
   src: url('//at.alicdn.com/t/font_567566_pwc3oottzol.eot?t=1548038380635#iefix') format('embedded-opentype'), /* IE6-IE8 */

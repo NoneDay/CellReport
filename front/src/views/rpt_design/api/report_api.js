@@ -2,7 +2,7 @@ import x2js from 'x2js'
 const x2jsone=new x2js(); //实例
 import loading from "@/util/loading"
 import axios, {request} from 'axios'
-import {load_css_js} from '../utils/util'
+let tool=require('../utils/util.js')
 let baseUrl=""
 //import { baseUrl } from '@/config/env'; 
 export { baseUrl}
@@ -97,12 +97,12 @@ export function save_one(report,zb_data,imgFile) {
     let arr=report.reportName.split(":")
     let grpId=arr[0]
     let reportFilePath=arr[1]
-    report.dataSets.dataSet.forEach(x=>
+    report.dataSets?.dataSet?.forEach(x=>
         {if(x.__text)
             x.__text=x.__text.replaceAll("\r","")
         })
     let data=new FormData();
-    x2jsone.xml2js(x2jsone.js2xml( {a:'sfsdfsdf\r\nasd'} ))
+    //x2jsone.xml2js(x2jsone.js2xml( {a:'sfsdfsdf\r\nasd'} ))
     data.append('reportName',reportFilePath)
     data.append('content',x2jsone.js2xml({report}))
     if(imgFile)
@@ -291,7 +291,7 @@ export async function preview_one(_this,createFormParam=false,param_name=null) {
             Object.keys(window.cellreport).forEach(x=>{
                 if(x.startsWith("cr_click")) delete window.cellreport[x]
             })
-            _this.last_js_cript=load_css_js(_this.context.report_result.footer2,"report_back_css")
+            _this.last_js_cript=tool.load_css_js(_this.context.report_result.footer2,"report_back_css")
             eval("(function(){\n"+_this.last_js_cript+"\n})()")
             Object.entries(_this.context.clickedEle).forEach(kv=>{
                 if(kv[1].self.content){
@@ -419,17 +419,23 @@ export function run_one(_this,reportFilePath,_param_name_=null,loading_conf=null
             return
         }
         else if(_fresh_ds){
-            Object.assign(_this.result.dataSet,response_data.dataSet)
-            Object.assign(_this.result.data,response_data.data)
+            Object.keys(response_data.dataSet).forEach(x=>{
+                _this.result.dataSet[x]=response_data.dataSet[x]
+            })
+            Object.keys(response_data.data).forEach(x=>{
+                _this.result.data[x]=response_data.data[x]
+            })
+            //Object.assign(_this.result.dataSet,response_data.dataSet)
+            //Object.assign(_this.result.data,response_data.data)
         }
         else{
             Object.assign(_this.result,response_data)
         }
         
-        _this.last_js_cript=load_css_js(_this.result.footer2,"report_back_css")
-        let tool=require('../utils/util.js')
+        _this.last_js_cript=tool.load_css_js(_this.result.footer2,"report_back_css")
+        //let tool=require('../utils/util.js')
         eval("(function(){\n"+_this.last_js_cript+"\n})()")
-        _this.setTimeout_function=eval("(function(){\n return "+_this.setTimeout_function.toString()+"\n})()")
+        //_this.setTimeout_function=eval("(function(){\n return "+_this.setTimeout_function?.toString()+"\n})()")
         if(_fresh_ds){
             loading.hide(loading_conf)
             return  
@@ -448,7 +454,7 @@ export function run_one(_this,reportFilePath,_param_name_=null,loading_conf=null
         }
         
         //手机端列表头转按钮
-        if( window.convert_col_to_button && _this.layout.length==1 && Object.keys(_this.result.data).length==1)
+        if( (window.convert_col_to_button || window.cellreport.convert_col_to_button) && _this.layout.length==1 && Object.keys(_this.result.data).length==1)
         { 
             let grid_result
             if( _this.layout[0].element.children && _this.layout[0].element.children.column.length==1 
@@ -465,10 +471,14 @@ export function run_one(_this,reportFilePath,_param_name_=null,loading_conf=null
                 let all_t_arr=[]
                 for(let line_idx=grid_result.colName_lines[0];line_idx<grid_result.colName_lines[1];line_idx++){
                     let start_str,start_col=Number.parseInt(grid_result.fix_cols)
+                    if(start_col<0) {
+                        start_col=1
+                        grid_result.fix_cols="1"
+                    }
                     let t_arr=[]
                     all_t_arr.push(t_arr)
                     for(let col_idx=Number.parseInt(grid_result.fix_cols);col_idx<grid_result.tableData[line_idx].length;col_idx++)
-                    {
+                    {//从当前行的固定列开始，按 单元格值 进行分段 存储。存放内容：当前段的内容，起始列和终止列，以及一个空数组
                         if(start_str ==undefined)
                             start_str=grid_result.tableData[line_idx][col_idx]
                         else if(start_str!=grid_result.tableData[line_idx][col_idx]){
@@ -485,16 +495,23 @@ export function run_one(_this,reportFilePath,_param_name_=null,loading_conf=null
                     let parent_idx=0
                     for(let i=0;i<all_t_arr[idx].length;i++)
                     {
-                        let parent_col_span=all_t_arr[idx-1][parent_idx].col_span
-                        let cur_span=all_t_arr[idx][i].col_span
-                        if(cur_span[0]>=parent_col_span[0] && cur_span[1]<=parent_col_span[1])
-                        {
-                            all_t_arr[idx-1][parent_idx].arr.push(all_t_arr[idx][i])
-                            continue
-                        }
-                        if(cur_span[0]<parent_col_span[0]){
+                        if(all_t_arr[idx-1][parent_idx]==undefined){
                             col_vaild=false
                             break
+                        }
+                        let parent_col_span=all_t_arr[idx-1][parent_idx].col_span
+                        let cur_span=all_t_arr[idx][i].col_span
+                        if(cur_span[0]<parent_col_span[0]){//下级和上级有交叉，就不能转换
+                            col_vaild=false
+                            break
+                        }
+                        //else if(cur_span[0]==parent_col_span[0] && cur_span[1]==parent_col_span[1] && all_t_arr.length==idx+1){
+                        //    continue// 如果现在是最后一行，并且下级和上级的列完全一样，就跳过去。
+                        //}
+                        else if(cur_span[0]>=parent_col_span[0] && cur_span[1]<=parent_col_span[1])
+                        {//下级分组能被上级分组完全包含，就加入上级分组的arr里面
+                            all_t_arr[idx-1][parent_idx].arr.push(all_t_arr[idx][i])
+                            continue
                         }
                         i--
                         parent_idx++
@@ -504,33 +521,71 @@ export function run_one(_this,reportFilePath,_param_name_=null,loading_conf=null
                 }
                 if(col_vaild ){
                     _this.mobile_col_arr=all_t_arr[0]
+                    for(let idx=0;idx<_this.mobile_col_arr.length;idx++)
+                    {
+                        deepTree(_this.mobile_col_arr[idx],null)
+                    } 
                     _this.mobile_col_button_arr=[ {selected:0,arr:_this.mobile_col_arr}]  
-                    for(let idx=0;;idx++){
-                        if(_this.mobile_col_button_arr[idx].arr[0].arr.length>0)
-                            _this.click_col_button(idx,0)
+                    
+                    for(let line_idx=0;;line_idx++){
+                        let cur_item=_this.mobile_col_button_arr[line_idx]
+                        if( cur_item.arr[0].arr.length>0){
+                            _this.mobile_col_button_arr.push({selected:0,arr:_this.mobile_col_button_arr[line_idx].arr[0].arr })
+                        }
                         else
                             break
+                    }
+                    let last_item=Enumerable.from(_this.mobile_col_button_arr).last()
+                    if(last_item.arr.length>0 && last_item.arr[0].col_span[0]==last_item.arr[0].col_span[1])
+                    {
+                    if(Enumerable.from(_this.mobile_col_button_arr).all(x=>x.selected==0) && last_item.arr.length>1)
+                        last_item.selected=1
                     }
                     grid_result.mobile_col_button_arr=_this.mobile_col_button_arr
                 }
             }
         }
 
-        _this.isShow=false
-        setTimeout(() => {
-            _this.isShow=true
+        //_this.isShow=false
+        //setTimeout(() => {
+        //    _this.isShow=true
             _this.refresh_layout(null,_this)
-            
             loading.hide(loading_conf)
-            
-        });
+        //});
     }).catch(error=> {
         loading.hide(loading_conf) 
-        _this.$notify({title: '提示',message: error,type: 'error',duration:0});
+        //console.error(error)
+        //let err_txt=error.response.data?.message||error.response.statusText
+        _this.$alert(error.toString());
     })
     
 }
-
+function deepTree(cur_item,parent_item){
+    for(let idx=0;idx<cur_item.arr.length;idx++)
+    {
+        deepTree(cur_item.arr[idx],cur_item)
+    }
+    if( cur_item.arr.length==0 && parent_item && parent_item.arr.length==1 && cur_item.txt==parent_item.txt){
+        if(cur_item.col_span[0]==parent_item.col_span[0] && cur_item.col_span[1]==parent_item.col_span[1]  ){
+            parent_item.arr=[]
+            // 如果现在是最后一行，并且下级和上级的列完全一样，就跳过去。
+            return
+        }
+    }
+    if(parent_item==null)   
+        return
+    let can_del=true
+    for(let i=0;i<parent_item.arr.length;i++){
+        let x=parent_item.arr[i]
+        if(x.col_span[0]!=x.col_span[1] || x.arr.length!=0){
+            can_del=false
+            break
+        }
+    }
+    if(can_del){
+     parent_item.arr=[]
+    }
+}
 export function rptList(grpId,loc_path) {
     return request({
         method: 'get',

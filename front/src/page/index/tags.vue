@@ -1,5 +1,5 @@
 <template>
-  <div class="avue-tags"
+  <div class="avue-tags" style="margin-bottom: 1px;"
        v-if="showTag">
     <!-- tag盒子 -->
     <div v-if="contextmenuFlag"
