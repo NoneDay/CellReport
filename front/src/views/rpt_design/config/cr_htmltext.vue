@@ -121,6 +121,7 @@ export default {
         if (element._is_large == "0") {
           ret.push(`表格明细数据:${element._name}`);
           ret.push(`表格汇总数据:${element._name}`);
+          ret.push(`表格明细及汇总数据:${element._name}`);
         }
       });
       //this.context.report.AllGrids.grid.forEach(element=>{

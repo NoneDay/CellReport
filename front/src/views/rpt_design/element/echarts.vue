@@ -207,7 +207,7 @@ export default {
             let option={}
             this.$nextTick(function(){
                 try{
-                    if(_this.myChart && _this.need_clear)
+                    if(_this.context.mode!='design' || _this.need_clear )
                     {
                         _myChart.clear()
                     }

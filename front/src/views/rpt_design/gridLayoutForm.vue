@@ -2,7 +2,7 @@
     <div  v-if="true" @click.prevent="click_layout" 
         class="widget-form-container gridLayout" ref='layout_div' 
         :style="(context.mode=='design'&&defaultsetting.big_screen=='1'?`position: relative;    width: 5000px;    height: 3000px;
-    background: url(https://img.alicdn.com/tfs/TB184VLcPfguuRjSspkXXXchpXa-14-14.png) repeat;flex: 1;overflow: auto;`
+    background: url(img/bigscreen-bg-14-14.png) repeat;flex: 1;overflow: auto;`
     :`position: relative; width: 100%;height: 100%`) +`;--scale_v:${scale.v};--scale_x:${scale.x};--scale_y:${scale.y}`" 
 >
         <grid-layout :layout.sync="layout" ref="gridLayout"  id="cr_gridLayout" 
@@ -20,8 +20,8 @@
                         height:defaultsetting.big_screen=='1'?defaultsetting.screen_height+'px':'100%',
                         transform:defaultsetting.big_screen=='1'?`scale(${(context.mode=='design'?scale.v:scale.x)/100},${(context.mode=='design'?scale.v:scale.y)/100})`:'scale(1)',
                         'transform-origin': '0 0',
-                        'background': 'no-repeat url('+defaultsetting.backgroundImage+')  0% 0% / 100% 100% '+defaultsetting['BACKGROUND-COLOR']
-                        ,'background-color':defaultsetting['BACKGROUND-COLOR'],
+                        'background': 'no-repeat '+calc_img_url(defaultsetting.backgroundImage)+' 0% 0% / 100% 100% '+defaultsetting['BACKGROUND-COLOR'],
+                        'background-color':defaultsetting['BACKGROUND-COLOR'],
                         'color':defaultsetting['COLOR'],
                         'font-family':defaultsetting['FONT'],
                         'font-size':defaultsetting['FONT-SIZE']
@@ -48,15 +48,15 @@
                        -->
             <component :is="item.bg && item.bg.border_box?item.bg.border_box:'div'"  
              v-if="isShow && item.show" class="no-drag widget-form-list" :ref="'border_box'+item.i" 
-             :style="{width:'100%',height:'100%','--border_size':item.bg.border_option.gap??14}"
+             :style="{width:'100%',height:'100%','background-color':item.bg['BACKGROUND-COLOR'],'--border_size':item.bg.border_option.gap??14}"
              @mouseenter="mouseEnter_func(item)" @mouseleave="mouseOver_func(item)" 
-             :title="border_title(item)"
+             :title="item.bg?.border_box=='dv-border-box-11'?border_title(item):undefined"
              v-bind="{...(item.bg.border_box && item.bg.border_box!='div')?item.bg.border_option : {} }"
              >
                 <div :style="{ 'height':'100%','width':'100%',
                 transform: item.bg.is_rotate?'rotate(360deg)':'',
                 animation: item.bg.is_rotate?item.bg.rotate_second+'s linear 0s infinite normal none running '+(item.bg.rotate_direction||'rotation'):'',
-                'background-repeat': 'no-repeat','background': 'url('+item.bg.backgroundImage+')  0% 0% / 100% 100% '+item.bg['BACKGROUND-COLOR']}"
+                'background-repeat': 'no-repeat','background': calc_img_url(item.bg.backgroundImage)+' 0% 0% / 100% 100% '}"
                 style="position:absolute;top:0px;left:0px;z-index:-1">
                 </div>
                 <widget-form-group 
@@ -240,6 +240,9 @@ export default {
         }
     },
     methods: { 
+        calc_img_url(url){//如果返回空字符串，将会引起不必要的一次对当前地址的访问 data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='10'></svg>
+            return !url || url==''?"url()":`url(${url})`
+        },
         border_title(item){
             let title=(item?.bg?.border_option?.title)
             if(!title)
@@ -410,6 +413,7 @@ background:url("data:image/svg+xml;utf8,<svg t='1641536477492' class='icon' view
                     gridName =name_prefix.replace(/-/, "_") +"_" + Math.ceil(Math.random() * 999);
                 }while(_this.has_name(gridName));                
                 one.gridName=gridName 
+                one.prop = Date.now() + '_' + Math.ceil(Math.random() * 99999)
                 _this.context.allElementSet?.add(gridName)
 
                 if(one.children?.column){

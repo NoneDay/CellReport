@@ -73,11 +73,11 @@ module.exports = {
             filename: 'index.html'
           },
       //（2）输出多个页面
-      design: {
-        template: "public/design_index.html",
-        entry: "src/views/rpt_design/design_main.js",
-        filename: "design_index.html"
-      },
+      //design: {
+      //  template: "public/design_index.html",
+      //  entry: "src/views/rpt_design/design_main.js",
+      //  filename: "design_index.html"
+      //},
       run: {
         template: "public/run_index.html",
         entry: "src/views/rpt_design/run_main.js",

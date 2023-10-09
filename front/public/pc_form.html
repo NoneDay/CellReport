@@ -1,0 +1,89 @@
+<template>
+  <div style=" width: 100%; height: 100%;">
+  <el-form inline ref="form" label-position="right" :model="queryForm" >
+    <input hidden v-for="one in result.form.filter(x=>x.hide=='True')" :key="one.name" v-model="queryForm[one.name]"/>
+    <el-form-item :label="one.prompt" v-for="one in result.form.filter(x=>x.hide=='False')" :key="one.name"
+      :prop="one.name" :rules="result.defaultsetting.cr_front_validate=='true' && one.allowSpace=='False'? {required: true, message: '请选择', trigger: 'change' } :null">
+      <el-input v-if="one.data_type=='string' && one.tagValueList.length==0 && one.canUsedValueFrom!='Query' " v-model="queryForm[one.name]"></el-input>
+      <el-select v-if="['string','int'].includes(one.data_type) && one.canUsedValueFrom!='Query' && one.tagValueList.length>0" v-model="queryForm[one.name]" 
+        collapse-tags  @change="change_param(one.name)" clearable filterable default-first-option :allow-create="one.allowCreate=='True'"
+        :multiple="one.allowMutil=='False'?false:true">
+        <li v-if="one.allowMutil=='False'?false:true" class="el-select-dropdown__item">
+          <el-link type="primary" style="float: left" @click="queryForm[one.name]=one.tagValueList.map(x=>x[1])"> 全选</el-link>
+          <el-link type="primary"  style="float: right; color: #8492a6; font-size: 13px" @click="queryForm[one.name]=[]"> 全不选</el-link>
+        </li>
+         <el-option
+            v-for="item in one.tagValueList"
+            :key="item[1]"
+            :label="item[0]"
+            :value="item[1]">
+          </el-option>
+      </el-select>      
+      <el-select v-if="['string','int'].includes(one.data_type) && one.canUsedValueFrom=='Query' && one.parent_valueField_kyz=='' " v-model="queryForm[one.name]" 
+        collapse-tags  @change="change_param(one.name)" clearable filterable default-first-option :allow-create="one.allowCreate=='True'"
+        :multiple="one.allowMutil=='False'?false:true">
+        <li v-if="one.allowMutil=='False'?false:true" class="el-select-dropdown__item">
+          <el-link type="primary" style="float: left" @click="queryForm[one.name]=convert_param_array_to_json(result.dataSet[one.dataSetName_kyz][0],one).map(x=>x[one.valueField_kyz]+'')"> 全选</el-link>
+          <el-link type="primary"  style="float: right; color: #8492a6; font-size: 13px" @click="queryForm[one.name]=[]"> 全不选</el-link>
+        </li>
+         <el-option
+            v-for="item in convert_param_array_to_json(result.dataSet[one.dataSetName_kyz][0],one)"
+            :key="item[one.valueField_kyz]+''"
+            :label="item[one.tagField_kyz]"
+            :value="item[one.valueField_kyz]+''">
+          </el-option>
+      </el-select>  
+
+    <el-cascader v-if="['string','int'].includes(one.data_type) && one.canUsedValueFrom=='Query' && one.parent_valueField_kyz!='' " v-model="queryForm[one.name]" 
+        collapse-tags clearable  filterable @change="change_param(one.name)" :show-all-levels="one.showAllLevels!='False'"
+        :multiple="one.allowMutil=='False'?false:true" :options="convert_param_array_to_tree(result.dataSet[one.dataSetName_kyz][0],one)"
+            :props="{checkStrictly:true, emitPath:false,multiple:one.allowMutil=='False'?false:true,value:one.valueField_kyz,label:one.tagField_kyz}"
+            >
+      </el-cascader>  
+      <el-date-picker v-if="one.data_type=='date'" value-format="yyyy-MM-dd" 
+                v-model="queryForm[one.name]"></el-date-picker> 
+      <el-date-picker v-if="one.data_type=='datetime'||one.data_type=='dateTime'" :value-format="one.dateTimeFormat" :format="one.dateTimeFormat" 
+      :type="one.dateTimeFormat=='yyyy'?'year':( ['yyyyMM','yyyy-MM'].includes(one.dateTimeFormat)?'month':'datetime')"
+                v-model="queryForm[one.name]"></el-date-picker>
+      
+      <el-date-picker v-if="['dates'].includes( one.data_type)" value-format="yyyy-MM-dd" 
+      :type="'dates'" v-model="queryForm[one.name]"></el-date-picker>
+
+      <el-date-picker v-if="['daterange'].includes( one.data_type)" value-format="yyyy-MM-dd" 
+      :type="'daterange'" v-model="queryForm[one.name]"></el-date-picker>
+      
+      <el-date-picker v-if="['monthrange'].includes( one.data_type)" value-format="yyyy-MM" 
+      :type="'monthrange'" v-model="queryForm[one.name]"></el-date-picker>
+      
+      <el-date-picker v-if="['datetimerange'].includes( one.data_type)" :value-format="one.dateTimeFormat" :format="one.dateTimeFormat" 
+      :type="'datetimerange'" v-model="queryForm[one.name]"></el-date-picker>
+      </el-form-item>
+
+      <el-form-item style="text-align: center;">
+        <el-button type="primary" class='form_query_button' @click="validate_submit">查询</el-button>
+        
+        <!--el-button type="primary" class='form_query_button' @click="ExcelCommand('xlsxjs')">
+            导出excel</el-button -->
+        <el-dropdown style="margin: 2px;" @command="ExcelCommand($event)">
+          <el-button type="primary" class='form_query_button' >
+            导出excel<i class="el-icon-arrow-down el-icon--right"></i>
+          </el-button>
+          <el-dropdown-menu slot="dropdown">
+            <el-dropdown-item command="exceljs">小数据量（带格式）</el-dropdown-item>
+            <el-dropdown-item  command="xlsxjs">大数据量（无格式）</el-dropdown-item>
+          <!--  <el-dropdown-item  command="backend_fast_excel">后端下载大数据量（无格式）</el-dropdown-item>
+            <el-dropdown-item  command="docx">word文档</el-dropdown-item> -->
+          </el-dropdown-menu>
+        </el-dropdown>
+        <el-button type="primary" class='form_query_button' @click="export_pdf">PDF预览</el-button>
+      </el-form-item>
+  </el-form>
+  </div>
+</template>
+<script>
+export default{
+    mounted(){
+        console.info("pc form mounted!",this.form_show)
+    }
+}
+</script>

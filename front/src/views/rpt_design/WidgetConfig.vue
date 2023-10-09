@@ -60,13 +60,13 @@
                              placeholder="宽度"
                              ></avue-input>
           </el-form-item>
-          <el-form-item label="容器内序号"  v-if="data['idx']!=undefined">
+          <!--el-form-item label="容器内序号"  v-if="data['idx']!=undefined">
             <avue-input-number style="width:100%;" 
                              v-model="data['idx']"
                              controls-position="right"
                              placeholder="序号"
                              ></avue-input-number>
-          </el-form-item>
+          </el-form-item -->
           <el-form-item label="必要时动态收缩"  v-if="data['flex-shrink']!=undefined">
             <avue-input-number style="width:100%;" 
                              v-model="data['flex-shrink']"
@@ -99,10 +99,12 @@
             <el-form-item label="在线文档" v-if="!validatenull(VisualDesign.helpurl)">
               <a  v-for="one in VisualDesign.helpurl||[]" :key="one" :href="one" target="_blank">点击查看</a>
             </el-form-item>
-          <dyncTemplate :parentCompent="parentCompent" 
+            {{ data.prop }}
+          <dyncTemplate :parentCompent="parentCompent" :key="data.gridName"
             :self="{type:'pc_form',content:VisualDesign.content,gridName:'pc_form'}" 
             >
             </dyncTemplate>
+            
             </template>
             <template  v-if="data.children?.column">
             <div><el-button type="primary" @click="showAddwidget">添加子组件</el-button> 顺序调整：</div>
@@ -159,8 +161,7 @@
             </el-form-item>
             
             <el-form-item label="背景图片">
-              <img :src="layout_config.config.backgroundImage==''?'img/bg/bg.png' 
-              :layout_config.config.backgroundImage"
+              <img :src="layout_config.config.backgroundImage==''?'img/bg/bg.png':layout_config.config.backgroundImage"
                     @click="handleOpenImg('layout_config.config.backgroundImage','background')"
                     alt=""
                     width="100%" />
@@ -296,10 +297,14 @@ export default {
       return ret
     },
     getComponent() {
+      const prefix = 'config-'
+      let result = 'input'
+      if(!this.data.type)
+        return prefix+""
       this.tab_val=!this.data.type.startsWith('layout')?'0':'1'
       if(this.layout_config && this.layout_config.config.border_option==undefined)
         this.$set(this.layout_config.config,'border_option',{color:["#83bff6","#00CED1"]})
-      const prefix = 'config-'
+     
       const { type, component } = this.data
       if(this.data.type.startsWith("flex_span"))
         return prefix + 'cr-span'
@@ -311,7 +316,7 @@ export default {
       //&& component!='dync-template' && component!="echarts" 
       //)
       //  return prefix + 'custom'
-      let result = 'input'
+      
       
       if (component=="echarts" || ['dv_scroll_ranking_board','锥形柱图','胶囊柱图','dv_scroll_board', 'ele-grid',
       'echart','bar','line','pie','radar','gauge','scatter','funnel','map','airBubbleMap'].includes(type)) 

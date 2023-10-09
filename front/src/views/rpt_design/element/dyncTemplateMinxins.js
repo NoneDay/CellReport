@@ -1,6 +1,4 @@
-import { xlsxjs_inner_exec } from "../utils/export_excel"
-import {seriesLoadScripts,load_css_file,load_css_js,insert_css_to_head,build_chart_data,convert_array_to_json
-    ,extract_style_txt,extract_script_txt,select_field_data,test_data } from "../utils/util"
+import {insert_css_to_head,extract_style_txt,extract_script_txt,select_field_data,test_data } from "../utils/util"
 import { baseUrl } from '@/config/env'; 
 export default (function(){ return {
     provide(){
@@ -118,6 +116,19 @@ export default (function(){ return {
                         else if(this.self.datasource.startsWith('表格汇总数据')){
                             for (let index = cur_grid.colName_lines[1]+1; index < cur_grid.tableData.length; index++) 
                             {
+                                if(index<cur_grid.extend_lines[0] || index > cur_grid.extend_lines[1] ){
+                                //if(cur_grid.tableData[index].find(x=>x==null)).length>2) //todo
+                                real_data.push(cur_grid.tableData[index])
+                                }
+                            }
+                        } 
+                        else if(this.self.datasource.startsWith('表格明细及汇总数据')){
+                            for (let index = cur_grid.colName_lines[1]+1; index < cur_grid.tableData.length; index++) 
+                            {
+                                for (let index = cur_grid.extend_lines[0]; index <= cur_grid.extend_lines[1]; index++) 
+                                {
+                                    real_data.push(cur_grid.tableData[index])
+                                }
                                 if(index<cur_grid.extend_lines[0] || index > cur_grid.extend_lines[1] ){
                                 //if(cur_grid.tableData[index].find(x=>x==null)).length>2) //todo
                                 real_data.push(cur_grid.tableData[index])

@@ -235,6 +235,16 @@ export const build_chart_data=function (ds_name_source,report_result,clickedEle_
                 real_data.push(cur_grid.tableData[index])
                 }
             }
+        } 
+        else if(ds_name_source.startsWith('表格明细及汇总数据')){
+            real_data=real_data.concat(cur_grid.tableData.slice(cur_grid.extend_lines[0],cur_grid.extend_lines[1]+1) )            
+            for (let index = cur_grid.colName_lines[1]+1; index < cur_grid.tableData.length; index++) 
+            {
+                if(index<cur_grid.extend_lines[0] || index > cur_grid.extend_lines[1] ){
+                //if(cur_grid.tableData[index].find(x=>x==null)).length>2) //todo
+                real_data.push(cur_grid.tableData[index])
+                }
+            }
         }        
     }else
     {
@@ -1128,7 +1138,7 @@ const load_script_list=[]
                 recursiveLoad(i + 1);
             } else if (typeof (callback) === 'function') {
                 clear_define()
-                callback(scripts[i])
+                callback()
             };
             restore_define()
             return;
@@ -1136,7 +1146,7 @@ const load_script_list=[]
         
         s[i] = document.createElement('script');
         s[i].setAttribute('type', 'text/javascript');
-        s[i].onerror = function() {
+        s[i].onerror = function(e) {
             // 远程文件载入失败的处理逻辑
             alert('远程文件动态载入失败：'+scripts[i]);
           };
@@ -1152,7 +1162,7 @@ const load_script_list=[]
                     recursiveLoad(i + 1);
                 } else if (typeof (callback) === 'function') {
                     clear_define()
-                    callback(scripts[i])
+                    callback()
                 };
                 restore_define()
             }
@@ -1464,17 +1474,7 @@ ${dync_item?.slot?.footer??''}
             return {
                 dialogVisible: true,
                 dync_item:dync_item,
-                context:context,
-                fresh_ele:_this.fresh_ele
             }
-        },
-        provide(){
-            let ret={
-                context: context,
-                fresh_ele:_this.fresh_ele,
-                clickedEle:_this.clickedEle,
-            }
-            return ret
         },
         methods:{...{close(){
             this.dialogVisible=false
@@ -1486,7 +1486,7 @@ ${dync_item?.slot?.footer??''}
         
       }
       let component = Object.assign({}, Cpn)
-      
+      component.parent=_this
       // 创建构造器创建实例挂载
       let DialogC = Vue.extend(component)
       let dialog = new DialogC()

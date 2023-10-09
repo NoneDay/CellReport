@@ -13,17 +13,16 @@
 	</div>
 </template>
 <script>
-import {convert_array_to_json,build_chart_data, deepClone } from "../utils/util"
+import { deepClone } from "../utils/util"
 
 
-import dyncTemplate from './dyncTemplate.vue'
+
 import mixins from "./mixins"
-import dyncTemplateMinxins from "./dyncTemplateMinxins"
 
 export default {
     name:"ele-grid",
-    components: { dyncTemplate }, 
-    mixins:[mixins,dyncTemplateMinxins],
+    components: {  }, 
+    mixins:[mixins,],
     mounted(){
         this.buildDisplayData()
     },
@@ -48,6 +47,9 @@ export default {
         
     } ,
     methods: { 
+        refresh(){
+            this.buildDisplayData()
+        },
         buildDisplayData(){
             //if(Object.keys(this.context.report_result).length<2 && this.self.datasource!='示例')
             //{

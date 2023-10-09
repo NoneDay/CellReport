@@ -3,8 +3,6 @@
                   :list="self.children.column"
                   :group="{ name: 'form' }"
                   ghost-class="ghost" handle=".mover" :style="self.flex"
-                  
-                  @add="handleWidgetGroupAdd($event, self)"
                   @end="$emit('change')">
             <div :key="groupIndex"  
                 v-for="(item, groupIndex) in col_items" 
@@ -35,10 +33,6 @@ export default {
   mixins:[mixins],
   components: {  },
   updated(){
-      if(this.self.children.column.length>0){
-          if(!this.self.children.column.some(element => element.label===this.editableTabsValue))
-            this.editableTabsValue = this.self.children.column[0].label;
-      }
       this.self.children.column.forEach(element => {
           
           if(element.gridName  && element.gridName!="_random_"){
@@ -49,17 +43,10 @@ export default {
       });
   },
   computed:{
-    MainComponent(){
-      return this.page_type[ "tabs"].main
-    },
-    SubComponent(){
-      return this.page_type[ "tabs"].sub
-    },
     col_items(){
       let idx=0
       this.self.children.column?.forEach(x=>{
-        if(x.idx==undefined)
-          x.idx=idx
+        x.idx=idx
         idx++;
       })
       this.self.children.column?.sort((obj1, obj2) => obj1.idx - obj2.idx)
@@ -67,86 +54,17 @@ export default {
     }
   },
   watch:{
-    editableTabsValue:function(val){
-      function resize(node) {
-          if(node.self && node.self.type=="echart" ){
-            if(node.myChart){
-              node.myChart.resize();
-            }
-          }
-          node?.$children?.forEach(ele=>{
-            resize(ele)
-          })
-      }
-      this.$nextTick(_ => {
-          resize(this)
-        })
-    }
+    
   },
   data () {
     return {
-      page_type:{"tabs":{'main':'el-tabs','sub':'el-tab-pane'},
-      "Carousel":{'Carousel':'el-carousel','sub':'el-carousel-item'},
-      "collapse":{'main':'el-collapse','sub':'el-collapse-item'},
-      },
-      editableTabsValue:"Tab0",
-      cur_tab:"-1",
       widget_dialogVisible:false
     }
   },
   mounted(){
-    let _this=this
-    setTimeout(function(){
-     _this.cur_tab="0" 
-    });
+
   },
   methods: {
-    tab_click(cur_tab){
-      if(window.needResizeFunc){
-        setTimeout(function(){
-          $(window.needResizeFunc).each(function(){this.call()});
-        })
-      }
-    },
-    handleWidgetGroupAdd (evt) {
-      let newIndex = evt.newIndex;
-      const item = evt.item;
-
-      if (newIndex == 1 && newIndex > this.self.children.column.length - 1) newIndex = 0
-
-      const data = this.deepClone(this.self.children.column[newIndex]);
-      
-      if (!data.prop) data.prop = Date.now() + '_' + Math.ceil(Math.random() * 99999)
-      
-      data.span = 24
-      this.$set(this.self.children.column, newIndex, { ...data })
-      this.selectWidget = this.self.children.column[newIndex]
-      
-      //this.$emit("change")
-    },
-    handleTabsEdit(targetName, action) {
-        if (action === 'add') {
-          this.widget_dialogVisible=true
-          return
-        }
-        if (action === 'remove') {
-          let tabs = this.self.children.column;
-          let activeName = this.editableTabsValue;
-          if (activeName === targetName) {
-            tabs.forEach((tab, index) => {
-              if (tab.label === targetName) {
-                let nextTab = tabs[index + 1] || tabs[index - 1];
-                if (nextTab) {
-                  activeName = nextTab.label;
-                }
-              }
-            });
-          }
-          tabs[targetName].isDelete=true
-          this.editableTabsValue = activeName;
-          tabs.splice(targetName,1);
-        }
-      }
-  },
+  }
 }
 </script>

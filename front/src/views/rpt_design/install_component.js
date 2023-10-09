@@ -9,8 +9,9 @@ import echarts from './element/echarts'
 import htmlText from './element/HtmlText'
 import luckySheetProxy from './element/luckySheetProxy'
 import dyncTemplate from './element/dyncTemplate'
+import dyncTemplate2 from './element/dyncTemplate2'
 import eleGrid from './element/eleGrid'
-import text from './element/text'
+import eleText from './element/eleText'
 import datetime from './element/datetime'
 import flop from './element/flop'
 import {deepClone} from './utils/util'
@@ -27,10 +28,11 @@ export default {
     
     Vue.component('echarts', echarts);
     Vue.component('htmlText', htmlText);
-    Vue.component('eleText', text);
+    Vue.component('eleText', eleText);
     Vue.component('eleDateTime', datetime);
     Vue.component('eleFlop', flop);
-    Vue.component('dyncTemplate', dyncTemplate);    
+    //Vue.component('dyncTemplate', dyncTemplate);
+    Vue.component('dyncTemplate', dyncTemplate2);
     Vue.component('luckySheetProxy', luckySheetProxy);
     Vue.component('eleGrid', eleGrid);
   }

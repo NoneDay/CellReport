@@ -140,7 +140,7 @@
               <avue-array v-model="edit_visual_design.helpurl">
               </avue-array> 
             </el-form-item>
-            <dyncTemplate :parentCompent="parentCompent" 
+            <dyncTemplate :parentCompent="parentCompent"  
             :self="{type:'pc_form',content:edit_visual_design.content,gridName:'pc_form',data:edit_item}" 
             >
             </dyncTemplate>
@@ -171,10 +171,9 @@
 <script>
 import MonacoEditor from './element/MonacoEditor';
 import { getAllWidget, saveWidget } from "./api/report_api";
-import dyncTemplate from './element/dyncTemplate.vue'
 export default {
   name: "widgetManager",
-  components: { MonacoEditor ,dyncTemplate},
+  components: { MonacoEditor},
   async mounted() {
     if(window.cr_allWidget==undefined)
       window.cr_allWidget=await getAllWidget('design_rpt');

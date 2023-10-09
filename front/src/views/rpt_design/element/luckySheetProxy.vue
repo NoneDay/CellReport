@@ -12,7 +12,7 @@
        <dyncTemplate :parentCompent="parentCompent" :self="{content:context.report_result.pager_template}" >
         </dyncTemplate>
       </div>
-    </template>
+    </template> 
     <template v-else-if="context.report_result.pager_template==undefined && context.mode!='design' && useHtml && gridType=='common'">
       
       <div  :style="{'flex-grow':1,width:'100%','height':'20px'}" v-html="html_table" ref="htmTalbe">        
@@ -92,7 +92,7 @@
 <script>
 let arrow_right_img=undefined
 let arrow_down_img=undefined
-import dyncTemplate from './dyncTemplate.vue'
+
 import {designGrid2LuckySheet,numToString,getRangeByText,resultGrid2LuckySheet,output_largeGrid,convert_array_to_json,isMobile} from '../utils/util.js'
 import   ResultGrid2HtmlTable2   from '../utils/resultGrid2HtmlTable.js'
 import mixins from "./mixins"
@@ -100,7 +100,7 @@ import mixins from "./mixins"
 export default {
  name: "luckySheetProxy",
   mixins:[mixins],
-  components: {dyncTemplate},
+  components: {},
   props: {gridName:String,height:String},
   data(){
     return {

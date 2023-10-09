@@ -1,0 +1,88 @@
+<template>
+  <div style=" width: 100%; height: 100%;">
+  <form ref="form" >  <!--img/battle_2021.jpg-->
+        <input hidden v-for="one in result.form.filter(x=>x.hide=='True')" :key="one.name" v-model="queryForm[one.name]"/>
+        <img :src="result._zb_var_.mobile_img_for_less_one_param" style="height: 180px;width: 100%;" 
+        v-if="result._zb_var_.mobile_img_for_less_one_param && result.form.filter(x=>x.hide=='False').length<=1">
+        
+        <div v-for="one in result.form.filter(x=>x.hide=='False')" :key="one.name">
+          
+          <nut-textinput v-if="one.data_type=='string' && one.tagValueList.length==0" :label="one.prompt"
+          v-model="queryForm[one.name]"></nut-textinput>
+          
+           <nut-cell  v-if="['date','datetime','dateTime','daterange'].includes( one.data_type)" 
+             @click.native="queryForm_show[one.name] = true">
+           <span slot="title"><b>{{one.prompt}}</b>: {{queryForm[one.name]}}</span>             
+           </nut-cell>
+           <nut-datepicker   v-if="['date'].includes( one.data_type) && queryForm_show[one.name]" 
+              :is-visible.sync="queryForm_show[one.name]" :end-date="new Date(new Date().setDate(new Date().getDate()+1)).format('yyyy-MM-dd')"
+              :default-value="queryForm[one.name]" :type="one.data_type" 
+              @close="queryForm_show[one.name]=false" :title="'请选择'+one.prompt" 
+              @choose="val=>{queryForm[one.name]=val[0]+'-'+val[1]+'-'+val[2]
+                submit()
+                }"  
+            > </nut-datepicker>
+            
+            <div v-if="['daterange'].includes( one.data_type) && queryForm_show[one.name]"  >{{one.data_type}} {{queryForm_show[one.name]}}</div>
+            <nut-calendar  v-if="['daterange'].includes( one.data_type) "  
+               :is-visible.sync="queryForm_show[one.name]" :start-date="null"    :end-date="null" :animation="'nutSlideUp'"
+                :default-value="queryForm[one.name]"  type="range"
+                @close="queryForm_show[one.name]=false" :title="'请选择'+one.prompt" 
+                @choose="val=>{queryForm[one.name]=[val[0][3],val[1][3]];submit();}"
+            >
+            </nut-calendar>
+            
+            
+           <nut-picker   v-if="['datetime','dateTime'].includes( one.data_type) && queryForm_show[one.name]" 
+              :is-visible.sync="queryForm_show[one.name]"
+              :list-data="[[(parseInt(queryForm[one.name].substring(0,4))-1).toString(),queryForm[one.name].substring(0,4)],
+              ['01','02','03','04','05','06','07','08','09','10','11','12']]"
+              :default-value-data="[queryForm[one.name].substring(0,4),queryForm[one.name].substring(4,6)]"
+              @close="queryForm_show[one.name]=false" :title="'请选择'+one.prompt" 
+              @confirm="val=>{queryForm[one.name]=val[0]+''+val[1]
+                submit()
+                }"  
+            > </nut-picker>
+           
+            <div  style="display: flex;flex: 0 0 auto;overflow-x: auto;"  v-if=" one.data_type=='string' && one.tagValueList.length>0 && one.allowMutil=='False'">
+              <div style="display: relative;  white-space: nowrap; word-break: keep-all; font-size: 14px;   padding-left: 10px; margin-right: 20px;"> <b>{{one.prompt}}</b></div>
+              <div style="position:relative;   white-space: nowrap;   word-break: keep-all;" v-for="item in one.tagValueList" :key="item[1]">
+              <nut-button  :type="queryForm[one.name]==item[1]?'primary':'lightred'" shape="circle"   small  style="margin-right: 2px;"
+                  @click.prevent="queryForm[one.name]=item[1]; result.param_liandong.includes(one.name)?change_param(one.name):submit()"> {{item[0]}}</nut-button>
+              </div>
+            </div>
+
+            <nut-cell  v-if="one.data_type=='string' && one.tagValueList.length>0 && one.allowMutil!='False'" 
+             @click.native="queryForm_show[one.name] = true">
+                <span slot="title"><b>{{one.prompt}}</b>: {{queryForm[one.name]}}</span>      
+           </nut-cell>
+           <nut-actionsheet  v-if="one.data_type=='string' && one.tagValueList.length>0 && one.allowMutil!='False' && queryForm_show[one.name]" 
+              :is-visible.sync="queryForm_show[one.name]"  cancelTxt="取消"
+              @close="queryForm_show[one.name]=false; submit()" :title="'请选择'+one.prompt" 
+            >
+            <div slot="custom" class="custom-wrap">
+              请选择{{one.prompt}}
+              <nut-checkboxgroup  v-model="queryForm[one.name]"
+                :checkBoxData="convert_arr_to_json(one.tagValueList)">
+              </nut-checkboxgroup>
+            </div>           
+            </nut-actionsheet>
+           </div>
+
+           <div  style="display: flex;flex: 0 0 auto;overflow-x: auto;" v-for="one_button_arr,idx in mobile_col_button_arr" :key="idx">
+           <div style="position:relative;  white-space: nowrap;  word-break: keep-all;"  v-for="item,item_idx in one_button_arr.arr" :key="''+idx+'_'+item_idx">
+              <nut-button  :type="one_button_arr.selected==item_idx?'red':'lightred'" @click.prevent="click_col_button(idx,item_idx)"
+               shape="circle"   small  style="margin-right: 2px;"
+              > {{item.txt}}</nut-button>
+            </div>
+          </div>
+      </form>
+    </div>
+</template>
+<script>
+export default{
+    mounted(){
+        
+    }
+}
+</script>

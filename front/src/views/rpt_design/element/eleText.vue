@@ -24,10 +24,8 @@
 </template>
 
 <script>
-import { RuntimeTemplateCompiler } from 'vue-runtime-template-compiler'
+
 import mixins from "./mixins"
-import dyncTemplateMinxins from "./dyncTemplateMinxins"
-import { validatenull } from '@/util/validate'
 /**
  * bem helper
  * b() // 'button'
@@ -58,9 +56,9 @@ const prefix = (name, mods) => {
   return ret;
 };
 export default ({
-  name: "text",
-  components: { RuntimeTemplateCompiler }, 
-  mixins:[mixins,dyncTemplateMinxins],
+  name: "eleText",
+  components: {  }, 
+  mixins:[mixins,],
   props: {
     option: {
       type: Object,

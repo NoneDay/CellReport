@@ -31,10 +31,8 @@
     </el-dialog> 
     <paperSetting :target_obj="paperSetting" @submit="paperSetting_submit"
     :visible.sync="paper_setting_dialogVisible" />
-        
-    
-    <el-popover v-if="!crisMobile && isShow && show_tips " style='position:fixed;z-index:5;right:10px;top:10px;'
-      placement="top-start" title="提示信息" width="300" trigger="hover" >
+    <el-popover trigger="click" v-if="!crisMobile && isShow && show_tips " style='position:fixed;z-index:5;right:10px;top:10px;'
+      placement="top-start" title="提示信息" width="300">
       <el-button slot="reference" style="width: 40px;height: 40px;
           border-radius: 50%;color: #409eff;display: flex;align-items: center;justify-content: center;font-size: 20px;
           box-shadow: 0 0 6px rgb(0 0 0 / 12%);cursor: pointer;" class="el-icon-edit">
@@ -51,175 +49,17 @@
     </span>
 
     <div ref="div_form" v-if="!crisMobile && isShow && result.defaultsetting.big_screen!='1' && result.defaultsetting['show_form']=='true'"> 
-      <dyncTemplate :parentCompent="parentCompent" :self="{type:'pc_form',content:result.pc_form,gridName:'pc_form'}"  v-if="result.pc_form">
+      <dyncTemplate :parentCompent="parentCompent" :self="{type:'pc_form',content:pc_form_content ,gridName:'pc_form'}">
       </dyncTemplate>
-      <el-form inline ref="form" v-else label-position="right" :model="queryForm" >
-        <input hidden v-for="one in result.form.filter(x=>x.hide=='True')" :key="one.name" v-model="queryForm[one.name]"/>
-
-        <el-form-item :label="one.prompt" v-for="one in result.form.filter(x=>x.hide=='False')" :key="one.name"
-          :prop="one.name" :rules="result.defaultsetting.cr_front_validate=='true' && one.allowSpace=='False'? {required: true, message: '请选择', trigger: 'change' } :null">
-          <el-input v-if="one.data_type=='string' && one.tagValueList.length==0 && one.canUsedValueFrom!='Query' " v-model="queryForm[one.name]"></el-input>
-          <el-select v-if="['string','int'].includes(one.data_type) && one.canUsedValueFrom!='Query' && one.tagValueList.length>0" v-model="queryForm[one.name]" 
-            collapse-tags  @change="change_param(one.name)" clearable filterable default-first-option :allow-create="one.allowCreate=='True'"
-            :multiple="one.allowMutil=='False'?false:true">
-            <li v-if="one.allowMutil=='False'?false:true" class="el-select-dropdown__item">
-              <el-link type="primary" style="float: left" @click="queryForm[one.name]=one.tagValueList.map(x=>x[1])"> 全选</el-link>
-              <el-link type="primary"  style="float: right; color: #8492a6; font-size: 13px" @click="queryForm[one.name]=[]"> 全不选</el-link>
-            </li>
-             <el-option
-                v-for="item in one.tagValueList"
-                :key="item[1]"
-                :label="item[0]"
-                :value="item[1]">
-              </el-option>
-          </el-select>  
-          
-          <el-select v-if="['string','int'].includes(one.data_type) && one.canUsedValueFrom=='Query' && one.parent_valueField_kyz=='' " v-model="queryForm[one.name]" 
-            collapse-tags  @change="change_param(one.name)" clearable filterable default-first-option :allow-create="one.allowCreate=='True'"
-            :multiple="one.allowMutil=='False'?false:true">
-            <li v-if="one.allowMutil=='False'?false:true" class="el-select-dropdown__item">
-              <el-link type="primary" style="float: left" @click="queryForm[one.name]=convert_param_array_to_json(result.dataSet[one.dataSetName_kyz][0],one).map(x=>x[one.valueField_kyz]+'')"> 全选</el-link>
-              <el-link type="primary"  style="float: right; color: #8492a6; font-size: 13px" @click="queryForm[one.name]=[]"> 全不选</el-link>
-            </li>
-             <el-option
-                v-for="item in convert_param_array_to_json(result.dataSet[one.dataSetName_kyz][0],one)"
-                :key="item[one.valueField_kyz]+''"
-                :label="item[one.tagField_kyz]"
-                :value="item[one.valueField_kyz]+''">
-              </el-option>
-          </el-select>  
-
-        <el-cascader v-if="['string','int'].includes(one.data_type) && one.canUsedValueFrom=='Query' && one.parent_valueField_kyz!='' " v-model="queryForm[one.name]" 
-            collapse-tags clearable  filterable @change="change_param(one.name)" :show-all-levels="one.showAllLevels!='False'"
-            :multiple="one.allowMutil=='False'?false:true" :options="convert_param_array_to_tree(result.dataSet[one.dataSetName_kyz][0],one)"
-                :props="{checkStrictly:true, emitPath:false,multiple:one.allowMutil=='False'?false:true,value:one.valueField_kyz,label:one.tagField_kyz}"
-                >
-          </el-cascader>  
-          <el-date-picker v-if="one.data_type=='date'" value-format="yyyy-MM-dd" 
-                    v-model="queryForm[one.name]"></el-date-picker> 
-          <el-date-picker v-if="one.data_type=='datetime'||one.data_type=='dateTime'" :value-format="one.dateTimeFormat" :format="one.dateTimeFormat" 
-          :type="one.dateTimeFormat=='yyyy'?'year':( ['yyyyMM','yyyy-MM'].includes(one.dateTimeFormat)?'month':'datetime')"
-                    v-model="queryForm[one.name]"></el-date-picker>
-          
-          <el-date-picker v-if="['dates'].includes( one.data_type)" value-format="yyyy-MM-dd" 
-          :type="'dates'" v-model="queryForm[one.name]"></el-date-picker>
-
-          <el-date-picker v-if="['daterange'].includes( one.data_type)" value-format="yyyy-MM-dd" 
-          :type="'daterange'" v-model="queryForm[one.name]"></el-date-picker>
-          
-          <el-date-picker v-if="['monthrange'].includes( one.data_type)" value-format="yyyy-MM" 
-          :type="'monthrange'" v-model="queryForm[one.name]"></el-date-picker>
-          
-          <el-date-picker v-if="['datetimerange'].includes( one.data_type)" :value-format="one.dateTimeFormat" :format="one.dateTimeFormat" 
-          :type="'datetimerange'" v-model="queryForm[one.name]"></el-date-picker>
-          </el-form-item>
-
-          <el-form-item style="text-align: center;">
-            <el-button type="primary" class='form_query_button' @click="validate_submit">查询</el-button>
-            
-            <el-dropdown style="margin: 2px;" @command="ExcelCommand($event, node,data)">
-              <el-button type="primary" class='form_query_button' >
-                导出excel<i class="el-icon-arrow-down el-icon--right"></i>
-              </el-button>
-              <el-dropdown-menu slot="dropdown">
-                <el-dropdown-item command="exceljs">小数据量（带格式）</el-dropdown-item>
-                <el-dropdown-item  command="xlsxjs">大数据量（无格式）</el-dropdown-item>
-              <!--  <el-dropdown-item  command="backend_fast_excel">后端下载大数据量（无格式）</el-dropdown-item>
-                <el-dropdown-item  command="docx">word文档</el-dropdown-item> -->
-              </el-dropdown-menu>
-            </el-dropdown>
-            <el-button type="primary" class='form_query_button' @click="export_pdf">PDF预览</el-button>
-          </el-form-item>
-        
-      </el-form>
     </div>
     <div  ref="div_form" v-if="expand_form && crisMobile && isShow && result.defaultsetting.big_screen!='1' && result.defaultsetting['show_form']=='true'" > 
-      
-      <dyncTemplate :parentCompent="parentCompent" :self="{type:'pc_form',content:result.mobile_form,gridName:'pc_form'}" v-if="result.mobile_form">
+      <dyncTemplate :parentCompent="parentCompent" :self="{type:'pc_form',content:mobile_form_content,gridName:'pc_form'}">
       </dyncTemplate>
-      <form v-else ref="form" >  <!--img/battle_2021.jpg-->
-        <input hidden v-for="one in result.form.filter(x=>x.hide=='True')" :key="one.name" v-model="queryForm[one.name]"/>
-        <img :src="result._zb_var_.mobile_img_for_less_one_param" style="height: 180px;width: 100%;" 
-        v-if="result._zb_var_.mobile_img_for_less_one_param && result.form.filter(x=>x.hide=='False').length<=1">
-        
-        <div v-for="one in result.form.filter(x=>x.hide=='False')" :key="one.name">
-          
-          <nut-textinput v-if="one.data_type=='string' && one.tagValueList.length==0" :label="one.prompt"
-          v-model="queryForm[one.name]"></nut-textinput>
-          
-           <nut-cell  v-if="['date','datetime','dateTime','daterange'].includes( one.data_type)" 
-             @click.native="queryForm_show[one.name] = true">
-           <span slot="title"><b>{{one.prompt}}</b>: {{queryForm[one.name]}}</span>             
-           </nut-cell>
-           <nut-datepicker   v-if="['date'].includes( one.data_type) && queryForm_show[one.name]" 
-              :is-visible.sync="queryForm_show[one.name]" :end-date="new Date(new Date().setDate(new Date().getDate()+1)).format('yyyy-MM-dd')"
-              :default-value="queryForm[one.name]" :type="one.data_type" 
-              @close="queryForm_show[one.name]=false" :title="'请选择'+one.prompt" 
-              @choose="val=>{queryForm[one.name]=val[0]+'-'+val[1]+'-'+val[2]
-                submit()
-                }"  
-            > </nut-datepicker>
-            
-            <div v-if="['daterange'].includes( one.data_type) && queryForm_show[one.name]"  >{{one.data_type}} {{queryForm_show[one.name]}}</div>
-            <nut-calendar  v-if="['daterange'].includes( one.data_type) "  
-               :is-visible.sync="queryForm_show[one.name]" :start-date="null"    :end-date="null" :animation="'nutSlideUp'"
-                :default-value="queryForm[one.name]"  type="range"
-                @close="queryForm_show[one.name]=false" :title="'请选择'+one.prompt" 
-                @choose="val=>{queryForm[one.name]=[val[0][3],val[1][3]];submit();}"
-            >
-            </nut-calendar>
-            
-            
-           <nut-picker   v-if="['datetime','dateTime'].includes( one.data_type) && queryForm_show[one.name]" 
-              :is-visible.sync="queryForm_show[one.name]"
-              :list-data="[[(parseInt(queryForm[one.name].substring(0,4))-1).toString(),queryForm[one.name].substring(0,4)],
-              ['01','02','03','04','05','06','07','08','09','10','11','12']]"
-              :default-value-data="[queryForm[one.name].substring(0,4),queryForm[one.name].substring(4,6)]"
-              @close="queryForm_show[one.name]=false" :title="'请选择'+one.prompt" 
-              @confirm="val=>{queryForm[one.name]=val[0]+''+val[1]
-                submit()
-                }"  
-            > </nut-picker>
-           
-            <div  style="display: flex;flex: 0 0 auto;overflow-x: auto;"  v-if=" one.data_type=='string' && one.tagValueList.length>0 && one.allowMutil=='False'">
-              <div style="display: relative;  white-space: nowrap; word-break: keep-all; font-size: 14px;   padding-left: 10px; margin-right: 20px;"> <b>{{one.prompt}}</b></div>
-              <div style="position:relative;   white-space: nowrap;   word-break: keep-all;" v-for="item in one.tagValueList" :key="item[1]">
-              <nut-button  :type="queryForm[one.name]==item[1]?'primary':'lightred'" shape="circle"   small  style="margin-right: 2px;"
-                  @click.prevent="queryForm[one.name]=item[1]; result.param_liandong.includes(one.name)?change_param(one.name):submit()"> {{item[0]}}</nut-button>
-              </div>
-            </div>
-
-            <nut-cell  v-if="one.data_type=='string' && one.tagValueList.length>0 && one.allowMutil!='False'" 
-             @click.native="queryForm_show[one.name] = true">
-                <span slot="title"><b>{{one.prompt}}</b>: {{queryForm[one.name]}}</span>      
-           </nut-cell>
-           <nut-actionsheet  v-if="one.data_type=='string' && one.tagValueList.length>0 && one.allowMutil!='False' && queryForm_show[one.name]" 
-              :is-visible.sync="queryForm_show[one.name]"  cancelTxt="取消"
-              @close="queryForm_show[one.name]=false; submit()" :title="'请选择'+one.prompt" 
-            >
-            <div slot="custom" class="custom-wrap">
-              请选择{{one.prompt}}
-              <nut-checkboxgroup  v-model="queryForm[one.name]"
-                :checkBoxData="convert_arr_to_json(one.tagValueList)">
-              </nut-checkboxgroup>
-            </div>           
-            </nut-actionsheet>
-           </div>
-
-           <div  style="display: flex;flex: 0 0 auto;overflow-x: auto;" v-for="one_button_arr,idx in mobile_col_button_arr" :key="idx">
-           <div style="position:relative;  white-space: nowrap;  word-break: keep-all;"  v-for="item,item_idx in one_button_arr.arr" :key="''+idx+'_'+item_idx">
-              <nut-button  :type="one_button_arr.selected==item_idx?'red':'lightred'" @click.prevent="click_col_button(idx,item_idx)"
-               shape="circle"   small  style="margin-right: 2px;"
-              > {{item.txt}}</nut-button>
-            </div>
-          </div>
-      </form>
-       
-    </div>
-    <div ref="report_pane" class="report_define"  :style="{'flex-grow': 1,height:'90px',color:result.defaultsetting['COLOR'],background:result.defaultsetting['BACKGROUND-COLOR']}">
-        <grid-layout-form v-if="isShow && report_pane_show && layoutType=='gridLayout'" :layout="layout"  :scale="scale">
+    </div> 
+    <div ref="report_pane" v-if="isShow" class="report_define"  :style="{'flex-grow': 1,height:'90px',color:result.defaultsetting['COLOR'],background:result.defaultsetting['BACKGROUND-COLOR']}">
+        <grid-layout-form v-if="report_pane_show && layoutType=='gridLayout'" :layout="layout"  :scale="scale">
         </grid-layout-form>          
-        <widget-form v-else-if="isShow && report_pane_show && layoutType!='gridLayout'"   :data="layout"   
+        <widget-form v-else-if="report_pane_show && layoutType!='gridLayout'"   :data="layout"   
         ></widget-form> <!--// 老报表只有报表，用这个组件显示-->
     </div>    
   </div>
@@ -229,14 +69,13 @@
 import widgetForm from './WidgetForm'
 import {dateToString} from './utils/resultGrid2HtmlTable.js'
 import {run_one,get_pdf,run_download} from "./api/report_api"
-import {convert_array_to_json,arrayToTree,seriesLoadScripts,load_css_file,watermark,isMobile } from "./utils/util"
+import {convert_array_to_json,arrayToTree,seriesLoadScripts,load_css_file,watermark,isMobile,loadFile } from "./utils/util"
 import install_component from './install_component'
-import dyncTemplate from './element/dyncTemplate.vue'
 import paperSetting  from './paperSetting.vue'
 import {exceljs_inner_exec,xlsxjs_inner_exec,docx_inner_exec} from './utils/export_excel.js'
 export default {
   name: 'App', //CellReportFormDesign
-  components:{dyncTemplate,widgetForm,paperSetting},
+  components:{widgetForm,paperSetting},
   mounted(){    
     let _this=this
     window.onresize=this.refresh_layout 
@@ -286,7 +125,7 @@ export default {
     }
   },  
   data () {
-    return { 
+    return {
         expand_form:window.cellreport["expand_form"]??true,
         name_lable_map:{},
         isShow:false,
@@ -345,15 +184,17 @@ export default {
     refresh_layout(ddd,that){  
       if(that==undefined)
         that=this
-      if(that.result.defaultsetting.big_screen=='1'){
-          that.scale.y=100*that.$refs.report_pane.clientHeight/parseInt(that.result.defaultsetting.screen_height)
-          that.scale.x=100*that.$refs.report_pane.clientWidth/parseInt(that.result.defaultsetting.screen_width)
-          that.scale.v=Math.min(that.scale.x,that.scale.y)
-      }
-      that.$set(that,'isShow',false)
+      that.isShow=false
+      that.report_pane_show=false
       setTimeout(() => {
-          that.$set(that,'isShow',true)
+          that.isShow=true
           setTimeout(() => {
+            that.report_pane_show=true
+            if(that.result.defaultsetting.big_screen=='1'){
+                that.scale.y=100*that.$refs.report_pane.clientHeight/parseInt(that.result.defaultsetting.screen_height)
+                that.scale.x=100*that.$refs.report_pane.clientWidth/parseInt(that.result.defaultsetting.screen_width)
+                that.scale.v=Math.min(that.scale.x,that.scale.y)
+            }
             let ks=Object.keys(that.result.data)
             if(ks.length>0)
               document.title = (that.result.data[ks[0]]?.title)   || document.title 
@@ -436,8 +277,9 @@ export default {
             return false;
           }
         });
-      }else
-      run_one(_this,_this.reportName,null,loading_conf)
+      }else{
+        run_one(_this,_this.reportName,null,loading_conf)
+      }
     },
     submit(loading_conf=null){
       run_one(this,this.reportName,null,loading_conf)
@@ -572,6 +414,12 @@ export default {
     }
   },
   computed: {
+    pc_form_content(){
+      return loadFile(this.result?._zb_var_?.form_vue_file?.pc??'pc_form.html')
+    },
+    mobile_form_content(){
+      return loadFile(this.result?._zb_var_?.form_vue_file?.mobile??'mobile_form.html')
+    },
     show_tips(){return window.cellreport.show_tips},
     parentCompent(){ return this},
     crisMobile(){

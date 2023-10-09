@@ -220,7 +220,7 @@ export async function preview_one(_this,createFormParam=false,param_name=null) {
             }
             _this.$set(_this,'previewFormParam',response_data)            
             Object.assign(_this.result,response_data)
-            console.info( _this.result)
+            //console.info( _this.result)
             _this.result.fresh_dataset=Enumerable.from( Object.keys(response_data.dataSet??{})).select(x=>"数据集:"+x).toArray().join(",")
             _this.result.fresh_report=Enumerable.from( Object.keys(response_data.data??{})).select(x=>"表格:"+x).toArray().join(",")
     
@@ -352,7 +352,7 @@ export function run_one(_this,reportFilePath,_param_name_=null,loading_conf=null
         data.append(kv[0], kv[1]??'')    
     })
     let _fresh_ds=_this.queryForm._fresh_ds
-    
+    let stage="开始"
     data.append("reportName", reportFilePath)
     data.append("_createFormParam", window.cellreport.exec_num==0)
     window.cellreport.exec_num++
@@ -381,6 +381,7 @@ export function run_one(_this,reportFilePath,_param_name_=null,loading_conf=null
         delete _this.queryForm._cur_page_num_
         delete _this.queryForm._page_size_
         _this.executed =true
+        stage="获取数据完成"
         if(typeof(response_data)=='string')
         {
             try{
@@ -392,8 +393,11 @@ export function run_one(_this,reportFilePath,_param_name_=null,loading_conf=null
             }
         }
         if(response_data.errcode && response_data.errcode ==1){
-            _this.$notify({title: '提示',message: response_data.message,duration: 0});
             loading.hide(loading_conf)
+            if(tool.getObjType(_this.$alert)=='function')
+                _this.$alert(response_data);
+            else
+                alert(response_data);
             return;
         }
         if(response_data.zb_var) //兼容老写法
@@ -402,7 +406,7 @@ export function run_one(_this,reportFilePath,_param_name_=null,loading_conf=null
             $(".mask_div").remove()
             _this.watermark(response_data._zb_var_.watermark);
         }
-        
+        stage="步骤1"
         response_data.form.forEach(ele=>{
             let val=ele.value
             if(ele.data_type=='date' && val!="")
@@ -431,7 +435,7 @@ export function run_one(_this,reportFilePath,_param_name_=null,loading_conf=null
         else{
             Object.assign(_this.result,response_data)
         }
-        
+        stage="步骤2"
         _this.last_js_cript=tool.load_css_js(_this.result.footer2,"report_back_css")
         //let tool=require('../utils/util.js')
         eval("(function(){\n"+_this.last_js_cript+"\n})()")
@@ -452,7 +456,7 @@ export function run_one(_this,reportFilePath,_param_name_=null,loading_conf=null
                 grid:Object.values(_this.result.data).filter(ele=>["common",'large'].includes( ele.type))
                 } )
         }
-        
+        stage="步骤3"
         //手机端列表头转按钮
         if( (window.convert_col_to_button || window.cellreport.convert_col_to_button) && _this.layout.length==1 && Object.keys(_this.result.data).length==1)
         { 
@@ -545,18 +549,19 @@ export function run_one(_this,reportFilePath,_param_name_=null,loading_conf=null
                 }
             }
         }
-
+        stage="步骤4"
         //_this.isShow=false
         //setTimeout(() => {
         //    _this.isShow=true
             _this.refresh_layout(null,_this)
             loading.hide(loading_conf)
+            stage="完成"
         //});
     }).catch(error=> {
         loading.hide(loading_conf) 
         //console.error(error)
         //let err_txt=error.response.data?.message||error.response.statusText
-        _this.$alert(error.toString());
+        _this.$alert(stage+"."+error.toString());
     })
     
 }

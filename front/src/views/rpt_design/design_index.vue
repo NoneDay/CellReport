@@ -223,8 +223,8 @@ export default {
     // 在同一组件对应的多个路由间切换时触发
   async beforeRouteUpdate(to, from, next) {
     let _this=this
-    console.info(x2jsone.js2xml({report:this.fields}))
-    console.info("prepare cache:"+_this.report.reportName)    
+    //console.info(x2jsone.js2xml({report:this.fields}))
+    //console.info("prepare cache:"+_this.report.reportName)    
     this.save_fix()
     this.layout_mode=''
     report_cache[_this.report.reportName]={

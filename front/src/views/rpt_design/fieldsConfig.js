@@ -42,8 +42,8 @@ export default [
             {"type":"dync_template",'label':'动态模板',gridName:"_random_",icon: 'icon-table','color':'#fff',display: true,style:{height:'100px'}, 
             'content':`
         <div>
-        <div>Hello {{ name }}!</div>
-        <button @click="sayHi">Say Hi!</button>
+        div>Hello {{ self.gridName }}!</div>
+        
       </div>`,
             'component':'dync-template'},
 

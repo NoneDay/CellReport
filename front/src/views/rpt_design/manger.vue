@@ -201,7 +201,7 @@ export default {
             return {
             "addBtn": this.userInfo.username=='admin',
             "editBtn": "true",
-            height:'auto',
+            height:this.$el.parentElement.clientHeight - 130,
             "delBtn": this.userInfo.username=='admin',
             "saveBtn": "true",
             "column": [

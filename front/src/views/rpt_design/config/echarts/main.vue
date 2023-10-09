@@ -345,17 +345,6 @@
         </el-collapse-item>
       </template>
     </el-collapse>
-   <!--
-    <template v-if="false && VisualDesign&& VisualDesign.content.trim()!=''">
-    <span class="guide"  v-if="VisualDesign.helpurl">
-        <i class="el-icon-warning-outline" title="查看文档" @click="clickGuide">查看文档</i>
-      </span>
-
-      <dyncTemplate :parentCompent="parentCompent" 
-              :self="{type:'pc_form',content:VisualDesign.content,gridName:'pc_form'}" 
-      >
-      </dyncTemplate>
-    </template> -->
   </div>
 </template>
 
