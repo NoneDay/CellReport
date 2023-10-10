@@ -57,7 +57,7 @@ export default {
     beforeDestroy(){
       if(this.myChart){
         this.myChart.dispose();
-        console.info("echarts dispose")
+        //console.info("echarts dispose")
       }
     },
     mounted(){

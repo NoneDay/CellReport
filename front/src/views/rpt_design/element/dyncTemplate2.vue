@@ -23,7 +23,7 @@ export default {
   },
   beforeDestroy(){
       this.inner_element?.$destroy()
-      console.info(this.self.gridName,'inner_element?.$destroy()')
+      //console.info(this.self.gridName,'inner_element?.$destroy()')
   },
   methods: {
     

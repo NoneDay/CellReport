@@ -1459,8 +1459,8 @@ function checkCookie() {
 export async function  showDialog2 (ele_str, dync_item,_this) {
     let context=_this.context||_this.create_context()
     let Cpn = { template:`
-<el-dialog v-draggable v-if="dialogVisible " style="text-align: left;" 
-    :visible.sync="dialogVisible" 
+<el-dialog v-draggable v-if="visible" style="text-align: left;" 
+    :visible.sync="visible" 
     :close-on-click-modal="false" direction="btt" append-to-body 
     v-bind="{...{'custom-class':'dync_dialog',title:'信息'},...(dync_item.dialog_params||{}) }"
 > 
@@ -1472,13 +1472,11 @@ ${dync_item?.slot?.footer??''}
     `,
         data(){
             return {
-                dialogVisible: true,
+                visible: true,
                 dync_item:dync_item,
             }
         },
-        methods:{...{close(){
-            this.dialogVisible=false
-        }},...(dync_item?.methods??{} )}
+        methods:{...(dync_item?.methods??{} )}
     };
     return new Promise(function (resolve, reject) {
       // 初始化配置参数
@@ -1490,23 +1488,32 @@ ${dync_item?.slot?.footer??''}
       // 创建构造器创建实例挂载
       let DialogC = Vue.extend(component)
       let dialog = new DialogC()
-      //open opened close closed
       // 关闭事件
-      let _onClose = dialog.$options.methods.close
-      dialog.$options.methods.close = function () {
+      let _onClose = dialog.$options.methods.onClose
+      dialog.onClose = function () {
         resolve()
-        _onClose && _onClose.call(dialog)            
+        dialog.$destroy()
+        _onClose && _onClose.call(dialog)
+        document.body.removeChild(dialog.$el)
       }
-      let _onClosed = dialog.$options.methods.closed
-      dialog.$options.methods.closed = function () {
-        resolve()
-        _onClosed && _onClosed.call(dialog)            
+      // 回调事件
+      let _onCallback = dialog.$options.methods.onCallback
+      dialog.onCallback = function (...arg) {
+        try {
+          _onCallback && _onCallback()
+          resolve(arg)
+          dialog.$destroy()
+          _onClose && _onClose.call(dialog)
+          document.body.removeChild(dialog.$el)
+        } catch (e) {
+          console.log(e)
+        }
       }
       
       dialog.$mount()
       // 点击关闭按钮时会改变visible
       dialog.$watch('visible', function (n, o) {
-        dialog === false && dialog.onClose()
+            dialog?.onClose()
       })
       document.body.appendChild(dialog.$el)
     })
