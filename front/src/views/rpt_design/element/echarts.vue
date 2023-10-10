@@ -7,7 +7,7 @@
 <script>
 import { validatenull } from '@/util/validate'
 import mixins from "./mixins"
-import {convert_csv_to_json,convert_array_to_json,build_chart_data,seriesLoadScripts ,randomRgbColor,test_data,select_field_data} from "../utils/util"
+import {convert_csv_to_json,convert_array_to_json,build_chart_data,seriesLoadScripts ,randomRgbColor,test_data,select_field_data,loadFile} from "../utils/util"
 import elementResizeDetectorMaker from 'element-resize-detector'
 //下边这两行尤为重要，数据才能正常渲染
 
@@ -246,12 +246,14 @@ export default {
                     }
                     if(_this.self.type=='map'){
                         option=map_option(_this.self,_this,__valid_data__)
+                        _myChart=this.myChart
                     }
                    _myChart.off('click')
+                   if(_this.self.type!='map'){
                    //_myChart.getZr().off('click')
                     eval("option=(function(option,myChart,_this){"+_this.self.content+"\n return option})(option,_myChart,_this)")                    
-                    
                     _myChart.setOption(option,true);
+                   }
                     if(_this.context.mode=='design')
                         return;
                     
@@ -1371,27 +1373,36 @@ function map_option (self,_this,__valid_data__) {
             if (_this.zoomData < 1) _this.zoomData = 1;
         });
         let _myChart=_this.myChart
-        
         _this.myChart.setOption(option,true);//重绘是true
-        
         _this.myChart.resize();
         eval("option=(function(option,myChart,_this){"+self.content+"\n return option})(option,_myChart,_this)")                    
         return option
     }
     if(window.echarts.getMap(_this.real_map_url()))
         return map_inner_exec(0)
-    else
-    {
-        $.get(_this.real_map_url(),function(result){//map 方式，必须先下载注册地图再初始化myChart实例才行，否则会找不到地图
-            window.echarts.registerMap(_this.real_map_url(), result);
-            if(_this.myChart)
-            _this.myChart.dispose();
-            _this.myChart = window.echarts.init(_this.$refs.main);// 不重新初始话的话，会报错 echarts.vue?3bfd:1356 TypeError: Cannot read properties of undefined (reading 'regions')
-            let option=map_inner_exec(0)
-            
-        })
-        return {}
-    }    
+    else{
+      let map_file=loadFile(_this.real_map_url())
+      window.echarts.registerMap(_this.real_map_url(), map_file);
+      if(_this.myChart)
+          _this.myChart.dispose();
+      _this.myChart = window.echarts.init(_this.$refs.main);// 不重新初始话的话，会报错 echarts.vue?3bfd:1356 TypeError: Cannot read properties of undefined (reading 'regions')
+      let option=map_inner_exec(0)
+      return option
+    }
+    //if(window.echarts.getMap(_this.real_map_url()))
+    //    return map_inner_exec(0)
+    //else
+    //{
+    //    $.get(_this.real_map_url(),function(result){//map 方式，必须先下载注册地图再初始化myChart实例才行，否则会找不到地图
+    //        window.echarts.registerMap(_this.real_map_url(), result);
+    //        if(_this.myChart)
+    //        _this.myChart.dispose();
+    //        _this.myChart = window.echarts.init(_this.$refs.main);// 不重新初始话的话，会报错 echarts.vue?3bfd:1356 TypeError: Cannot read properties of undefined (reading 'regions')
+    //        let option=map_inner_exec(0)
+    //        
+    //    })
+    //    return {}
+    //}    
   }
 </script>
 

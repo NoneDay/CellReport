@@ -48,7 +48,7 @@
                        -->
             <component :is="item.bg && item.bg.border_box?item.bg.border_box:'div'"  
              v-if="isShow && item.show" class="no-drag widget-form-list" :ref="'border_box'+item.i" 
-             :style="{width:'100%',height:'100%','background-color':item.bg['BACKGROUND-COLOR'],'--border_size':item.bg.border_option.gap??14}"
+             :style="{width:'100%',height:'100%','background-color':item.bg['BACKGROUND-COLOR'],'--border_size':item.bg.border_option?.gap??14}"
              @mouseenter="mouseEnter_func(item)" @mouseleave="mouseOver_func(item)" 
              :title="item.bg?.border_box=='dv-border-box-11'?border_title(item):undefined"
              v-bind="{...(item.bg.border_box && item.bg.border_box!='div')?item.bg.border_option : {} }"
