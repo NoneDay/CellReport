@@ -20,7 +20,11 @@ export default {
   props:['parentCompent'],
   mounted(){
       this.parse_content()
-    },
+  },
+  beforeDestroy(){
+      this.inner_element?.$destroy()
+      console.info(this.self.gridName,'inner_element?.$destroy()')
+  },
   methods: {
     
     parse_content(){
@@ -111,7 +115,7 @@ export default {
       }
       
       t_vue_obj.parent=this
-      
+      t_vue_obj.name=this.self.gridName
       // 创建构造器创建实例挂载
       let ElementC = Vue.extend(t_vue_obj)
       this.inner_element = new ElementC()

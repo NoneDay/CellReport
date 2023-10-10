@@ -98,9 +98,7 @@ let dyn_mixin=(function(){ return {
             return this.dataset('xxx')
           },
     },
-    beforeDestroy(){
-
-    },
+    
     methods:{
         sayHi() {
             //console.info(this.context.clickedEle['test'])

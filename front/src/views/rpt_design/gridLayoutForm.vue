@@ -240,8 +240,8 @@ export default {
         }
     },
     methods: { 
-        calc_img_url(url){//如果返回空字符串，将会引起不必要的一次对当前地址的访问 data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='10'></svg>
-            return !url || url==''?"url()":`url(${url})`
+        calc_img_url(url){//如果返回空字符串，将会引起不必要的一次对当前地址的访问
+            return !url || url==''?"url(data:image/png;base64,)":`url(${url})`
         },
         border_title(item){
             let title=(item?.bg?.border_option?.title)

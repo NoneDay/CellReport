@@ -14,7 +14,7 @@ Vue.use(DlgDraggable, {
 });
 //axios.defaults.timeout = 100*1000;
 
-//axios.defaults.baseURL = baseUrl;
+axios.defaults.baseURL = ".";
 
 import { Message } from 'element-ui'
 import website from '@/config/website';

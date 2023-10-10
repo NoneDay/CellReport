@@ -440,7 +440,7 @@ function 字典_${para.table}(){
     `;
     var 最终模板=`
   <template>
-    <div style="width:100%;height:calc(100% - 120px);display: flex;" ref="main" v-if="cr_init">
+    <div style="width:100%;height:calc(100% - 0px);display: flex;" ref="main" v-if="cr_init">
       <avue-crud  ref="crud" :option="option"   style="display: flex;flex-direction: column;"
         v-model="cur_obj" :page.sync="page" 
         @row-del="delete_row" 
@@ -463,11 +463,18 @@ function 字典_${para.table}(){
   </template>
 <script>
     export default {
+	mounted(){
+      this.height=this.$el.clientHeight -51
+      let t_arr=$(this.$el).find(".avue-crud__search")
+      if(t_arr.length>0)
+        this.height-= t_arr[0].clientHeight 
+      console.info(this.height)
+    },
     data() {    
       let ret= {
         cur_obj:{},allDict:{},selfHeight:_this.selfHeight,ready:false,tableData:[],
         page: {currentPage: 1,total: 0,background:false,pageSize: 20,},
-        
+        height:0
       }
       return ret;
     },
@@ -542,7 +549,7 @@ function 字典_${para.table}(){
     },
     computed:{
       option(){
-        let ret={...{height: _this.selfHeight-120},
+        let ret={...{height: this.height},
 ...${para.crud_option} 
         }
         return ret;
@@ -570,7 +577,7 @@ function 字典_${para.table}(){
      结束 */       
   </script>     
 <style>
-  .avue-crud__search{    display: contents;}
+   .avue-crud__pagination {    padding: 10px; }
   .el-form-item__label {margin-top: 5px;}
 </style>
     `;

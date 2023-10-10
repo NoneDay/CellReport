@@ -1352,7 +1352,7 @@ import x2js from 'x2js'
 function getUrl(_this,data){
     if(typeof(_this)=="string")
         return _this
-    else if(["preview","design"].includes( _this.mode) || ["preview","design"].includes( _this.context?.mode)){
+    else if(["preview","design",'conf'].includes( _this.mode) || ["preview","design",'conf'].includes( _this.context?.mode)){
         const x2jsone=new x2js(); //实例
         data.append("_content", x2jsone.js2xml({report:_this.context.report}) )
         data.append("reportName", _this.context.report.reportName)
@@ -1379,7 +1379,7 @@ export function call_server_func(func_name,func_params,_this,get_post='post') {
     })
     else{
         return new Promise((resolve,reject) => {
-            reject(`call_server_func 远程调用${func_name}，没有定义url`);
+            reject(`call_server_func 远程调用【${func_name}】，没有定义url`);
         })
     }    
 }

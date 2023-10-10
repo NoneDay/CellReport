@@ -315,10 +315,10 @@ export default {
             return list
         },
         server_url(){
-            if(baseUrl == `/report5`)
+            //if(baseUrl == `/report5`)
                 return `run:${this.data.grp}?reportName=/`
-            else
-                return `${baseUrl}/run:${this.data.grp}?reportName=/`
+            //else
+            //    return `${baseUrl}/run:${this.data.grp}?reportName=/`
         }
   },
     methods:{
