@@ -101,14 +101,21 @@ let default_mixins={
               if(!val.dataSet && !val.data)
                   return   
               let name_arr=this.self.datasource.split(":")
-              if((name_arr[0]=='数据集' && val.dataSet[name_arr[1]])              
-                || (name_arr[0].startsWith('表格') && val.data[name_arr[1]])
-              ){
-                if(this.refresh)
-                  this.refresh()
-                else
-                  this.buildDisplayData()
-                return
+              if((name_arr[0]=='数据集' && val.dataSet[name_arr[1]]) || (name_arr[0].startsWith('表格') && val.data[name_arr[1]]))
+              {
+                if(name_arr[0]=='数据集' && (val.fresh_dataset||[]).includes(this.self.datasource)){
+                  if(this.refresh)
+                    this.refresh()
+                  else if(this.buildDisplayData)
+                    this.buildDisplayData()
+                  return
+                }else if(name_arr[0].startsWith('表格') && (val.fresh_report||[]).includes(this.self.datasource) ){
+                  if(this.refresh)
+                    this.refresh()
+                  else if(this.buildDisplayData)
+                    this.buildDisplayData()
+                }
+
               }      
           },deep:true
       }, 
@@ -232,6 +239,8 @@ let default_mixins={
           }
           //console.info(response)
           _this.fresh_ele.splice(0)
+          _this.context.report_result.fresh_report=Enumerable.from( Object.keys(response.data??{})).select(x=>"表格:"+x).toArray()
+          _this.context.report_result.fresh_dataset=Enumerable.from( Object.keys(response.dataSet??{})).select(x=>"数据集:"+x).toArray()
           if(_this.context.report_result.dataSet==undefined)
             _this.context.report_result.dataSet={}
           if(!_this.validatenull(response.dataSet)){
@@ -244,7 +253,6 @@ let default_mixins={
             });
           }
           if(!_this.validatenull(response.data)){
-            _this.context.report_result.fresh_report=Enumerable.from( Object.keys(response.data??{})).select(x=>"表格:"+x).toArray().join(",")
             Object.assign(_this.context.report_result.data,response.data)
             Object.keys(response.data).forEach(name => {
             //  _this.context.report_result.data[name] =response.data[name]  

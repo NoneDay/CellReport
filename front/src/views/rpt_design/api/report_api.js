@@ -221,8 +221,8 @@ export async function preview_one(_this,createFormParam=false,param_name=null) {
             _this.$set(_this,'previewFormParam',response_data)            
             Object.assign(_this.result,response_data)
             //console.info( _this.result)
-            _this.result.fresh_dataset=Enumerable.from( Object.keys(response_data.dataSet??{})).select(x=>"数据集:"+x).toArray().join(",")
-            _this.result.fresh_report=Enumerable.from( Object.keys(response_data.data??{})).select(x=>"表格:"+x).toArray().join(",")
+            _this.result.fresh_dataset=Enumerable.from( Object.keys(response_data.dataSet??{})).select(x=>"数据集:"+x).toArray()
+            _this.result.fresh_report=Enumerable.from( Object.keys(response_data.data??{})).select(x=>"表格:"+x).toArray()
     
             response_data.form.forEach(ele=>{
                 let val=ele.value
@@ -414,8 +414,8 @@ export function run_one(_this,reportFilePath,_param_name_=null,loading_conf=null
             _this.$set(_this.queryForm,ele.name,val)
             _this.$set(_this.queryForm_show,ele.name,false)
         })
-        _this.result.fresh_dataset=Enumerable.from( Object.keys(response_data.dataSet??{})).select(x=>"数据集:"+x).toArray().join(",")
-        _this.result.fresh_report=Enumerable.from( Object.keys(response_data.data??{})).select(x=>"表格:"+x).toArray().join(",")
+        _this.result.fresh_dataset=Enumerable.from( Object.keys(response_data.dataSet??{})).select(x=>"数据集:"+x).toArray()
+        _this.result.fresh_report=Enumerable.from( Object.keys(response_data.data??{})).select(x=>"表格:"+x).toArray()
         if(_param_name_!=null){
             _this.result.dataSet=response_data.dataSet
             _this.result.form=response_data.form

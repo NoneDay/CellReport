@@ -246,14 +246,15 @@ export default {
                     }
                     if(_this.self.type=='map'){
                         option=map_option(_this.self,_this,__valid_data__)
-                        _myChart=this.myChart
+                       
                     }
-                   _myChart.off('click')
-                   if(_this.self.type!='map'){
+                    _myChart=this.myChart
+                    _myChart.off('click')
+                  
                    //_myChart.getZr().off('click')
                     eval("option=(function(option,myChart,_this){"+_this.self.content+"\n return option})(option,_myChart,_this)")                    
                     _myChart.setOption(option,true);
-                   }
+                   
                     if(_this.context.mode=='design')
                         return;
                     
@@ -1349,6 +1350,7 @@ function map_option (self,_this,__valid_data__) {
         //if(self.option.mapSerieType!="map")
         {
             option.series[0].data=convertData(__valid_data__)          
+            delete option.dataset
         }
         //else
         //    delete option.series[0].data
