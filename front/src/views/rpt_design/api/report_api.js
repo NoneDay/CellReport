@@ -447,28 +447,28 @@ export function run_one(_this,reportFilePath,_param_name_=null,loading_conf=null
             
         if(_this.result.layout)
         {
-            _this.layout=_this.result.layout
+            _this.layout.v=_this.result.layout
         }
         else
         {
-            _this.layout=build_layout(
+            _this.layout.v=build_layout(
                 { HtmlText:Object.values(_this.result.data).filter(ele=>ele.type=="htmlText"),
                 grid:Object.values(_this.result.data).filter(ele=>["common",'large'].includes( ele.type))
                 } )
         }
         stage="步骤3"
         //手机端列表头转按钮
-        if( (window.convert_col_to_button || window.cellreport.convert_col_to_button) && _this.layout.length==1 && Object.keys(_this.result.data).length==1)
+        if( (window.convert_col_to_button || window.cellreport.convert_col_to_button) && _this.layout.v.length==1 && Object.keys(_this.result.data).length==1)
         { 
             let grid_result
-            if( _this.layout[0].element.children && _this.layout[0].element.children.column.length==1 
-                && _this.layout[0].element.children.column[0].type=="luckySheetProxy"
-                && _this.result.data[_this.layout[0].element.children.column[0].gridName].optimize)
+            if( _this.layout.v[0].element.children && _this.layout.v[0].element.children.column.length==1 
+                && _this.layout.v[0].element.children.column[0].type=="luckySheetProxy"
+                && _this.result.data[_this.layout.v[0].element.children.column[0].gridName].optimize)
             {
-                grid_result=_this.result.data[_this.layout[0].element.children.column[0].gridName]
+                grid_result=_this.result.data[_this.layout.v[0].element.children.column[0].gridName]
             }
-            else if(_this.layout[0].element.type=="luckySheetProxy" && _this.result.data[_this.layout[0].element.gridName].optimize){
-                grid_result=_this.result.data[_this.layout[0].element.gridName]
+            else if(_this.layout.v[0].element.type=="luckySheetProxy" && _this.result.data[_this.layout.v[0].element.gridName].optimize){
+                grid_result=_this.result.data[_this.layout.v[0].element.gridName]
             }
 
             if(grid_result){

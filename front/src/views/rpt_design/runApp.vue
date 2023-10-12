@@ -55,11 +55,11 @@
     <div  ref="div_form" v-if="expand_form && crisMobile && isShow && result.defaultsetting.big_screen!='1' && result.defaultsetting['show_form']=='true'" > 
       <dyncTemplate :parentCompent="parentCompent" :self="{type:'pc_form',content:mobile_form_content,gridName:'pc_form'}">
       </dyncTemplate>
-    </div> 
+    </div>  
     <div ref="report_pane" v-if="isShow" class="report_define"  :style="{'flex-grow': 1,height:'90px',color:result.defaultsetting['COLOR'],background:result.defaultsetting['BACKGROUND-COLOR']}">
-        <grid-layout-form v-if="report_pane_show && layoutType=='gridLayout'" :layout="layout"  :scale="scale">
+        <grid-layout-form v-if="report_pane_show && layoutType()=='gridLayout'" :layout="layout.v"  :scale="scale">
         </grid-layout-form>          
-        <widget-form v-else-if="report_pane_show && layoutType!='gridLayout'"   :data="layout"   
+        <widget-form v-else-if="report_pane_show && layoutType()!='gridLayout'"   :data="layout.v"   
         ></widget-form> <!--// 老报表只有报表，用这个组件显示-->
     </div>    
   </div>
@@ -142,7 +142,7 @@ export default {
         clickedEle:{},
         executed:false,
         last_js_cript:"",
-        layout:[],
+        layout:{v:{}},
         fresh_ele:[],
         mobile_col_arr:[ ],
         mobile_col_button_arr:[ ],
@@ -411,6 +411,12 @@ export default {
       })          
         
 
+    },
+    layoutType(){
+      if (Array.isArray(this.layout.v))
+      return 'gridLayout'
+      else
+      return 'divLayout'
     }
   },
   computed: {
@@ -428,12 +434,7 @@ export default {
     parentHeight(){
         return this.$parent.$el.clientHeight
     },
-    layoutType(){
-      if (Array.isArray(this.layout))
-      return 'gridLayout'
-      else
-      return 'divLayout'
-    }
+    
   },
 }
 </script>

@@ -41,6 +41,8 @@ export default {
             zoomData: 1,
             geoCoordMap:{},
             map_url:"",
+            timer :"",
+            timer_second:2
         }
     },
     computed:{
@@ -55,6 +57,7 @@ export default {
         }
     },
     beforeDestroy(){
+      this.clearTimer();
       if(this.myChart){
         this.myChart.dispose();
         //console.info("echarts dispose")
@@ -76,6 +79,76 @@ export default {
         _this.buildDisplayData()
     },
     methods:{
+        clearTimer(){
+          if(this.timer !='' && this.timer!=null){
+            clearInterval(this.timer );
+            this.timer=''
+          }
+        },
+        click_blank(data){//针对点击空白的预置函数
+          let _this=this
+          let t_data=data
+          if(_this.myChart.init_zr_click==undefined)//如果调用getZr().off('click')那么所有click 都失效
+          { 
+            _this.myChart.init_zr_click=true
+            this.myChart.getZr().on('click', function(event) {
+              if(_this.context.mode=='design')
+                return
+              // 没有 target 意味着鼠标/指针不在任何一个图形元素上，它是从“空白处”触发的。
+              if (!event.target) {
+                console.info("点击在了空白处，做些什么。")
+                // 设置clickEle，然后调用click_fresh 执行刷新
+                _this.$set(_this.context.clickedEle,_this.self.gridName,{data:t_data,cell:null,column:null,self:_this.self})
+                _this.click_fresh(_this.context.clickedEle[_this.self.gridName])   
+              } 
+            })
+          }
+        },
+        map_scroll_show(){//针对点击地图轮播的预置函数
+          let _this=this
+          let myChart=this.myChart
+          let dataLength = window.echarts.getMap(_this.real_map_url()).geoJSON.features.length;
+          function highlightMap(){
+            // 高亮轮播展示
+            let index = 0;
+            _this.clearTimer();
+            _this.timer = setInterval(()=>{
+              myChart.dispatchAction({
+                  type: 'downplay', // 取消高亮
+                  seriesIndex: 0
+              })
+              myChart.dispatchAction({ 
+                  type: 'highlight', //高亮
+                  seriesIndex: 0,
+                  dataIndex: index, //数据index,要显示的区域
+              })
+              myChart.dispatchAction({
+                  type: 'showTip', //显示提示框
+                  seriesIndex: 0,
+                  dataIndex: index
+              })
+              //console.info("=333=" ,index)
+              index++
+              if(index > dataLength){
+                  index = 0;
+              }
+
+            },_this.timer_second*1000)
+          }
+          myChart.off('mousemove')
+          myChart.off('mouseout')
+          myChart.on('mousemove',(e)=>{
+            _this.clearTimer();
+            myChart.dispatchAction({
+              type: 'downplay',
+              seriesIndex: 0
+            })            
+          })
+          myChart.on('mouseout',()=>{
+            highlightMap()
+          })
+          highlightMap()
+        },
         real_map_url(){
           if(this.validatenull(this.map_url))
             return this.self.option.mapData
@@ -252,7 +325,9 @@ export default {
                     _myChart.off('click')
                   
                    //_myChart.getZr().off('click')
-                    eval("option=(function(option,myChart,_this){"+_this.self.content+"\n return option})(option,_myChart,_this)")                    
+                    eval("option=(function(option,myChart,_this){"+_this.self.content+"\n return option})(option,_myChart,_this)")  
+                    _myChart=this.myChart
+                    _myChart.off('click')                  
                     _myChart.setOption(option,true);
                    
                     if(_this.context.mode=='design')
@@ -1289,7 +1364,7 @@ function map_option (self,_this,__valid_data__) {
             {
                 type: self.option.mapSerieType=="airBubble"?"effectScatter":self.option.mapSerieType,
                 //mapType: self.option.mapSerieType=="map"?_this.real_map_url():undefined,   // 自定义扩展图表类型  airBubble 'effectScatter' },
-                
+                map: _this.real_map_url(),
                 coordinateSystem: "geo",
                 showEffectOn: "emphasis",
                 rippleEffect: {
@@ -1358,15 +1433,15 @@ function map_option (self,_this,__valid_data__) {
         _this.myChart.off("mouseover");
         _this.myChart.off("mouseout");
         _this.myChart.off("georoam");
-
-        _this.myChart.on("mouseover", () => {
-            clearInterval(self.bannerCheck);
-            //_this.resetBanner();
-        });
-        _this.myChart.on("mouseout", () => {
-            _this.bannerCount = 0;
-            //_this.setBanner();
-        });
+        _this.clearTimer();
+        //_this.myChart.on("mouseover", () => {
+        //  if(_this.resetBanner)
+        //      _this.resetBanner();
+        //});
+        //_this.myChart.on("mouseout", () => {
+        //    if(_this.setBanner)
+        //      _this.setBanner();            
+        //});
         _this.myChart.on("georoam", e => {
             const option = _this.myChart.getOption();
             const geo = option.geo[0];
@@ -1377,14 +1452,14 @@ function map_option (self,_this,__valid_data__) {
         let _myChart=_this.myChart
         _this.myChart.setOption(option,true);//重绘是true
         _this.myChart.resize();
-        eval("option=(function(option,myChart,_this){"+self.content+"\n return option})(option,_myChart,_this)")                    
+        //eval("option=(function(option,myChart,_this){"+self.content+"\n return option})(option,_myChart,_this)")                    
         return option
     }
     if(window.echarts.getMap(_this.real_map_url()))
         return map_inner_exec(0)
     else{
-      let map_file=loadFile(_this.real_map_url())
-      window.echarts.registerMap(_this.real_map_url(), map_file);
+      _this.mapData=loadFile(_this.real_map_url())
+      window.echarts.registerMap(_this.real_map_url(), _this.mapData);
       if(_this.myChart)
           _this.myChart.dispose();
       _this.myChart = window.echarts.init(_this.$refs.main);// 不重新初始话的话，会报错 echarts.vue?3bfd:1356 TypeError: Cannot read properties of undefined (reading 'regions')
