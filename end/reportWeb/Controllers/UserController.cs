@@ -390,9 +390,9 @@ namespace reportWeb.Controllers
         public IActionResult VerifyCode(string userid, int code_len)
         {
             var verfiy_code_script = new CellReport.running.Env().TemplateGet("verfiy_code_script");
-            if (string.IsNullOrEmpty(verfiy_code_script))
+            if (string.IsNullOrWhiteSpace(verfiy_code_script))
                 verfiy_code_script = configuration["verfiy_code_script"];
-            if (string.IsNullOrEmpty(verfiy_code_script))
+            if (string.IsNullOrWhiteSpace(verfiy_code_script))
                 return new JsonResult(new { errcode = 1, message = "没有设置验证码发送脚本" });
             if (string.IsNullOrEmpty(userid))
                 return new JsonResult(new { errcode = 1, message = "请先设置用户名" });

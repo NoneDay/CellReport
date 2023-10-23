@@ -406,7 +406,16 @@ function 删除_${para.table}(crud_obj){
 function 清单_${para.table}(p){
    var key_list= ${json_stringify(iif(para.parent_table==null,[],para.parent_table)) };  
    var db=kata("${para.ds_link}");
-   var ret=db.Query('${para.table}').Where(p.where||{}).Paginate(p.page.currentPage,p.page.pageSize);
+   var ret=db.Query('${para.table}').Where(p.where||{});
+   if(p.export_excel){
+    var result=ret.Get();
+    return {data:result,total:result.Count}; 
+  }
+  else
+  {
+    var result=ret.Paginate(p.page.currentPage,p.page.pageSize);
+    return {data:result.List,total:result.Count};
+  }
    return {data:ret.List,total:ret.Count};
 }
 function TableData_${para.table}(p){
@@ -451,7 +460,9 @@ function 字典_${para.table}(){
         @row-update="update_row"
         :data="tableData"
       >
-      
+      <template slot="menuRight" slot-scope="{size}">
+        <el-button type="primary" icon="el-icon-download" circle :size="size" @click='export_excel'></el-button>
+      </template>
       <template slot="_info_Form"  slot-scope="scope" v-if="'${para.as_parent}'=='True'"> 
         <!--这里加上当前主键是否为空的判断，否则新增也会将子表显示出来-->
         <widget-form-item  v-if="cur_obj.${para.keys[0]}!=''" 
@@ -462,19 +473,24 @@ function 字典_${para.table}(){
     </div>
   </template>
 <script>
+    if(!window.XLSX)
+        tool.seriesLoadScripts('cdn/xlsx/dist/xlsx.full.min.js');
     export default {
-	mounted(){
-      this.height=this.$el.clientHeight -51
-      let t_arr=$(this.$el).find(".avue-crud__search")
-      if(t_arr.length>0)
-        this.height-= t_arr[0].clientHeight 
-      console.info(this.height)
-    },
+      mounted(){
+        this.height=this.$el.clientHeight -58 //58 对应的是pager的高度
+        let t_arr=$(this.$el).find(".avue-crud__search")
+        if(t_arr.length>0)
+          this.height-= t_arr[0].clientHeight 
+        t_arr=$(this.$el).find(".avue-crud__header")
+        if(t_arr.length>0)
+          this.height-= t_arr[0].clientHeight 
+        console.info(this.height)
+      },
     data() {    
       let ret= {
         cur_obj:{},allDict:{},selfHeight:_this.selfHeight,ready:false,tableData:[],
         page: {currentPage: 1,total: 0,background:false,pageSize: 20,},
-        height:0
+        height:0,old_where:null
       }
       return ret;
     },
@@ -489,7 +505,22 @@ function 字典_${para.table}(){
           this.page.currentPage=1
           this.getList({where:{...params,...(this.self.parent_obj||{})} ,page:this.page},done);
       },
-    	getList(params,done){
+	 export_excel(){
+        cellreport.call_server_func("清单_${para.table}",{...(this.old_where||{}),...{export_excel:1}} ,this).then(res=>{
+            if(res.errcode && res.errcode==1){
+              this.$message.error(res.message)
+              return
+            }
+			this.$Export.excel({
+              title: "文件名",
+              columns:this.option.column,
+              data: res.data,
+            }); 
+            
+        });
+      },
+      getList(params,done){
+	     this.old_where=params
          cellreport.call_server_func("清单_${para.table}",params ,this).then(res=>{
               if(done)
               done();
@@ -577,7 +608,7 @@ function 字典_${para.table}(){
      结束 */       
   </script>     
 <style>
-   .avue-crud__pagination {    padding: 10px; }
+  .avue-crud__pagination {    padding: 10px; }
   .el-form-item__label {margin-top: 5px;}
 </style>
     `;

@@ -166,6 +166,9 @@
           <el-form-item label="字体颜色">
             <avue-input-color v-model="data.option.tipColor"></avue-input-color>
           </el-form-item>
+          <el-form-item label="背景颜色">
+            <avue-input-color v-model="data.option.tipBackgroundColor"></avue-input-color>
+          </el-form-item>
           <el-form-item label="提示语格式">
             <avue-input v-model="data.option.labelFormatter"/>
           </el-form-item>

@@ -85,7 +85,10 @@ namespace reportWeb.Controllers
         {
             List<String> calcDsNames = null;
             List<String> calcGridNames = null;
-
+            if (!String.IsNullOrEmpty(_ConnectionId))
+                HttpContext.Session.SetString("_ConnectionId", _ConnectionId);
+            if (String.IsNullOrEmpty(_ConnectionId))
+                _ConnectionId = HttpContext.Session.GetString("_ConnectionId");
             if (!String.IsNullOrEmpty(_fresh_ds))
             {
                 foreach (var item in JsonDocument.Parse(_fresh_ds).RootElement.EnumerateArray())

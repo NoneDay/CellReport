@@ -142,7 +142,7 @@ export const dicOption = {
   labelList: ['bar', 'line', 'pie', 'radar', 'scatter'],
   legendList: ['bar', 'pie', 'line', 'radar', 'funnel'],
   colorList: ['common','bar', 'pie', 'line', 'gauge', 'funnel', 'scatter', 'radar','map'],
-  tipList: ['bar', 'pie', 'line', 'gauge', 'funnel', 'scatter', 'radar'],
+  tipList: ['bar', 'pie', 'line', 'gauge', 'funnel', 'scatter', 'radar','map'],
   postionList: ['bar', 'line', 'pictorialbar', 'funnel'],
   labelFormatterList: ['bar', 'map', 'line', 'pie', 'gauge', 'funnel', 'scatter', 'radar'],
   tabsTypeList: [{

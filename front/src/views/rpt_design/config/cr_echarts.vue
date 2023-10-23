@@ -118,7 +118,7 @@
           type="primary"
           >编辑</el-button>
     </el-form-item>
-字段设置：
+字段设置：<el-button type="warning" @click="unselectall">全部不选</el-button>
     <div style="max-height: 200px; overflow: auto;border: 1px solid gray;">
       
       <draggable
@@ -291,6 +291,9 @@ export default {
       this.url_param = row;
       this.ExprEditorDialog_visible = true;
     },
+    unselectall(){
+      Enumerable.from(this.data.fields).forEach(x=>{x.selected=false;});
+    },
     change_ds(ds) {
       let conf = this.data;
       if (conf.fields == undefined) this.$set(conf, "fields", []);
@@ -402,6 +405,7 @@ export default {
           });
         }
       }
+      Enumerable.from(this.data.fields).skip(3).forEach(x=>{x.selected=false;});//第三个后缺省全不选
     },
   },
 };

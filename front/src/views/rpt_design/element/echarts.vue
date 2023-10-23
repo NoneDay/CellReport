@@ -7,7 +7,7 @@
 <script>
 import { validatenull } from '@/util/validate'
 import mixins from "./mixins"
-import {convert_csv_to_json,convert_array_to_json,build_chart_data,seriesLoadScripts ,randomRgbColor,test_data,select_field_data,loadFile} from "../utils/util"
+import {convert_csv_to_json,convert_array_to_json,build_chart_data,seriesLoadScripts ,randomRgbColor,test_data,select_field_data,loadFile,getObjType} from "../utils/util"
 import elementResizeDetectorMaker from 'element-resize-detector'
 //下边这两行尤为重要，数据才能正常渲染
 
@@ -42,7 +42,8 @@ export default {
             geoCoordMap:{},
             map_url:"",
             timer :"",
-            timer_second:2
+            in_timer_exec:false,
+            scroll_index:0
         }
     },
     computed:{
@@ -83,6 +84,7 @@ export default {
           if(this.timer !='' && this.timer!=null){
             clearInterval(this.timer );
             this.timer=''
+            this.in_timer_exec=false
           }
         },
         click_blank(data){//针对点击空白的预置函数
@@ -97,61 +99,95 @@ export default {
               // 没有 target 意味着鼠标/指针不在任何一个图形元素上，它是从“空白处”触发的。
               if (!event.target) {
                 console.info("点击在了空白处，做些什么。")
+                let last_data
+                if(getObjType(t_data)=='function')
+                {
+                  last_data=t_data(event.target)
+                }else if(getObjType(t_data)=='object'){
+                  last_data=t_data
+                }
+                if(validatenull(last_data))
+                  return
                 // 设置clickEle，然后调用click_fresh 执行刷新
-                _this.$set(_this.context.clickedEle,_this.self.gridName,{data:t_data,cell:null,column:null,self:_this.self})
+                _this.$set(_this.context.clickedEle,_this.self.gridName,{data:last_data,cell:null,column:null,self:_this.self})
                 _this.click_fresh(_this.context.clickedEle[_this.self.gridName])   
               } 
             })
           }
         },
-        map_scroll_show(){//针对点击地图轮播的预置函数
+        scroll_show(banner_func,timer_second=2000){//针对点击地图轮播的预置函数
           let _this=this
           let myChart=this.myChart
-          let dataLength = window.echarts.getMap(_this.real_map_url()).geoJSON.features.length;
+          let scroll_index = 0;
+          
           function highlightMap(){
+            let dataLength
+            if(_this.real_map_url())
+              dataLength = window.echarts.getMap(_this.real_map_url()).geoJSON.features.length;
+            if(myChart.getOption().dataset)
+              dataLength =myChart.getOption().dataset[0].source.length -1
             // 高亮轮播展示
-            let index = 0;
             _this.clearTimer();
             _this.timer = setInterval(()=>{
-              myChart.dispatchAction({
-                  type: 'downplay', // 取消高亮
-                  seriesIndex: 0
-              })
-              myChart.dispatchAction({ 
-                  type: 'highlight', //高亮
-                  seriesIndex: 0,
-                  dataIndex: index, //数据index,要显示的区域
-              })
-              myChart.dispatchAction({
-                  type: 'showTip', //显示提示框
-                  seriesIndex: 0,
-                  dataIndex: index
-              })
-              //console.info("=333=" ,index)
-              index++
-              if(index > dataLength){
-                  index = 0;
+              if(_this.in_timer_exec)
+                return
+              _this.in_timer_exec=true
+              try{
+                if( getObjType(banner_func)=="function"){
+                  banner_func(myChart,scroll_index)
+                }else{
+                  myChart.dispatchAction({
+                      type: 'downplay', // 取消高亮
+                      seriesIndex: 0
+                  })
+                  myChart.dispatchAction({ 
+                      type: 'highlight', //高亮
+                      seriesIndex: 0,
+                      dataIndex: scroll_index, //数据index,要显示的区域
+                  })
+                  myChart.dispatchAction({
+                      type: 'showTip', //显示提示框
+                      seriesIndex: 0,
+                      dataIndex: scroll_index,
+                      position:'top'
+                  })
+                }
+                scroll_index++
+                if(scroll_index > dataLength){
+                  scroll_index = 0;
+                }
+              }finally{
+                _this.in_timer_exec=false
               }
-
-            },_this.timer_second*1000)
+            },( _this.self.option.banner && _this.self.option.bannerTime>0 ?  _this.self.option.bannerTime : (timer_second??20000)))
           }
           myChart.off('mousemove')
           myChart.off('mouseout')
           myChart.on('mousemove',(e)=>{
             _this.clearTimer();
+            //console.info("mousemove",e)
             myChart.dispatchAction({
               type: 'downplay',
               seriesIndex: 0
+            })
+            myChart.dispatchAction({ 
+                type: 'highlight', //高亮
+                seriesIndex: e.seriesIndex,
+                dataIndex: e.dataIndex, //数据index,要显示的区域
             })            
           })
-          myChart.on('mouseout',()=>{
+          myChart.on('mouseout',(e)=>{
+            //console.info("mouseout",e.dataIndex)
             highlightMap()
           })
-          highlightMap()
+          setTimeout(() => {
+            highlightMap()  
+          });
         },
         real_map_url(){
-          if(this.validatenull(this.map_url))
+          if(this.validatenull(this.map_url)){
             return this.self.option.mapData
+          }
           return this.map_url
         },
         has_self_color(){
@@ -237,143 +273,145 @@ export default {
             this.$refs.main.innerText="没有初始化"
             return
           }
-            let fields=this.self.fields
-            let datasource=this.self.datasource
-            let __valid_data__,valid_fileds,real_data
-            
-            if(this.self.datasource=='静态数据'){
-                if(this.self.optionData==undefined){
-                  this.self.optionData=JSON.parse(JSON.stringify( test_data))
-                  this.self.fields=[]
-                }
-                __valid_data__=select_field_data(this.self.optionData,this.self.fields)
-                valid_fileds=__valid_data__[0]
-                this.real_data=convert_array_to_json(__valid_data__ )             
-            }else{
-                try{
-                    let clickedEle_data=datasource.startsWith("元素")?clickedEle[datasource.split(":")[1]].data:null
-                    let ret=build_chart_data(datasource,this.context.report_result,clickedEle_data,fields)
-                    __valid_data__=ret.__valid_data__
-                    valid_fileds=ret.valid_fileds
-                    real_data=ret.real_data
-                    this.real_data=convert_array_to_json(real_data)
-                }catch{
-                    __valid_data__=JSON.parse(JSON.stringify( test_data))   
-                    __valid_data__[0]=Enumerable.from(this.self.fields).where(x=>x.selected).select(x=>x.key).toArray()
-                    this.real_data=convert_array_to_json(__valid_data__) 
-                }
-            }
-            if(this.real_data?.length && this.self.gridName!="_random_"){ 
-                this.$set(this.context.clickedEle,this.self.gridName,{data:this.real_data[0],cell:null,column:null,self:this.self})
-            }
+          this.clearTimer()
+          let fields=this.self.fields
+          let datasource=this.self.datasource
+          let __valid_data__,valid_fileds,real_data
+          
+          if(this.self.datasource=='静态数据'){
+              if(this.self.optionData==undefined){
+                this.self.optionData=JSON.parse(JSON.stringify( test_data))
+                this.self.fields=[]
+              }
+              __valid_data__=select_field_data(this.self.optionData,this.self.fields)
+              valid_fileds=__valid_data__[0]
+              this.real_data=convert_array_to_json(__valid_data__ )             
+          }else{
+              try{
+                  let clickedEle_data=datasource.startsWith("元素")?clickedEle[datasource.split(":")[1]].data:null
+                  let ret=build_chart_data(datasource,this.context.report_result,clickedEle_data,fields)
+                  __valid_data__=ret.__valid_data__
+                  valid_fileds=ret.valid_fileds
+                  real_data=ret.real_data
+                  this.real_data=convert_array_to_json(real_data)
+              }catch{
+                  __valid_data__=JSON.parse(JSON.stringify( test_data))   
+                  __valid_data__[0]=Enumerable.from(this.self.fields).where(x=>x.selected).select(x=>x.key).toArray()
+                  this.real_data=convert_array_to_json(__valid_data__) 
+              }
+          }
+          if(this.real_data?.length && this.self.gridName!="_random_"){ 
+              this.$set(this.context.clickedEle,this.self.gridName,{data:this.real_data[0],cell:null,column:null,self:this.self})
+          }
 
-            let series_type=[]
-            if(valid_fileds && this.self.series_type){
-                valid_fileds.slice(1).forEach(ele=>{
-                    series_type.push(JSON.parse(this.self.series_type))
-                });
-            }
-            //__valid_data__.splice(0,1)
-            let _this=this
-            let _myChart=this.myChart
-            let self=this.self
-            let option={}
-            this.$nextTick(function(){
-                try{
-                    if(_this.context.mode!='design' || _this.need_clear )
-                    {
-                        _myChart.clear()
-                    }
-                    
-                    if(_this.self.type=='bar'){
-                        option=bar_option(_this.self,_this,__valid_data__)
-                        Object.assign(option,
-                            {color:Enumerable.from(self.option.barColor).select(function(x){return {
-                                    type: 'linear',x: 0,y: 0,x2: 0,y2: 1,
-                                    colorStops: [{offset: 0, color: x.color1 // 0% 处的颜色
-                                    }, {offset: x.postion/100, color: x.color2 // 100% 处的颜色
-                                    }],
-                                    global: false // 缺省为 false
-                                }
-                                }
-                                ).toArray()                        
-                            })
-                    }
-                    if(_this.self.type=='line'){
-                        option=line_option(_this.self,_this,__valid_data__)
-                    }
-                    if(_this.self.type=='pie'){
-                        option=pie_option(_this.self,_this,__valid_data__)
-                    }
-                    if(_this.self.type=='funnel'){
-                        option=funnel_option(_this.self,_this,__valid_data__)
-                    }
-                    if(_this.self.type=='scatter'){
-                        option=scatter_option(_this.self,_this,__valid_data__)
-                    }
-                    if(_this.self.type=='gauge'){
-                        option=gauge_option(_this.self,_this,__valid_data__)
-                    }
-                    if(_this.self.type=='radar'){
-                        option=radar_option(_this.self,_this,__valid_data__)
-                    }
-                    if(_this.self.type=='map'){
-                        option=map_option(_this.self,_this,__valid_data__)
-                       
-                    }
-                    _myChart=this.myChart
-                    _myChart.off('click')
+          let series_type=[]
+          if(valid_fileds && this.self.series_type){
+              valid_fileds.slice(1).forEach(ele=>{
+                  series_type.push(JSON.parse(this.self.series_type))
+              });
+          }
+          //__valid_data__.splice(0,1)
+          let _this=this
+          let _myChart=this.myChart
+          let self=this.self
+          let option={}
+          this.$nextTick(function(){
+              try{
+                  if(_this.context.mode!='design' || _this.need_clear )
+                  {
+                      _myChart.clear()
+                  }
                   
-                   //_myChart.getZr().off('click')
-                    eval("option=(function(option,myChart,_this){"+_this.self.content+"\n return option})(option,_myChart,_this)")  
-                    _myChart=this.myChart
-                    _myChart.off('click')                  
-                    _myChart.setOption(option,true);
-                   
-                    if(_this.context.mode=='design')
-                        return;
-                    
-                    let func_click=function (params) {
-                      let cur_data=_this.real_data[params.dataIndex]
-                        if(_this.self.type=='map')
-                        {
-                            let click_data=Enumerable.from(__valid_data__).skip(1).where(x=>x[0]==params.name).toArray();
-                            if(click_data.length==0)
-                            return
-                            
-                            let data={'name':params.name,'componentType':params.componentType,'data':params.data}
-                            
-                            if(params.componentType=="geo"){
-                                data.componentType=params.componentType
-                                data.name=params.name
-                                
-                            }
-                            if(params.componentType=="series"){
-                                
-                            }
-                            _this.$set(_this.context.clickedEle,_this.self.gridName,{data:cur_data,cell:null,column:null,self:null,map_data:params})//
+                  if(_this.self.type=='bar'){
+                      option=bar_option(_this.self,_this,__valid_data__)
+                      Object.assign(option,
+                          {color:Enumerable.from(self.option.barColor).select(function(x){return {
+                                  type: 'linear',x: 0,y: 0,x2: 0,y2: 1,
+                                  colorStops: [{offset: 0, color: x.color1 // 0% 处的颜色
+                                  }, {offset: x.postion/100, color: x.color2 // 100% 处的颜色
+                                  }],
+                                  global: false // 缺省为 false
+                              }
+                              }
+                              ).toArray()                        
+                          })
+                  }
+                  if(_this.self.type=='line'){
+                      option=line_option(_this.self,_this,__valid_data__)
+                  }
+                  if(_this.self.type=='pie'){
+                      option=pie_option(_this.self,_this,__valid_data__)
+                  }
+                  if(_this.self.type=='funnel'){
+                      option=funnel_option(_this.self,_this,__valid_data__)
+                  }
+                  if(_this.self.type=='scatter'){
+                      option=scatter_option(_this.self,_this,__valid_data__)
+                  }
+                  if(_this.self.type=='gauge'){
+                      option=gauge_option(_this.self,_this,__valid_data__)
+                  }
+                  if(_this.self.type=='radar'){
+                      option=radar_option(_this.self,_this,__valid_data__)
+                  }
+                  if(_this.self.type=='map'){
+                      option=map_option(_this.self,_this,__valid_data__)
+                      
+                  }
+                  _myChart=this.myChart
+                  _myChart.off('click')
+                
+                  //_myChart.getZr().off('click')
+                  eval("option=(function(option,myChart,_this){"+_this.self.content+"\n return option})(option,_myChart,_this)")  
+                  _myChart=this.myChart
+                  _myChart.off('click')                  
+                  _myChart.setOption(option,true);
+                  
+                  if(_this.context.mode=='design')
+                      return;
+                  
+                  let func_click=function (params) {
+                    console.info(params)
+                    let cur_data=_this.real_data[params.dataIndex]
+                      if(_this.self.type=='map')
+                      {
+                          let click_data=Enumerable.from(__valid_data__).skip(1).where(x=>x[0]==params.name).toArray();
+                          if(click_data.length==0)
+                          return
+                          
+                          let data={'name':params.name,'componentType':params.componentType,'data':params.data}
+                          
+                          if(params.componentType=="geo"){
+                              data.componentType=params.componentType
+                              data.name=params.name
+                              
+                          }
+                          if(params.componentType=="series"){
+                              
+                          }
+                          _this.$set(_this.context.clickedEle,_this.self.gridName,{data:cur_data,cell:null,column:null,self:null,map_data:params})//
 
-                        }else{
-                            //因为有可选列，所以不能直接用row，要按row 找到真正的原始数据
-                            _this.$set(_this.context.clickedEle,_this.self.gridName,{data:cur_data,cell:cur_data[params.seriesName],column:params.seriesName,self:_this.self})
-                        }
-                        _this.click_fresh(_this.context.clickedEle[_this.self.gridName])
-                        console.info(_this.context.clickedEle[_this.self.gridName])
-                        //dimensionNames
-                        //data
-                        //seriesName
-                    }
-                    _myChart.on('click', func_click) //*/
-                }catch(e){
-                    console.info(e)
-                    console.info("this.self.chart_option不正确")
-                    console.info(option)
-                    if(_this.myChart)
-                      _this.myChart.dispose();                    
-                    _this.myChart = window.echarts.init(_this.$refs.main);
-                    console.error(e)
-                }
-            })
+                      }else{
+                          //因为有可选列，所以不能直接用row，要按row 找到真正的原始数据
+                          _this.$set(_this.context.clickedEle,_this.self.gridName,{data:cur_data,cell:cur_data[params.seriesName],column:params.seriesName,self:_this.self})
+                      }
+                      _this.click_fresh(_this.context.clickedEle[_this.self.gridName])
+                      console.info(_this.context.clickedEle[_this.self.gridName])
+                      //dimensionNames
+                      //data
+                      //seriesName
+                  }
+                  _myChart.on('click', func_click) //*/
+              }catch(e){
+                  console.info(e)
+                  console.info("this.self.chart_option不正确")
+                  console.info(option)
+                  if(_this.myChart)
+                    _this.myChart.dispose();                    
+                  _this.myChart = window.echarts.init(_this.$refs.main);
+                  console.error(e)
+              }
+          })
             
         }
     }
@@ -477,7 +515,7 @@ function bar_option(self,_this,__valid_data__) {
                 formatter: self.option.labelFormatter?.trim()!=""?self.option.labelFormatter:'{b}:{d}%'//name => { return _this.formatter(name, self.optionData) }
             }, 
             {
-                backgroundColor: _this.defaultsetting['BACKGROUND-COLOR'],
+                backgroundColor: self.option.tipBackgroundColor || 'rgba(50,50,50,0.7)',
                 textStyle: {
                     fontSize: self.option.tipFontSize,
                     color: self.option.tipColor || _this.defaultsetting['COLOR']
@@ -648,7 +686,7 @@ function line_option (self,_this,__valid_data__) {
             }
             return {};
           })(), {
-          backgroundColor:_this.defaultsetting['BACKGROUND-COLOR'],
+            backgroundColor: self.option.tipBackgroundColor || _this.defaultsetting['BACKGROUND-COLOR'],
           trigger: "axis",
           textStyle: {
             fontSize: self.option.tipFontSize,
@@ -813,7 +851,7 @@ function pie_option (self,_this,__valid_data__) {
             return {};
           })(),
           {
-            backgroundColor:_this.defaultsetting['BACKGROUND-COLOR'],
+            backgroundColor: self.option.tipBackgroundColor || _this.defaultsetting['BACKGROUND-COLOR'],
             textStyle: {
               fontSize: self.option.tipFontSize,
               color: self.option.tipColor || _this.defaultsetting['COLOR']
@@ -924,7 +962,7 @@ function radar_option (self,_this,__valid_data__) {
             return {};
           })(),
           {
-            backgroundColor: self.option.tipBackgroundColor || 'rgba(50,50,50,0.7)',
+            backgroundColor: self.option.tipBackgroundColor || _this.defaultsetting['BACKGROUND-COLOR'],
             textStyle: {
               fontSize: self.option.tipFontSize || 14,
               color: self.option.tipColor || "#fff"
@@ -1306,7 +1344,7 @@ function map_option (self,_this,__valid_data__) {
                 return {};
               })(),
               {
-                  formatter: '{b}<br/>{c}',
+                  formatter:self.option.labelFormatter && self.option.labelFormatter.trim()!=""?self.option.labelFormatter: '{b}<br/>{c}',
                     backgroundColor: self.option.tipBackgroundColor || _this.defaultsetting['BACKGROUND-COLOR'],
                     textStyle: {
                         fontSize: self.option.tipFontSize,
@@ -1325,21 +1363,18 @@ function map_option (self,_this,__valid_data__) {
               return {};
             })(),
             {
-              map: _this.real_map_url(),
-              label: {
-                emphasis: {
-                  show: false
-                }
-              },
+              map: _this.real_map_url(),              
               zoom: self.option.zoom,
               layoutCenter: ["50%", "50%"],
               layoutSize: 1200,
               roam: self.option.roam,
               regions:[],
               label: {
-                show: true,
+                show: self.option.showGeoLabelName,
                 fontSize: self.option.fontSize,
-                color: self.option.color
+                color: self.option.color,
+                
+                //formatter: params => {return params.name;}// "{b}\n{c}" 
               },
               left: self.option.gridX,
               top: self.option.gridY,
@@ -1350,6 +1385,7 @@ function map_option (self,_this,__valid_data__) {
                   color: self.option.empColor
                 },
                 itemStyle: {
+                  borderWidth:3,
                   areaColor: self.option.empAreaColor
                 }
               },
@@ -1376,14 +1412,13 @@ function map_option (self,_this,__valid_data__) {
                 hoverAnimation: true,
                 data:convertData(__valid_data__),
                 label: {
-                    show: false,
+                    show: self.option.showGeoLabelName,
                     position: ["130%", "0"],
                     fontSize: self.option.fontSize,
                     color: self.option.color,
-                    formatter: params => {
-                        return params.name;
-                    }
+                    formatter: "{b}" // params => {return params.name;}// "{b}\n{c}" 
                 },
+              
                 symbolSize: function(val) {
                     if(self.option.mapSerieType!="airBubble")
                         return maxSize4Pin
