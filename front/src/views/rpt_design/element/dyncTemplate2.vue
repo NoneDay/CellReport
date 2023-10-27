@@ -34,7 +34,7 @@ export default {
       }
       let _this=this 
       let tmp=_this.self.content.replaceAll("dync_script>","script>")                
-      let script_txt=extract_script_txt(tmp)
+      let script_txt=extract_script_txt(tmp).trim()
       //https://github.com/JonWatkins/vue-runtime-template-compiler/blob/master/src/components/RuntimeTemplateCompiler.vue
       //script_txt=script_txt.replace(/function\s*(\w+)\s*/img,'_this.$1=_this.$options.methods.$1=function')
       script_txt=script_txt.replace(/export\s+default*/img,'return ')

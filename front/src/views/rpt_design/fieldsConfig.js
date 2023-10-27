@@ -40,11 +40,27 @@ export default [
         },  
         
             {"type":"dync_template",'label':'动态模板',gridName:"_random_",icon: 'icon-table','color':'#fff',display: true,style:{height:'100px'}, 
-            'content':`
-        <div>
-        div>Hello {{ self.gridName }}!</div>
-        
-      </div>`,
+            'content':`<template>
+  <div>Hello {{ self.gridName }}!</div>
+</template>
+
+<script>
+  export default{
+    mounted(){
+    },
+    data(){
+      return {
+        xx:1
+      }
+    },
+    methods:{
+    },
+    watched:{
+    },
+    computed:{
+    }
+  }
+</script>  `,
             'component':'dync-template'},
 
             {type:"ele-grid",'label':'ele_grid',icon: 'icon-table','color':'#fff',display: true, 

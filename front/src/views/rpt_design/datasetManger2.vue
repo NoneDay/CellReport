@@ -173,10 +173,13 @@
                 </div>
             </div>
             <div style="height:50%;display:flex;flex-direction:column">
-                <el-upload v-if="action_target._type=='csv'" class="upload-demo" action :auto-upload="false" :show-file-list="false" :on-change="choose_file"
-                >
-                <el-button size="small" type="primary">请选择导入excel</el-button>
-                </el-upload>
+                <div style="display: flex;justify-content: space-between;">
+                    <el-upload v-if="action_target._type=='csv'" class="upload-demo" action :auto-upload="false" :show-file-list="false" :on-change="choose_file"
+                    >
+                    <el-button size="small" type="primary">请选择导入excel</el-button>
+                    </el-upload>
+                    <el-button size="small" type="primary" @click="export_excel">excel导出</el-button>
+                </div>
                 <div v-if="tableData==undefined || tableData.length==0" >无数据</div>
                 
                 <el-table stripe border  :height="250" v-if="tableData.length>0" 
@@ -209,7 +212,7 @@ import {request} from 'axios'
 import {baseUrl} from './api/report_api'
 import x2js from 'x2js' 
 import MonacoEditor from './element/MonacoEditor';
-import {convert_csv_to_json,convert_array_to_json,parse_json,json_by_path,getObjType } from "./utils/util"
+import {convert_csv_to_json,convert_array_to_json,parse_json,json_by_path,getObjType,saveAs,s2ab } from "./utils/util"
 export default {
     name: "datasetManger2",
     components: {ExprEditorDialog,MonacoEditor},
@@ -341,6 +344,13 @@ export default {
     },
     
     methods:{ 
+        export_excel(){
+            let ws= XLSX.utils.json_to_sheet(this.tableData)
+            let wb = XLSX.utils.book_new()
+            XLSX.utils.book_append_sheet(wb, ws,'数据');
+            let wopts = { bookType: 'xlsx', bookSST: true, type: 'binary' };//这里的数据是用来定义导出的格式类型 
+            saveAs(new Blob([s2ab(XLSX.write(wb, wopts))], { type: "application/octet-stream"}), "这里是下载的文件.xlsx");
+        },
         report_content(){
             let x2jsone=new x2js(); //实例
             let t_content_json=JSON.parse(JSON.stringify(this.context.report))

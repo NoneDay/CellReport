@@ -93,7 +93,11 @@ export default {
           if(_this.myChart.init_zr_click==undefined)//如果调用getZr().off('click')那么所有click 都失效
           { 
             _this.myChart.init_zr_click=true
-            this.myChart.getZr().on('click', function(event) {
+            _this.myChart.getZr().on('click', function(event) {
+              _this.myChart.dispatchAction({
+                      type: 'downplay', // 取消高亮
+                      seriesIndex: 0
+                  })
               if(_this.context.mode=='design')
                 return
               // 没有 target 意味着鼠标/指针不在任何一个图形元素上，它是从“空白处”触发的。
@@ -363,8 +367,10 @@ export default {
                 
                   //_myChart.getZr().off('click')
                   eval("option=(function(option,myChart,_this){"+_this.self.content+"\n return option})(option,_myChart,_this)")  
-                  _myChart=this.myChart
-                  _myChart.off('click')                  
+                  _myChart=_this.myChart
+                  _myChart.off('click')   
+                  if(_this.self.option.banner)
+                    _this.scroll_show(null,_this.self.option.bannerTime)
                   _myChart.setOption(option,true);
                   
                   if(_this.context.mode=='design')
@@ -1399,18 +1405,16 @@ function map_option (self,_this,__valid_data__) {
         series: [
             {
                 type: self.option.mapSerieType=="airBubble"?"effectScatter":self.option.mapSerieType,
-                //mapType: self.option.mapSerieType=="map"?_this.real_map_url():undefined,   // 自定义扩展图表类型  airBubble 'effectScatter' },
-                map: _this.real_map_url(),
-                coordinateSystem: "geo",
-                showEffectOn: "emphasis",
+
+                showEffectOn: "render",
                 rippleEffect: {
                     brushType: "fill",
                     scale: 4
                 },
-                geoIndex:0,
+                
                 symbolSize: self.option.fontSize,
                 hoverAnimation: true,
-                data:convertData(__valid_data__),
+                //data:convertData(__valid_data__),
                 label: {
                     show: self.option.showGeoLabelName,
                     position: ["130%", "0"],
@@ -1432,6 +1436,20 @@ function map_option (self,_this,__valid_data__) {
                         1.2
                     );
                 },
+                emphasis: {
+                label: {
+                  color: self.option.empColor
+                },
+                itemStyle: {
+                  borderWidth:3,
+                  areaColor: self.option.empAreaColor
+                }
+              },
+              itemStyle: {
+                borderWidth: self.option.borderWidth,
+                borderColor: self.option.borderColor,
+                areaColor: self.option.areaColor
+              },
             }
         ]
       };
@@ -1448,19 +1466,39 @@ function map_option (self,_this,__valid_data__) {
                 symbolSize: [minSize4Pin,maxSize4Pin]
             }
         }
+        let cur_ser=option.series[0]
         if(self.option.mapSerieType=="map")
         {
-            //delete option.geo
-            option.dataset= {
-            // 提供一份数据。__valid_data__为自动生成，如果全自定义，就不要使用
-                source: __valid_data__ 
-            }
-            delete option.series[0].data
-        }else  
-        //if(self.option.mapSerieType!="map")
+          cur_ser.type="map"
+          if(false){
+            cur_ser.map= _this.real_map_url()
+            delete option.geo
+            //cur_ser.select= {
+            //  disabled:false,
+            //  label: {
+            //    color: self.option.empColor
+            //  },
+            //  itemStyle: {
+            //    borderWidth:3,
+            //    areaColor: self.option.empAreaColor
+            //  }
+            //}
+          }else{
+            cur_ser.coordinateSystem= "geo",
+            cur_ser.geoIndex=0
+          }
+          cur_ser.select={disabled:true}
+        }else  if(self.option.mapSerieType=="airBubble"){
+          cur_ser.type="scatter"
+          cur_ser.coordinateSystem="geo"
+          cur_ser.data=convertData(__valid_data__)          
+          delete option.dataset
+        }else
+        //if(self.option.mapSerieType!="map") effectScatter
         {
-            option.series[0].data=convertData(__valid_data__)          
-            delete option.dataset
+          cur_ser.coordinateSystem="geo"
+          cur_ser.data=convertData(__valid_data__)          
+          delete option.dataset
         }
         //else
         //    delete option.series[0].data
@@ -1485,8 +1523,8 @@ function map_option (self,_this,__valid_data__) {
             if (_this.zoomData < 1) _this.zoomData = 1;
         });
         let _myChart=_this.myChart
-        _this.myChart.setOption(option,true);//重绘是true
-        _this.myChart.resize();
+        //_this.myChart.setOption(option,true);//重绘是true
+        //_this.myChart.resize();
         //eval("option=(function(option,myChart,_this){"+self.content+"\n return option})(option,_myChart,_this)")                    
         return option
     }
