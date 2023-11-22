@@ -64,7 +64,8 @@ axios.interceptors.response.use(async res => {
     //如果在白名单里则自行catch逻辑处理
     if (statusWhiteList.includes(status)) return Promise.reject(res);
     //如果是401则跳转到登录页面
-    if (status === 401){
+    
+    if (status === 401 && res.config.url!='/user/login'){
         if(res.headers['token-expired']=='true' || cur_message().indexOf("过期")>=0 ){
              // Create new promise to handle exponential backoff
             await store.dispatch("RefreshToken")

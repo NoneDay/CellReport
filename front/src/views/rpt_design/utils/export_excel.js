@@ -53,7 +53,7 @@ function find_style(tbl,rowNo,colNo,cur_tbl_class_dict){
         let one=tbl.abs_to_design[idx]
         let cur_ret={}
         if(one.row[0]<=rowNo && rowNo<=one.row[1] && one.col[0]<=colNo && colNo<=one.col[1]){
-            Object.assign(cur_ret,default_css,cur_tbl_class_dict[tbl.loc_style[one.cell+"_S"] ??""],cur_tbl_class_dict[tbl.loc_style[one.cell+"_D"] ??""]
+            Object.assign(cur_ret,default_css,cur_tbl_class_dict[tbl.loc_style[one.cell+"_S"] ??""],cur_tbl_class_dict[tbl.loc_style[`${rowNo}_${colNo}_D`] ??""]
             )
             return cur_ret
         }
