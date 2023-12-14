@@ -87,6 +87,9 @@ Database=dbname;Data Source=x.x.x.x;Port=3306;User Id=xxx;Password=****;Charset=
 
 pgsql 连接串 格式
 server=ip地址;port=5432;uid=用户;pwd=口令;database=数据库;Pooling=true;
+
+达梦 连接串 格式
+Server=ip地址:端口; UserId=用户; PWD=口令;
 ```
 
 配置完毕后，按F5 刷新页面，点报表目录，正常的话，这是应该能看到所有的测试报表了

@@ -21,6 +21,7 @@
   <ItemGroup>
     <PackageReference Include="Antlr3.Runtime" Version="3.5.2-rc1" />
     <PackageReference Include="CSRedisCore" Version="3.6.6" />
+    <PackageReference Include="dmdbms.DmProvider" Version="1.1.0.16649" />
     <PackageReference Include="EPPlus" Version="6.2.7" />
 	<PackageReference Include="itext7" Version="7.2.1" />
 	<PackageReference Include="itext7.pdfhtml" Version="4.0.1" />

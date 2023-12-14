@@ -234,7 +234,8 @@ namespace reportWeb
             DbProviderFactories.RegisterFactory("Microsoft.Data.Sqlite", SqliteFactory.Instance);
             foreach(var one in Configuration.GetSection("DbProviderFactories").Get<DbProviderCfg[]>())
             {
-                var ass = System.Reflection.Assembly.Load( one.DllName);
+                //var ass = System.Reflection.Assembly.Load( one.DllName);
+                var ass = System.Reflection.Assembly.LoadFrom(Path.GetDirectoryName(Environment.ProcessPath) + "/" + one.DllName + (one.DllName.EndsWith(".dll")?"":".dll"));
                 DbProviderFactory f = ass.GetType(one.FactoryClass).GetField(one.InstanceName).GetValue(null) as DbProviderFactory;
                 DbProviderFactories.RegisterFactory(one.Name, f );
                 
