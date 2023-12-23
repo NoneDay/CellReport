@@ -95,22 +95,44 @@ export default {
       }
 
       t_vue_obj.mixins=[mixins,dyncTemplateMinxins]
-      if(tool.getObjType(this.parentCompent)=="object"){
+      if(tool.getObjType(this.parentCompent)=="object"){//普通自定义组件的parentCompent==undefined,不走这里
           let parent_mixin={
               data(){
-                  if(_this.parentCompent.$data)
-                      return _this.parentCompent.$data??{}
-                  else if (_this.parentCompent.data){
+                  if(_this.parentCompent.$data){
+                      return {};//_this.parentCompent.$data??{}
+                  }
+                  else  if (_this.parentCompent.data){
                       if( tool.getObjType( _this.parentCompent.data)=="function")
                           return _this.parentCompent.data()
                       else
                           return _this.parentCompent.data
+                  }else{
+                    return {};
                   }
               },
-              computed:_this.parentCompent.$options?.computed??_this.parentCompent.computed??{},
+              computed:{...(_this.parentCompent.$options?.computed??_this.parentCompent.computed??{}),...{parentCompent:function(){ return _this.parentCompent} }},
               methods:_this.parentCompent.$options?.methods??_this.parentCompent.methods??{},
-              watched:_this.parentCompent.$options?.watched??{},
+              watch:_this.parentCompent.$options?.watch??{},
           }
+          if(_this.parentCompent.$data){//将原对象中的data 数据转换为可计算类型，使用get 获取原始值，set 设置到原始值
+            Object.keys(_this.parentCompent.$data).forEach(x=>{
+              parent_mixin.computed[x]={
+                get: function () {
+                  return _this.parentCompent[x]
+                },
+                set: function (newValue) {
+                  _this.parentCompent[x]=newValue
+                }
+              }
+            });
+          }
+          //if(_this.parentCompent.$options?.methods){
+          //  Object.keys(_this.parentCompent.$options.methods).forEach(x=>{
+          //     parent_mixin.methods[x]=function( ...rest){
+          //      return this.dync_parentCompant[x].apply(this.dync_parentCompant,rest)
+          //     }
+          //  });
+          //}
           t_vue_obj.mixins.push(parent_mixin)
       }
       

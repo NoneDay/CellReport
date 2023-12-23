@@ -49,13 +49,13 @@
     </span>
 
     <div ref="div_form" v-if="!crisMobile && isShow && result.defaultsetting.big_screen!='1' && result.defaultsetting['show_form']=='true'"> 
-      <dyncTemplate :parentCompent="parentCompent" :self="{type:'pc_form',content:pc_form_content ,gridName:'pc_form'}">
+      <dyncTemplate :parentCompent="tmpParentCompent" :self="{type:'pc_form',content:pc_form_content ,gridName:'pc_form'}">
       </dyncTemplate>
     </div>
     <div  ref="div_form" v-if="expand_form && crisMobile && isShow && result.defaultsetting.big_screen!='1' && result.defaultsetting['show_form']=='true'" > 
-      <dyncTemplate :parentCompent="parentCompent" :self="{type:'pc_form',content:mobile_form_content,gridName:'pc_form'}">
+      <dyncTemplate :parentCompent="tmpParentCompent" :self="{type:'pc_form',content:mobile_form_content,gridName:'pc_form'}">
       </dyncTemplate>
-    </div>  
+    </div> 
     <div ref="report_pane" v-if="isShow" class="report_define"  :style="{'flex-grow': 1,height:'90px',color:result.defaultsetting['COLOR'],background:result.defaultsetting['BACKGROUND-COLOR']}">
         <grid-layout-form v-if="report_pane_show && layoutType()=='gridLayout'" :layout="layout.v"  :scale="scale">
         </grid-layout-form>          
@@ -198,7 +198,7 @@ export default {
             let ks=Object.keys(that.result.data)
             if(ks.length>0)
               document.title = (that.result.data[ks[0]]?.title)   || document.title 
-            if(window.after_show_report_hook){window.after_show_report_hook()}
+            if(window.after_show_report_hook){window.after_show_report_hook(that)}
           });
       });
     },
@@ -427,7 +427,7 @@ export default {
       return loadFile(this.result?._zb_var_?.form_vue_file?.mobile??'mobile_form.html')
     },
     show_tips(){return window.cellreport.show_tips},
-    parentCompent(){ return this},
+    tmpParentCompent(){ return this},
     crisMobile(){
         return isMobile();
     },
