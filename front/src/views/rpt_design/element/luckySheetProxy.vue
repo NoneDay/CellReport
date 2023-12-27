@@ -373,9 +373,9 @@ export default {
                   _this.$set(_this.context.clickedEle,_this.self.gridName,{data:ret,cell:ret[cur_col],column:cur_col,self:_this.self})
                   _this.click_fresh(_this.context.clickedEle[_this.self.gridName])
 
-                  if(window[`cr_click_${_this.gridName}`]){
-                    window[`cr_click_${_this.gridName}`]({data:ret,cell:ret[cur_col],column:cur_col},_this)
-                  }
+                  //if(window[`cr_click_${_this.gridName}`]){
+                  //  window[`cr_click_${_this.gridName}`]({data:ret,cell:ret[cur_col],column:cur_col},_this)
+                  //}
 
                   // 点击后的活动行
                   //$(this).siblings('tr').removeClass('active-row');

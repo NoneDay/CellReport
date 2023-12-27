@@ -402,7 +402,7 @@ export function run_one(_this,reportFilePath,_param_name_=null,loading_conf=null
         }
         if(response_data.zb_var) //兼容老写法
             response_data._zb_var_=response_data.zb_var
-        if(response_data._zb_var_?.watermark){
+        if(response_data._zb_var_ && response_data._zb_var_.watermark){
             $(".mask_div").remove()
             _this.watermark(response_data._zb_var_.watermark);
         }
@@ -423,10 +423,10 @@ export function run_one(_this,reportFilePath,_param_name_=null,loading_conf=null
             return
         }
         else if(_fresh_ds){
-            Object.keys(response_data.dataSet).forEach(x=>{
+            Object.keys(response_data.dataSet??{}).forEach(x=>{
                 _this.result.dataSet[x]=response_data.dataSet[x]
             })
-            Object.keys(response_data.data).forEach(x=>{
+            Object.keys(response_data.data??{}).forEach(x=>{
                 _this.result.data[x]=response_data.data[x]
             })
             //Object.assign(_this.result.dataSet,response_data.dataSet)
