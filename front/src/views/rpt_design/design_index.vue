@@ -1082,7 +1082,6 @@ export default {
     },
     preview_run(){
       this.save_fix()
-      this.save_layout(this.layout_mode)
       this.preview_dialogVisible=true
       
     },
@@ -1107,7 +1106,6 @@ export default {
     },
     save_report(){
       this.save_fix()
-      this.save_layout(this.layout_mode)
       let _this=this
       if(this.report.reportName.split(":")[1].startsWith("大屏/")){
         this.setSelectWidgetForLayout();
@@ -1145,7 +1143,6 @@ export default {
     async run_report(url){
       // console.log(url)
       this.save_fix()
-      this.save_layout(this.layout_mode)
       save_one(this.report)
       if(navigator?.clipboard && navigator.clipboard.writeText)
         await navigator.clipboard.writeText(url)

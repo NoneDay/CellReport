@@ -278,7 +278,7 @@ export default class ResultGrid2HtmlTable{
                 }                
             })
         })
-        if(tableData.length<=1000)
+        if(tableData.length<= (window.cellreport.cfc_max_line??1000))
             this.cell_cf= cellFromatCompute(cdf_arr,tableData)
         this.tableData_bridge=new Array(tableData.length)//里面存的是指向原始表的行号
         for(let idx=0;idx<tableData.length;idx++)
