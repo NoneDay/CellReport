@@ -32,6 +32,10 @@
 	<sql_max_rows>500000</sql_max_rows>
 	<before_exec_script>
 		<![CDATA[
+		var db22=kata({
+          db_link:"Data Source=10.20.154.39;Initial Catalog=clic_hn_portal;Persist Security Info=True;User ID=lzm;Password=lhbwyt;Min Pool Size=1;Max Pool Size=100;Connect Timeout=15000;Application Name=报表连接",	
+          ds_type:"SqlClient"
+        });
 function download_img(url){
     try{
         var result= web_request({'url':url,'raw':true}) ;  

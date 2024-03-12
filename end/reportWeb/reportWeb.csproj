@@ -36,9 +36,7 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.IO.RecyclableMemoryStream" Version="2.3.2" />
-    <PackageReference Include="MySql.Data" Version="8.0.30">
-      <TreatAsUsed>true</TreatAsUsed>
-    </PackageReference>
+    <PackageReference Include="MySqlConnector" Version="2.3.5" />
     <PackageReference Include="Npgsql" Version="6.0.0">
       <TreatAsUsed>true</TreatAsUsed>
     </PackageReference>
