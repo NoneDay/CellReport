@@ -155,6 +155,7 @@ CREATE TABLE IF NOT EXISTS Rpt_db_connection (
 	db_type	TEXT,
 	conn_str	TEXT,
 	test_conn_str	TEXT,
+    prefix text,
 	CONSTRAINT FK_Rpt_db_connection_Rpt_group_grp_id FOREIGN KEY(grp_id) REFERENCES Rpt_group(Id),
 	CONSTRAINT PK_Rpt_db_connection PRIMARY KEY(id AUTOINCREMENT)
 );
@@ -170,6 +171,7 @@ CREATE INDEX IF NOT EXISTS IX_Rpt_db_connection_grp_id ON Rpt_db_connection (
 );
 COMMIT; "
                 );
+                var columns=db.Select("SELECT  C.name AS column_name FROM    sys.tables AS T  JOIN sys.columns AS C   ON   T.object_id = C.OBJECT_ID where T.name='Rpt_db_connection'").ToList();
                 var main_path = new DirectoryInfo(Path.Combine(env.ContentRootPath, "..", "reportdefine_root", "default")).FullName;
                 if (db.Query("Rpt_group").AsCount().First<int>() == 0)
                 {
@@ -267,6 +269,7 @@ COMMIT; "
         public string db_type { get; set; }
         public string conn_str { get; set; }
         public string test_conn_str { get; set; }
+        public string sql_prefix { get; set; }
     }
     public class Rpt_config
     {
