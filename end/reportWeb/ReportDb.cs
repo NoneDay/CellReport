@@ -34,7 +34,7 @@ namespace reportWeb
             var report_db = SqliteFactory.Instance.CreateConnection();
             report_db.ConnectionString = "Data Source=report.db;";
             this.Connection = report_db;
-            this.Compiler=new SqlKata.Compilers.SqliteCompiler();
+            this.Compiler = new SqlKata.Compilers.SqliteCompiler();
             Logger = result =>
             {
                 _logger.LogDebug(result.ToString());
@@ -44,15 +44,15 @@ namespace reportWeb
         public IEnumerable<Rpt_group> getList(string cur_userid)
         {
             IEnumerable<Rpt_group> ret = rpt_Groups;
-            
+
             if (cur_userid != "admin")
-                ret=rpt_Groups.Where(x => x.owner == cur_userid);
-            
+                ret = rpt_Groups.Where(x => x.owner == cur_userid);
+
             return ret;
         }
         public Rpt_group GetRpt_Group(string id)
         {
-            return rpt_Groups.Where(x=>x.Id==id).FirstOrDefault<Rpt_group>();
+            return rpt_Groups.Where(x => x.Id == id).FirstOrDefault<Rpt_group>();
         }
         private bool Rpt_groupExists(string id)
         {
@@ -69,9 +69,9 @@ namespace reportWeb
             await Query("Rpt_db_connection").Where(new { rpt_id = id }).DeleteAsync();
             await Query("Rpt_group").Where(new { id }).DeleteAsync();
             ConcurrentBag<Rpt_group> tmp_list = new();
-            rpt_Groups.Where(x => x.Id != id).ToList().ForEach(x=> tmp_list.Add(x));
+            rpt_Groups.Where(x => x.Id != id).ToList().ForEach(x => tmp_list.Add(x));
             rpt_Groups = tmp_list;
-            return ;
+            return;
         }
         public async Task UpdateRpt_group(string cur_userid, Rpt_group rpt_group)
         {
@@ -155,7 +155,7 @@ CREATE TABLE IF NOT EXISTS Rpt_db_connection (
 	db_type	TEXT,
 	conn_str	TEXT,
 	test_conn_str	TEXT,
-    prefix text,
+    sql_prefix text,
 	CONSTRAINT FK_Rpt_db_connection_Rpt_group_grp_id FOREIGN KEY(grp_id) REFERENCES Rpt_group(Id),
 	CONSTRAINT PK_Rpt_db_connection PRIMARY KEY(id AUTOINCREMENT)
 );
@@ -171,7 +171,6 @@ CREATE INDEX IF NOT EXISTS IX_Rpt_db_connection_grp_id ON Rpt_db_connection (
 );
 COMMIT; "
                 );
-                var columns=db.Select("SELECT  C.name AS column_name FROM    sys.tables AS T  JOIN sys.columns AS C   ON   T.object_id = C.OBJECT_ID where T.name='Rpt_db_connection'").ToList();
                 var main_path = new DirectoryInfo(Path.Combine(env.ContentRootPath, "..", "reportdefine_root", "default")).FullName;
                 if (db.Query("Rpt_group").AsCount().First<int>() == 0)
                 {
@@ -215,6 +214,11 @@ COMMIT; "
                     login_script = "",
                 });
             }
+            if (0 == db.Select(" SELECT * FROM pragma_table_info('Rpt_db_connection') where name='sql_prefix'").Count())
+            {
+                db.Statement("alter table Rpt_db_connection add column sql_prefix text");
+            };
+
             var rpt_config = db.Query("Rpt_config").First<Rpt_config>();
             CellReport.util.KeyAndPassword.yan_zheng_zcm(rpt_config.zcm);
 
@@ -222,7 +226,7 @@ COMMIT; "
         }
         private static void FreshCache(QueryFactory db)
         {
-            ConcurrentBag<Rpt_group> tmp_list = new(); 
+            ConcurrentBag<Rpt_group> tmp_list = new();
             db.Query("Rpt_group").Get<Rpt_group>().ToList().ForEach(x => tmp_list.Add(x));
             var rpt_Db_Connections = db.Query("Rpt_db_connection").Get<Rpt_db_connection>().ToList();
             foreach (var one in tmp_list)
@@ -231,7 +235,7 @@ COMMIT; "
             }
             rpt_Groups = tmp_list;
         }
-        private static ConcurrentBag<Rpt_group> rpt_Groups = new ();
+        private static ConcurrentBag<Rpt_group> rpt_Groups = new();
     }
     public class Rpt_group
     {
@@ -243,13 +247,13 @@ COMMIT; "
         public string default_page { get; set; }
         public string allow { get; set; }
         public string report_path { get; set; }
-        public string test_report_path { get; set; }        
+        public string test_report_path { get; set; }
         [ForeignKey("grp_id")]
         [SqlKata.Ignore]
         public List<Rpt_db_connection> db_connection_list { get; set; }
         public string members { get; set; }
-        public string zb_user { get;  set; }
-        public string zb_password { get;  set; }
+        public string zb_user { get; set; }
+        public string zb_password { get; set; }
 
         public string getPageNameByReportName(string reportName)
         {
