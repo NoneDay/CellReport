@@ -218,7 +218,11 @@ COMMIT; "
             {
                 db.Statement("alter table Rpt_db_connection add column sql_prefix text");
             };
-
+            if (0 == db.Select(" SELECT * FROM pragma_table_info('Rpt_db_connection') where name='sql_suffix'").Count())
+            {
+                db.Statement("alter table Rpt_db_connection add column sql_suffix text");
+            };
+            
             var rpt_config = db.Query("Rpt_config").First<Rpt_config>();
             CellReport.util.KeyAndPassword.yan_zheng_zcm(rpt_config.zcm);
 
@@ -274,6 +278,8 @@ COMMIT; "
         public string conn_str { get; set; }
         public string test_conn_str { get; set; }
         public string sql_prefix { get; set; }
+        public string sql_suffix { get; set; }
+        
     }
     public class Rpt_config
     {

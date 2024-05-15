@@ -90,6 +90,12 @@ server=ip地址;port=5432;uid=用户;pwd=口令;database=数据库;Pooling=true;
 
 达梦 连接串 格式
 Server=ip地址:端口; UserId=用户; PWD=口令;
+
+高斯数据库，使用 pgsql 驱动，一定要带`No Reset On Close=true;` :
+PORT=端口;searchpath=schema名称1,schema名称2;DATABASE=db_test;HOST=ip地址;PASSWORD=口令;USER ID=用户;No Reset On Close=true;
+
+OceanBase (oracle模式)连接串 odbc格式示例：
+Driver=Server=ip地址;Port=端口;Database=XIR_TRD;User=XIR_TRD@Xpia2C6G#obtest:1650773680;Password=口令;Option=3;
 ```
 
 配置完毕后，按F5 刷新页面，点报表目录，正常的话，这是应该能看到所有的测试报表了

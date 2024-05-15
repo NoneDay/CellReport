@@ -620,29 +620,5 @@ function 字典_${para.table}(){
   }
 ]]>
 	</template_script>
-	<type_var_def>
-		Array,System.Array,
-		Math, System.Math,
-		Convert, System.Convert,
-		String, System.String,
-		DateTime, System.DateTime,
-		Date, System.DateOnly,
-		TimeSpan,System.TimeSpan,
-		DateTimeOffset, System.DateTimeOffset,
-		DateTimeKind, System.DateTimeKind,
-		Double, System.Double,
-		Decimal, System.Decimal,
-		Bool, System.Boolean,
-		Int, System.Int32,
-		Int64, System.Int64,
-		DynObject,System.Dynamic.ExpandoObject,
-		Guid,System.Guid,
-		Uri,System.Uri,
-		Exception,System.Exception,
-		Task,System.Threading.Tasks.Task,
-		RandomNumber,System.Security.Cryptography.RandomNumberGenerator,
-		Direction,CellReport.cell.Direction
-		CellProperty,CellReport.cell.Property
-		CellRange,CellReport.cell.CellRange
-	</type_var_def>
+	
 </template>

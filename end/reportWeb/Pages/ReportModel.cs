@@ -153,7 +153,7 @@ namespace reportWeb.Pages
 
                 foreach (var one in this.rpt_group.db_connection_list)
                 {
-                    report_env.addDataSource(one.name, one.conn_str, one.db_type, "0");
+                    report_env.addDataSource(one.name, one.conn_str, one.db_type, "0", one.sql_prefix, one.sql_suffix);
                 }
                 var exprFaced = report_env.getExprFaced();
                 exprFaced.addVariable("isPhone", isPhone);

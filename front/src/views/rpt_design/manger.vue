@@ -223,7 +223,8 @@ export default {
                                 {type: 'input',label: '名称',span: 12,display: true,prop: 'name'},
                                 {type: 'select',label: '类型',span: 12,display: true,prop: 'db_type',dicData:this.db_type_dict },
                                 {type: 'input',label: '连接串',span: 24, cell: true,display: true,prop: 'conn_str'},
-                                {type: 'textarea',label: 'sql前缀语句',span: 24, cell: true,display: true,prop: 'sql_prefix'}
+                                {type: 'textarea',label: 'sql前缀语句（非select）',span: 24, cell: true,display: true,prop: 'sql_prefix'},
+                                {type: 'textarea',label: 'sql后缀语句（非select）',span: 24, cell: true,display: true,prop: 'sql_suffix'}
                             ]
                             }}
     },

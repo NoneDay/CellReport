@@ -149,7 +149,7 @@ namespace reportWeb.Controllers
 
                 foreach (var one in this.rpt_group.db_connection_list)
                 {
-                    report_env.addDataSource(one.name, one.conn_str, one.db_type, "0");
+                    report_env.addDataSource(one.name, one.conn_str, one.db_type, "0", one.sql_prefix, one.sql_suffix);
                 }
                 ParamDefineDataSet pds = report_env.getParamDefineDataSet();
                 foreach (var row in pds.Rows)
@@ -278,7 +278,7 @@ namespace reportWeb.Controllers
                     }
                     await my_out_act();
                 }
-                report_env.logger.Debug($"输出用时：{(DateTime.Now.Ticks - start) / 10000000.0}秒");
+                report_env.logger.Debug($"总用时：{(DateTime.Now.Ticks - start) / 10000000.0}秒");
                 //if (String.IsNullOrEmpty(fresh_ds))
                 //{
                 //}
@@ -376,7 +376,7 @@ namespace reportWeb.Controllers
                 report_env.logger = logger;
                 foreach (var one in this.rpt_group.db_connection_list)
                 {
-                    report_env.addDataSource(one.name, one.conn_str, one.db_type, "0");
+                    report_env.addDataSource(one.name, one.conn_str, one.db_type, "0", one.sql_prefix, one.sql_suffix);
                 }
 
                 var exec_result = exprFaced.calculate("{  " + expr + "\n}", cur_GroupMap, "当前脚本");
