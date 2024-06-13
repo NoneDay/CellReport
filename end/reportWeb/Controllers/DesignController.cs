@@ -128,8 +128,8 @@ namespace reportWeb.Controllers
 
                 if (reportName != null && reportName.Contains(":"))
                     reportName = reportName.Split(":")[1];
-                var reportDefine = await XmlReport.loadReportFromXmlDoc(xmlDoc, this.rpt_group.report_path, reportName ?? "temp.cr");
-                var report_env = reportDefine.getEnv();
+                using var reportDefine = await XmlReport.loadReportFromXmlDoc(xmlDoc, this.rpt_group.report_path, reportName ?? "temp.cr");
+                using var report_env = reportDefine.getEnv();
                 if (!String.IsNullOrEmpty(_fresh_ds))
                 {
                     report_env.getExprFaced().addVariable("_fresh_ds", _fresh_ds);
@@ -201,6 +201,8 @@ namespace reportWeb.Controllers
                 Engine engine = new Engine(reportDefine);
                 long end = DateTime.Now.Ticks;
                 report_env.logger.Debug($"分析xml耗时：{(DateTime.Now.Ticks - start) / 10000000.0}秒");
+                report_env.rpt_group_name = rpt_group.name;
+                report_env.report_name = "设计报表预览"+Guid.NewGuid().ToString("N");
                 Exception cur_exception = null;
                 Func<Task> my_out_act = async () =>
                 {
@@ -335,10 +337,11 @@ namespace reportWeb.Controllers
 
         public async Task<IActionResult> exec_expr(String expr, String report_content)
         {
+            Env report_env = null;
             try
             {
                 BaseExprFaced exprFaced;
-                Env report_env;
+
                 CellReport.dataSet.GroupMap cur_GroupMap = null;
 
 
@@ -365,7 +368,7 @@ namespace reportWeb.Controllers
                     string reportName = null;
                     if (reportName != null && reportName.Contains(":"))
                         reportName = reportName.Split(":")[1];
-                    var reportDefine = await XmlReport.loadReportFromXmlDoc(xmlDoc, this.rpt_group.report_path, reportName ?? "temp.cr");
+                    using var reportDefine = await XmlReport.loadReportFromXmlDoc(xmlDoc, this.rpt_group.report_path, reportName ?? "temp.cr");
                     report_env = reportDefine.getEnv();
                     exprFaced = report_env.getExprFaced();
                     exprFaced.getVariableDefine("__page__").value = HttpContext.Request;
@@ -396,6 +399,11 @@ namespace reportWeb.Controllers
                     sb_err.AppendLine(ex.Message);
                 }
                 return Json(new { errcode = 1, message = sb_err.ToString() }, json_option);
+            }
+            finally
+            {
+                if (report_env != null)
+                    report_env.Dispose();
             }
         }
         public IActionResult exec_cmd(String cmd, string from, string to)
@@ -494,7 +502,7 @@ namespace reportWeb.Controllers
             if (file_path.StartsWith(this.rpt_group.report_path)
                 && System.IO.File.Exists(file_path))
             {
-                Env parent_env = new Env();
+                using Env parent_env = new Env();
                 await XmlReport.templateValue2Env(this.rpt_group.report_path, reportName, parent_env);
                 var xmlDoc = (await XmlReport.getReportXmlDoc(this.rpt_group.report_path, reportName, isDesign: true)).xml;
                 //var ret = XmlReport.reportToXmlDocumnt(XmlReport.loadReport(file_path), false).OuterXml;
@@ -708,7 +716,7 @@ namespace reportWeb.Controllers
             else
                 path = path + "/template.xml";
             var file_path = Path.Combine(this.rpt_group.report_path, path);
-            Env parent_env = new Env();
+            using Env parent_env = new Env();
             await XmlReport.templateValue2Env(this.rpt_group.report_path, path, parent_env, true);
 
             if (file_path.StartsWith(this.rpt_group.report_path) && System.IO.File.Exists(file_path))
@@ -743,7 +751,7 @@ namespace reportWeb.Controllers
         {
             System.Xml.XmlDocument xmlDoc = new System.Xml.XmlDocument();
             xmlDoc.LoadXml(content);
-            var report = await XmlReport.loadReportFromXmlDoc(xmlDoc, this.rpt_group.report_path, reportName ?? "temp.cr");
+            using var report = await XmlReport.loadReportFromXmlDoc(xmlDoc, this.rpt_group.report_path, reportName ?? "temp.cr");
             Engine engine = new Engine(report);
             engine.buildRelation();
             engine.prepareCalcLevelForCell();

@@ -85,11 +85,30 @@ export default{
     mounted(){
         //console.info("pc form mounted!",this.queryForm)
     },
-    //methods:{
+    methods:{
+      my_export_pdf(){
+        let data=new FormData();
+        data.append('report_obj',JSON.stringify(this.result))
+        return axios.request({
+            headers: {
+                'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+              },
+              responseType: 'blob',  //设置响应的数据类型为一个包含二进制数据的 Blob 对象，必须设置！！！
+            method: 'post',
+            data,
+            url: `pdf`,       
+            withCredentials: true,
+        }).then(response => {        
+          tool.saveAs(response, (this.result._zb_var_.file_name??"xxx")+".pdf");
+        })
+        .catch(error => {
+            _this.$notify({title: '文件下载失败：',message: error,duration: 0});
+        });   
+      }
     //  validate_submit(){
     //    debugger
     //    this.parentCompent.validate_submit();
     //  }
-    //}
+    }
 }
 </script>

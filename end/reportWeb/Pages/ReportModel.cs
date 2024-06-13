@@ -145,6 +145,10 @@ namespace reportWeb.Pages
                 //}
 
                 report_env = reportDefineForWeb.CurrentReportDefine.getEnv();
+                if (!Request.Query.TryGetValue("reportName", out var report_name))
+                    throw new Exception("没有设置reportName参数");
+                report_env.rpt_group_name = rpt_group.name;
+                report_env.report_name = report_name;
                 Dictionary<string, string> user_dict = new Dictionary<string, string>();
                 foreach (var one in HttpContext?.User?.Claims)
                 {
@@ -176,8 +180,7 @@ namespace reportWeb.Pages
                 }
                 //exprFaced.addVariable("_cache_", RedisHelper.Instance);page_var_dict
                 parse_fresh_ds();
-                if (!Request.Query.TryGetValue("reportName", out var a1))
-                    throw new Exception("没有设置reportName参数"); ;
+
                 var start_time = DateTime.Now;
                 reportDefineForWeb.putRequestParamForForm();
 

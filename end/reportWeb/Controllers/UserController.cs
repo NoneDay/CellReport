@@ -58,7 +58,7 @@ namespace reportWeb.Controllers
 
         public IActionResult test_connection([FromBody] Rpt_db_connection rpt_Db_Connection)
         {
-            var ret = DbProviderFactories.GetFactory(rpt_Db_Connection.db_type).CreateConnection();
+            using var ret = DbProviderFactories.GetFactory(rpt_Db_Connection.db_type).CreateConnection();
             if (ret == null)
             {
                 throw new Exception("程序在取数据库连接时异常。通知开发人员升级");
@@ -87,7 +87,7 @@ namespace reportWeb.Controllers
 
             var ef = new CellReport.core.expr.ExprFaced2();
             ef.addNewScopeForScript();
-            var report_env = new Env();
+            using var report_env = new Env();
             report_env.logger = logger;
             ef.addVariable("env", report_env);
             ef.addVariable("__env__", report_env);
@@ -119,7 +119,8 @@ namespace reportWeb.Controllers
         [AllowAnonymous]
         public IActionResult login([FromBody] UserInfo userinfo)
         {
-            var verfiy_code_script = new CellReport.running.Env().TemplateGet("verfiy_code_script");
+            using var cur_env=new CellReport.running.Env();
+            var verfiy_code_script = cur_env.TemplateGet("verfiy_code_script");
             CR_Object result = new CR_Object() { { "errcode", 1 }, { "message", "用户名或密码错误" } };
             var verfiy_code = HttpContext.Session.GetString("verfiy_code");
             if (!string.IsNullOrWhiteSpace(verfiy_code_script) || !string.IsNullOrEmpty(verfiy_code))
@@ -158,8 +159,9 @@ namespace reportWeb.Controllers
             {
                 var ef = new CellReport.core.expr.ExprFaced2();
                 ef.addNewScopeForScript();
-                ef.addVariable("env", new Env());
-                ef.addVariable("__env__", new Env());
+                using var report_env = new Env();
+                ef.addVariable("env", report_env);
+                ef.addVariable("__env__", report_env);
                 ef.addVariable("userid", username);
                 ef.addVariable("password", password);
                 var //conf=reportDbContext.Rpt_config.FirstOrDefault();
@@ -341,7 +343,7 @@ namespace reportWeb.Controllers
                      new Claim("username",user.username),
                      new Claim("token_type", refresh?"refresh":""),
                 }),
-                Expires = DateTime.Now.AddMinutes(refresh ? jwtConfig.REFRESH_TOKEN_EXPIRES : jwtConfig.ACCESS_TOKEN_EXPIRES),
+                Expires = DateTime.UtcNow.AddMinutes(refresh ? jwtConfig.REFRESH_TOKEN_EXPIRES : jwtConfig.ACCESS_TOKEN_EXPIRES),
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256)
             };
             var token = tokenHandler.CreateToken(tokenDescriptor);
@@ -371,6 +373,8 @@ namespace reportWeb.Controllers
                 }, out SecurityToken validatedToken);
 
                 var jwtToken = (JwtSecurityToken)validatedToken;
+                if (jwtToken.ValidTo < DateTime.UtcNow)
+                    return null;
                 var user = new UserInfo()
                 {
                     userid = jwtToken.Claims.FirstOrDefault(x => x.Type == "userid").Value,
@@ -389,7 +393,8 @@ namespace reportWeb.Controllers
         [AllowAnonymous]
         public IActionResult VerifyCode(string userid, int code_len)
         {
-            var verfiy_code_script = new CellReport.running.Env().TemplateGet("verfiy_code_script");
+            using var cur_env = new CellReport.running.Env();
+            var verfiy_code_script = cur_env.TemplateGet("verfiy_code_script");
             if (string.IsNullOrWhiteSpace(verfiy_code_script))
                 verfiy_code_script = configuration["verfiy_code_script"];
             if (string.IsNullOrWhiteSpace(verfiy_code_script))
@@ -408,7 +413,7 @@ namespace reportWeb.Controllers
             HttpContext.Session.SetString("send_time", DateTime.Now.Ticks.ToString());
             var ef = new CellReport.core.expr.ExprFaced2();
             ef.addNewScopeForScript();
-            var report_env = new Env();
+            using var report_env = new Env();
             report_env.logger = logger;
             ef.addVariable("env", report_env);
             ef.addVariable("__env__", report_env);
@@ -424,6 +429,38 @@ namespace reportWeb.Controllers
             return new JsonResult(new { errcode = 0, message = result["message"]?.ToString() });
         }
         #endregion
+
+        #region 报表监控
+        [AllowAnonymous]
+        public IActionResult rpt_montior()
+        {
+            return new JsonResult(new
+            {
+                errcode = 0,
+                running = new List<Object[]> { new Object[] { "rpt_group_name", "report_name", "calc_type", "report_param", "start", "end", "datasource_name", "sql", "ds_name", "sql_start", "sql_end", "datasource_stat", "info" } }.Concat(
+                    reportWeb.other.ReportMonitor.Instance.running.Values.SelectMany(rpt_info => rpt_info.DataSourceInfoBag, (rpt_info, datasource_info) => {
+                        return new Object[]
+                        {
+                        rpt_info.rpt_group_name,
+                        rpt_info.report_name,
+                        rpt_info.calc_type,
+                        rpt_info.report_param,
+                        rpt_info.start,
+                        rpt_info.end,
+                        datasource_info.datasource_name,
+                        datasource_info.sql,
+                        datasource_info.ds_name,
+                        datasource_info.sql_start,
+                        datasource_info.sql_end,
+                        datasource_info.datasource_stat,
+                        datasource_info.info,
+                        };
+                    })),
+                rpt_static = new List<Object[]> { new Object[] { "时间", "运行报表数", "打开连接数", "正在运行报表数", } }.Concat(reportWeb.other.ReportMonitor.Instance.rpt_static),
+            }, json_option);
+        }
+        #endregion
+
 
         #region 校验码图片
         /*

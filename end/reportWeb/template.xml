@@ -290,7 +290,7 @@ var schema_kind={
                             data_type:x.type}).toList()`],
             
           },  
-   "MySql.Data.MySqlClient.MySqlClientFactory":{
+   "MySqlConnector.MySqlConnectorFactory":{
             tables:`select '' TABLE_CATALOG, TABLE_SCHEMA, table_name AS TABLE_NAME from information_schema.tables where table_schema='$Database$';`,
             foreign:[
                     `SELECT

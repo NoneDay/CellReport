@@ -25,13 +25,31 @@ namespace CellReport.function
             return new Variable(ret_obj);
         }
     }
-
+    public class CrQueryFactory : QueryFactory, IDisposable
+    {
+        public RunReportDataSourceInfo CurrentDataSourceInfo { get; private set; }
+        public CrQueryFactory(DbConnection cur_connection, Compiler compiler, RunReportDataSourceInfo CurrentDataSourceInfo) : base(cur_connection, compiler)
+        {
+            this.CurrentDataSourceInfo = CurrentDataSourceInfo;
+        }
+        public void close()
+        {
+            base.Dispose();
+            CurrentDataSourceInfo.datasource_stat = "关闭";
+            //this.close();
+        }
+        public new void Dispose()
+        {
+            close();
+        }
+    }
     public class Func_kata : FunctionUnit
     {
         static Func_kata()
         {
             ExprHelper.AddCSFuncOperator("kata", DirectCallObjectMethod);
         }
+        RunReportDataSourceInfo CurrentDataSourceInfo = new();
         public override SqlKata.Execution.QueryFactory calculate(IList args)
         {
             if (args.Count == 0)
@@ -44,6 +62,7 @@ namespace CellReport.function
                 ds_struct = new();
                 ds_struct.ds_link = cr_obj["db_link"].ToString();
                 ds_struct.ds_type = cr_obj["ds_type"].ToString();
+                ds_struct.name = "动态指定：" + ds_struct.ds_type;
             }
             else
                 ds_struct = (DatasourceStruct)(getEnv().getDataSource(ret_obj.ToString()));
@@ -76,21 +95,28 @@ namespace CellReport.function
                 default:
                     throw new core.ReportRuntimeException($"sqlKata没有{ds_type}对应的编译器。");
             }
-            var db = new QueryFactory(getEnv().getConnection(ds_struct, "来自于openDb的临时数据集"), compiler);
+            DbConnection cur_connection = getEnv().getConnection(ds_struct, "来自于openDb的临时数据集");
+            var ret = new CrQueryFactory(cur_connection, compiler, CurrentDataSourceInfo);
+            CurrentDataSourceInfo.ds_name = "kata函数";
+            CurrentDataSourceInfo.datasource_name = ds_struct.name;
+            CurrentDataSourceInfo.datasource_stat = "预打开";
+            this.getEnv().CurrentRunReportInfo.DataSourceInfoBag.Add(CurrentDataSourceInfo);
+            this.getEnv().Disposables.Add(ret);
             //db.Query("Users").Get();
             //db.Query("Books").Where().OrderBy("Date").Paginate(1)
-            this.getEnv().Disposables.Add(db);
-            return db;
+            return ret;
         }
         private static Type extend_type;
 
         public static (bool, bool, object) DirectCallObjectMethod(Object obj, string methodName, object[] methodParams, BaseExprFaced exprFaced = null, bool alreadyCalc = false)
         {
-            if (obj is QueryFactory queryFactory)
+            if (obj is CrQueryFactory queryFactory)
             {
                 var logger = (exprFaced.getVariable("__env__") as Env).logger;
                 queryFactory.Logger = compiled =>
                 {
+                    queryFactory.CurrentDataSourceInfo.datasource_stat = "执行";
+                    queryFactory.CurrentDataSourceInfo.sql = compiled.ToString();
                     logger.Debug("kata sql:" + compiled.ToString());
                 };
             }

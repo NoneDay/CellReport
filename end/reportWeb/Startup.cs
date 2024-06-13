@@ -248,6 +248,7 @@ namespace reportWeb
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             ReportDbContext.EnsureDbExists(env);
+            reportWeb.other.ReportMonitor.start();
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
