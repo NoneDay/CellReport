@@ -130,6 +130,8 @@ namespace reportWeb.Controllers
                     reportName = reportName.Split(":")[1];
                 using var reportDefine = await XmlReport.loadReportFromXmlDoc(xmlDoc, this.rpt_group.report_path, reportName ?? "temp.cr");
                 using var report_env = reportDefine.getEnv();
+                report_env.rpt_group_name = rpt_group.name;
+                report_env.report_name = "0预览" + Guid.NewGuid().ToString("N");
                 if (!String.IsNullOrEmpty(_fresh_ds))
                 {
                     report_env.getExprFaced().addVariable("_fresh_ds", _fresh_ds);
@@ -201,8 +203,7 @@ namespace reportWeb.Controllers
                 Engine engine = new Engine(reportDefine);
                 long end = DateTime.Now.Ticks;
                 report_env.logger.Debug($"分析xml耗时：{(DateTime.Now.Ticks - start) / 10000000.0}秒");
-                report_env.rpt_group_name = rpt_group.name;
-                report_env.report_name = "设计报表预览"+Guid.NewGuid().ToString("N");
+                report_env.report_name = "1预览" + Guid.NewGuid().ToString("N");
                 Exception cur_exception = null;
                 Func<Task> my_out_act = async () =>
                 {
@@ -349,7 +350,7 @@ namespace reportWeb.Controllers
                 {
                     exprFaced = new ExprFaced2();
                     exprFaced.addNewScopeForScript();
-                    report_env = new Env();
+                    report_env = new Env("exec_expr1");
                     cur_GroupMap = new();
                     exprFaced.addVariable("env", report_env);
                     exprFaced.addVariable("__env__", report_env);
@@ -502,7 +503,7 @@ namespace reportWeb.Controllers
             if (file_path.StartsWith(this.rpt_group.report_path)
                 && System.IO.File.Exists(file_path))
             {
-                using Env parent_env = new Env();
+                using Env parent_env = new Env("open");
                 await XmlReport.templateValue2Env(this.rpt_group.report_path, reportName, parent_env);
                 var xmlDoc = (await XmlReport.getReportXmlDoc(this.rpt_group.report_path, reportName, isDesign: true)).xml;
                 //var ret = XmlReport.reportToXmlDocumnt(XmlReport.loadReport(file_path), false).OuterXml;
@@ -716,7 +717,7 @@ namespace reportWeb.Controllers
             else
                 path = path + "/template.xml";
             var file_path = Path.Combine(this.rpt_group.report_path, path);
-            using Env parent_env = new Env();
+            using Env parent_env = new Env("open_template");
             await XmlReport.templateValue2Env(this.rpt_group.report_path, path, parent_env, true);
 
             if (file_path.StartsWith(this.rpt_group.report_path) && System.IO.File.Exists(file_path))

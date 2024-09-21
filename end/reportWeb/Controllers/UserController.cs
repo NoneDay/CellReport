@@ -87,7 +87,7 @@ namespace reportWeb.Controllers
 
             var ef = new CellReport.core.expr.ExprFaced2();
             ef.addNewScopeForScript();
-            using var report_env = new Env();
+            using var report_env = new Env("test_login");
             report_env.logger = logger;
             ef.addVariable("env", report_env);
             ef.addVariable("__env__", report_env);
@@ -119,7 +119,7 @@ namespace reportWeb.Controllers
         [AllowAnonymous]
         public IActionResult login([FromBody] UserInfo userinfo)
         {
-            using var cur_env=new CellReport.running.Env();
+            using var cur_env = new CellReport.running.Env("login1");
             var verfiy_code_script = cur_env.TemplateGet("verfiy_code_script");
             CR_Object result = new CR_Object() { { "errcode", 1 }, { "message", "用户名或密码错误" } };
             var verfiy_code = HttpContext.Session.GetString("verfiy_code");
@@ -159,7 +159,7 @@ namespace reportWeb.Controllers
             {
                 var ef = new CellReport.core.expr.ExprFaced2();
                 ef.addNewScopeForScript();
-                using var report_env = new Env();
+                using var report_env = new Env("login2");
                 ef.addVariable("env", report_env);
                 ef.addVariable("__env__", report_env);
                 ef.addVariable("userid", username);
@@ -393,7 +393,7 @@ namespace reportWeb.Controllers
         [AllowAnonymous]
         public IActionResult VerifyCode(string userid, int code_len)
         {
-            using var cur_env = new CellReport.running.Env();
+            using var cur_env = new CellReport.running.Env("VerifyCode1");
             var verfiy_code_script = cur_env.TemplateGet("verfiy_code_script");
             if (string.IsNullOrWhiteSpace(verfiy_code_script))
                 verfiy_code_script = configuration["verfiy_code_script"];
@@ -413,7 +413,7 @@ namespace reportWeb.Controllers
             HttpContext.Session.SetString("send_time", DateTime.Now.Ticks.ToString());
             var ef = new CellReport.core.expr.ExprFaced2();
             ef.addNewScopeForScript();
-            using var report_env = new Env();
+            using var report_env = new Env("VerifyCode2");
             report_env.logger = logger;
             ef.addVariable("env", report_env);
             ef.addVariable("__env__", report_env);
@@ -437,16 +437,17 @@ namespace reportWeb.Controllers
             return new JsonResult(new
             {
                 errcode = 0,
-                running = new List<Object[]> { new Object[] { "rpt_group_name", "report_name", "calc_type", "report_param", "start", "end", "datasource_name", "sql", "ds_name", "sql_start", "sql_end", "datasource_stat", "info" } }.Concat(
+                running = new List<Object[]> { new Object[] { "env_name","rpt_group_name", "report_name", "calc_type", "report_param", "start", "end", "datasource_name", "sql", "ds_name", "sql_start", "sql_end", "datasource_stat", "info" } }.Concat(
                     reportWeb.other.ReportMonitor.Instance.running.Values.SelectMany(rpt_info => rpt_info.DataSourceInfoBag, (rpt_info, datasource_info) => {
                         return new Object[]
                         {
+                            rpt_info.env_name,
                         rpt_info.rpt_group_name,
                         rpt_info.report_name,
                         rpt_info.calc_type,
                         rpt_info.report_param,
                         rpt_info.start,
-                        rpt_info.end,
+                        rpt_info.end, 
                         datasource_info.datasource_name,
                         datasource_info.sql,
                         datasource_info.ds_name,

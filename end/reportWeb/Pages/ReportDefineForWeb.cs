@@ -75,7 +75,16 @@ namespace CellReport
                 {
                     //var load_task=;
                     //load_task.ConfigureAwait(continueOnCapturedContext:false);
-                    reportDefine = XmlReport.loadReport(gobal_reportDefinePath, reportName).Result;
+                    try
+                    {
+                        reportDefine = XmlReport.loadReport(gobal_reportDefinePath, reportName).Result;
+                    }
+                    catch (Exception e)
+                    {
+                        logger.Error("----XmlReport.loadReport-----");
+                        logger.Error(e);
+                        throw;
+                    }
                 }
                     reportDefine.getEnv().logger = logger;
                 //reportDefinePath = gobal_reportDefinePath + reportName;

@@ -11,6 +11,7 @@ using SqlKata.Compilers;
 using System.Reflection;
 using System.Linq;
 using System.Collections.Concurrent;
+using Dapper;
 
 namespace CellReport.function
 {
@@ -96,30 +97,28 @@ namespace CellReport.function
                     throw new core.ReportRuntimeException($"sqlKata没有{ds_type}对应的编译器。");
             }
             DbConnection cur_connection = getEnv().getConnection(ds_struct, "来自于openDb的临时数据集");
-            var ret = new CrQueryFactory(cur_connection, compiler, CurrentDataSourceInfo);
+            var queryFactory = new CrQueryFactory(cur_connection, compiler, CurrentDataSourceInfo);
             CurrentDataSourceInfo.ds_name = "kata函数";
             CurrentDataSourceInfo.datasource_name = ds_struct.name;
             CurrentDataSourceInfo.datasource_stat = "预打开";
             this.getEnv().CurrentRunReportInfo.DataSourceInfoBag.Add(CurrentDataSourceInfo);
-            this.getEnv().Disposables.Add(ret);
+            this.getEnv().Disposables.Add(queryFactory);
+            var logger = (exprFaced.getVariable("__env__") as Env).logger;
+            queryFactory.Logger = compiled =>
+            {
+                queryFactory.CurrentDataSourceInfo.datasource_stat = "执行";
+                queryFactory.CurrentDataSourceInfo.sql = compiled.ToString();
+                logger.Debug("kata sql:" + compiled.ToString());
+            };
+            //queryFactory.Connection.Query("sql").ToList();
             //db.Query("Users").Get();
             //db.Query("Books").Where().OrderBy("Date").Paginate(1)
-            return ret;
+            return queryFactory;
         }
         private static Type extend_type;
 
         public static (bool, bool, object) DirectCallObjectMethod(Object obj, string methodName, object[] methodParams, BaseExprFaced exprFaced = null, bool alreadyCalc = false)
         {
-            if (obj is CrQueryFactory queryFactory)
-            {
-                var logger = (exprFaced.getVariable("__env__") as Env).logger;
-                queryFactory.Logger = compiled =>
-                {
-                    queryFactory.CurrentDataSourceInfo.datasource_stat = "执行";
-                    queryFactory.CurrentDataSourceInfo.sql = compiled.ToString();
-                    logger.Debug("kata sql:" + compiled.ToString());
-                };
-            }
             if (obj is not SqlKata.Execution.XQuery)
                 return (false, false, null);
             if (extend_type == null)

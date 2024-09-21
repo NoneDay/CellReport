@@ -156,6 +156,7 @@ CREATE TABLE IF NOT EXISTS Rpt_db_connection (
 	conn_str	TEXT,
 	test_conn_str	TEXT,
     sql_prefix text,
+    sql_suffix text,
 	CONSTRAINT FK_Rpt_db_connection_Rpt_group_grp_id FOREIGN KEY(grp_id) REFERENCES Rpt_group(Id),
 	CONSTRAINT PK_Rpt_db_connection PRIMARY KEY(id AUTOINCREMENT)
 );
@@ -202,18 +203,6 @@ COMMIT; "
                     });
                 }
             }
-            if (!env.IsDevelopment())
-            {
-                var report_path = new DirectoryInfo(Path.Combine(env.ContentRootPath, "../example")).FullName;
-                db.Query("Rpt_db_connection").Where("grp_Id", "example").Update(new { conn_str = $"Data Source={report_path}/test.db" });
-            }
-            if (db.Query("Rpt_config").AsCount().First<int>() == 0)
-            {
-                db.Query("Rpt_config").Insert(new Rpt_config()
-                {
-                    login_script = "",
-                });
-            }
             if (0 == db.Select(" SELECT * FROM pragma_table_info('Rpt_db_connection') where name='sql_prefix'").Count())
             {
                 db.Statement("alter table Rpt_db_connection add column sql_prefix text");
@@ -222,6 +211,19 @@ COMMIT; "
             {
                 db.Statement("alter table Rpt_db_connection add column sql_suffix text");
             };
+            if (!env.IsDevelopment())
+            {
+                var report_path = new DirectoryInfo(Path.Combine(env.ContentRootPath, "../example")).FullName;
+                db.Query("Rpt_db_connection").Where("grp_Id", "example").Where("name", "testsqlite").Update(new { conn_str = $"Data Source={report_path}/test.db" });
+            }
+            if (db.Query("Rpt_config").AsCount().First<int>() == 0)
+            {
+                db.Query("Rpt_config").Insert(new Rpt_config()
+                {
+                    login_script = "",
+                });
+            }
+
             
             var rpt_config = db.Query("Rpt_config").First<Rpt_config>();
             CellReport.util.KeyAndPassword.yan_zheng_zcm(rpt_config.zcm);

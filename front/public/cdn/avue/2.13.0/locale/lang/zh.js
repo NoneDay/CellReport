@@ -36,6 +36,22 @@ export default {
     emptyBtn: '清 空'
   },
   crud: {
+    excel: {
+      name: '文件名',
+      type: '数据',
+      typeDic: {
+        true: '当前数据(当前页全部的数据)',
+        false: '选中的数据(当前页选中的数据)'
+      },
+      prop: '字段',
+      params: '参数',
+      paramsDic: {
+        header: '表头',
+        data: '数据源',
+        headers: '复杂表头',
+        sum: '合计统计'
+      }
+    },
     filter: {
       addBtn: '新增条件',
       clearBtn: '清空数据',
@@ -52,6 +68,7 @@ export default {
       index: '顺序',
       width: '宽度'
     },
+    emptyText: '暂无数据',
     tipStartTitle: '当前表格已选择',
     tipEndTitle: '项',
     editTitle: '编 辑',
@@ -67,6 +84,7 @@ export default {
     open: '展 开',
     shrink: '收 缩',
     printBtn: '打 印',
+    mockBtn: '模 拟',
     excelBtn: '导 出',
     updateBtn: '修 改',
     cancelBtn: '取 消',
@@ -79,4 +97,4 @@ export default {
     copyBtn: '复 制',
     delBtn: '删 除'
   }
-}
+};
