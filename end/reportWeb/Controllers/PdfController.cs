@@ -88,7 +88,7 @@ namespace reportWeb.Controllers
                     int idx = 0;
                     for (; idx < 1000; idx++)
                     {
-                        var cur_font = configuration["pdf_fonts" + ":" + idx] ;
+                        var cur_font = configuration["pdf_fonts" + ":" + idx];
                         if (cur_font == null)
                             break;
                         FontProgram fontProgram = FontProgramFactory.CreateFont(cur_font);
@@ -104,7 +104,7 @@ namespace reportWeb.Controllers
                     //        fontProvider.AddFont(one);
                     //}
                     //String[] fonts = new string[] { "c:/windows/fonts/simfang.ttf" };
-                    
+
 
 
 
@@ -389,6 +389,7 @@ namespace reportWeb.Controllers
                         }
                     }
                     pdf_cell.SetBorder(Border.NO_BORDER);
+                    float cur_font_size = 0;
                     foreach (var one_style in rg.find_style(rowNo, colNo))
                     {
                         switch (one_style.Key)
@@ -403,7 +404,8 @@ namespace reportWeb.Controllers
                                 //ret["font-family"] = one_pair[1];
                                 break;
                             case "FONT-SIZE":
-                                pdf_cell.SetFontSize(float.Parse(one_style.Value));
+                                cur_font_size = float.Parse(one_style.Value);
+                                pdf_cell.SetFontSize(cur_font_size);
                                 break;
                             case "font-weight":
                                 pdf_cell.SetBold();
@@ -473,13 +475,15 @@ namespace reportWeb.Controllers
                     int deta = 0;
                     IBlockElement cur_pp = null;
                     var cur_str = cell_value == null ? "" : cell_value.ToString();
+                    cur_str = (String.IsNullOrWhiteSpace(cur_str) ? "<span>&nbsp;</span>" : cur_str);
+                    System.Web.HttpUtility.HtmlDecode(cur_str);
                     if (cur_str.StartsWith("<"))
                     {
                         var t_str = cur_str.Replace("width:100%", $"width:{max_width}pt").Replace("height:100%", $"height:{max_height}pt");
-                        var t_list = HtmlConverter.ConvertToElements($"<div style='width:{max_width}pt;height:{max_height}pt'>{t_str}</div>", converterProperties);
+                        var t_list = HtmlConverter.ConvertToElements($"<div style='font-size:{cur_font_size}pt;width:{max_width}pt;height:{max_height}pt'>{t_str}</div>", converterProperties);
                         if (t_list.Count == 1 && t_list[0] is IBlockElement)
                         {
-                            cur_pp = (t_list[0] as iText.Layout.Element.Div).SetFont(sysFont).SetFontSize(11);
+                            cur_pp = (t_list[0] as iText.Layout.Element.Div).SetFont(sysFont).SetFontSize(cur_font_size);
                             //(t_list[0] as iText.Layout.Element.Div).SetFontFamily(default_font).SetFontSize(11).GetRenderer();
                             //cur_pp.SetProperty(Property.AUTO_SCALE,)
                             //cur_pp.SetProperty(Property.HEIGHT, max_height);
@@ -497,6 +501,8 @@ namespace reportWeb.Controllers
                             //    pdf_cell.SetFontSize(new_font_size);
                         }
                         cur_pp = new Paragraph(cur_str);
+                        if (cur_str == "ⓧ")
+                            pdf_cell.SetFont(sysFont);
                     }
                     pdf_cell.Add(cur_pp)
                             //replace_var_to_Paragraph(cell_value.ToString(),0,0)
