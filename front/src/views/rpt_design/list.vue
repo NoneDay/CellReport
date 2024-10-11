@@ -13,10 +13,16 @@
             </el-breadcrumb>   
             <el-button type="primary" v-if="cur_pre_copy_file!=''"  @click="copy_file">粘贴【{{cur_pre_copy_file}}】到当前目录</el-button>
         <div style="float:right">
-            <el-button type="primary" @click="list_cmd('统计报表')" style="margin-left: 10px;">新增报表</el-button> 
+            <el-button type="primary" @click="list_cmd('新增报表')" style="margin-left: 10px;">新增报表</el-button> 
             <el-button type="primary" @click="list_cmd('目录')">新增目录</el-button> 
             <el-button type="primary" @click="list_cmd('定位')">快速定位</el-button> 
             <el-button type="primary" @click="list_cmd('修改模板')">修改模板</el-button> 
+            <!--<el-button type="primary" @click="list_cmd('导入报表')">导入报表</el-button>  -->
+            <el-upload style="float:right;margin-left: 10px;" class="upload-demo" action :auto-upload="false" :show-file-list="false
+            " :on-change="load_report_file" accept=".cr"
+                    >
+                    <el-button size="small" type="primary">导入报表</el-button>
+                    </el-upload>
         </div> 
           </el-col>
     </el-row>
@@ -257,7 +263,32 @@ export default {
             this.cur_pre_copy_file=""
             this.fresh_cur_path()
         },
+        load_report_file(file) { 
+            if(!file.name.endsWith(".cr")){
+                this.$alert("必须是cr后缀的文件");
+                return
+            }
+            //声明一个文件读取器
+            const fileReader = new FileReader();
+            let _this=this
+            fileReader.addEventListener("loadend", function(event){
+                //读取的文件;
+                const data = event.target.result;
+                let _report=x2jsone.xml2js(data).report
+                if(_this.cur_grp.tableData.children.find(x=>x.FileName==file.name)){
+                        _this.$message.error(`已经存在这个文件名【${file.name}】`);
+                        return
+                    }
+                _report.reportName=_this.grp_id+":"+_this.cur_grp.loc_path.join("/")+"/"+file.name
+                save_one(_report).then((resp)=>{
+                    _this.fresh_cur_path()
+                    console.info(resp.data)
+                })
+            });
+            fileReader.readAsText(file.raw);
+        },
         async list_cmd(command, node,data){
+          
             if(command=="粘贴"){
                 let file_name=this.cur_pre_copy_file.split(":").slice(-1)[0].split("/").slice(-1)
                  let ret=await exec_cmd(this.cur_pre_copy_file.split(":")[0],
@@ -281,7 +312,7 @@ export default {
                 this.template_dialog_visible=true
                 return
             }
-            if(!["目录",'统计报表','定位'].includes( command)){
+            if(!["目录",'新增报表','定位'].includes( command)){
                 return
             }
             let _this=this
@@ -289,7 +320,7 @@ export default {
             {
                 confirmButtonText: '确定',
                 cancelButtonText: '取消',
-                inputPattern:['目录','统计报表'].includes(command)?  /^[a-zA-Z_0-9\u4e00-\u9fa5]*$/ : /.*/,
+                inputPattern:['目录','新增报表'].includes(command)?  /^[a-zA-Z_0-9\u4e00-\u9fa5]*$/ : /.*/,
                 inputValue:command=='定位'?'':"ds"
             })
             .then( async ({ value }) => {
@@ -301,7 +332,7 @@ export default {
                     let ret=await exec_cmd("mkdir",this.grp_id+":"+this.cur_grp.loc_path.join("/")+"/"+value)
                     _this.fresh_cur_path()
                     return
-                }else if(command=="统计报表"){
+                }else if(command=="新增报表"){
                     if(value.endsWith(".cr")==false)
                         value=value+".cr"
                     if(_this.cur_grp.tableData.children.find(x=>x.FileName==value)){

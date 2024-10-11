@@ -3,7 +3,7 @@
 let baseUrl = '';
 let iconfontVersion = ['567566_pwc3oottzol'];
 let iconfontUrl = `//at.alicdn.com/t/font_$key.css`;
-
+const report_cache={}
 const env = process.env
 if (env.NODE_ENV == 'development') {
     baseUrl = `/report5`; // 开发环境地址 report5 aps
@@ -21,5 +21,5 @@ export {
     iconfontUrl,
     iconfontVersion,
     codeUrl,
-    env
+    env,report_cache
 }

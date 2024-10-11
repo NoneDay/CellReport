@@ -335,6 +335,10 @@ export default {
         async datasource_change (val){
             
             let data=await call_server_func(`db_tables`,this.data.datasource,this.server_url)
+            if(data.errcode){
+                this.$alert(data.message, '提示', {confirmButtonText: '确定',type: 'warning'});
+                return
+            }
             this.tables=data
             this.data.table=""
             this.cloumn_list=[]

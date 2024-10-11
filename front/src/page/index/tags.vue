@@ -16,7 +16,7 @@
                type="card"
                @contextmenu.native="handleContextmenu"
                :closable="tagLen!==1"
-               @tab-click="openTag"
+               @tab-click="openTag" @tab-remove="removeTag"
                @edit="menuTag">
         <el-tab-pane :key="item.value"
                      v-for="item in tagList"
@@ -43,6 +43,7 @@
 </template>
 <script>
 import { mapGetters, mapState } from "vuex";
+import { report_cache } from '@/config/env'; 
 export default {
   name: "tags",
   data () {
@@ -118,6 +119,14 @@ export default {
           this.openTag(tag);
         }
       }
+    },
+    removeTag(item){
+      console.info(report_cache)
+      if(!item.startsWith("/rpt-design/index?label="))
+        return;
+      var t=decodeURIComponent(item.substring("/rpt-design/index?label=".length));
+      delete report_cache[t]
+      console.info(report_cache)
     },
     openTag (item) {
       let tag;

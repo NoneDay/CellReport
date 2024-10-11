@@ -40,19 +40,39 @@
           <el-header class="widget-container-header" style="height: 33px;border-bottom:solid 1px silver;padding:2px;" >
             <!-- <el-button type='primary' size="mini"  @click="open_report" >打开</el-button>
             <input type="file" id="openFile" @change="beforUpload"> -->            
-            <el-button type='primary' size="mini"  @click="save_report" >保存</el-button>
+            <el-dropdown size="mini" split-button  @click="save_report('common')"  @command="save_report"  type="primary" style="padding-right: 10px;">
+              保存
+              <el-dropdown-menu slot="dropdown">
+                <el-dropdown-item icon="el-icon-check" command="common" divided>普通保存</el-dropdown-item>
+                <el-dropdown-item icon="el-icon-check" command="important" divided>保存并备份</el-dropdown-item>
+                <el-dropdown-item icon="el-icon-warning-outline" command="force" divided>强制保存</el-dropdown-item>
+                <el-dropdown-item icon="el-icon-check" command="download" divided>下载到本地</el-dropdown-item>
+              </el-dropdown-menu>
+            </el-dropdown>
+
             <el-button type='primary' size="mini"   @click="preview_run" >预览</el-button>
-            <el-button type='primary' size="mini"  icon='el-icon-refresh'  @click="layout_mode='';init(report.reportName)" >重载</el-button>
+            <el-button type='primary' size="mini"  icon='el-icon-refresh'  @click="layout_mode='';load_report(report.reportName)" >重载</el-button>
             <el-button type='primary' size="mini"    @click="paramMangerDrawerVisible=true" >参数</el-button>
             <el-button type='primary' size="mini"   @click="datamanger_dialogVisible=true" >数据</el-button>
             <el-button type='primary' size="mini"   @click="notebook_dialog_visible=true" >设置</el-button>
             <el-button type='primary' size="mini"   @click="simpleGuide_dialogVisible=true" >向导</el-button>
             <el-button type='primary' size="mini"   @click="widget_dialogVisible=!widget_dialogVisible">组件</el-button>   
-                     
+
+              
             <!-- <el-link :href="baseUrl+'/run'+(report.reportName.split(':')[0]=='default'?'':(':'+report.reportName.split(':')[0]))+'?reportName='+report.reportName.split(':')[1]" target="_blank"> -->
             <el-button type='primary' icon="el-icon-view" size="mini" @click="run_report(baseUrl+'/run'+(report.reportName.split(':')[0]=='default'?'':(':'+report.reportName.split(':')[0]))+'?reportName='+report.reportName.split(':')[1])" >运行</el-button>
             <!-- </el-link> -->
-            
+            <div style="display: inline-flex;width:240px;margin:0px;">
+              <el-select :value="cur_version" placeholder="请选择" @change="cur_version_change">
+                <el-option v-for="(item,idx) in report.versions" :label="(idx==0?'❤':'🔒')+item[0]" :value="item[0]"  :key="item[0]">
+                  
+                  <span style="float: left">
+                    {{(idx==0?'❤':'🔒')+ item[0] }}
+                </span>
+                  <span style="float: right; color: #8492a6; font-size: 13px;">{{item[1] }}</span>
+                </el-option>
+              </el-select>     
+            </div>
             <div style="display: inline-flex;width:120px;margin:0px;float:right;">
               <el-select v-model="layout_mode" placeholder="请选择">
                 <el-option label="设计显示页" value="show"></el-option>
@@ -176,8 +196,8 @@ import fields from './fieldsConfig.js'
 import { mapGetters, mapState } from "vuex";
 import {widget_div_layout,widget_row_col_layout} from './fieldsConfig.js'
 import history from './mixins/history'
-import {luckySheet2ReportGrid,loadFile,deepClone,build_layout,get_signalR_connection,getObjType,getRangeByText,numToString} from './utils/util.js'
-import {open_one,save_one,grid_range_level,getAllWidget} from "./api/report_api"
+import {luckySheet2ReportGrid,loadFile,saveAs,build_layout,get_signalR_connection,getObjType,getRangeByText,numToString} from './utils/util.js'
+import {open_one,save_one,report_as_text,grid_range_level,getAllWidget} from "./api/report_api"
 import Preview from './preview.vue'
 import simpleGuide from './simpleGuide.vue'
 import Config from './config'
@@ -185,9 +205,9 @@ import install_component from './install_component'
 import templateManger from "./templateManger.vue"
 import widgetDialog from "./widgetDialog.vue"
 import x2js from 'x2js' 
-
+import { report_cache } from '@/config/env'; 
 const x2jsone=new x2js(); //实例
-const report_cache={}
+
 
 if(window.cr_allWidget==undefined){
   getAllWidget('design_rpt').then(data=>{
@@ -206,15 +226,14 @@ export default {
     const reportName = to.query.label 
     if (reportName) {
       await next(async instance => {  
-        if(to.query.zb_dict || to.query.zb_param )     
-          delete report_cache[reportName ]
         let obj=report_cache[reportName ]
         if(obj ){
-          await instance.init(reportName,obj,to.query.zb_dict,to.query.zb_param)
+          await instance.load_report(reportName,obj)
+          //delete report_cache[reportName ]
           next()
         }
         else
-          await instance.init(reportName,undefined,to.query.zb_dict,to.query.zb_param)
+          await instance.load_report(reportName,undefined)          
         })
     } else {
       next(new Error('未指定reportName'))
@@ -227,32 +246,42 @@ export default {
     //console.info("prepare cache:"+_this.report.reportName)    
     this.save_fix()
     this.layout_mode=''
-    report_cache[_this.report.reportName]={
-      report_content:x2jsone.js2xml({report:this.report}),
-      conn_list:this.report.conn_list,
-      range_level:this.report.range_level,
-      defaultsetting:this.report.defaultsetting,
-      parent_defaultsetting:this.report.parent_defaultsetting
+    if(_this.cur_version==_this.report.versions[0][0])
+    {
+      report_cache[_this.report.reportName]={
+        report_content:x2jsone.js2xml({report:_this.report}),
+        conn_list:_this.report.conn_list,
+        range_level:_this.report.range_level,
+        defaultsetting:_this.report.defaultsetting,
+        versions:_this.report.versions,
+        cur_version:_this.report.cur_version,
+        parent_defaultsetting:_this.report.parent_defaultsetting
+      }
     }
     const reportName = to.query.label || to.meta.id
     if (reportName) {
       let obj=report_cache[reportName ]
-      await this.init(reportName,obj)
+      await _this.load_report(reportName,obj)
       next()
     } else {
       next(new Error('未指定reportName'))
     }
   },
-    // 在同一组件对应的多个路由间切换时触发
-  beforeRouteLeave(to, from, next) {    
+    // 离开设计页面时触发
+  beforeRouteLeave(to, from, next) {
+    let _this=this    
     this.save_fix()
     this.layout_mode=''
-    report_cache[this.report.reportName]={
-      report_content:x2jsone.js2xml({report:this.report}),
-      conn_list:this.report.conn_list,
-      range_level:this.report.range_level,
-      defaultsetting:this.report.defaultsetting,
-      parent_defaultsetting:this.report.parent_defaultsetting
+    if(_this.cur_version==_this.report.versions[0][0]){
+      report_cache[_this.report.reportName]={
+        report_content:x2jsone.js2xml({report:_this.report}),
+        conn_list:_this.report.conn_list,
+        range_level:_this.report.range_level,
+        defaultsetting:_this.report.defaultsetting,
+        parent_defaultsetting:_this.report.parent_defaultsetting,
+        versions:_this.report.versions,
+        cur_version:_this.report.cur_version
+      }
     }
     next();
   },
@@ -270,7 +299,7 @@ export default {
         cs[cs_arr[i].split('=')[0]] = cs_arr[i].split('=')[1]
       }
       if (cs.reportName)
-        this.init(window.location.hash??0,cs.reportName)
+        this.load_report(window.location.hash??0,cs.reportName)
     }
   },
   props: {
@@ -361,6 +390,7 @@ export default {
   data(){
       return {    
         clickedEle:{},//存放点击后的数据，可以被其他元素引用
+        cur_version:"",
         report_result:{//报表定义内容
               
           },//报表运行后的结果
@@ -417,6 +447,26 @@ export default {
       }
       return false
     },
+    cur_version_change(new_val){
+      if(this.cur_version==this.report.versions[0][0]){
+        report_cache[this.report.reportName]={
+          report_content:x2jsone.js2xml({report:this.report}),
+          conn_list:this.report.conn_list,
+          range_level:this.report.range_level,
+          defaultsetting:this.report.defaultsetting,
+          versions:this.report.versions,
+          cur_version:this.cur_version,
+          parent_defaultsetting:this.report.parent_defaultsetting
+        }
+      }
+      let obj=report_cache[this.report.reportName ]
+      if(obj && new_val==this.report.versions[0][0]){
+        this.load_report(this.report.reportName,obj,obj.cur_version)
+        delete report_cache[this.report.reportName ]
+      }else
+        this.load_report(this.report.reportName,undefined,new_val)
+      this.cur_version=new_val
+    },
     createContext(){
       return {
       context:{
@@ -460,16 +510,11 @@ export default {
        return true;
       
     },
-    init(reportName,data,zb_dict,zb_param){
+    load_report(reportName,data,cur_version){
       Object.keys(this.report_result).forEach(key=>{
         delete this.report_result[key]
       })
-          
-      let signalR_connection=get_signalR_connection()
       let _this=this
-      let _report
-      
-      //'2019/2jidu/kb_dangri2.cr'
       let isNew=false;
       if(isNew){
         this.report={
@@ -498,32 +543,19 @@ export default {
         if(data){
           _this.report.layout=undefined
           _this.set_report(reportName,data)
+          _this.cur_version=cur_version??_this.report.versions[0][0]
+          _this.report.cur_version=_this.cur_version
         }else
-        open_one(reportName,zb_dict,zb_param).then(response_data => {      
+        open_one(reportName,cur_version).then(response_data => {      
           if(response_data.errcode)
           {
             _this.$notify({title: '提示',message: response_data.message,type: 'error',duration:0});
             return
           }
-          if(zb_dict){
-            Object.entries(zb_dict).forEach( kv=>{
-              if(_this.report_result.dataSet==undefined){
-                _this.report_result.dataSet={}
-                 _this.report_result._zb_var_={}
-                 _this.report._zb_var_={}
-              }
-              if(typeof kv[1]=="string" && kv[1].startsWith("{")){
-                let one=JSON.parse( kv[1])
-                _this.report_result.dataSet[kv[0]]=[[one.columns].concat(one.data)]
-              }
-              else{
-                _this.report_result._zb_var_[kv[0]]=kv[1]
-                _this.report._zb_var_[kv[0]]=kv[1]
-              }
-            })
-            
-          }
           _this.set_report(reportName,response_data)
+          
+          _this.cur_version=cur_version??_this.report.versions[0][0]
+          _this.report.cur_version=_this.cur_version
         }).catch(error=> {
             _this.$notify({title: '提示',message: error.toString(),type: 'error',duration:0});
             if(error.response_data)
@@ -535,6 +567,7 @@ export default {
       let _report=x2jsone.xml2js(response_data.report_content).report
       if(_report.notebook==undefined)
         _report.notebook=""
+      _report.versions=response_data.versions
       if(_report._zb_var_){
         this.report_result._zb_var_=JSON.parse(_report._zb_var_)
       }
@@ -1104,46 +1137,105 @@ export default {
         }
       })      
     },
-    save_report(){
-      this.save_fix()
+    save_report(save_type){
       let _this=this
-      if(this.report.reportName.split(":")[1].startsWith("大屏/")){
-        this.setSelectWidgetForLayout();
-        setTimeout(()=>{
-          html2canvas(document.getElementById('cr_gridLayout'), {
-            width: _this.report.defaultsetting.screen_width*_this.scale.v/100, // canvas宽度
-            height: _this.report.defaultsetting.screen_height*_this.scale.v/100, // canvas高度
-            //scale:2,
-            //dpi:300,
-            foreignObjectRendering: true, // 是否在浏览器支持的情况下使用ForeignObject渲染
-            useCORS: true, // 是否尝试使用CORS从服务器加载图像
-            async: false, // 是否异步解析和呈现元素
-              backgroundColor: null,
-            
-            }).then(canvas => {
-              function dataURLtoFile (dataurl, filename) {
-                var arr = dataurl.split(','),
-                  mime = arr[0].match(/:(.*?);/)[1],
-                  bstr = atob(arr[1]),
-                  n = bstr.length,
-                  u8arr = new Uint8Array(n);
-                while (n--) {
-                  u8arr[n] = bstr.charCodeAt(n);
-                }
-                return new File([u8arr], filename, { type: mime });
-              }
-              var file = dataURLtoFile(canvas.toDataURL('image/jpeg', 0.1), new Date().getTime()  + '.jpg');
-              save_one({reportName:this.report.reportName},null,file)
-            })
-        },50)
+      _this.save_fix()
+      if(save_type=='download'){
+          let txt=report_as_text(_this.report)//.replace(/&amp;/g, '&').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&nbsp;/g,' ').replace(/&#39;/g,'\'').replace(/&quot;/g,'\"');
+          saveAs(new Blob([txt], { type: "application/octet-stream"}), "这里是下载的文件.cr");
+          return;
       }
-      save_one(this.report)
-      //console.info(x2jsone.js2xml({report:this.report}))
+      if(save_type!='force' && this.cur_version!=this.report.versions[0][0]){
+          this.$alert("历史版本不能修改，不能保存！如果需要作为最新版本，请使用强制保存！");
+          return;
+      }
+      
+      if(this.cur_version!=this.report.versions[0][0]){
+        this.$confirm('此操作将使历史版本提升到最新（并备份当前版本）, 是否继续?', '提示', {confirmButtonText: '确定',cancelButtonText: '取消',type: 'warning'})
+        .then(() => {
+          inner_exec();
+        }).catch(() => {
+          this.$message({type: 'warning',message: '已取消覆盖'});          
+        });
+      }else
+        inner_exec();
+      
+      function inner_exec(){
+        if(_this.report.reportName.split(":")[1].startsWith("大屏/")){
+          _this.setSelectWidgetForLayout();
+          setTimeout(()=>{
+            html2canvas(document.getElementById('cr_gridLayout'), {
+              width: _this.report.defaultsetting.screen_width*_this.scale.v/100, // canvas宽度
+              height: _this.report.defaultsetting.screen_height*_this.scale.v/100, // canvas高度
+              //scale:2,
+              //dpi:300,
+              foreignObjectRendering: true, // 是否在浏览器支持的情况下使用ForeignObject渲染
+              useCORS: true, // 是否尝试使用CORS从服务器加载图像
+              async: false, // 是否异步解析和呈现元素
+                backgroundColor: null,
+              
+              }).then(canvas => {
+                function dataURLtoFile (dataurl, filename) {
+                  var arr = dataurl.split(','),
+                    mime = arr[0].match(/:(.*?);/)[1],
+                    bstr = atob(arr[1]),
+                    n = bstr.length,
+                    u8arr = new Uint8Array(n);
+                  while (n--) {
+                    u8arr[n] = bstr.charCodeAt(n);
+                  }
+                  return new File([u8arr], filename, { type: mime });
+                }
+                var file = dataURLtoFile(canvas.toDataURL('image/jpeg', 0.1), new Date().getTime()  + '.jpg');
+                save_one({reportName:_this.report.reportName},file)
+              })
+          },50)
+        }
+        if(save_type=='common'||save_type=='force'){
+          _this.report.cur_version=_this.cur_version
+          save_one(_this.report,null,"").then(x=>{
+              if(x.errcode!=0){
+                _this.$alert(x.message, '提示', {confirmButtonText: '确定',type: 'warning'});
+              }else{
+                delete report_cache[_this.report.reportName]
+                _this.report.versions=x.versions
+                _this.report.cur_version=_this.cur_version=x.versions[0][0]
+                _this.$message.success(x.message);
+              }
+            }) 
+          return
+        }
+        //save_type=='important' 
+        _this.$DialogForm.show({
+          title: '添加说明可以备份当前版本',  width: '30%',  menuPosition:'right',
+          option:  {
+            submitText: '保存',span:24,
+            column: [{label: "说明", labelPosition:'top',type:'textarea',minRows:3,maxRows:5, prop: "desc"  }]
+          },
+          callback:(res)=>{
+            _this.report.cur_version=_this.cur_version
+            console.log(_this.cur_version,res.data);
+            save_one(_this.report,null,res.data.desc).then(x=>{
+              res.done();
+              res.close();
+              if(x.errcode!=0){
+                _this.$alert(x.message, '提示', {confirmButtonText: '确定',type: 'warning'});
+              }else{
+                delete report_cache[_this.report.reportName]
+                _this.report.versions=x.versions
+                _this.report.cur_version=_this.cur_version=x.versions[0][0]
+                _this.$message.success(x.message);
+              }
+            }).catch(error=> { 
+                _this.$notify({title: '提示',message: error,type: 'error',duration:0});
+            })
+          }});
+        }
+    },
+    show_versions(){
+
     },
     async run_report(url){
-      // console.log(url)
-      this.save_fix()
-      save_one(this.report)
       if(navigator?.clipboard && navigator.clipboard.writeText)
         await navigator.clipboard.writeText(url)
       let newA = document.createElement('a');
@@ -1162,7 +1254,7 @@ export default {
       setTimeout(()=>{
         _this.widgetForm=old_widgetForm
       })
-    },
+    }
   },
   
   watch: { 
@@ -1291,5 +1383,13 @@ export default {
     line-height: 25px;
     border-bottom: 2px solid transparent;
     color: #909399;
+}
+#avue-view .el-dropdown__icon {
+    font-size: 11px;
+    margin: 0 3px;
+}
+#avue-view .el-dropdown__caret-button {
+  padding-left: 0px !important;
+  padding-right: 0px !important;
 }
 </style>

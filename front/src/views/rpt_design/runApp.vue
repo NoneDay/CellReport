@@ -182,6 +182,10 @@ export default {
       document.getElementById("pdf_output").data =datauri
     },
     refresh_layout(ddd,that){  
+      if(window.cellreport.after_run_before_show_report_hook){
+        if(window.cellreport.after_run_before_show_report_hook(that))
+        return
+      }
       if(that==undefined)
         that=this
       that.isShow=false
@@ -199,6 +203,7 @@ export default {
             if(ks.length>0)
               document.title = (that.result.data[ks[0]]?.title)   || document.title 
             if(window.after_show_report_hook){window.after_show_report_hook(that)}
+            if(window.cellreport.after_show_report_hook){window.cellreport.after_show_report_hook(that)}
           });
       });
     },

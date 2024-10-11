@@ -319,12 +319,14 @@ style标签包起来的部分，将会在报表展现前注入当前页面的样
 - 
 ```
 <script> 
-window.after_show_report_hook=function(){ //这个函数会在显示完报表后调用
+window.cellreport.after_show_report_hook=function(that){ //这个函数会在显示完报表后调用
   	console.info("function report_after_show exec")
 }
-
+window.cellreport.after_run_before_show_report_hook=function(that){ //这个函数会在后端取数完毕显示报表前调用
+  	console.info("function after_run_before_show_report_hook exec")
+}
 if(_this.crisMobile)
-  window.convert_col_to_button=true //如果是移动端，那么如果只有一个报表，并且 是多行列头的情况下，设置这个参数控制将列转换为标签按钮的形式
+  window.cellreport.convert_col_to_button=true //如果是移动端，那么如果只有一个报表，并且 是多行列头的情况下，设置这个参数控制将列转换为标签按钮的形式
 console.info(_this) //d打印_this的内容到控制台。这仅仅是测试，生产期间最好不要执行
 </script>
 ```
@@ -508,6 +510,8 @@ hasOption 是为了动态初始化option，他总是返回true。
 - window.cellreport.form_validate(queryForm)  form提交时的表单校验。queryForm的属性就是报表用到的参数,返回true表示校验通过，false或字符串表示校验不通过，返回字符串时将作为错误信息显示到浏览器
 - window.cellreport.convert_col_to_button 手机端是否将多层表头转换为按钮显示
 - window.cellreport.cfc_max_line 缺省值1000。在设计器使用条件格式菜单设置的条件格式化计算的最大行数，超过这个行数就不计算。
+- window.cellreport.after_run_before_show_report_hook=function(that) 这个函数会在后端取数完毕显示报表前调用
+- window.cellreport.after_show_report_hook=function(that) 这个函数会在显示完报表后调用
 ## 查找组件和显示组件对话框
 this.findElelment("line_832",{parent_obj:null,dialog_params:{title:'标题'},params:{style:"height:50vh"} }) 
 this.showDialog("line_832",{parent_obj:null,dialog_params:{title:'标题'},params:{style:"height:50vh"} )

@@ -51,14 +51,11 @@ export function get_pdf(report_obj,paperSetting) {
 }
 
 
-export function open_one(reportName,zb_dict,zb_param) {
+export function open_one(reportName,cur_version="") {
     let arr=reportName.split(":")
     let grpId,reportFilePath
     let data=new FormData();
-    if(zb_dict)
-        data.append('zb_dict_str',JSON.stringify(zb_dict))
-    if(zb_param)
-        data.append('zb_param',JSON.stringify(zb_param))
+    data.append('cur_version',cur_version);
     grpId=arr[0]
     reportFilePath=arr[1]
     return request({
@@ -93,26 +90,46 @@ export function grid_range_level(report) {
     })
 }
 
-export function save_one(report,zb_data,imgFile) {
-    let arr=report.reportName.split(":")
-    let grpId=arr[0]
-    let reportFilePath=arr[1]
+export function report_as_text(report) {
+
+
     report.dataSets?.dataSet?.forEach(x=>
         {if(x.__text)
             x.__text=x.__text.replaceAll("\r","")
         })
+    let temp={
+        conn_list:report.conn_list,
+        range_level:report.range_level,
+        parent_defaultsetting:report.parent_defaultsetting,
+        versions:report.versions,
+        cur_version:report.cur_version
+    }
+    delete report.conn_list
+    delete report.range_level
+    delete report.parent_defaultsetting
+    delete report.versions
+    delete report.cur_version
+    let ret=x2jsone.js2xml({report})
+    report.conn_list=temp.conn_list
+    report.range_level=temp.range_level
+    report.parent_defaultsetting=temp.parent_defaultsetting
+    report.versions=temp.versions
+    report.cur_version=temp.cur_version
+    return ret.replaceAll("\r"," ")
+}
+
+export function save_one(report,imgFile,desc) {
+    let txt=report_as_text(report)
+    let arr=report.reportName.split(":")
+    let grpId=arr[0]
+    let reportFilePath=arr[1]
     let data=new FormData();
-    //x2jsone.xml2js(x2jsone.js2xml( {a:'sfsdfsdf\r\nasd'} ))
     data.append('reportName',reportFilePath)
-    data.append('content',x2jsone.js2xml({report}))
+    data.append('content',txt)
+    data.append('cur_version',report.cur_version??"")
+    data.append('desc',desc??"")
     if(imgFile)
-        data.append('imgFile', imgFile)
-    if(zb_data && zb_data.zb_dict){
-        data.append('zb_dict_str',JSON.stringify( zb_data.zb_dict))
-    }
-    if(zb_data && zb_data.zb_param){
-        data.append('zb_param',JSON.stringify(  zb_data.zb_param))
-    }
+        data.append('imgFile', imgFile)    
     return request({
         method: 'post',
         data,
@@ -120,7 +137,6 @@ export function save_one(report,zb_data,imgFile) {
         withCredentials: true
     })
 }
-
 export async function getAllWidget(action) {
     let data=new FormData();
     data.append('action',action)
