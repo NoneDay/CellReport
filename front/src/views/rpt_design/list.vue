@@ -364,7 +364,7 @@ export default {
                                         "screen_width": "1920",
                                         "screen_height": "1080"
                                     }
-                            })
+                            }).catch(err=>this.$alert(err));
                     }
                     else{
                         save_one({reportName:reportName,
@@ -374,7 +374,7 @@ export default {
                                     rows:{row:Enumerable.range(1,10).select(x=> {return {_name:x,_height:25,_fixed:"True"}}).toArray()},
                                     columns:{column:Enumerable.range(0,10).select(x=> {return {_name:'abcdefghijklmn'[x],_width:75,_fixed:"False"}}).toArray()}
                                 }]}
-                            })
+                            }).catch(err=>this.$alert(err));
                     }
                     //this.cur_grp.loc_path.push(row.FileName)
                     rptList(this.grp_id,this.cur_grp.loc_path.join("/")).then(response_data => {

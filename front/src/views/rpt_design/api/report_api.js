@@ -91,12 +91,12 @@ export function grid_range_level(report) {
 }
 
 export function report_as_text(report) {
-
-
-    report.dataSets?.dataSet?.forEach(x=>
-        {if(x.__text)
-            x.__text=x.__text.replaceAll("\r","")
-        })
+    if(report.dataSets?.dataSet){
+        report.dataSets.dataSet.forEach(x=>
+            {if(x.__text && typeof x.__text=="string")
+                x.__text=x.__text.replaceAll("\r","")
+            })
+    }
     let temp={
         conn_list:report.conn_list,
         range_level:report.range_level,
@@ -109,6 +109,7 @@ export function report_as_text(report) {
     delete report.parent_defaultsetting
     delete report.versions
     delete report.cur_version
+    delete report.datasources
     let ret=x2jsone.js2xml({report})
     report.conn_list=temp.conn_list
     report.range_level=temp.range_level
@@ -127,6 +128,7 @@ export function save_one(report,imgFile,desc) {
     data.append('reportName',reportFilePath)
     data.append('content',txt)
     data.append('cur_version',report.cur_version??"")
+    data.append('last_version',report.versions?report.versions[0][0]:"")
     data.append('desc',desc??"")
     if(imgFile)
         data.append('imgFile', imgFile)    

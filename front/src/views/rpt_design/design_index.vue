@@ -214,7 +214,7 @@ if(window.cr_allWidget==undefined){
       window.cr_allWidget=data
   });    
 }
-
+window.cellreport.tool=require("./utils/util")
 export default {
   name: "FormDesign",
   mixins: [history],
@@ -1142,7 +1142,7 @@ export default {
       _this.save_fix()
       if(save_type=='download'){
           let txt=report_as_text(_this.report)//.replace(/&amp;/g, '&').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&nbsp;/g,' ').replace(/&#39;/g,'\'').replace(/&quot;/g,'\"');
-          saveAs(new Blob([txt], { type: "application/octet-stream"}), "这里是下载的文件.cr");
+          saveAs(new Blob([txt], { type: "application/octet-stream"}),this.report.reportName.split(":")[1].split("/").slice(-1));
           return;
       }
       if(save_type!='force' && this.cur_version!=this.report.versions[0][0]){

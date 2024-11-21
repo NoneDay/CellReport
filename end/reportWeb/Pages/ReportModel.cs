@@ -186,7 +186,7 @@ namespace reportWeb.Pages
                 //Console.WriteLine("before_exec:" + (DateTime.Now - start_time) / 10000 + "秒");
                 if (false == pre_page_load())
                     return;
-                if (exprFaced.hasVariable("before_exec"))
+                if (report_name != "/" && exprFaced.hasVariable("before_exec"))
                 {
                     before_exec_result =exprFaced.calculate("=before_exec()", report_env.getDataSetResultMap()) as CR_Object;
                     if (before_exec_result != null)

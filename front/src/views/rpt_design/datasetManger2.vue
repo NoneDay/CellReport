@@ -599,8 +599,7 @@ export default {
                     _this.action_target._dataSource="memory"
                 }
                 if(command=="api"){
-                    _this.action_target.__text=`from_zb( { "url":"报表地址"} );                    
-
+                    _this.action_target.__text=`
 web_request({
 'url':"API网址"  //用你的地址替换这里
 ,'method':'post'  //可用方法: get ,post
@@ -608,10 +607,6 @@ web_request({
 ,'json':null      //使用json提交，json 和data 不能同时有值，至少有一个是null
 ,'headers':null   
 });// 语句必须以逗号结束
-
-innerReport(); //设计好的报表页面选中有关单元格，复制粘贴到小括号里面
-
-//以上三选一，不用的请手工删掉
 `
                 }
                 _this.all_dataSet.push(_this.action_target )

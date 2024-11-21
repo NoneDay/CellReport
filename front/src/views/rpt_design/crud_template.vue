@@ -20,7 +20,7 @@
         </el-form-item> 
         <el-form-item label="表">
             <el-select v-model="data.table" @change="table_change" clearable filterable>
-                <el-option v-for="item,idx in tables" :key="idx" :label="item.TABLE_CATALOG+'.'+item.TABLE_SCHEMA+'.'+item.TABLE_NAME" :value="item.TABLE_CATALOG+'.'+item.TABLE_SCHEMA+'.'+item.TABLE_NAME">
+                <el-option v-for="item,idx in tables" :key="idx" :label="item.TABLE_SCHEMA+'.'+item.TABLE_NAME" :value="item.TABLE_CATALOG+'.'+item.TABLE_SCHEMA+'.'+item.TABLE_NAME">
                 </el-option>
             </el-select>
         </el-form-item> 
@@ -346,12 +346,12 @@ export default {
         async table_change(val){
             let tbl=val.split(".")
             this.all_tbl={}
-            let main_tbl=await call_server_func(`db_tableinfo`,{datasource:this.data.datasource,table_name:tbl[2]},this.server_url)
+            let main_tbl=await call_server_func(`db_tableinfo`,{datasource:this.data.datasource,table_name:tbl[2],schema_name:tbl[1]},this.server_url)
             this.all_tbl[tbl[2]]=main_tbl
             for(let x in main_tbl.foreign_info)
             {
                 let cur=main_tbl.foreign_info[x]
-                let one=await call_server_func(`db_tableinfo`,{datasource:this.data.datasource,table_name:cur.table},this.server_url)
+                let one=await call_server_func(`db_tableinfo`,{datasource:this.data.datasource,table_name:cur.table,schema_name:tbl[1]},this.server_url)
                 this.all_tbl[cur.table]=one
             }
             Object.keys(this.all_tbl).forEach(a=>{
@@ -411,6 +411,7 @@ export default {
                 call_server_func(`buildTemplate` ,
                 {
                     ds_link:this.data.datasource,
+                    schema:this.data.table.split(".")[1]==""?"":this.data.table.split(".")[1]+".",
                     table:this.data.table.split(".")[2],
                     col_list:Enumerable.from(this.cloumn_list).select(x=>x.prop).toArray(),
                     keys:Enumerable.from(this.cloumn_list).where(x=>x.is_key==true).select(x=>x.prop).toArray(),

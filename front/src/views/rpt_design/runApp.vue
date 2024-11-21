@@ -69,15 +69,17 @@
 import widgetForm from './WidgetForm'
 import {dateToString} from './utils/resultGrid2HtmlTable.js'
 import {run_one,get_pdf,run_download} from "./api/report_api"
-import {convert_array_to_json,arrayToTree,seriesLoadScripts,load_css_file,watermark,isMobile,loadFile } from "./utils/util"
+import {convert_array_to_json,arrayToTree,seriesLoadScripts,load_css_file,watermark,isMobile,loadFile,showDialog,findElelment } from "./utils/util"
 import install_component from './install_component'
 import paperSetting  from './paperSetting.vue'
 import {exceljs_inner_exec,xlsxjs_inner_exec,docx_inner_exec} from './utils/export_excel.js'
+window.cellreport.tool=require("./utils/util")
 export default {
   name: 'App', //CellReportFormDesign
   components:{widgetForm,paperSetting},
   mounted(){    
     let _this=this
+    window.cellreport.cur_rpt=this
     window.onresize=this.refresh_layout 
   },
   beforeDestroy() {
@@ -163,6 +165,12 @@ export default {
   watch:{
   },
   methods:{
+    findElelment(name,prop_dict){
+        return findElelment(name,prop_dict,this)
+      },
+      async showDialog (ele_name, data) {
+        return showDialog(ele_name, data,this)
+      },
     interval_func(){
       // 定时器。每间隔一秒调用，调用时判断setTimeout_second 是否为0 ，为0执行，只到小于0，以后就不执行。
       //除非setTimeout_function重新被设置 
@@ -229,7 +237,7 @@ export default {
         this.mobile_col_button_arr.splice(-1)
       }
       if(window.cellreport.hook && typeof window.cellreport.hook=='function'){
-        window.cellreport.hook("click_col_button", this.mobile_col_button_arr)
+        window.cellreport.hook("click_col_button", {mobile_col_button_arr:this.mobile_col_button_arr,line_idx,col_idx})
       }
       this.report_pane_show=false
       this.$nextTick(() => {

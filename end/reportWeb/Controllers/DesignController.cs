@@ -339,74 +339,58 @@ namespace reportWeb.Controllers
 
         public async Task<IActionResult> exec_expr(String expr, String report_content)
         {
-            Env report_env = null;
-            try
+            object exec_result = null;
+            if (String.IsNullOrEmpty(report_content))
             {
-                BaseExprFaced exprFaced;
-
-                CellReport.dataSet.GroupMap cur_GroupMap = null;
-
-
-                if (String.IsNullOrEmpty(report_content))
-                {
-                    exprFaced = new ExprFaced2();
-                    exprFaced.addNewScopeForScript();
-                    report_env = new Env("exec_expr1");
-                    cur_GroupMap = new();
-                    exprFaced.addVariable("env", report_env);
-                    exprFaced.addVariable("__env__", report_env);
-                    exprFaced.addVariable("_user_", null);
-                    exprFaced.addVariable("_zb_url_", configuration["zb_url"]);
-                    exprFaced.addVariable("_zb_user_", rpt_group.zb_user);
-                    exprFaced.addVariable("_zb_password_", rpt_group.zb_password);
-                    exprFaced.addVariable("_zb_var_", new Dictionary<String, object>());
-                    exprFaced.addVariable("_rpt_group_", rpt_group);
-                    exprFaced.getVariableDefine("__page__").value = HttpContext.Request;
-
-                }
-                else
-                {
-                    System.Xml.XmlDocument xmlDoc = Content2XmlDoc(report_content);
-                    string reportName = null;
-                    if (reportName != null && reportName.Contains(":"))
-                        reportName = reportName.Split(":")[1];
-                    using var reportDefine = await XmlReport.loadReportFromXmlDoc(xmlDoc, this.rpt_group.report_path, reportName ?? "temp.cr");
-                    report_env = reportDefine.getEnv();
-                    exprFaced = report_env.getExprFaced();
-                    exprFaced.getVariableDefine("__page__").value = HttpContext.Request;
-                    exprFaced.addVariableForRoot("_page_size_", getFormValue("_page_size_"));
-                    exprFaced.addVariableForRoot("_cur_page_num_", getFormValue("_cur_page_num_"));
-                    cur_GroupMap = report_env.getDataSetResultMap();
-                }
+                BaseExprFaced exprFaced = new ExprFaced2();
+                exprFaced.addNewScopeForScript();
+                using Env report_env = new Env("exec_expr1");
+                CellReport.dataSet.GroupMap cur_GroupMap = new();
+                exprFaced.addVariable("env", report_env);
+                exprFaced.addVariable("__env__", report_env);
+                exprFaced.addVariable("_user_", null);
+                exprFaced.addVariable("_zb_url_", configuration["zb_url"]);
+                exprFaced.addVariable("_zb_user_", rpt_group.zb_user);
+                exprFaced.addVariable("_zb_password_", rpt_group.zb_password);
+                exprFaced.addVariable("_zb_var_", new Dictionary<String, object>());
+                exprFaced.addVariable("_rpt_group_", rpt_group);
+                exprFaced.getVariableDefine("__page__").value = HttpContext.Request;
                 report_env.logger = logger;
                 foreach (var one in this.rpt_group.db_connection_list)
                 {
                     report_env.addDataSource(one.name, one.conn_str, one.db_type, "0", one.sql_prefix, one.sql_suffix);
                 }
-
-                var exec_result = exprFaced.calculate("{  " + expr + "\n}", cur_GroupMap, "当前脚本");
+                exec_result = exprFaced.calculate("{  " + expr + "\n}", cur_GroupMap, "当前脚本");
                 if (exec_result is Exception ex)
                 {
                     throw ex;
                 }
-                return Json(new { errcode = 0, message = "", result = exec_result }, json_option);
             }
-            catch (Exception ex)
+            else
             {
-                StringBuilder sb_err = new();
-                sb_err.AppendLine(ex.Message);
-                while (ex.InnerException != null)
+                System.Xml.XmlDocument xmlDoc = Content2XmlDoc(report_content);
+                string reportName = null;
+                if (reportName != null && reportName.Contains(":"))
+                    reportName = reportName.Split(":")[1];
+                using var reportDefine = await XmlReport.loadReportFromXmlDoc(xmlDoc, this.rpt_group.report_path, reportName ?? "temp.cr");
+                using Env report_env = reportDefine.getEnv();
+                BaseExprFaced exprFaced = report_env.getExprFaced();
+                exprFaced.getVariableDefine("__page__").value = HttpContext.Request;
+                exprFaced.addVariableForRoot("_page_size_", getFormValue("_page_size_"));
+                exprFaced.addVariableForRoot("_cur_page_num_", getFormValue("_cur_page_num_"));
+                CellReport.dataSet.GroupMap cur_GroupMap = report_env.getDataSetResultMap();
+                report_env.logger = logger;
+                foreach (var one in this.rpt_group.db_connection_list)
                 {
-                    ex = ex.InnerException;
-                    sb_err.AppendLine(ex.Message);
+                    report_env.addDataSource(one.name, one.conn_str, one.db_type, "0", one.sql_prefix, one.sql_suffix);
                 }
-                return Json(new { errcode = 1, message = sb_err.ToString() }, json_option);
+                exec_result = exprFaced.calculate("{  " + expr + "\n}", cur_GroupMap, "当前脚本");
+                if (exec_result is Exception ex)
+                {
+                    throw ex;
+                }
             }
-            finally
-            {
-                if (report_env != null)
-                    report_env.Dispose();
-            }
+            return Json(new { errcode = 0, message = "", result = exec_result }, json_option);
         }
         public IActionResult exec_cmd(String cmd, string from, string to)
         {
@@ -677,7 +661,7 @@ namespace reportWeb.Controllers
             xmlDoc.Save(file_path);
 
         }
-        public async Task<IActionResult> Save(String reportName, String content, String cur_version, IFormFile imgFile, string desc)
+        public async Task<IActionResult> Save(String reportName, String content, IFormFile imgFile, String cur_version, String last_version, string desc)
         {
             if (reportName.StartsWith("/"))
                 reportName = reportName.Substring(1);
@@ -685,60 +669,59 @@ namespace reportWeb.Controllers
                 Directory.CreateDirectory(this.rpt_group.report_path);
             var file_path = Path.Combine(this.rpt_group.report_path, reportName);
 
-            if (file_path.StartsWith(this.rpt_group.report_path))
+            if (!file_path.StartsWith(this.rpt_group.report_path))
+                return Json(new { errcode = 1, message = "路径错误" });
+            var fileInfo = new FileInfo(file_path);
+            var LastWriteTime = fileInfo.LastWriteTime.ToString("yyyy-MM-dd HH:mm:ss");
+            if (fileInfo.Exists && last_version != LastWriteTime)
+                return Json(new { errcode = 1, message = "报表已被更改，请重载后重试！" });
+
+            if (!Directory.Exists(fileInfo.DirectoryName))
+                Directory.CreateDirectory(fileInfo.DirectoryName);
+            if (imgFile != null)
             {
-                var fileInfo = new FileInfo(file_path);
-                if (!Directory.Exists(fileInfo.DirectoryName))
-                    Directory.CreateDirectory(fileInfo.DirectoryName);
-                if (imgFile != null)
+                using (var stream = System.IO.File.Create(file_path + ".jpg"))
                 {
-                    using (var stream = System.IO.File.Create(file_path + ".jpg"))
-                    {
-                        await imgFile.CopyToAsync(stream);
-                    }
-                    return Json(new { errcode = 0, message = "保存图片成功" }); ;
+                    await imgFile.CopyToAsync(stream);
                 }
-                var now_time = DateTime.Now;
-                var all_versions = ReportVersions(reportName);
-                var LastWriteTime = fileInfo.LastWriteTime.ToString("yyyy-MM-dd HH:mm:ss");
-                var interval_day = TimeSpan.FromDays(configuration.GetValue<double>("auto_save_interval_day", 7.0d));
-                var back_file_path = Path.Combine(this.rpt_group.report_path, ".backup", reportName + now_time.ToString("yyyy_MM_dd_HH_mm_ss"));
-                var back_fileInfo = new FileInfo(back_file_path);
-                if (!Directory.Exists(back_fileInfo.DirectoryName))
-                    Directory.CreateDirectory(back_fileInfo.DirectoryName);
-
-                if (fileInfo.Exists && fileInfo.LastWriteTime.ToString("yyyy-MM-dd HH:mm:ss") != cur_version)
-                {//旧版本报表覆盖新版本报表，先备份旧版本
-                    System.IO.File.Copy(file_path, back_file_path);
-                    System.IO.File.AppendAllLines(Path.Combine(this.rpt_group.report_path, ".backup", reportName + "_desc")
-                        , new String[] { version_split + now_time.ToString("yyyy-MM-dd HH:mm:ss"),
-                                            $"恢复旧版本【{cur_version}】前的备份"
-                                        });
-                }
-                else if (fileInfo.Exists && now_time - fileInfo.LastWriteTime > interval_day)
-                {//超过指定间隔时间
-                    System.IO.File.Copy(file_path, back_file_path);
-                    System.IO.File.AppendAllLines(Path.Combine(this.rpt_group.report_path, ".backup", reportName + "_desc")
-                        , new String[] { version_split + now_time.ToString("yyyy-MM-dd HH:mm:ss"),
-                                            $"间隔超过{interval_day}天自动对【{LastWriteTime}】备份"
-                                        });
-                }
-                //保存报表
-                System.Xml.XmlDocument xmlDoc = Content2XmlDoc(content.Replace("\r", ""));
-                xmlDoc.Save(file_path);
-
-                if (!string.IsNullOrWhiteSpace(desc))
-                {//如果有版本描述，备份当前报表
-                    System.IO.File.Copy(file_path, back_file_path);
-                    System.IO.File.AppendAllLines(Path.Combine(this.rpt_group.report_path, ".backup", reportName + "_desc")
-                        , new String[] { version_split + now_time.ToString("yyyy-MM-dd HH:mm:ss"), desc });
-                }
-                XmlReport.MemoryCacheInstance.Remove(file_path);
-                return Json(new { errcode = 0, message = "保存成功", versions = ReportVersions(reportName) });
+                return Json(new { errcode = 0, message = "保存图片成功" });
             }
-            return Json(new { errcode = 1, message = "路径错误" });
+            var now_time = DateTime.Now;
+            var all_versions = ReportVersions(reportName);
+            var interval_day = TimeSpan.FromDays(configuration.GetValue<double>("auto_save_interval_day", 7.0d));
+            var back_file_path = Path.Combine(this.rpt_group.report_path, ".backup", reportName + now_time.ToString("yyyy_MM_dd_HH_mm_ss"));
+            var back_fileInfo = new FileInfo(back_file_path);
+            if (!Directory.Exists(back_fileInfo.DirectoryName))
+                Directory.CreateDirectory(back_fileInfo.DirectoryName);
 
+            if (fileInfo.Exists && last_version != cur_version)
+            {//旧版本报表覆盖新版本报表，先备份旧版本
+                System.IO.File.Copy(file_path, back_file_path);
+                System.IO.File.AppendAllLines(Path.Combine(this.rpt_group.report_path, ".backup", reportName + "_desc")
+                    , new String[] { version_split + now_time.ToString("yyyy-MM-dd HH:mm:ss"),
+                                        $"恢复旧版本【{cur_version}】前的备份"
+                                    });
+            }
+            else if (fileInfo.Exists && now_time - fileInfo.LastWriteTime > interval_day)
+            {//超过指定间隔时间
+                System.IO.File.Copy(file_path, back_file_path);
+                System.IO.File.AppendAllLines(Path.Combine(this.rpt_group.report_path, ".backup", reportName + "_desc")
+                    , new String[] { version_split + now_time.ToString("yyyy-MM-dd HH:mm:ss"),
+                                        $"间隔超过{interval_day}天自动对【{LastWriteTime}】备份"
+                                    });
+            }
+            //保存报表
+            System.Xml.XmlDocument xmlDoc = Content2XmlDoc(content.Replace("\r", ""));
+            xmlDoc.Save(file_path);
 
+            if (!string.IsNullOrWhiteSpace(desc))
+            {//如果有版本描述，备份当前报表
+                System.IO.File.Copy(file_path, back_file_path);
+                System.IO.File.AppendAllLines(Path.Combine(this.rpt_group.report_path, ".backup", reportName + "_desc")
+                    , new String[] { version_split + now_time.ToString("yyyy-MM-dd HH:mm:ss"), desc });
+            }
+            XmlReport.MemoryCacheInstance.Remove(file_path);
+            return Json(new { errcode = 0, message = "保存成功", versions = ReportVersions(reportName) });
         }
         private static string version_split = "=========版本说明============";
         static System.Xml.XmlDocument Content2XmlDoc(string content)

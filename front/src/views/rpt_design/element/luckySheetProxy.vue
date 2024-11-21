@@ -213,7 +213,7 @@ export default {
       {
         _this.self_page_size=_this.cur_result.tableData.length
         if(_this.cur_result.row_page_break_set.length>0)
-        _this.page_count=_this.cur_result.row_page_break_set.length
+        _this.page_count=_this.cur_result.row_page_break_set.length+1
       }else{
         _this.self_page_size=_this.self.page_size
       }

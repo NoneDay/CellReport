@@ -162,7 +162,7 @@
 
 <script>
 import widgetForm from './WidgetForm'
-import {convert_array_to_json,arrayToTree,seriesLoadScripts} from './utils/util.js'
+import {convert_array_to_json,arrayToTree,seriesLoadScripts,showDialog,findElelment} from './utils/util.js'
 import {preview_one,get_pdf} from "./api/report_api"
 import {exceljs_inner_exec,xlsxjs_inner_exec} from './utils/export_excel.js'
 import paperSetting  from './paperSetting.vue'
@@ -255,6 +255,12 @@ export default {
     },
   },
   methods: {
+    findElelment(name,prop_dict){
+      return findElelment(name,prop_dict,this)
+    },
+    async showDialog (ele_name, data) {
+      return showDialog(ele_name, data,this)
+    },
     async paperSetting_submit(val){
       let pdf_data=await get_pdf(this.result,val)
       let datauri = URL.createObjectURL(pdf_data)

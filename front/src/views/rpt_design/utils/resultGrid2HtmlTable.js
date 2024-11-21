@@ -702,7 +702,7 @@ export default class ResultGrid2HtmlTable{
         if(!this.param_grid.optimize && this.param_grid.row_page_break_set.length>0){
             s_row=cur_page==1?this.fix_rows:this.param_grid.row_page_break_set[cur_page - 2]
             
-            if(cur_page==this.param_grid.row_page_break_set.length)
+            if(cur_page==this.param_grid.row_page_break_set.length+1)
                 e_row=this.param_grid.tableData.length
             else
                 e_row=this.param_grid.row_page_break_set[cur_page-1]
