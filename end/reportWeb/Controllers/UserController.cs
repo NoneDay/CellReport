@@ -437,7 +437,7 @@ namespace reportWeb.Controllers
             return new JsonResult(new
             {
                 errcode = 0,
-                running = new List<Object[]> { new Object[] { "env_name","rpt_group_name", "report_name", "calc_type", "report_param", "start", "end", "datasource_name", "sql", "ds_name", "sql_start", "sql_end", "datasource_stat", "info" } }.Concat(
+                running = new List<Object[]> { new Object[] { "env_name", "rpt_group_name", "report_name", "calc_type", "stage", "report_param", "start", "end", "datasource_name", "sql", "ds_name", "sql_start", "sql_end", "datasource_stat", "info" } }.Concat(
                     reportWeb.other.ReportMonitor.Instance.running.Values.SelectMany(rpt_info => rpt_info.DataSourceInfoBag, (rpt_info, datasource_info) => {
                         return new Object[]
                         {
@@ -445,9 +445,10 @@ namespace reportWeb.Controllers
                         rpt_info.rpt_group_name,
                         rpt_info.report_name,
                         rpt_info.calc_type,
+                        rpt_info.stage,
                         rpt_info.report_param,
                         rpt_info.start,
-                        rpt_info.end, 
+                        rpt_info.end,
                         datasource_info.datasource_name,
                         datasource_info.sql,
                         datasource_info.ds_name,

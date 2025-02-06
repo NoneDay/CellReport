@@ -42,7 +42,9 @@ export default {
       let style=extract_style_txt(tmp).trim()
       style=style.replace(/([^{]+)\{[\s|\S]*?\}/img,
       function(t1,t2,t3,t4) {
-          return t2.trim().split(",").map(x=>'#cr_dyn_id_'+_this.context.mode+'_'+_this.id_name+" "+x).join() + t1.substring( t1.indexOf("{") ) +'\n'
+          return t2.trim().split(",").map(x=>
+            x.trim().startsWith('@')? x : ('#cr_dyn_id_'+_this.context.mode+'_'+_this.id_name+" "+ x)
+            ).join() + t1.substring( t1.indexOf("{") ) +'\n'
           //console.log(t1,t2,t3,t4)
       }
       )

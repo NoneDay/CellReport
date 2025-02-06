@@ -92,6 +92,8 @@ export function grid_range_level(report) {
 
 export function report_as_text(report) {
     if(report.dataSets?.dataSet){
+        if(getObjType(report.dataSets.dataSet)=="object")
+            report.dataSets.dataSet=[report.dataSets.dataSet]
         report.dataSets.dataSet.forEach(x=>
             {if(x.__text && typeof x.__text=="string")
                 x.__text=x.__text.replaceAll("\r","")

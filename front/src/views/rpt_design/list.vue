@@ -370,9 +370,7 @@ export default {
                         save_one({reportName:reportName,
                                     dataSets:{dataSet:[]}
                                     ,params:{param:[]}
-                                    ,AllGrids:{grid:[{_name:"main",_title:"main" ,
-                                    rows:{row:Enumerable.range(1,10).select(x=> {return {_name:x,_height:25,_fixed:"True"}}).toArray()},
-                                    columns:{column:Enumerable.range(0,10).select(x=> {return {_name:'abcdefghijklmn'[x],_width:75,_fixed:"False"}}).toArray()}
+                                    ,AllGrids:{grid:[{_name:"main",_title:"main" 
                                 }]}
                             }).catch(err=>this.$alert(err));
                     }

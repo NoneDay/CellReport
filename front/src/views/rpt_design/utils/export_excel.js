@@ -169,6 +169,67 @@ function find_config_merge(result_tbl,rowNo,colNo){
       }
   }
 }  
+// 自定义 HTML 解析函数，将 HTML 转换为 exceljs 富文本格式
+function htmlToRichText(html) {
+  const stack = [];
+  const richText = [];
+  let currentText = '';
+
+  function pushText() {
+      if (currentText) {
+          const styles = stack.reduce((acc, tag) => {
+              switch (tag) {
+                  case 'b':
+                      acc.bold = true;
+                      break;
+                  case 'i':
+                      acc.italic = true;
+                      break;
+                  case 'u':
+                      acc.underline = true;
+                      break;
+                  default:
+                      break;
+              }
+              return acc;
+          }, {});
+          richText.push({ text: currentText, font:styles });
+          currentText = '';
+      }
+  }
+
+  let i = 0;
+  while (i < html.length) {
+      if (html[i] === '\n' || html.slice(i, i + 4) === '<br>') {
+        pushText();
+        richText.push({ text: '\n' });
+        if (html.slice(i, i + 4) === '<br>') {
+            i += 4;
+        } else {
+            i++;
+        }
+      }else if (html[i] === '<') {
+          pushText();
+          const endIndex = html.indexOf('>', i);
+          if (endIndex === -1) {
+              break;
+          }
+          const tag = html.slice(i + 1, endIndex);
+          if (tag.startsWith('/')) {
+              stack.pop();
+          } else {
+              stack.push(tag.split(' ')[0]);
+          }
+          i = endIndex + 1;
+      }   else {
+          currentText += html[i];
+          i++;
+      }
+  }
+  pushText();
+
+  return richText;
+}
 const http_src_pattern=/<img [^>]*src=['"]([^'"]+)[^>]*>/gi  
 export  async function exceljs_inner_exec(_this,name_lable_map){
     let _this_result=_this.result
@@ -234,7 +295,8 @@ export  async function exceljs_inner_exec(_this,name_lable_map){
                         }
                     }
                 }
-                let name=numToString(col_no+1)+(line_no+1)      //excel 单元格名字       
+                let name=numToString(col_no+1)+(line_no+1)      //excel 单元格名字  
+                let excel_cell=ws.getCell(name);     
                 if(one_cell?.indexOf && one_cell.indexOf("<img")>=0){
                   let imageId2=null
                   let script_result;
@@ -284,17 +346,13 @@ export  async function exceljs_inner_exec(_this,name_lable_map){
                   }
                   //ws.addBackgroundImage(imageId2);
                 }
-                //else  if(one_cell && one_cell.startsWith("<")>=0){
-                //  let excel_cell=ws.getCell(name)
-                //  excel_cell.value=""
-                //  excel_cell.html= '<div>' + one_cell + '</div>';
-                //}
-                let ret=find_style(cur_table,line_no,col_no,cur_tbl_class_dict)
-                
-                let cur_cell=ws.getCell(name);
+                else  if(one_cell?.startsWith && one_cell.startsWith("<")){
+                  excel_cell.value={'richText':htmlToRichText(one_cell) } ;
+                }
+                let ret=find_style(cur_table,line_no,col_no,cur_tbl_class_dict);
                 ['font','alignment','border','fill'].forEach(p=>{
                   if(ret[p]){
-                    cur_cell[p]=ret[p]
+                    excel_cell[p]=ret[p]
                   }
                 })
                 col_no++
@@ -322,7 +380,11 @@ export  async function exceljs_inner_exec(_this,name_lable_map){
         //ws=undefined
     };
     const buffer = await wb.xlsx.writeBuffer();
-    saveAs(new Blob([buffer], { type: "application/octet-stream"}), (file_name??"这里是下载的文件名" )+ ".xlsx");
+    const excel_data=new Blob([buffer], { type: "application/octet-stream"});
+    if(window.cellreport.download_excel_func)
+      window.cellreport.download_excel_func(excel_data,(file_name??"这里是下载的文件名") + ".xlsx",_this);
+    else
+      saveAs(excel_data, (file_name??"这里是下载的文件名" )+ ".xlsx");
   }
   export function xlsxjs_inner_exec(_this,name_lable_map){
       const wb = XLSX.utils.book_new()
@@ -379,7 +441,11 @@ export  async function exceljs_inner_exec(_this,name_lable_map){
           ws=undefined
       });
       const wopts = { bookType: 'xlsx', bookSST: true, type: 'binary' };//这里的数据是用来定义导出的格式类型 
-      saveAs(new Blob([s2ab(XLSX.write(wb, wopts))], { type: "application/octet-stream"}), (file_name??"这里是下载的文件名") + ".xlsx");
+      const excel_data=new Blob([s2ab(XLSX.write(wb, wopts))], { type: "application/octet-stream"});
+      if(window.cellreport.download_excel_func)
+        window.cellreport.download_excel_func(excel_data,(file_name??"这里是下载的文件名") + ".xlsx",_this);
+      else
+        saveAs(excel_data, (file_name??"这里是下载的文件名") + ".xlsx");
 
     }
 import   ResultGrid2HtmlTable2   from './resultGrid2HtmlTable.js'    

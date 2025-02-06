@@ -23,16 +23,16 @@ namespace reportWeb.Pages
     public class MyLogger : CellReport.running.Logger
     {
         ILogger _logger;
-        public MyLogger(ILogger _logger):base(null)
+        public MyLogger(ILogger _logger) : base(null)
         {
             this._logger = _logger;
         }
-        
+
         public override void Info(Object info)
         {
-            
+
             _logger.LogInformation(info?.ToString());
-            
+
         }
         public override void Warn(Object info)
         {
@@ -59,7 +59,7 @@ namespace reportWeb.Pages
         public ReportModel(IConfiguration configuration, ILogger<ReportModel> logger, ScopedObj scopedObj)
         {
             this.configuration = configuration;
-            this.rpt_group= scopedObj.rpt_group ;
+            this.rpt_group = scopedObj.rpt_group;
             this.WebHostEnvironment = scopedObj.WebHostEnvironment;
             ReportDefinePath = this.rpt_group.report_path;
             this.logger = new MyLogger(logger);
@@ -89,32 +89,33 @@ namespace reportWeb.Pages
         {
             return true;
         }
-        public CellReport.BaseCache myCache { get;protected set;} = null;
-        
+        public CellReport.BaseCache myCache { get; protected set; } = null;
+
         protected CellReport.running.Env report_env;
         private static string g_report_content = null;
         private string needType = "";
         public async Task Page_Load()
         {
-            if(rpt_group==null)
+            if (rpt_group == null)
                 throw new Exception("没有定义rpt_group");
-            if(rpt_group.default_page.Split(",").Contains(Request.Path.Value.Substring(1))==false)
-                throw new Exception("不被允许的调用："+ Request.Path.Value);
+            if (rpt_group.default_page.Split(",").Contains(Request.Path.Value.Substring(1)) == false)
+                throw new Exception("不被允许的调用：" + Request.Path.Value);
             string UserAgent = Request.Headers["User-Agent"];
             if (String.IsNullOrEmpty(UserAgent))
                 UserAgent = "";
             Regex regex = new Regex("(iPhone|iPod|Android|ios|SymbianOS)", RegexOptions.IgnoreCase);
-            var isPhone=regex.IsMatch(UserAgent);
+            var isPhone = regex.IsMatch(UserAgent);
             needType = Request.Headers["needType"];
-            if (Request.HasFormContentType && Request.Form.Keys.Contains("__call_func") )
+            if (Request.HasFormContentType && Request.Form.Keys.Contains("__call_func"))
                 needType = "json";
-            if(!String.IsNullOrEmpty(Request.Query["_needType_"].ToString()))
+            if (!String.IsNullOrEmpty(Request.Query["_needType_"].ToString()))
                 needType = Request.Query["_needType_"].ToString();
             string str_call_func = Request.Query["__call_func"].ToString();
             if (needType == "json" || !String.IsNullOrEmpty(str_call_func))
             {
                 Response.ContentType = "application/json";
-            }else if (needType == "fast_excel")
+            }
+            else if (needType == "fast_excel")
             {
                 //Response.ContentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
             }
@@ -123,9 +124,9 @@ namespace reportWeb.Pages
                 string Referer = Request.Headers["Referer"];
                 string Authorization = Request.Headers["Authorization"];
                 //if(g_report_content==null)
-                    g_report_content = await CellReport.running.XmlReport.getIndexHtml(this.WebHostEnvironment.WebRootPath, Referer, Authorization);
-                
-                var report_content = g_report_content.Replace("<head>", $"<head><script>var __real_referer='{Referer}';__Authorization='{Authorization}';document.title='{rpt_group.name?? "CellReport报表"}'</script>");
+                g_report_content = await CellReport.running.XmlReport.getIndexHtml(this.WebHostEnvironment.WebRootPath, Referer, Authorization);
+
+                var report_content = g_report_content.Replace("<head>", $"<head><script>var __real_referer='{Referer}';__Authorization='{Authorization}';document.title='{rpt_group.name ?? "CellReport报表"}'</script>");
                 await Response.WriteAsync(report_content);
                 return;
             }
@@ -135,7 +136,8 @@ namespace reportWeb.Pages
                 {
                     ReportDefinePath = this.ReportDefinePath,
                     httpRequest = HttpContext.Request,
-                    logger= logger
+                    logger = logger,
+                    rpt_group_name = rpt_group.name,
                 };
                 this.HttpContext.Response.RegisterForDispose(reportDefineForWeb);
                 //if(Request.Path != "/" + rpt_group.default_page)
@@ -146,8 +148,6 @@ namespace reportWeb.Pages
                 report_env = reportDefineForWeb.CurrentReportDefine.getEnv();
                 if (!Request.Query.TryGetValue("reportName", out var report_name))
                     throw new Exception("没有设置reportName参数");
-                report_env.rpt_group_name = rpt_group.name;
-                report_env.report_name = report_name;
                 Dictionary<string, string> user_dict = new Dictionary<string, string>();
                 foreach (var one in HttpContext?.User?.Claims)
                 {
@@ -155,7 +155,7 @@ namespace reportWeb.Pages
                 }
                 foreach (var one in this.rpt_group.db_connection_list)
                 {
-                    report_env.addDataSource(one.name,one.conn_str,one.db_type,"0",one.sql_prefix,one.sql_suffix);
+                    report_env.addDataSource(one.name, one.conn_str, one.db_type, "0", one.sql_prefix, one.sql_suffix);
                 }
                 var exprFaced = report_env.getExprFaced();
                 exprFaced.addVariable("isPhone", isPhone);
@@ -172,7 +172,7 @@ namespace reportWeb.Pages
                 //exprFaced.getVariableDefine("_user_").value = user_dict; 
                 exprFaced.getVariableDefine("_user_").value = reportWeb.Controllers.UserController.ValidateJwtToken(HttpContext, HttpContext.Request.Cookies["access_token"]);
                 var g_var_dict = exprFaced.getVariableDefine("_g_var_").value as Dictionary<String, object>;
-                foreach(var kv in page_var_dict)
+                foreach (var kv in page_var_dict)
                 {
                     g_var_dict[kv.Key] = kv.Value;
                 }
@@ -182,30 +182,30 @@ namespace reportWeb.Pages
                 var start_time = DateTime.Now;
                 reportDefineForWeb.putRequestParamForForm();
 
-                CR_Object before_exec_result =null;
+                CR_Object before_exec_result = null;
                 //Console.WriteLine("before_exec:" + (DateTime.Now - start_time) / 10000 + "秒");
                 if (false == pre_page_load())
                     return;
                 if (report_name != "/" && exprFaced.hasVariable("before_exec"))
                 {
-                    before_exec_result =exprFaced.calculate("=before_exec()", report_env.getDataSetResultMap()) as CR_Object;
+                    before_exec_result = exprFaced.calculate("=before_exec()", report_env.getDataSetResultMap()) as CR_Object;
                     if (before_exec_result != null)
                     {
                         exprFaced.addVariable("before_exec_result", before_exec_result);
                         if (before_exec_result.TryGetValue("continue", out var my_continue))
                         {
                             if (my_continue is Boolean && (Boolean)my_continue == false)
-                                throw new Exception("不能继续执行，原因："+before_exec_result["tips"]?.ToString());
+                                throw new Exception("不能继续执行，原因：" + before_exec_result["tips"]?.ToString());
                         }
                         if (before_exec_result.TryGetValue("cache_id", out Object cache_id) && cache_id != null)
                         {
                             myCache = new CellReport.Redis_Cache(cache_id.ToString(), report_env.logger);//*/myCache = null;
                             myCache.getFreshFlag = () => before_exec_result["fresh_flag"].ToString();
                         }
-                        this.tips = before_exec_result["tips"]?.ToString()? .Replace("\\n", "\n");
+                        this.tips = before_exec_result["tips"]?.ToString()?.Replace("\\n", "\n");
                     }
                 }
-                
+
                 //Console.WriteLine("pre_page_load:" + (DateTime.Now - start_time) / 10000 + "秒");
                 mc_report_id = reportDefineForWeb.getParamSortedString();
                 if (needType == "fast_excel")
@@ -215,20 +215,20 @@ namespace reportWeb.Pages
                 }
                 if (Request.Query["reportName"] == "")
                 {
-                    
+
                 }
                 else
                 {
-                   await output();
+                    await output();
                 }
                 //report_env.logger.Info(mc_report_id);
-               // Console.WriteLine("output:" + (DateTime.Now - start_time) / 10000 + "秒");
+                // Console.WriteLine("output:" + (DateTime.Now - start_time) / 10000 + "秒");
                 Response.Body.Flush();
-                
+
             }
             catch (System.Exception ex)
             {
-                string message=output_expection(ex, logger, report_env);
+                string message = output_expection(ex, logger, report_env);
                 // 设置响应头
                 await Response.WriteAsync(JsonSerializer.Serialize(new
                 {
@@ -247,16 +247,16 @@ namespace reportWeb.Pages
         internal static string output_expection(Exception e, CellReport.running.Logger logger, CellReport.running.Env report_env, HttpRequest Request = null)
         {
             StringBuilder sb = new("-----------------------------------\n");
-            
+
             String curCellName = "`0";
-            
-            
+
+
             if (report_env != null)
             {
                 sb.AppendLine("当前报表："
                     + report_env.getExprFaced().calculate("=_rpt_group_.Id").ToString()
                     + ":"
-                    + report_env.getAppPath() + "/" + report_env.getReportName());
+                    + report_env.getAppPath() + "/" + report_env.ReportName);
                 if (report_env.Curr_calc_cell != null)
                     curCellName = report_env.Curr_calc_cell.getName();
                 sb.Append("参数：");
@@ -293,7 +293,7 @@ namespace reportWeb.Pages
             while (inner_e != null)
             {
                 last_e = inner_e;
-                sb.Append(string.Join("\t", new string[cnt ])).Append(inner_e.Message).AppendLine("");
+                sb.Append(string.Join("\t", new string[cnt])).Append(inner_e.Message).AppendLine("");
                 inner_e = inner_e.InnerException;
                 cnt++;
             }
@@ -310,7 +310,7 @@ namespace reportWeb.Pages
         {
             if (!Request.HasFormContentType)
                 return;
-            if(!Request.Form.TryGetValue("_fresh_ds",out var _fresh_ds))
+            if (!Request.Form.TryGetValue("_fresh_ds", out var _fresh_ds))
                 return;
             //ds.getSqlParamSet()   
             List<String> calcDsNames = null;
@@ -346,30 +346,30 @@ namespace reportWeb.Pages
                 }
             }
             reportDefineForWeb.CurrentReportDefine.calcGridNames = calcGridNames?.ToArray();
-            if(calcDsNames!=null)
-                reportDefineForWeb.CurrentReportDefine.calcDsNames = new HashSet<String>( calcDsNames );
-        } 
+            if (calcDsNames != null)
+                reportDefineForWeb.CurrentReportDefine.calcDsNames = new HashSet<String>(calcDsNames);
+        }
         protected internal ReportDefineForWeb reportDefineForWeb;
         public async Task output()
         {
-            var aaa=Regex.Replace(mc_report_id, @"[:|\|""|\?|/|<|>]", "_");
-            
-            tmpFileName = rpt_group.Id+":"+mc_report_id.Replace('/', '.').Replace(':', '_').Replace('\\', '_')
+            var aaa = Regex.Replace(mc_report_id, @"[:|\|""|\?|/|<|>]", "_");
+
+            tmpFileName = rpt_group.Id + ":" + mc_report_id.Replace('/', '.').Replace(':', '_').Replace('\\', '_')
                         .Replace('"', '_').Replace('?', '_').Replace('/', '_').Replace('<', '_')
                         .Replace('>', '_').Replace('|', '_');
             //if (tmpFileName.Length > 150)
             //    tmpFileName = UserMd5(tmpFileName);
             //HttpContext.Request.Form["_param_name_"]
-            if( report_env.TemplateGet("big_screen") == "0" &&
-                Request.HasFormContentType && Request.Form.ContainsKey("_createFormParam") 
+            if (report_env.TemplateGet("big_screen") == "0" &&
+                Request.HasFormContentType && Request.Form.ContainsKey("_createFormParam")
                 && Request.Form["_createFormParam"].ToString().Equals("true", comparisonType: StringComparison.OrdinalIgnoreCase)
-                && report_env.TemplateGet("firstNoQuery").Equals( "true" ,comparisonType:StringComparison.OrdinalIgnoreCase)
+                && report_env.TemplateGet("firstNoQuery").Equals("true", comparisonType: StringComparison.OrdinalIgnoreCase)
                 )
             {
                 await NotCalcReportAndOutput();
             }
-            else if (myCache == null || (Request.HasFormContentType 
-                &&( Request.Form.ContainsKey("__call_func")
+            else if (myCache == null || (Request.HasFormContentType
+                && (Request.Form.ContainsKey("__call_func")
                 || Request.Form.ContainsKey("__inserted")
                 || Request.Form.ContainsKey("__deleted")
                 || Request.Form.ContainsKey("_fresh_ds")
@@ -381,14 +381,14 @@ namespace reportWeb.Pages
             else
             {
                 report_env.CurrentRunReportInfo.calc_type = "计算或从cache取";
-                await myCache.OutputOrCalcAndCache(tmpFileName, Response, 
-                    async(jsonWrite) => await calc_output(jsonWrite));
-                
+                await myCache.OutputOrCalcAndCache(tmpFileName, Response,
+                    async (jsonWrite) => await calc_output(jsonWrite));
+                report_env.CurrentRunReportInfo.stage = $"exportJson:other1:start";
                 await Response.Body.FlushAsync();
                 //await Response.WriteAsync(",\"footer2\":");
                 //await Response.WriteAsync(System.Text.Json.JsonSerializer.Serialize(report_env.TemplateGet("footer2"), CellReport.running.Logger.getJsonOption()));
                 var exprFaced = report_env.getExprFaced();
-                if (this.myCache != null )
+                if (this.myCache != null)
                 {
                     this.tips = this.tips
                          + "\n刷新标记是：" + this.myCache.fresh_flag
@@ -412,6 +412,7 @@ namespace reportWeb.Pages
                 await Response.WriteAsync(System.Text.Json.JsonSerializer.Serialize(report_env.TemplateGet("footer2"), CellReport.running.Logger.getJsonOption()));
 
                 await Response.WriteAsync("\n}");
+                report_env.CurrentRunReportInfo.stage = $"exportJson:other1:end";
             }
         }
 
@@ -450,7 +451,7 @@ namespace reportWeb.Pages
                         report_env.CurrentRunReportInfo.calc_type = "刷新form";
                         exprFaced.addVariable("_createFormParam_", true);
                         reportDefineForWeb.CurrentReportDefine.calcGridNames = new String[] { };
-                        reportDefineForWeb.CurrentReportDefine.calcDsNames = new ();
+                        reportDefineForWeb.CurrentReportDefine.calcDsNames = new();
                     }
                     //string str_call_func=Request.Query["__call_func"].ToString();
                     //if (!String.IsNullOrEmpty(str_call_func))
@@ -463,14 +464,17 @@ namespace reportWeb.Pages
                         report_env.CurrentRunReportInfo.calc_type = "调用函数";
                         var __call_func = Request.Form["__call_func"].ToString();
                         var func_json = JsonDocument.Parse(__call_func).RootElement;
+                        report_env.CurrentRunReportInfo.stage = $"calc";
                         Object result = await CellReport.core.expr.ExprHelper.calc_client_func(report_env, func_json);
-                        
+                        report_env.CurrentRunReportInfo.stage = $"exportJson:__call_func:start";
                         htmlWrite.Write(JsonSerializer.Serialize(result, CellReport.running.Logger.getJsonOption()));
+                        report_env.CurrentRunReportInfo.stage = $"exportJson:__call_func:end";
                     }
                     else
                     {
                         report_env.CurrentRunReportInfo.calc_type = "计算或cache";
                         await calc_output(htmlWrite);
+                        report_env.CurrentRunReportInfo.stage = $"exportJson:other:start";
                         htmlWrite.Write(",\"_zb_var_\":");
                         if (exprFaced.getVariable("_zb_var_") != null)
                         {
@@ -485,6 +489,7 @@ namespace reportWeb.Pages
                         htmlWrite.Write(",\"footer2\":");
                         htmlWrite.Write(System.Text.Json.JsonSerializer.Serialize(report_env.TemplateGet("footer2"), CellReport.running.Logger.getJsonOption()));
                         htmlWrite.Write("\n}");
+                        report_env.CurrentRunReportInfo.stage = $"exportJson:other:end";
                     }
                     await htmlWrite.FlushAsync();
                     //jsonStream.Position = 0;
@@ -501,17 +506,18 @@ namespace reportWeb.Pages
                 throw reportDefineForWeb.currentException;
             }
             long start = DateTime.Now.Ticks;
-            string fileName = Guid.NewGuid().ToString()+".xlsx"; // 保存文件的路径
+            string fileName = Guid.NewGuid().ToString() + ".xlsx"; // 保存文件的路径
             other.Export.Excel(reportDefineForWeb.Report, Path.Combine(this.WebHostEnvironment.WebRootPath, "../static/tmp_files", fileName));
             logger.Debug("生成文件用时：" + (DateTime.Now.Ticks - start) / 10000000.0 + "秒");
-            
+
             Response.ContentType = "application/json";
             // 设置响应头
             await Response.WriteAsJsonAsync(new
             {
-                errcode = 0,url= Path.Combine("../static/tmp_files", fileName)
-            }) ;
-            
+                errcode = 0,
+                url = Path.Combine("../static/tmp_files", fileName)
+            });
+
         }
         private async Task calc_output(MyTextWrite htmlWrite)
         {
@@ -525,7 +531,7 @@ namespace reportWeb.Pages
             {
                 await reportDefineForWeb.Report.exportJson(htmlWrite);
             }
-            
+
         }
         /// MD5　32位加密
         /// &lt;/summary&gt;

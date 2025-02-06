@@ -38,6 +38,7 @@
         <img v-if="ds._type=='sql' " class="cr_icon" src="img/数据库.svg"/>
         <img v-if="ds._type=='cr'" class="cr_icon" src="img/引用.svg"/>
         <img v-if="ds._type=='from'" class="cr_icon" src="img/引用.svg"/>
+        <img v-if="ds._type=='memory'" class="cr_icon" src="img/内存数据库.png"/>
         <div @click="choose_ds(ds)"  style="display: inline-block;width:calc(100% - 50px)">{{ds._name}} </div>
         <el-button @click="delete_dataset(ds,ds_idx)" circle plain type="danger" size="mini" icon="el-icon-minus"
             style="padding: 4px;margin-left: 5px;float:right">

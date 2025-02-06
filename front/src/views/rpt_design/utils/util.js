@@ -663,8 +663,8 @@ export function designGrid2LuckySheet(grid,setting,DefaultCssSetting){
     let borderInfo=[]
     let rowlen={}
     let frozen_row_focus=-1, frozen_column_focus=-1
-    if(grid.rows==undefined)    grid.rows={row:Enumerable.range(1,10).select(x=> {return {_name:x,_height:25,_fixed:"True"}}).toArray()}
-    if(grid.columns==undefined)    grid.columns={column:Enumerable.range(0,10).select(x=> {return {_name:'abcdefghijklmn'[x],_width:75,_fixed:"False"}}).toArray()}
+    if(grid.rows==undefined)    grid.rows={row:Enumerable.range(1,10).select(x=> {return {_name:x,_height:parseInt(DefaultCssSetting['defaultRowHeight']??'25'),_fixed:"False"}}).toArray()}
+    if(grid.columns==undefined)    grid.columns={column:Enumerable.range(0,10).select(x=> {return {_name:'abcdefghijklmn'[x],_width:parseInt(DefaultCssSetting['defaultColWidth']??'75'),_fixed:"False"}}).toArray()}
     if(grid.rows && grid.rows.row)
     grid.rows.row.forEach(one => {
         rowlen[(parseInt(one._name)-1).toString()]=parseInt(one._height)
@@ -776,8 +776,8 @@ export function designGrid2LuckySheet(grid,setting,DefaultCssSetting){
         "hide": 0,//是否隐藏
         "row": (grid.rows && grid.rows.row) ? grid.rows.row.length:10, //行数
         "column": (grid.columns && grid.columns.column) ? grid.columns.column.length:10, //列数
-        "defaultRowHeight": 25, //自定义行高
-        "defaultColWidth": 75, //自定义列宽
+        "defaultRowHeight": parseInt(DefaultCssSetting['defaultRowHeight']?? '45'), //自定义行高
+        "defaultColWidth": parseInt(DefaultCssSetting['defaultColWidth']??'175'), //自定义列宽
         "celldata": celldata, //初始化使用的单元格数据
         "config": {
             "merge":merge, //合并单元格
@@ -1456,28 +1456,28 @@ function checkCookie() {
         }
     }
 }  
-export async function  showDialog2 (ele_str, dync_item,_this) {
+export async function  showDialog2 (ele_str, self,_this) {
     let context=_this.context||_this.create_context()
     let Cpn = { template:`
-<el-dialog v-draggable v-if="visible" style="text-align: left;" 
-    :visible.sync="visible" 
-    :close-on-click-modal="false" direction="btt" append-to-body 
-    v-bind="{...{'custom-class':'dync_dialog',title:'信息'},...(dync_item.dialog_params||{}) }"
-> 
-<div v-bind="{...{style:'height:50vh'},...(dync_item.params||{})}">
-    ${ele_str}
-</div>
-${dync_item?.slot?.footer??''}
-</el-dialog> 
-    `,
-        data(){
-            return {
-                visible: true,
-                dync_item:dync_item,
-            }
-        },
-        methods:{...(dync_item?.methods??{} )}
-    };
+        <el-dialog v-draggable v-if="visible" style="text-align: left;" 
+            :visible.sync="visible" 
+            :close-on-click-modal="false" direction="btt" append-to-body 
+            v-bind="{...{'custom-class':'dync_dialog',title:'信息'},...(self.dialog_params||{}) }"
+        > 
+        <div v-bind="{...{style:'height:50vh'},...(self.params||{})}">
+            ${ele_str}
+        </div>
+        ${self?.slot?.footer??''}
+        </el-dialog> 
+            `,
+                data(){
+                    return {
+                        visible: true,
+                        self:self,
+                    }
+                },
+                methods:{...(self?.methods??{} )}
+            };
     return new Promise(function (resolve, reject) {
       // 初始化配置参数
       let opt = {
@@ -1519,8 +1519,8 @@ ${dync_item?.slot?.footer??''}
     })
 }
 export async function  showDialog (ele_name, data,_this) {
-    let dync_item=findElelment(ele_name,data,_this)
-    return showDialog2(`<widget-form-item  :self="dync_item"  >  </widget-form-item>`,dync_item,_this);
+    let self=findElelment(ele_name,data,_this)
+    return showDialog2(`<widget-form-item  :self="self"  >  </widget-form-item>`,self,_this);
 }
 
   export function findElelment(name,prop_dict,_this){

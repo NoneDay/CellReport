@@ -368,7 +368,7 @@ export default {
                   //_myChart.getZr().off('click')
                   eval("option=(function(option,myChart,_this){"+_this.self.content+"\n return option})(option,_myChart,_this)")  
                   _myChart=_this.myChart
-                  _myChart.off('click')   
+                  //_myChart.off('click')   
                   if(_this.self.option.banner)
                     _this.scroll_show(null,_this.self.option.bannerTime)
                   _myChart.setOption(option,true);
@@ -984,19 +984,6 @@ function radar_option (self,_this,__valid_data__) {
         textStyle: {
           fontSize: self.option.legendFontSize
         },
-        data: (() => {
-          return (__valid_data__[0].slice(1) || []).filter(x=>x[0]!='max').map((ele, index) => {
-            return {
-              name: ele[0],
-              textStyle: _this.ishasprop(!_this.switchTheme, {
-                color: self.option.legendTextColor|| _this.getColor(index, true)
-              }, {}),
-              itemStyle: _this.ishasprop(!_this.switchTheme, {
-                color: _this.getColor(index, true)
-              }, {})
-            };
-          });
-        })()
       },
       radar: {
         name: {
@@ -1005,7 +992,7 @@ function radar_option (self,_this,__valid_data__) {
         },
         indicator: self.data.indicator || 
             function(){
-                let max_row=__valid_data__[0].slice(1).filter(x=>x[0]=="max")
+                let max_row=__valid_data__.slice(1).filter(x=>x[0]=="max")
                 return (
                 __valid_data__[0].slice(1).map((ele, index) => {
                     if(max_row.length>0){

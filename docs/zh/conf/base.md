@@ -513,6 +513,42 @@ hasOption 是为了动态初始化option，他总是返回true。
 - window.cellreport.after_run_before_show_report_hook=function(that) 这个函数会在后端取数完毕显示报表前调用
 - window.cellreport.after_show_report_hook=function(that) 这个函数会在显示完报表后调用
 ## 查找组件和显示组件对话框
+``` js
 this.findElelment("line_832",{parent_obj:null,dialog_params:{title:'标题'},params:{style:"height:50vh"} }) 
-this.showDialog("line_832",{parent_obj:null,dialog_params:{title:'标题'},params:{style:"height:50vh"} )
-dialog_params 是el-dialog的参数。params是包裹组件的div 的参数
+this.showDialog("line_832",{parent_obj:null,dialog_params:{title:'标题'},params:{style:"height:50vh"} })
+```
+第一个参数是组件ID。
+第二个参数在显示组件的对话框中，可以通过self访问。dialog_params 是el-dialog的参数。params是包裹组件的div的参数 。可以通过slot属性定制对话框样式，method添加方法。
+``` js
+let slot={footer:`<span slot="footer" class="dialog-footer"><el-button type="primary" @click="exportExcel">导出excel</el-button></span>`};
+    let methods={
+      exportExcel(){
+        console.info("exportExcel===============",p_this)
+        tool.seriesLoadScripts('cdn/xlsx/dist/xlsx.full.min.js',null,function (){
+            let ws= XLSX.utils.aoa_to_sheet(_this.result.data.report_518.tableData)
+            let wb = XLSX.utils.book_new()
+            XLSX.utils.book_append_sheet(wb, ws,'data');
+            let wopts = { bookType: 'xlsx', bookSST: true, type: 'binary' };//
+            tool.saveAs(new Blob([tool.s2ab(XLSX.write(wb, wopts))], { type: "application/octet-stream"}),
+                `${p_data.data.worker_no}(${p_data.data.name})明细.xlsx`);
+          })
+      }
+    }
+    p_this.showDialog("comp_518",{t_data:{xxx:2},dialog_params:{title:`${p_data.data.worker_no}(${p_data.data.name})明细`} ,slot,methods,})
+    // showDialog 中的第二个参数在comp_518中访问时对应为self。如： this.self.t_data.xxx 
+```
+``` js 
+//showDialog 的定义为：
+function  showDialog (ele_name, data,_this) {
+    let dync_item=findElelment(ele_name,data,_this)
+    return showDialog2(`<widget-form-item  :self="dync_item"  >  </widget-form-item>`,dync_item,_this);
+}
+```
+
+如果不使用组件，也可以直接使用字符串构建显示内容
+``` js
+    window.cellreport.cr_click_main=function(p_data,p_this){// p_data={xxx:1 }
+    window.cellreport.tool.showDialog2(`<pre style="overflow: scroll;height: calc(100% - 40px);width: calc(100% - 20px);">{{ self.xxx }}</pre>`
+      ,p_data,p_this);
+    } //self 对应的showDialog2 的第二个参数
+```
