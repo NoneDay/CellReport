@@ -170,65 +170,77 @@ function find_config_merge(result_tbl,rowNo,colNo){
   }
 }  
 // 自定义 HTML 解析函数，将 HTML 转换为 exceljs 富文本格式
-function htmlToRichText(html) {
-  const stack = [];
-  const richText = [];
-  let currentText = '';
+function htmlToExcelRichText(html) {
+  const stack = [{}];
+  const result = [];
+  let textBuffer = '';
+  let currentStyle = () => Object.assign({}, ...stack);
 
-  function pushText() {
-      if (currentText) {
-          const styles = stack.reduce((acc, tag) => {
-              switch (tag) {
-                  case 'b':
-                      acc.bold = true;
-                      break;
-                  case 'i':
-                      acc.italic = true;
-                      break;
-                  case 'u':
-                      acc.underline = true;
-                      break;
-                  default:
-                      break;
+  const tagRegex = /<\/?([a-zA-Z]+)([^>]*)>|([^<]+)/g;
+  const styleRegex = /([\w-]+)\s*:\s*([^;]+)/g;
+
+  html.replace(tagRegex, (match, tagName, attrs, text) => {
+      if (text) {
+          textBuffer += text.replace(/\s+/g, ' ');
+          return;
+      }
+
+      if (textBuffer) {
+          result.push({
+              text: textBuffer,
+              font: currentStyle()
+          });
+          textBuffer = '';
+      }
+
+      if (tagName) {
+          const isClosing = match.startsWith('</');
+          
+          // 新增br标签处理
+          if (!isClosing && tagName.toLowerCase() === 'br') {
+              result.push({
+                  text: '\n', // 插入换行符
+                  font: currentStyle()
+              });
+              return; // 不执行后续样式处理
+          }
+
+          const styles = {};
+          if (!isClosing && attrs) {
+              let styleMatch;
+              while ((styleMatch = styleRegex.exec(attrs)) !== null) {
+                  const [key, value] = styleMatch.slice(1,3);
+                  if (key === 'color') {
+                      styles.color = { argb: value.replace('#','') };
+                  } else if (key === 'font-size') {
+                      styles.size = parseInt(value);
+                  }
               }
-              return acc;
-          }, {});
-          richText.push({ text: currentText, font:styles });
-          currentText = '';
-      }
-  }
-
-  let i = 0;
-  while (i < html.length) {
-      if (html[i] === '\n' || html.slice(i, i + 4) === '<br>') {
-        pushText();
-        richText.push({ text: '\n' });
-        if (html.slice(i, i + 4) === '<br>') {
-            i += 4;
-        } else {
-            i++;
-        }
-      }else if (html[i] === '<') {
-          pushText();
-          const endIndex = html.indexOf('>', i);
-          if (endIndex === -1) {
-              break;
           }
-          const tag = html.slice(i + 1, endIndex);
-          if (tag.startsWith('/')) {
-              stack.pop();
+
+          if (!isClosing) {
+              const newStyle = {
+                  ...(tagName === 'strong' || tagName === 'b' ? { bold: true } : {}),
+                  ...(tagName === 'em' || tagName === 'i' ? { italic: true } : {}),
+                  ...(tagName === 'u' ? { underline: true } : {}),
+                  ...styles
+              };
+              stack.push(newStyle);
           } else {
-              stack.push(tag.split(' ')[0]);
+              stack.pop();
           }
-          i = endIndex + 1;
-      }   else {
-          currentText += html[i];
-          i++;
       }
-  }
-  pushText();
+  });
 
-  return richText;
+  // 处理最后剩余的文本
+  if (textBuffer) {
+      result.push({
+          text: textBuffer,
+          font: currentStyle()
+      });
+  }
+  return result;
+  //return result.filter(item => item.text.trim().length > 0);
 }
 const http_src_pattern=/<img [^>]*src=['"]([^'"]+)[^>]*>/gi  
 export  async function exceljs_inner_exec(_this,name_lable_map){
@@ -346,8 +358,8 @@ export  async function exceljs_inner_exec(_this,name_lable_map){
                   }
                   //ws.addBackgroundImage(imageId2);
                 }
-                else  if(one_cell?.startsWith && one_cell.startsWith("<")){
-                  excel_cell.value={'richText':htmlToRichText(one_cell) } ;
+                else  if(one_cell?.indexOf && (one_cell.indexOf("</")>=0 || one_cell.indexOf("/>")>=0 )){
+                  excel_cell.value={'richText':htmlToExcelRichText(one_cell) } ;
                 }
                 let ret=find_style(cur_table,line_no,col_no,cur_tbl_class_dict);
                 ['font','alignment','border','fill'].forEach(p=>{
@@ -381,9 +393,11 @@ export  async function exceljs_inner_exec(_this,name_lable_map){
     };
     const buffer = await wb.xlsx.writeBuffer();
     const excel_data=new Blob([buffer], { type: "application/octet-stream"});
-    if(window.cellreport.download_excel_func)
-      window.cellreport.download_excel_func(excel_data,(file_name??"这里是下载的文件名") + ".xlsx",_this);
-    else
+    if(window.cellreport.download_excel_func){
+      let continue_run=window.cellreport.download_excel_func(excel_data,(file_name??"这里是下载的文件名") + ".xlsx",_this);
+      if(!continue_run)
+        return; 
+    }
       saveAs(excel_data, (file_name??"这里是下载的文件名" )+ ".xlsx");
   }
   export function xlsxjs_inner_exec(_this,name_lable_map){
@@ -440,12 +454,14 @@ export  async function exceljs_inner_exec(_this,name_lable_map){
           XLSX.utils.book_append_sheet(wb, ws, title.replace(/[\\|/|?|*|\[|\]]/,'_'))
           ws=undefined
       });
-      const wopts = { bookType: 'xlsx', bookSST: true, type: 'binary' };//这里的数据是用来定义导出的格式类型 
+      const wopts = { bookType: 'xlsx', bookSST: true, type: 'binary',compression:true };//这里的数据是用来定义导出的格式类型 
       const excel_data=new Blob([s2ab(XLSX.write(wb, wopts))], { type: "application/octet-stream"});
-      if(window.cellreport.download_excel_func)
-        window.cellreport.download_excel_func(excel_data,(file_name??"这里是下载的文件名") + ".xlsx",_this);
-      else
-        saveAs(excel_data, (file_name??"这里是下载的文件名") + ".xlsx");
+      if(window.cellreport.download_excel_func){
+        let continue_run=window.cellreport.download_excel_func(excel_data,(file_name??"这里是下载的文件名") + ".xlsx",_this);
+        if(!continue_run)
+          return;
+      }
+      saveAs(excel_data, (file_name??"这里是下载的文件名") + ".xlsx");
 
     }
 import   ResultGrid2HtmlTable2   from './resultGrid2HtmlTable.js'    

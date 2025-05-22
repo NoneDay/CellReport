@@ -29,8 +29,7 @@
                @click.stop="activeName='code'">{{ $t('login.phoneLogin') }}</a>
             <a href="#"
                @click.stop="activeName='face'">{{ $t('login.faceLogin') }}</a>
-            <a href="#"
-               @click.stop="activeName='third'">{{ $t('login.thirdLogin') }}</a>
+            <a href="static/thirdLogin.html">{{ $t('login.thirdLogin') }}</a>
           </div>
         </div>
 

@@ -8,7 +8,7 @@
       <!-- 标题设置 -->
       <template v-if="vaildProp('titleList')">
         <el-collapse-item title="标题设置">
-          <el-form-item label="标题">
+          <el-form-item label="是否显示标题">
             <avue-switch v-model="data.option.titleShow"></avue-switch>
           </el-form-item>
           <el-form-item label="标题">

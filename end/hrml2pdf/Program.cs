@@ -1,103 +1,4 @@
-﻿
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using Microsoft.AspNetCore.Mvc;
-using System.Text.Json;
-using CellReport.exporter;
-using Microsoft.AspNetCore.Authorization;
-using System.Collections;
-using System;
-using Microsoft.Extensions.Configuration;
-using CellReport.core.expr;
-using Microsoft.Data.Sqlite;
-using reportWeb.Model;
-using Serilog;
-using System.Configuration;
-using System.Data.Common;
-using System.Reflection;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http.Json;
-
-namespace reportWeb.Controllers
-{
-    public class PdfController : Controller
-    {
-        private IConfiguration configuration;
-        private static Object lock_obj = new();
-        private static ConstructorInfo Html2Pdf_ctor;
-        private IWebHostEnvironment env;
-        JsonSerializerOptions json_option;
-        public PdfController(IConfiguration configuration, IWebHostEnvironment env)
-        {
-            this.configuration = configuration;
-            this.env = env;
-            this.json_option = new JsonSerializerOptions()
-            {
-                DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull,
-                Encoder = System.Text.Encodings.Web.JavaScriptEncoder.Create(System.Text.Unicode.UnicodeRanges.All),
-                //System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
-                WriteIndented = true
-            };
-        }
-        [HttpPost]
-        [AllowAnonymous]
-        public IActionResult Index(string report_obj, string paperSetting)
-        {
-            lock (lock_obj)
-            {
-                if (Html2Pdf_ctor == null)
-                {
-                    var loc = configuration["html2pdf_path"];//Path.GetDirectoryName(loc) + 
-                    if (String.IsNullOrWhiteSpace(loc))
-                        loc = env.WebRootPath + "/../html2pdf";
-                    var file_name = $@"{loc}/html2pdf.dll";
-                    if (!System.IO.File.Exists(file_name))
-                        return new JsonResult(new { errcode = 1, message = $"没有找到Html2Pdf.dll!需要在配置文件正确指定html2pdf_path(当前：{configuration["html2pdf_path"]})" }, json_option);
-                    var ass = System.Reflection.Assembly.LoadFrom(file_name);
-                    Html2Pdf_ctor = ass.GetType("cellreport.Html2Pdf").GetConstructors()[0];
-                }
-            }
-            PageSetup ps = null;
-
-            var json_root = JsonDocument.Parse(report_obj).RootElement;
-            var json_data = json_root.GetProperty("data");
-            var grid_list = json_data.EnumerateObject().Select(x => x.Name).ToList();
-            if (!string.IsNullOrEmpty(paperSetting) && "undefined" != paperSetting)
-                ps = JsonSerializer.Deserialize<PageSetup>(paperSetting);
-            if (ps == null)
-            {
-                if (json_data.GetProperty(grid_list[0]).TryGetProperty("paperSetting", out var paperSetting_str)
-                    && paperSetting_str.GetString() != null
-                    )
-                {
-                    ps = JsonSerializer.Deserialize<PageSetup>(paperSetting_str.GetString());
-                }
-                else
-                    ps = new PageSetup();
-            }
-            var LocalPort = HttpContext.Connection.LocalPort;
-            dynamic Html2Pdf = Html2Pdf_ctor.Invoke(new object[] { configuration });
-            Func<Object, List<int>, List<int>, Object> addTable = (rg, row_list, col_list) =>
-            {
-                return Html2Pdf.addTable(rg, row_list, col_list);
-            };
-            Func<Object, JsonElement, bool, bool> output_impl = (pdf_doc, item_Value, is_first) =>
-            {
-                var rg = new ReportGridJSON(item_Value, ps);
-                return rg.output(pdf_doc, ref is_first, addTable);
-            };
-            Html2Pdf.output_impl = output_impl;
-            byte[] result = Html2Pdf.buildPdf(json_root, ps, LocalPort) as byte[];
-            return File(result, "application/pdf");
-        }
-    }
-}
-//*/
-/*
- 	<PackageReference Include="itext7" Version="7.2.1" />
-	<PackageReference Include="itext7.pdfhtml" Version="4.0.1" />
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using iText.IO.Font;
@@ -106,10 +7,8 @@ using iText.Kernel.Geom;
 using iText.Kernel.Pdf;
 using iText.Layout;
 using iText.Layout.Element;
-using Microsoft.AspNetCore.Mvc;
+
 using System.Text.Json;
-using CellReport.exporter;
-using Microsoft.AspNetCore.Authorization;
 using System.Collections;
 using iText.Layout.Borders;
 using iText.Kernel.Colors;
@@ -122,46 +21,40 @@ using iText.Layout.Layout;
 using iText.Kernel.Pdf.Xobject;
 using System.Text.RegularExpressions;
 using iText.Html2pdf.Resolver.Font;
-using Microsoft.Extensions.Configuration;
 
-namespace reportWeb.Controllers
+
+namespace cellreport
 {
-    public class PdfController : Controller
+    public class Program
     {
-        private IConfiguration configuration;
-        public PdfController(IConfiguration configuration)
+        public static void Main(string[] args)
+        {
+        }
+    }
+    public class Html2Pdf
+    {
+        private dynamic configuration;
+        private static bool has_init = false;
+        private static Object lock_obj = new();
+        public Html2Pdf(Object configuration)
         {
             this.configuration = configuration;
+            lock (lock_obj)
+            {
+                if (!has_init)
+                {
+                    iText.Kernel.Font.PdfFontFactory.RegisterSystemDirectories();
+                    has_init = true;
+                }
+            }
         }
-        [HttpPost]
-        [AllowAnonymous]
-        public IActionResult Index(string report_obj, string paperSetting)
+        public Func<Object, JsonElement, bool, bool> output_impl;
+        public byte[] buildPdf(JsonElement json_root, dynamic ps, int LocalPort)
         {
-
-            PageSetup ps = null;
-            if (!string.IsNullOrEmpty(paperSetting) && "undefined" != paperSetting)
-                ps = JsonSerializer.Deserialize<PageSetup>(paperSetting);
-            //var report_str = System.IO.File.ReadAllText(@"C:\Users\Administrator\Desktop\Untitled-1.json");
-            return File(buildPdf(report_obj, ps), "application/pdf");
-        }
-
-        public byte[] buildPdf(string report_str, PageSetup ps)
-        {
-            var json_root = JsonDocument.Parse(report_str).RootElement;
             var json_data = json_root.GetProperty("data");
             //https://api.itextpdf.com/iText7/dotnet/latest/classi_text_1_1_layout_1_1_element_1_1_area_break.html
             var grid_list = json_data.EnumerateObject().Select(x => x.Name).ToList();
-            if (ps == null)
-            {
-                if (json_data.GetProperty(grid_list[0]).TryGetProperty("paperSetting", out var paperSetting_str)
-                    && paperSetting_str.GetString() != null
-                    )
-                {
-                    ps = JsonSerializer.Deserialize<PageSetup>(paperSetting_str.GetString());
-                }
-                else
-                    ps = new PageSetup();
-            }
+
             if (ps.pageSize_name != "自定义")
             {
                 PageSize _PageSize = typeof(PageSize).GetField(ps.pageSize_name.ToUpper()).GetValue(null) as PageSize;
@@ -176,7 +69,7 @@ namespace reportWeb.Controllers
             pdfDocument = new(writer);
             try
             {
-                default_font = CellReport.running.Template.getTemplate("template.xml").Get("FONT").content;
+                //default_font = CellReport.running.Template.getTemplate("template.xml").Get("FONT").content;
                 default_font = json_root.GetProperty("defaultsetting").GetProperty("FONT").GetString();
                 converterProperties = null;
                 if (converterProperties == null)
@@ -209,7 +102,7 @@ namespace reportWeb.Controllers
                     converterProperties = new ConverterProperties();
                     converterProperties.SetFontProvider(fontProvider);
                     converterProperties.SetCharset("utf-8");
-                    converterProperties.SetBaseUri($"http://127.0.0.1:{HttpContext.Connection.LocalPort}/");
+                    converterProperties.SetBaseUri($"http://127.0.0.1:{LocalPort}/");
                 }
                 Document pdf_doc = new(pdfDocument, new PageSize(ps.pageSize_Width, ps.pageSize_Height)
                     , false);
@@ -219,8 +112,9 @@ namespace reportWeb.Controllers
                 bool is_first = true;
                 foreach (var item in json_data.EnumerateObject())
                 {
-                    var rg = new ReportGridJSON(item.Value, ps);
-                    rg.output(pdf_doc, ref is_first, addTable);
+                    //dynamic rg = ReportGridJSON.GetConstructors()[0].Invoke(new object[] { item.Value, ps, addTable });
+                    //rg.output(pdf_doc, ref is_first);
+                    is_first = this.output_impl(pdf_doc, item.Value, is_first);
                 }
                 add_header_footer(ps, pdfDocument, pdf_doc, json_root.GetProperty("_zb_var_"));
 
@@ -261,7 +155,7 @@ namespace reportWeb.Controllers
 
             return convert_html_to_paragraph(str);
         }
-        private void add_header_footer(PageSetup ps, PdfDocument pdf, Document pdf_doc, JsonElement zb_var)
+        private void add_header_footer(dynamic ps, PdfDocument pdf, Document pdf_doc, JsonElement zb_var)
         {
             zb_var.TryGetProperty("watermark", out var watermark);
 
@@ -384,8 +278,7 @@ namespace reportWeb.Controllers
                 }
             }
         }
-
-        private Table addTable(ReportGridJSON rg, List<int> row_list, List<int> col_list)
+        public Table addTable(dynamic rg, List<int> row_list, List<int> col_list)
         {
             List<BitArray> tableBitFlag = new();
             for (int i = 0; i < rg.tableData.Length; i++)
@@ -665,4 +558,3 @@ namespace reportWeb.Controllers
         }
     }
 }
-*/

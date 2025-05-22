@@ -776,8 +776,8 @@ export function designGrid2LuckySheet(grid,setting,DefaultCssSetting){
         "hide": 0,//是否隐藏
         "row": (grid.rows && grid.rows.row) ? grid.rows.row.length:10, //行数
         "column": (grid.columns && grid.columns.column) ? grid.columns.column.length:10, //列数
-        "defaultRowHeight": parseInt(DefaultCssSetting['defaultRowHeight']?? '45'), //自定义行高
-        "defaultColWidth": parseInt(DefaultCssSetting['defaultColWidth']??'175'), //自定义列宽
+        "defaultRowHeight": parseInt(DefaultCssSetting['defaultRowHeight']?? '25'), //自定义行高
+        "defaultColWidth": parseInt(DefaultCssSetting['defaultColWidth']??'75'), //自定义列宽
         "celldata": celldata, //初始化使用的单元格数据
         "config": {
             "merge":merge, //合并单元格
@@ -1556,6 +1556,22 @@ export async function  showDialog (ele_name, data,_this) {
         }
     }        
     return false;
+}
+export function pivot(data) {
+    const headers = [...new Set(data.slice(1).map(row => row[1]))];
+    const rowHeaders = [...new Set(data.slice(1).map(row => row[0]))];
+    const result = [[data[0][0], ...headers]];
+    rowHeaders.forEach(rowHeader => {
+        const row = [rowHeader];
+        headers.forEach(header => {
+            const sum = data
+                .filter(row => row[0] === rowHeader && row[1] === header)
+                .reduce((acc, row) => acc + row[2], 0);
+            row.push(sum);
+        });
+        result.push(row);
+    });
+    return result;
 }
 export function isMobile(){
     let flag = navigator.userAgent.match(/(phone|pad|pod|iPhone|iPod|ios|iPad|Android|Mobile|BlackBerry|IEMobile|MQQBrowser|JUC|Fennec|wOSBrowser|BrowserNG|WebOS|Symbian|Windows Phone)/i)

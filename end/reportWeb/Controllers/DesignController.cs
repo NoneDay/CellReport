@@ -154,6 +154,7 @@ namespace reportWeb.Controllers
                 {
                     report_env.addDataSource(one.name, one.conn_str, one.db_type, "0", one.sql_prefix, one.sql_suffix);
                 }
+                report_env.CheckParamValid();
                 ParamDefineDataSet pds = report_env.getParamDefineDataSet();
                 foreach (var row in pds.Rows)
                 {

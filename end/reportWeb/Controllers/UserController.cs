@@ -24,6 +24,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using System.Security.Cryptography;
 using reportWeb.Pages;
 using SqlKata.Execution;
+using ZXing;
 
 namespace reportWeb.Controllers
 {
@@ -117,6 +118,43 @@ namespace reportWeb.Controllers
         }
         [HttpPost]
         [AllowAnonymous]
+        public IActionResult ThirdLogin(string code)
+        {
+            Response.StatusCode = 200;
+            CR_Object result = new CR_Object() { { "errcode", 1 }, { "message", "用户名或密码错误" } };
+            var ef = new CellReport.core.expr.ExprFaced2();
+            ef.addNewScopeForScript();
+            using var report_env = new Env("login_code");
+            ef.addVariable("env", report_env);
+            ef.addVariable("__env__", report_env);
+            ef.addVariable("userid", "");
+            ef.addVariable("password", "");
+            ef.addVariable("code", code);
+            var conf = reportDb.Query("Rpt_config").FirstOrDefault<Rpt_config>();
+            if (conf != null && conf.login_script.Trim() != "")
+                result = ef.addNewScopeForScript(conf.login_script) as CR_Object;
+            else
+                return Unauthorized(new { message = "没有定义验证脚本" });
+
+            if (!"0".Equals(result["errcode"]?.ToString()))
+            {
+                return Json(new { errcode = 1, message = result });
+            }
+            var user = new UserInfo()
+            {
+                userid = result["userid"].ToString(),
+                username = result["username"].ToString(),
+            };
+            HttpContext.Session.Remove("verfiy_code");
+            HttpContext.Session.Remove("send_time");
+            //await HttpContext.SignInAsync(new ClaimsPrincipal(new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme)));
+            string jwtToken = GenerateJwtToken(user);
+            HttpContext.Response.Cookies.Append("access_token", jwtToken);
+            return Json(new { errcode = 0, message = "登录成功", data = jwtToken, refresh_token = GenerateJwtToken(user, refresh: true) });
+
+        }
+        [HttpPost]
+        [AllowAnonymous]
         public IActionResult login([FromBody] UserInfo userinfo)
         {
             using var cur_env = new CellReport.running.Env("login1");
@@ -141,8 +179,9 @@ namespace reportWeb.Controllers
                     return Unauthorized(new { message = "验证码错误" });
             }
 
-            String username = AESDecrypt(userinfo.username, configuration["aes_key"]);
-            var password = AESDecrypt(userinfo.password, configuration["aes_key"]);
+            var username = String.IsNullOrWhiteSpace(userinfo.username) ? "" : AESDecrypt(userinfo.username, configuration["aes_key"]);
+            var password = String.IsNullOrWhiteSpace(userinfo.password) ? "" : AESDecrypt(userinfo.password, configuration["aes_key"]);
+
             if (username == configuration["admin_user"])
             {
                 if (password == configuration["admin_password"])
@@ -164,6 +203,7 @@ namespace reportWeb.Controllers
                 ef.addVariable("__env__", report_env);
                 ef.addVariable("userid", username);
                 ef.addVariable("password", password);
+                ef.addVariable("code", null);
                 var //conf=reportDbContext.Rpt_config.FirstOrDefault();
                 conf = reportDb.Query("Rpt_config").FirstOrDefault<Rpt_config>();
                 if (conf != null && conf.login_script.Trim() != "")
@@ -239,7 +279,7 @@ namespace reportWeb.Controllers
                     {
                         username = userid,
                         name = HttpContext.User.Claims.FirstOrDefault(x => x.Type == "username").Value,
-                        avatar = "img/bg/vip2.png"
+                        avatar = "img/vip.png"
                     },
                     permission = new List<String>() { },
                     roles = new List<String>() { "Admin", "Vistor" },

@@ -67,11 +67,11 @@ export default {
         '耿直'
       ],
       form: {
-        img: 'img/bg/vip2.png',
+        img: 'img/vip.png',
         username: "smallwei",
         name: "smallwei",
         ms: "保护头发，人人有责",
-        yx: "1634566606@qq.com",
+        yx: "123@qq.com",
         gs: '某某公司',
         bm: '某某部门',
         zw: '前端开发工程师',

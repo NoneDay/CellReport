@@ -21,7 +21,7 @@ function db_tableinfo(data) {
             x.format = 'yyyy-MM-dd';
             x.valueFormat = 'yyyy-MM-dd';
         }
-        if (x.data_type.ToLower() in ["time", "datetime"]) {
+        if (x.data_type.ToLower() in ["time", "datetime"] || x.data_type.ToLower().StartsWith("timestamp")) {
             x.type = 'datetime';
             x.format = 'yyyy-MM-dd HH:mm:ss';
             x.valueFormat = 'yyyy-MM-dd HH:mm:ss';
@@ -92,17 +92,14 @@ var schema_kind = {
 
     },
     "Npgsql.NpgsqlFactory": {
-        tables: `select t.schemaname TABLE_SCHEMA,a.relname as TABLE_NAME , b.description as value from pg_class a 
-  join pg_tables t on a.relname=t.tablename
-  left join (select * from pg_description where objsubid =0 ) b on a.oid = b.objoid
-  where t.tableowner = '$Username$' and  t.schemaname!='cstore'
-  order by a.relname asc;`,
+        tables: `select t.schemaname TABLE_SCHEMA,t.tablename as TABLE_NAME from pg_tables t 
+  where t.tableowner = '$Username$' and  t.schemaname!='cstore'  order by 1 asc,2 asc;`,
         foreign: [`SELECT table_name, constraint_name,*
   FROM information_schema.table_constraints
   WHERE constraint_type = 'FOREIGN KEY' and table_name=''`,
             `=cur.select(x=>{table:x.table, from:x.from,to:x.to})`],
         columns: [`
-                   select ordinal_position as Colorder,column_name as ColumnName,data_type as TypeName,
+                   select distinct ordinal_position as Colorder,column_name as ColumnName,data_type as TypeName,
   coalesce(character_maximum_length,numeric_precision,-1) as Length,numeric_scale as Scale,
   case is_nullable when 'NO' then 0 else 1 end as CanNull,column_default as DefaultVal,
   case  when position('nextval' in column_default)>0 then 1 else 0 end as IsIdentity, 

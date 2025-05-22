@@ -118,7 +118,14 @@
           type="primary"
           >编辑</el-button>
     </el-form-item>
-字段设置：<el-button type="warning" @click="unselectall">全部不选</el-button>
+    <el-form-item label="字段设置："><el-button type="warning" @click="unselectall">全部不选</el-button></el-form-item>
+    <el-form-item label="pivot">
+ <el-switch :active-value="true"
+                 :inactive-value="false"
+                 v-model="data.pivot">
+      </el-switch></el-form-item>
+
+
     <div style="max-height: 200px; overflow: auto;border: 1px solid gray;">
       
       <draggable
@@ -215,6 +222,9 @@ export default {
   },
   computed: {
     all_datasource() {
+      if(this.data.pivot===undefined){
+        this.$set(this.data,"pivot",false);
+      }
       let ret = ["静态数据"];
       this.context.report.dataSets.dataSet.forEach((element) => {
         ret.push(`数据集:${element._name}`);

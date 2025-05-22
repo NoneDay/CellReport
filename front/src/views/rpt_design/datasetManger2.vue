@@ -349,7 +349,7 @@ export default {
             let ws= XLSX.utils.json_to_sheet(this.tableData)
             let wb = XLSX.utils.book_new()
             XLSX.utils.book_append_sheet(wb, ws,'数据');
-            let wopts = { bookType: 'xlsx', bookSST: true, type: 'binary' };//这里的数据是用来定义导出的格式类型 
+            let wopts = { bookType: 'xlsx', bookSST: true, type: 'binary' ,compression:true};//这里的数据是用来定义导出的格式类型 
             saveAs(new Blob([s2ab(XLSX.write(wb, wopts))], { type: "application/octet-stream"}), "这里是下载的文件.xlsx");
         },
         report_content(){

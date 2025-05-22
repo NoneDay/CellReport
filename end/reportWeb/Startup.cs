@@ -80,7 +80,7 @@ namespace reportWeb
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            iText.Kernel.Font.PdfFontFactory.RegisterSystemDirectories();
+            //iText.Kernel.Font.PdfFontFactory.RegisterSystemDirectories();
             //services.AddSingleton(HtmlEncoder.Create(System.Text.Unicode.UnicodeRanges.All));
             CellReport.core.expr.ExprHelper.buildFuncMap();
             //CellReport.core.expr.ExprHelper.AddFunc(typeof(CellReport.function.Func_md5));

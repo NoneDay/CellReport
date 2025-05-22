@@ -1,12 +1,4 @@
 {
-  "iisSettings": {
-    "windowsAuthentication": false,
-    "anonymousAuthentication": true,
-    "iisExpress": {
-      "applicationUrl": "http://localhost:62973",
-      "sslPort": 44378
-    }
-  },
   "profiles": {
     "IIS Express": {
       "commandName": "IISExpress",
@@ -16,12 +8,20 @@
     },
     "reportWeb": {
       "commandName": "Project",
-      "commandLineArgs": "--urls \"http://*:5000\"  --webroot \"E:\\my_app\\CellReport\\publish_release\\wwwroot\"",
+      "commandLineArgs": "--urls \"http://*:5000\"  --webroot \"d:\\my_app\\CellReport\\publish_release\\wwwroot\"",
       "launchUrl": "http://localhost:7000",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       },
       "applicationUrl": "https://localhost:7001;http://localhost:7000"
+    }
+  },
+  "iisSettings": {
+    "windowsAuthentication": false,
+    "anonymousAuthentication": true,
+    "iisExpress": {
+      "applicationUrl": "http://localhost:62973",
+      "sslPort": 44378
     }
   }
 }

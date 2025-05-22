@@ -136,7 +136,7 @@ namespace CellReport.function
                         Dictionary<String, object> new_dic = new();
                         foreach (var x in par_dic.Keys)
                         {
-                            new_dic.Add(x.ToString(), par_dic[x] is CellReport.math.BigDecimal val_dec ? val_dec.getCSDecmial() : par_dic[x]);
+                            new_dic.Add(x.ToString(), par_dic[x] is CellReport.math.BigDecimal val_dec ? ((float)val_dec.getCSDecmial()) : par_dic[x]);
                         }
                         methodParams[i] = new_dic;
                     }

@@ -380,10 +380,10 @@ export default {
       let methods={
         json_submit() {
           try {
-            let obj=JSON.parse(this.dync_item.optionData)
+            let obj=JSON.parse(this.self.optionData)
             if(getObjType(obj)=="object"){
               target_tihs.data.style = obj;
-              this.close();
+              this.visible=false;//函数内部的this 已经是指向dialog了,所以这里可以关闭
             }
             else
             this.$alert("不是JSON对象形式");
@@ -393,7 +393,7 @@ export default {
           }          
         }
       }
-      showDialog2(`<MonacoEditor   theme="vs" v-model="dync_item.optionData"
+      showDialog2(`<MonacoEditor   theme="vs" v-model="self.optionData"
               language="json"  style="height:100%;border:solid 1px silver;margin-bottom:5px;"
               :options="{}"  >
         </MonacoEditor>`,{optionData:JSON.stringify( this.data.style||{},null,4),methods,slot },this)
@@ -405,12 +405,12 @@ export default {
   </span>`};
       let methods={
         json_submit() {
-              target_tihs.data.click = this.dync_item.optionData;
-              this.close();
+            target_tihs.data.click = this.self.optionData;
+            this.visible=false;//函数内部的this 已经是指向dialog了,所以这里可以关闭
         }
       }
       showDialog2(`<div style="">function(p_data,p_this)//p_data：点击行后传过来的数据，p_this：调用该函数的对象</div>
-        <MonacoEditor   theme="vs" v-model="dync_item.optionData"
+        <MonacoEditor   theme="vs" v-model="self.optionData"
               language="json"  style="height:100%;border:solid 1px silver;margin-bottom:5px;"
               :options="{}"  >
         </MonacoEditor>`,{optionData:this.data.click||"",methods,slot },this)

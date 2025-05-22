@@ -571,35 +571,35 @@
                         "value": "66"
                     }
                 },
-                {
-                    "type": "dv_scroll_board",
-                    "label": "轮播表",
-                    "gridName": "_random_",
-                    "h": 4,
-                    "span": 6,
-                    "icon": "",
-                    "color": "#fff",
-                    "display": true,
-                    "component": "dync-template",
-                    "style": {
-                        "height": "100%"
-                    },
-                    "option": {
-                        "rowNum": 5,
-                        "waitTime": 2000,
-                        "carousel": "single",
-                        "unit": "",
-                        "sort": true,
-                        "headerBGC": "#00BAFF",
-                        "oddRowBGC": "#003B51",
-                        "evenRowBGC": "#0A2732",
-                        "headerHeigh": 35,
-                        "index": false,
-                        "indexHeade": "#",
-                        "hoverPause": true
-                    },
-                    "content": "<dv-scroll-board :config=\"{\n            header: cur_ds[0],\n            data: cur_ds.slice(1)\n,rowNum\t       :self.option.rowNum\t       || 5        \n,waitTime\t   :self.option.waitTime\t   ||  2000    \n,carousel\t   :self.option.carousel\t   ||  'single'\n,unit\t       :self.option.unit\t       ||  ''      \n,sort\t       :self.option.sort\t       ||  true              \n,rowNum\t       :self.option.rowNum\t     ||  5         \n,headerBGC\t   :self.option.headerBGC\t ||  '#00BAFF' \n,oddRowBGC\t   :self.option.oddRowBGC\t ||  '#003B51' \n,evenRowBGC\t   :self.option.evenRowBGC\t ||  '#0A2732' \n,waitTime\t   :self.option.waitTime\t ||  2000      \n,headerHeight\t:self.option.headerHeight||  35        \n,index\t       :self.option.index\t     ||  false     \n,indexHeader\t:self.option.indexHeader||  '#'        \n,carousel\t   :self.option.carousel\t ||  'single'  \n,hoverPause\t   :self.option.hoverPause\t ||  \tfalse   \n          }\" style=\"width:100%;height:100%;\" />"
+              {
+                "type": "dv_scroll_board",
+                "label": "轮播表",
+                "gridName": "_random_",
+                "h": 4,
+                "span": 6,
+                "icon": "",
+                "color": "#fff",
+                "display": true,
+                "component": "dync-template",
+                "style": {
+                  "height": "100%"
                 },
+                "option": {
+                  "rowNum": 5,
+                  "waitTime": 2000,
+                  "carousel": "single",
+                  "unit": "",
+                  "sort": true,
+                  "headerBGC": "#00BAFF",
+                  "oddRowBGC": "#003B51",
+                  "evenRowBGC": "#0A2732",
+                  "headerHeigh": 35,
+                  "index": false,
+                  "indexHeader": "#",
+                  "hoverPause": true
+                },
+                "content": "<template>\n<dv-scroll-board :config=\"{\n            header: cur_ds[0],\n            data: color_data\n,columnWidth :c_prop('width',true)\n,align :c_prop('align')\n,rowNum\t       :self.option.rowNum\t       || 5        \n,waitTime\t   :self.option.waitTime\t   ||  2000    \n,carousel\t   :self.option.carousel\t   ||  'single'\n,unit\t       :self.option.unit\t       ||  ''      \n,sort\t       :self.option.sort\t       ||  true              \n,rowNum\t       :self.option.rowNum\t     ||  5         \n,headerBGC\t   :self.option.headerBGC\t ||  '#00BAFF' \n,oddRowBGC\t   :self.option.oddRowBGC\t ||  '#003B51' \n,evenRowBGC\t   :self.option.evenRowBGC\t ||  '#0A2732' \n,waitTime\t   :self.option.waitTime\t ||  2000      \n,headerHeight\t:self.option.headerHeight||  35        \n,index\t       :self.option.index\t     ||  false     \n,indexHeader\t:self.option.indexHeader||  '#'        \n,carousel\t   :self.option.carousel\t ||  'single'  \n,hoverPause\t   :self.option.hoverPause\t ||  \tfalse \n\n          }\" style=\"width:100%;height:100%;\" />\n</template>\n<script>\nexport default{\n  data(){   \n    return {a:1}; \n  },\n  methods:{\n    c_prop(prop,is_num=false){\n      let ret_arr=new Array(Enumerable.from(this.self.fields).where(x=>x.selected).count());\n      let ret=Enumerable.from(this.self.fields).where(x=>x.selected)\n      .forEach((x,idx)=>{\n        if(x[prop]!='') ret_arr[idx]=is_num?parseFloat(x[prop]):x[prop]\n        });\n      return ret_arr;\n    },\n  },\n  computed:{\n    color_data(){\n      if(Enumerable.from(this.self.fields).where(x=>x.selected && x.color).count()==0)\n        return _this.cur_ds.slice(1);\n      let ret_arr=cellreport.tool.deepClone(_this.cur_ds.slice(1));\n      Enumerable.from(this.self.fields).where(x=>x.selected)\n      .forEach((x,i)=>{\n        if(x.selected && x.color ) {\n          Enumerable.from(ret_arr)\n          .forEach(line=>{\n            line[i]=`<span style='color:${x.color}'>${line[i]}</span>`\n          })\n        }\n      })\n      \n      return ret_arr;\n    }\n\n  }\n}\n</script>\n<style>\n.dv-scroll-board .header{\n    font-weight: 600;\n}\n</style>"
+              },
                 {
                     "type": "dv_scroll_ranking_board",
                     "label": "排名轮播表",
@@ -1300,9 +1300,6 @@
                         "titleShow": true,
                         "title": "各部门开销",
                         "subtext": "最近一个月",
-                        "titleColor": "#666",
-                        "tipBackgroundColor": "rgba(50,50,50,0.7)",
-                        "tipColor": "#fff",
                         "shape": "polygon",
                         "radius": 75,
                         "splitNumber": 4,

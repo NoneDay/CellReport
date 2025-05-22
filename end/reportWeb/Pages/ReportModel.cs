@@ -17,6 +17,9 @@ using System.Threading.Tasks;
 using CellReport.exporter;
 using Microsoft.AspNetCore.Hosting;
 using System.Text.Json;
+using CellReport.core;
+using Microsoft.AspNetCore.Authorization;
+using CellReport.core.expr;
 
 namespace reportWeb.Pages
 {
@@ -49,6 +52,7 @@ namespace reportWeb.Pages
     }
 
     [IgnoreAntiforgeryToken(Order = 2000)]
+    [AllowAnonymous]
     public class ReportModel : PageModel, IDisposable
     {
         protected string ReportDefinePath = @"";
@@ -157,6 +161,7 @@ namespace reportWeb.Pages
                 {
                     report_env.addDataSource(one.name, one.conn_str, one.db_type, "0", one.sql_prefix, one.sql_suffix);
                 }
+
                 var exprFaced = report_env.getExprFaced();
                 exprFaced.addVariable("isPhone", isPhone);
                 //int grid_cnt=reportDefineForWeb.CurrentReportDefine.getGridList().FindAll(x=>x.XmlElementName=="grid").Count;
@@ -171,6 +176,7 @@ namespace reportWeb.Pages
                 exprFaced.addVariableForRoot("_cur_page_num_", getFormValue("_cur_page_num_"));
                 //exprFaced.getVariableDefine("_user_").value = user_dict; 
                 exprFaced.getVariableDefine("_user_").value = reportWeb.Controllers.UserController.ValidateJwtToken(HttpContext, HttpContext.Request.Cookies["access_token"]);
+                report_env.CheckParamValid();
                 var g_var_dict = exprFaced.getVariableDefine("_g_var_").value as Dictionary<String, object>;
                 foreach (var kv in page_var_dict)
                 {
@@ -178,7 +184,10 @@ namespace reportWeb.Pages
                 }
                 //exprFaced.addVariable("_cache_", RedisHelper.Instance);page_var_dict
                 parse_fresh_ds();
-
+                if (report_name != "/" && exprFaced.hasVariable("start_calc_report"))
+                {
+                    exprFaced.calculate("=start_calc_report()", report_env.getDataSetResultMap());
+                }
                 var start_time = DateTime.Now;
                 reportDefineForWeb.putRequestParamForForm();
 
@@ -239,6 +248,11 @@ namespace reportWeb.Pages
             }
             finally
             {
+                var exprFaced = reportDefineForWeb.CurrentReportDefine.getEnv().getExprFaced();
+                if (exprFaced.hasVariable("end_calc_report"))
+                {
+                    exprFaced.calculate("=end_calc_report()", report_env.getDataSetResultMap());
+                }
                 reportDefineForWeb.Dispose();
                 //GC.Collect(2, GCCollectionMode.Forced);
             }
@@ -259,6 +273,11 @@ namespace reportWeb.Pages
                     + report_env.getAppPath() + "/" + report_env.ReportName);
                 if (report_env.Curr_calc_cell != null)
                     curCellName = report_env.Curr_calc_cell.getName();
+                if (e is ParamHasCircularReferenceException)
+                {
+                    sb.AppendLine(e.Message);
+                    return sb.ToString();
+                }
                 sb.Append("参数：");
                 foreach (var kv in report_env.getParamMap())
                 {
@@ -431,17 +450,19 @@ namespace reportWeb.Pages
                         exprFaced.addVariable("_createFormParam_", true);
                         var param_name = Request.Form["_param_name_"].ToString();
                         exprFaced.addVariable("_param_name_", param_name);
-                        foreach (var ds in report_env.getDataSetList())
-                        {
-                            if (ds.getSqlParamSet().Count == 1 && ds.getSqlParamSet().Contains(param_name))
-                            {
-                                if (reportDefineForWeb.CurrentReportDefine.calcDsNames == null)
-                                {
-                                    reportDefineForWeb.CurrentReportDefine.calcDsNames = new();
-                                }
-                                reportDefineForWeb.CurrentReportDefine.calcDsNames.Add(ds.Name);
-                            };
-                        }
+                        reportDefineForWeb.CurrentReportDefine.calcGridNames = new String[] { };
+                        reportDefineForWeb.CurrentReportDefine.calcDsNames = new();
+                        //foreach (var ds in report_env.getDataSetList())
+                        //{
+                        //    if (ds.getSqlParamSet().Count == 1 && ds.getSqlParamSet().Contains(param_name))
+                        //    {
+                        //        if (reportDefineForWeb.CurrentReportDefine.calcDsNames == null)
+                        //        {
+                        //            reportDefineForWeb.CurrentReportDefine.calcDsNames = new();
+                        //        }
+                        //        reportDefineForWeb.CurrentReportDefine.calcDsNames.Add(ds.Name);
+                        //    };
+                        //}
                     }
                     else if (Request.HasFormContentType && Request.Form.ContainsKey("_createFormParam")
                         && Request.Form["_createFormParam"].ToString().Equals("true", comparisonType: StringComparison.OrdinalIgnoreCase)

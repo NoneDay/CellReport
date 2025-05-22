@@ -7,11 +7,12 @@
 <script>
 import { validatenull } from '@/util/validate'
 import mixins from "./mixins"
-import {convert_csv_to_json,convert_array_to_json,build_chart_data,seriesLoadScripts ,randomRgbColor,test_data,select_field_data,loadFile,getObjType} from "../utils/util"
+import {convert_csv_to_json,convert_array_to_json,build_chart_data,seriesLoadScripts 
+  ,randomRgbColor,test_data,select_field_data,loadFile,getObjType,pivot} from "../utils/util"
 import elementResizeDetectorMaker from 'element-resize-detector'
 //下边这两行尤为重要，数据才能正常渲染
 
-
+const default_color_arr=['#5470c6', '#91cc75', '#fac858', '#ee6666', '#73c0de', '#3ba272', '#fc8452', '#9a60b4', '#ea7ccc']
 export default {
     name:"echarts",
     mixins:[mixins],
@@ -232,7 +233,7 @@ export default {
             }
             return color1;
             } else {
-            return randomRgbColor()
+            return default_color_arr[index%default_color_arr.length ]//randomRgbColor()
             }
         },
         ishasprop (condition, isprop, alwaysObj) {
@@ -304,6 +305,8 @@ export default {
                   this.real_data=convert_array_to_json(__valid_data__) 
               }
           }
+          if(this.self.pivot && __valid_data__.length>0 && __valid_data__[0].length>=3)
+            __valid_data__=pivot(__valid_data__)
           if(this.real_data?.length && this.self.gridName!="_random_"){ 
               this.$set(this.context.clickedEle,this.self.gridName,{data:this.real_data[0],cell:null,column:null,self:this.self})
           }
@@ -982,14 +985,10 @@ function radar_option (self,_this,__valid_data__) {
         x: self.option.legendPostion,
         top: self.option.legendPostionTop || 0,
         textStyle: {
-          fontSize: self.option.legendFontSize
+          fontSize: self.option.legendFontSize,color:self.option.legendTextColor || _this.defaultsetting['COLOR'],
         },
       },
       radar: {
-        name: {
-          fontSize: self.option.radarNameSize || 12,
-          color: self.option.radarNameColor || _this.defaultsetting['COLOR']
-        },
         indicator: self.data.indicator || 
             function(){
                 let max_row=__valid_data__.slice(1).filter(x=>x[0]=="max")
@@ -1017,12 +1016,7 @@ function radar_option (self,_this,__valid_data__) {
         const list = [
           {
             type: "radar",
-            itemStyle: {
-              color: self.option.nameColor
-            },
-            lineStyle: {
-              color: self.option.lineColor
-            },
+            
             data: (() => {
               return (__valid_data__.slice(1) || []).filter(x=>x[0]!='max').map((ele, index) => {
                 return {
@@ -1037,7 +1031,7 @@ function radar_option (self,_this,__valid_data__) {
                   areaStyle: {
                     color: _this.getColor(index),
                     opacity: self.option.areaOpacity || 0.9,
-                  }
+                  },itemStyle:{color:_this.getColor(index)}
                 };
               });
             })()
